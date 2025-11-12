@@ -8,6 +8,7 @@ import "google/protobuf/duration.proto";
 message Bootstrap {
   Server server = 1;
   Data data = 2;
+  Auth auth = 3;
 }
 
 message Server {
@@ -35,7 +36,26 @@ message Data {
     string addr = 2;
     google.protobuf.Duration read_timeout = 3;
     google.protobuf.Duration write_timeout = 4;
+    string password = 5;
   }
   Database database = 1;
   Redis redis = 2;
+}
+
+message Registry {
+    message Consul {
+        string address = 1;        // 服务器地址，支持多个地址逗号分隔
+        string scheme = 2;         // http 或 https
+        string token = 3;          // ACL 令牌
+        string username = 4;       // 基本认证用户名
+        string password = 5;       // 基本认证密码
+        bool enable_health_check = 8; // 是否启用健康检查
+        int32 check_interval = 9;  // 健康检查间隔(秒)
+    }
+    Consul consul = 1;
+}
+
+message Auth {
+    string service_key = 1;
+    string api_key = 2;
 }

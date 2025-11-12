@@ -4,10 +4,11 @@ import (
 	"github.com/cin/cin-app/app/cin/interface/internal/conf"
 	"github.com/cin/cin-app/app/cin/interface/internal/service"
 
+	userSrv "github.com/cin/cin-app/api/cin/interface/user"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
-	userSrv "github.com/cin/cin-app/api/cin/interface/user"
 )
 
 // NewGRPCServer new a gRPC server.
@@ -17,6 +18,7 @@ func NewGRPCServer(c *conf.Server,
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
+			validate.Validator(),
 		),
 	}
 	if c.Grpc.Network != "" {

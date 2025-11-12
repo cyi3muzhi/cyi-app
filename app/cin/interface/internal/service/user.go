@@ -7,6 +7,8 @@ import (
 	"github.com/cin/cin-app/app/cin/interface/internal/biz"
 
 	"github.com/go-kratos/kratos/v2/log"
+
+	kerr "github.com/cin/cin-app/api/err"
 )
 
 type UserService struct {
@@ -26,9 +28,31 @@ func (s *UserService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 	return &pb.LoginReply{Token: "token"}, nil
 }
 func (s *UserService) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterReply, error) {
-	_, err := s.uc.GetUser(ctx, 1)
+	// 校验密码是否输入一致
+	if req.Password != req.ConfirmPassword {
+		return nil, kerr.ErrorPasswordNotMatch("密码不一致")
+	}
+	u := &biz.User{
+		Phone:    req.Phone,
+		Password: req.Password,
+		Username: req.Username,
+	}
+	ok, err := s.uc.Register(ctx, u)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.RegisterReply{}, nil
+	return &pb.RegisterReply{
+		Ok: ok,
+	}, nil
+}
+
+func (s *UserService) GetUserInfo(ctx context.Context, req *pb.GetUserInfoRequest) (*pb.GetUserInfoReply, error) {
+	user, err := s.uc.GetUser(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetUserInfoReply{
+		Id:   user.ID, // 使用正确的字段名ID
+		Name: user.Name,
+	}, nil
 }

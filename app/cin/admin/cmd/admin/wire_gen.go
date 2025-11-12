@@ -7,11 +7,8 @@
 package main
 
 import (
-	"github.com/cin/cin-app/app/cin/admin/internal/biz"
 	"github.com/cin/cin-app/app/cin/admin/internal/conf"
-	"github.com/cin/cin-app/app/cin/admin/internal/data"
 	"github.com/cin/cin-app/app/cin/admin/internal/server"
-	"github.com/cin/cin-app/app/cin/admin/internal/service"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -23,18 +20,11 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(confData, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	greeterRepo := data.NewGreeterRepo(dataData, logger)
-	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
-	greeterService := service.NewGreeterService(greeterUsecase)
-	grpcServer := server.NewGRPCServer(confServer, greeterService, logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, logger)
-	app := newApp(logger, grpcServer, httpServer)
+func wireApp(confServer *conf.Server, data *conf.Data, registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
+	grpcServer := server.NewGRPCServer(confServer, logger)
+	httpServer := server.NewHTTPServer(confServer, logger)
+	registrar := server.NewRegistrar(registry)
+	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {
-		cleanup()
 	}, nil
 }

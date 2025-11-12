@@ -7,6 +7,7 @@
 package user
 
 import (
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -77,6 +78,7 @@ func (x *LoginRequest) GetPassword() string {
 type LoginReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	Info          *LoginReply_UserInfo   `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -118,10 +120,23 @@ func (x *LoginReply) GetToken() string {
 	return ""
 }
 
+func (x *LoginReply) GetInfo() *LoginReply_UserInfo {
+	if x != nil {
+		return x.Info
+	}
+	return nil
+}
+
 type RegisterRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
-	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 手机号验证（中国大陆手机号示例）
+	Phone string `protobuf:"bytes,1,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 密码长度验证
+	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	// 确认密码
+	ConfirmPassword string `protobuf:"bytes,3,opt,name=confirm_password,json=confirmPassword,proto3" json:"confirm_password,omitempty"`
+	// 用户名验证
+	Username      string `protobuf:"bytes,4,opt,name=username,proto3" json:"username,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -156,9 +171,9 @@ func (*RegisterRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_interface_user_user_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *RegisterRequest) GetUsername() string {
+func (x *RegisterRequest) GetPhone() string {
 	if x != nil {
-		return x.Username
+		return x.Phone
 	}
 	return ""
 }
@@ -170,9 +185,23 @@ func (x *RegisterRequest) GetPassword() string {
 	return ""
 }
 
+func (x *RegisterRequest) GetConfirmPassword() string {
+	if x != nil {
+		return x.ConfirmPassword
+	}
+	return ""
+}
+
+func (x *RegisterRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
 type RegisterReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Ok            bool                   `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -207,32 +236,222 @@ func (*RegisterReply) Descriptor() ([]byte, []int) {
 	return file_api_cin_interface_user_user_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *RegisterReply) GetSuccess() bool {
+func (x *RegisterReply) GetOk() bool {
 	if x != nil {
-		return x.Success
+		return x.Ok
 	}
 	return false
+}
+
+type GetUserInfoRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserInfoRequest) Reset() {
+	*x = GetUserInfoRequest{}
+	mi := &file_api_cin_interface_user_user_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserInfoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserInfoRequest) ProtoMessage() {}
+
+func (x *GetUserInfoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_user_user_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserInfoRequest.ProtoReflect.Descriptor instead.
+func (*GetUserInfoRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_user_user_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetUserInfoRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type GetUserInfoReply struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 姓名
+	Name          string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserInfoReply) Reset() {
+	*x = GetUserInfoReply{}
+	mi := &file_api_cin_interface_user_user_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserInfoReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserInfoReply) ProtoMessage() {}
+
+func (x *GetUserInfoReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_user_user_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserInfoReply.ProtoReflect.Descriptor instead.
+func (*GetUserInfoReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_user_user_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetUserInfoReply) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *GetUserInfoReply) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type LoginReply_UserInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Phone         string                 `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
+	Sex           int32                  `protobuf:"varint,5,opt,name=sex,proto3" json:"sex,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LoginReply_UserInfo) Reset() {
+	*x = LoginReply_UserInfo{}
+	mi := &file_api_cin_interface_user_user_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LoginReply_UserInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoginReply_UserInfo) ProtoMessage() {}
+
+func (x *LoginReply_UserInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_user_user_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoginReply_UserInfo.ProtoReflect.Descriptor instead.
+func (*LoginReply_UserInfo) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_user_user_proto_rawDescGZIP(), []int{1, 0}
+}
+
+func (x *LoginReply_UserInfo) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *LoginReply_UserInfo) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *LoginReply_UserInfo) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *LoginReply_UserInfo) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *LoginReply_UserInfo) GetSex() int32 {
+	if x != nil {
+		return x.Sex
+	}
+	return 0
 }
 
 var File_api_cin_interface_user_user_proto protoreflect.FileDescriptor
 
 const file_api_cin_interface_user_user_proto_rawDesc = "" +
 	"\n" +
-	"!api/cin/interface/user/user.proto\x12\x16api.cin.interface.user\x1a\x1cgoogle/api/annotations.proto\"F\n" +
+	"!api/cin/interface/user/user.proto\x12\x16api.cin.interface.user\x1a\x1cgoogle/api/annotations.proto\x1a\x17validate/validate.proto\"F\n" +
 	"\fLoginRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\"\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"\xd9\x01\n" +
 	"\n" +
 	"LoginReply\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\"I\n" +
-	"\x0fRegisterRequest\x12\x1a\n" +
-	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\")\n" +
-	"\rRegisterReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xec\x01\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12?\n" +
+	"\x04info\x18\x02 \x01(\v2+.api.cin.interface.user.LoginReply.UserInfoR\x04info\x1at\n" +
+	"\bUserInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
+	"\busername\x18\x02 \x01(\tR\busername\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\x12\x14\n" +
+	"\x05phone\x18\x04 \x01(\tR\x05phone\x12\x10\n" +
+	"\x03sex\x18\x05 \x01(\x05R\x03sex\"\xd1\x01\n" +
+	"\x0fRegisterRequest\x12*\n" +
+	"\x05phone\x18\x01 \x01(\tB\x14\xfaB\x11r\x0f2\r^1[3-9]\\d{9}$R\x05phone\x12%\n" +
+	"\bpassword\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18\x14R\bpassword\x124\n" +
+	"\x10confirm_password\x18\x03 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18\x14R\x0fconfirmPassword\x125\n" +
+	"\busername\x18\x04 \x01(\tB\x19\xfaB\x16r\x14\x10\x02\x18\x182\x0e^[\\w\\p{Han}]+$R\busername\"\x1f\n" +
+	"\rRegisterReply\x12\x0e\n" +
+	"\x02ok\x18\x01 \x01(\bR\x02ok\"$\n" +
+	"\x12GetUserInfoRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"6\n" +
+	"\x10GetUserInfoReply\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name2\xeb\x02\n" +
 	"\x04User\x12k\n" +
 	"\x05Login\x12$.api.cin.interface.user.LoginRequest\x1a\".api.cin.interface.user.LoginReply\"\x18\x82\xd3\xe4\x93\x02\x12:\x01*\"\ruser/v1/login\x12w\n" +
-	"\bRegister\x12'.api.cin.interface.user.RegisterRequest\x1a%.api.cin.interface.user.RegisterReply\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10user/v1/registerB%Z#cyi-app/api/cin/interface/user;userb\x06proto3"
+	"\bRegister\x12'.api.cin.interface.user.RegisterRequest\x1a%.api.cin.interface.user.RegisterReply\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10user/v1/register\x12}\n" +
+	"\vGetUserInfo\x12*.api.cin.interface.user.GetUserInfoRequest\x1a(.api.cin.interface.user.GetUserInfoReply\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10user/v1/get/{id}B%Z#cyi-app/api/cin/interface/user;userb\x06proto3"
 
 var (
 	file_api_cin_interface_user_user_proto_rawDescOnce sync.Once
@@ -246,23 +465,29 @@ func file_api_cin_interface_user_user_proto_rawDescGZIP() []byte {
 	return file_api_cin_interface_user_user_proto_rawDescData
 }
 
-var file_api_cin_interface_user_user_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_api_cin_interface_user_user_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_api_cin_interface_user_user_proto_goTypes = []any{
-	(*LoginRequest)(nil),    // 0: api.cin.interface.user.LoginRequest
-	(*LoginReply)(nil),      // 1: api.cin.interface.user.LoginReply
-	(*RegisterRequest)(nil), // 2: api.cin.interface.user.RegisterRequest
-	(*RegisterReply)(nil),   // 3: api.cin.interface.user.RegisterReply
+	(*LoginRequest)(nil),        // 0: api.cin.interface.user.LoginRequest
+	(*LoginReply)(nil),          // 1: api.cin.interface.user.LoginReply
+	(*RegisterRequest)(nil),     // 2: api.cin.interface.user.RegisterRequest
+	(*RegisterReply)(nil),       // 3: api.cin.interface.user.RegisterReply
+	(*GetUserInfoRequest)(nil),  // 4: api.cin.interface.user.GetUserInfoRequest
+	(*GetUserInfoReply)(nil),    // 5: api.cin.interface.user.GetUserInfoReply
+	(*LoginReply_UserInfo)(nil), // 6: api.cin.interface.user.LoginReply.UserInfo
 }
 var file_api_cin_interface_user_user_proto_depIdxs = []int32{
-	0, // 0: api.cin.interface.user.User.Login:input_type -> api.cin.interface.user.LoginRequest
-	2, // 1: api.cin.interface.user.User.Register:input_type -> api.cin.interface.user.RegisterRequest
-	1, // 2: api.cin.interface.user.User.Login:output_type -> api.cin.interface.user.LoginReply
-	3, // 3: api.cin.interface.user.User.Register:output_type -> api.cin.interface.user.RegisterReply
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	6, // 0: api.cin.interface.user.LoginReply.info:type_name -> api.cin.interface.user.LoginReply.UserInfo
+	0, // 1: api.cin.interface.user.User.Login:input_type -> api.cin.interface.user.LoginRequest
+	2, // 2: api.cin.interface.user.User.Register:input_type -> api.cin.interface.user.RegisterRequest
+	4, // 3: api.cin.interface.user.User.GetUserInfo:input_type -> api.cin.interface.user.GetUserInfoRequest
+	1, // 4: api.cin.interface.user.User.Login:output_type -> api.cin.interface.user.LoginReply
+	3, // 5: api.cin.interface.user.User.Register:output_type -> api.cin.interface.user.RegisterReply
+	5, // 6: api.cin.interface.user.User.GetUserInfo:output_type -> api.cin.interface.user.GetUserInfoReply
+	4, // [4:7] is the sub-list for method output_type
+	1, // [1:4] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_api_cin_interface_user_user_proto_init() }
@@ -276,7 +501,7 @@ func file_api_cin_interface_user_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_interface_user_user_proto_rawDesc), len(file_api_cin_interface_user_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

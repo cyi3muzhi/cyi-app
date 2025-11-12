@@ -22,7 +22,15 @@ const (
 )
 
 type CreateUserRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 姓名
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// 手机号
+	Phone string `protobuf:"bytes,2,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 密码
+	Password string `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
+	// 用户名
+	Username      string `protobuf:"bytes,4,opt,name=username,proto3" json:"username,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -57,8 +65,44 @@ func (*CreateUserRequest) Descriptor() ([]byte, []int) {
 	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{0}
 }
 
+func (x *CreateUserRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateUserRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *CreateUserRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+func (x *CreateUserRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
 type CreateUserReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 姓名
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 手机号
+	Phone string `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 用户名
+	Username      string `protobuf:"bytes,4,opt,name=username,proto3" json:"username,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -91,6 +135,34 @@ func (x *CreateUserReply) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CreateUserReply.ProtoReflect.Descriptor instead.
 func (*CreateUserReply) Descriptor() ([]byte, []int) {
 	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *CreateUserReply) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *CreateUserReply) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateUserReply) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *CreateUserReply) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
 }
 
 type UpdateUserRequest struct {
@@ -239,6 +311,7 @@ func (*DeleteUserReply) Descriptor() ([]byte, []int) {
 
 type GetUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -273,8 +346,16 @@ func (*GetUserRequest) Descriptor() ([]byte, []int) {
 	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{6}
 }
 
+func (x *GetUserRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
 type GetUserReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -307,6 +388,13 @@ func (x *GetUserReply) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetUserReply.ProtoReflect.Descriptor instead.
 func (*GetUserReply) Descriptor() ([]byte, []int) {
 	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetUserReply) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
 }
 
 type ListUserRequest struct {
@@ -385,15 +473,25 @@ var File_api_service_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_api_service_user_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x1eapi/service/user/v1/user.proto\x12\x13api.service.user.v1\"\x13\n" +
-	"\x11CreateUserRequest\"\x11\n" +
-	"\x0fCreateUserReply\"\x13\n" +
+	"\x1eapi/service/user/v1/user.proto\x12\x13api.service.user.v1\"u\n" +
+	"\x11CreateUserRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
+	"\x05phone\x18\x02 \x01(\tR\x05phone\x12\x1a\n" +
+	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x1a\n" +
+	"\busername\x18\x04 \x01(\tR\busername\"g\n" +
+	"\x0fCreateUserReply\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
+	"\x05phone\x18\x03 \x01(\tR\x05phone\x12\x1a\n" +
+	"\busername\x18\x04 \x01(\tR\busername\"\x13\n" +
 	"\x11UpdateUserRequest\"\x11\n" +
 	"\x0fUpdateUserReply\"\x13\n" +
 	"\x11DeleteUserRequest\"\x11\n" +
-	"\x0fDeleteUserReply\"\x10\n" +
-	"\x0eGetUserRequest\"\x0e\n" +
-	"\fGetUserReply\"\x11\n" +
+	"\x0fDeleteUserReply\" \n" +
+	"\x0eGetUserRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\x1e\n" +
+	"\fGetUserReply\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\x11\n" +
 	"\x0fListUserRequest\"\x0f\n" +
 	"\rListUserReply2\xc3\x03\n" +
 	"\x04User\x12Z\n" +

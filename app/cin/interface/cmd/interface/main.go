@@ -1,39 +1,34 @@
 package main
 
 import (
-	"flag"
+	"fmt"
 	"os"
 
 	"github.com/cin/cin-app/app/cin/interface/internal/conf"
+	"github.com/google/uuid"
 
+	consulConfig "github.com/cin/cin-app/pkg/util/config"
+	cgrpc "github.com/cin/cin-app/pkg/util/grpc"
 	"github.com/go-kratos/kratos/v2"
-	"github.com/go-kratos/kratos/v2/config"
-	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
-
 	_ "go.uber.org/automaxprocs"
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
 var (
 	// Name is the name of the compiled software.
-	Name string
+	Name string = fmt.Sprintf("%s.%s", os.Getenv("SERVICE_ENV"), cgrpc.CIN_INTERFACE)
 	// Version is the version of the compiled software.
-	Version string
-	// flagconf is the config flag.
-	flagconf string
+	Version string = cgrpc.CIN_VERSION
 
-	id, _ = os.Hostname()
+	id = uuid.NewString()
 )
 
-func init() {
-	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
-}
-
-func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
+func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, reg registry.Registrar) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -44,11 +39,33 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 			gs,
 			hs,
 		),
+		kratos.Registrar(reg),
 	)
 }
 
 func main() {
-	flag.Parse()
+	// consul配置初始化
+	c, err := consulConfig.NewConsulConfig(&consulConfig.ConsulConfigOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	defer c.Close()
+
+	// 加载配置
+	if err = c.Load(); err != nil {
+		panic(err)
+	}
+
+	// 扫描配置
+	var bc conf.Bootstrap
+	if err = c.Scan(&bc); err != nil {
+		panic(err)
+	}
+	var cb conf.Registry
+	if err = c.Scan(&cb); err != nil {
+		panic(err)
+	}
 	logger := log.With(log.NewStdLogger(os.Stdout),
 		"ts", log.DefaultTimestamp,
 		"caller", log.DefaultCaller,
@@ -58,23 +75,8 @@ func main() {
 		"trace.id", tracing.TraceID(),
 		"span.id", tracing.SpanID(),
 	)
-	c := config.New(
-		config.WithSource(
-			file.NewSource(flagconf),
-		),
-	)
-	defer c.Close()
 
-	if err := c.Load(); err != nil {
-		panic(err)
-	}
-
-	var bc conf.Bootstrap
-	if err := c.Scan(&bc); err != nil {
-		panic(err)
-	}
-
-	app, cleanup, err := wireApp(bc.Server, bc.Data, logger)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth,&cb, logger)
 	if err != nil {
 		panic(err)
 	}

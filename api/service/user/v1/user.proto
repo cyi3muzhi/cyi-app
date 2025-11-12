@@ -14,8 +14,26 @@ service User {
 	rpc ListUser (ListUserRequest) returns (ListUserReply);
 }
 
-message CreateUserRequest {}
-message CreateUserReply {}
+message CreateUserRequest {
+	// 姓名
+	string name = 1;
+	// 手机号
+	string phone = 2;
+	// 密码
+	string password = 3;
+	// 用户名
+	string username = 4;
+}
+message CreateUserReply {
+	// 用户ID
+	int64 id = 1;
+	// 姓名
+	string name = 2;
+	// 手机号
+	string phone = 3;
+	// 用户名
+	string username = 4;
+}
 
 message UpdateUserRequest {}
 message UpdateUserReply {}
@@ -23,8 +41,12 @@ message UpdateUserReply {}
 message DeleteUserRequest {}
 message DeleteUserReply {}
 
-message GetUserRequest {}
-message GetUserReply {}
+message GetUserRequest {
+	int64 id = 1;
+}
+message GetUserReply {
+	int64 id = 1;
+}
 
 message ListUserRequest {}
 message ListUserReply {}

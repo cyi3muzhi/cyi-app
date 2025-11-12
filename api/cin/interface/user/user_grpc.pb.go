@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.2
-// source: api/cin/interface/user/user.proto
+// source: cin/interface/user/user.proto
 
 package user
 
@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	User_Login_FullMethodName    = "/api.cin.interface.user.User/Login"
-	User_Register_FullMethodName = "/api.cin.interface.user.User/Register"
+	User_Login_FullMethodName       = "/api.cin.interface.user.User/Login"
+	User_Register_FullMethodName    = "/api.cin.interface.user.User/Register"
+	User_GetUserInfo_FullMethodName = "/api.cin.interface.user.User/GetUserInfo"
 )
 
 // UserClient is the client API for User service.
@@ -31,6 +32,8 @@ type UserClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error)
 	// 注册
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterReply, error)
+	// 获取用户信息
+	GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoReply, error)
 }
 
 type userClient struct {
@@ -61,6 +64,16 @@ func (c *userClient) Register(ctx context.Context, in *RegisterRequest, opts ...
 	return out, nil
 }
 
+func (c *userClient) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserInfoReply)
+	err := c.cc.Invoke(ctx, User_GetUserInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility.
@@ -69,6 +82,8 @@ type UserServer interface {
 	Login(context.Context, *LoginRequest) (*LoginReply, error)
 	// 注册
 	Register(context.Context, *RegisterRequest) (*RegisterReply, error)
+	// 获取用户信息
+	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoReply, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -84,6 +99,9 @@ func (UnimplementedUserServer) Login(context.Context, *LoginRequest) (*LoginRepl
 }
 func (UnimplementedUserServer) Register(context.Context, *RegisterRequest) (*RegisterReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+}
+func (UnimplementedUserServer) GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 func (UnimplementedUserServer) testEmbeddedByValue()              {}
@@ -142,6 +160,24 @@ func _User_Register_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).GetUserInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_GetUserInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).GetUserInfo(ctx, req.(*GetUserInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -157,7 +193,11 @@ var User_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Register",
 			Handler:    _User_Register_Handler,
 		},
+		{
+			MethodName: "GetUserInfo",
+			Handler:    _User_GetUserInfo_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/cin/interface/user/user.proto",
+	Metadata: "cin/interface/user/user.proto",
 }

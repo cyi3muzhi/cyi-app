@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.9.0
 // - protoc             v5.27.2
-// source: api/cin/interface/user/user.proto
+// source: cin/interface/user/user.proto
 
 package user
 
@@ -19,10 +19,13 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationUserGetUserInfo = "/api.cin.interface.user.User/GetUserInfo"
 const OperationUserLogin = "/api.cin.interface.user.User/Login"
 const OperationUserRegister = "/api.cin.interface.user.User/Register"
 
 type UserHTTPServer interface {
+	// GetUserInfo 获取用户信息
+	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoReply, error)
 	// Login 登录
 	Login(context.Context, *LoginRequest) (*LoginReply, error)
 	// Register 注册
@@ -33,6 +36,7 @@ func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
 	r := s.Route("/")
 	r.POST("user/v1/login", _User_Login0_HTTP_Handler(srv))
 	r.POST("user/v1/register", _User_Register0_HTTP_Handler(srv))
+	r.GET("user/v1/get/{id}", _User_GetUserInfo0_HTTP_Handler(srv))
 }
 
 func _User_Login0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
@@ -79,7 +83,31 @@ func _User_Register0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) err
 	}
 }
 
+func _User_GetUserInfo0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetUserInfoRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserGetUserInfo)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetUserInfo(ctx, req.(*GetUserInfoRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetUserInfoReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type UserHTTPClient interface {
+	// GetUserInfo 获取用户信息
+	GetUserInfo(ctx context.Context, req *GetUserInfoRequest, opts ...http.CallOption) (rsp *GetUserInfoReply, err error)
 	// Login 登录
 	Login(ctx context.Context, req *LoginRequest, opts ...http.CallOption) (rsp *LoginReply, err error)
 	// Register 注册
@@ -92,6 +120,20 @@ type UserHTTPClientImpl struct {
 
 func NewUserHTTPClient(client *http.Client) UserHTTPClient {
 	return &UserHTTPClientImpl{client}
+}
+
+// GetUserInfo 获取用户信息
+func (c *UserHTTPClientImpl) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...http.CallOption) (*GetUserInfoReply, error) {
+	var out GetUserInfoReply
+	pattern := "user/v1/get/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationUserGetUserInfo))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // Login 登录
