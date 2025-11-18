@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 
-	pb "github.com/cin/cin-app/api/cin/interface/user"
-	"github.com/cin/cin-app/app/cin/interface/internal/biz"
+	pb "cyi-app/api/cin/interface/user"
+	"cyi-app/app/cin/interface/internal/biz"
 
 	"github.com/go-kratos/kratos/v2/log"
 
-	kerr "github.com/cin/cin-app/api/err"
+	kerr "cyi-app/api/err"
 )
 
 type UserService struct {

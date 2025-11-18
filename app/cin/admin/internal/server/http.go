@@ -1,8 +1,7 @@
 package server
 
 import (
-		"github.com/cin/cin-app/app/cin/admin/internal/conf"
-
+	"cyi-app/app/cin/admin/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -10,7 +9,7 @@ import (
 )
 
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(c *conf.Server,  logger log.Logger) *http.Server {
+func NewHTTPServer(c *conf.Server, logger log.Logger) *http.Server {
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),

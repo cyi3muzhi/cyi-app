@@ -6,11 +6,11 @@
 package main
 
 import (
-	"github.com/cin/cin-app/app/service/user/internal/biz"
-	"github.com/cin/cin-app/app/service/user/internal/conf"
-	"github.com/cin/cin-app/app/service/user/internal/data"
-	"github.com/cin/cin-app/app/service/user/internal/server"
-	"github.com/cin/cin-app/app/service/user/internal/service"
+	"cyi-app/app/service/user/internal/biz"
+	"cyi-app/app/service/user/internal/conf"
+	"cyi-app/app/service/user/internal/data"
+	"cyi-app/app/service/user/internal/server"
+	"cyi-app/app/service/user/internal/service"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"

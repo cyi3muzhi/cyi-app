@@ -19,11 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	User_CreateUser_FullMethodName = "/api.service.user.v1.User/CreateUser"
-	User_UpdateUser_FullMethodName = "/api.service.user.v1.User/UpdateUser"
-	User_DeleteUser_FullMethodName = "/api.service.user.v1.User/DeleteUser"
-	User_GetUser_FullMethodName    = "/api.service.user.v1.User/GetUser"
-	User_ListUser_FullMethodName   = "/api.service.user.v1.User/ListUser"
+	User_CreateUser_FullMethodName     = "/api.service.user.v1.User/CreateUser"
+	User_UpdateUser_FullMethodName     = "/api.service.user.v1.User/UpdateUser"
+	User_DeleteUser_FullMethodName     = "/api.service.user.v1.User/DeleteUser"
+	User_GetUser_FullMethodName        = "/api.service.user.v1.User/GetUser"
+	User_ListUser_FullMethodName       = "/api.service.user.v1.User/ListUser"
+	User_CheckUserExist_FullMethodName = "/api.service.user.v1.User/CheckUserExist"
 )
 
 // UserClient is the client API for User service.
@@ -35,6 +36,8 @@ type UserClient interface {
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserReply, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserReply, error)
 	ListUser(ctx context.Context, in *ListUserRequest, opts ...grpc.CallOption) (*ListUserReply, error)
+	// 校验账号是否存在
+	CheckUserExist(ctx context.Context, in *CheckUserExistRequest, opts ...grpc.CallOption) (*CheckUserExistReply, error)
 }
 
 type userClient struct {
@@ -95,6 +98,16 @@ func (c *userClient) ListUser(ctx context.Context, in *ListUserRequest, opts ...
 	return out, nil
 }
 
+func (c *userClient) CheckUserExist(ctx context.Context, in *CheckUserExistRequest, opts ...grpc.CallOption) (*CheckUserExistReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckUserExistReply)
+	err := c.cc.Invoke(ctx, User_CheckUserExist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility.
@@ -104,6 +117,8 @@ type UserServer interface {
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserReply, error)
 	GetUser(context.Context, *GetUserRequest) (*GetUserReply, error)
 	ListUser(context.Context, *ListUserRequest) (*ListUserReply, error)
+	// 校验账号是否存在
+	CheckUserExist(context.Context, *CheckUserExistRequest) (*CheckUserExistReply, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -128,6 +143,9 @@ func (UnimplementedUserServer) GetUser(context.Context, *GetUserRequest) (*GetUs
 }
 func (UnimplementedUserServer) ListUser(context.Context, *ListUserRequest) (*ListUserReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUser not implemented")
+}
+func (UnimplementedUserServer) CheckUserExist(context.Context, *CheckUserExistRequest) (*CheckUserExistReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckUserExist not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 func (UnimplementedUserServer) testEmbeddedByValue()              {}
@@ -240,6 +258,24 @@ func _User_ListUser_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_CheckUserExist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckUserExistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).CheckUserExist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_CheckUserExist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).CheckUserExist(ctx, req.(*CheckUserExistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -266,6 +302,10 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListUser",
 			Handler:    _User_ListUser_Handler,
+		},
+		{
+			MethodName: "CheckUserExist",
+			Handler:    _User_CheckUserExist_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

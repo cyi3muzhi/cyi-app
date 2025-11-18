@@ -404,8 +404,8 @@ const file_api_cin_admin_user_user_proto_rawDesc = "" +
 	"\n" +
 	"DeleteUser\x12%.api.cin.admin.user.DeleteUserRequest\x1a#.api.cin.admin.user.DeleteUserReply\x12O\n" +
 	"\aGetUser\x12\".api.cin.admin.user.GetUserRequest\x1a .api.cin.admin.user.GetUserReply\x12R\n" +
-	"\bListUser\x12#.api.cin.admin.user.ListUserRequest\x1a!.api.cin.admin.user.ListUserReplyBF\n" +
-	"\x12api.cin.admin.userP\x01Z.github.com/cin/cin-app/api/cin/admin/user;userb\x06proto3"
+	"\bListUser\x12#.api.cin.admin.user.ListUserRequest\x1a!.api.cin.admin.user.ListUserReplyB7\n" +
+	"\x12api.cin.admin.userP\x01Z\x1fcyi-app/api/cin/admin/user;userb\x06proto3"
 
 var (
 	file_api_cin_admin_user_user_proto_rawDescOnce sync.Once

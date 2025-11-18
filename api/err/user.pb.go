@@ -4,7 +4,7 @@
 // 	protoc        v5.27.2
 // source: api/err/user.proto
 
-package user
+package err
 
 import (
 	_ "github.com/go-kratos/kratos/v2/errors"
@@ -29,6 +29,8 @@ const (
 	ErrorReason_CONTENT_MISSING ErrorReason = 1
 	// 密码不一致
 	ErrorReason_PASSWORD_NOT_MATCH ErrorReason = 2
+	// 用户已存在
+	ErrorReason_USER_ALREADY_EXIST ErrorReason = 3
 )
 
 // Enum value maps for ErrorReason.
@@ -37,11 +39,13 @@ var (
 		0: "USER_NOT_FOUND",
 		1: "CONTENT_MISSING",
 		2: "PASSWORD_NOT_MATCH",
+		3: "USER_ALREADY_EXIST",
 	}
 	ErrorReason_value = map[string]int32{
 		"USER_NOT_FOUND":     0,
 		"CONTENT_MISSING":    1,
 		"PASSWORD_NOT_MATCH": 2,
+		"USER_ALREADY_EXIST": 3,
 	}
 )
 
@@ -76,12 +80,13 @@ var File_api_err_user_proto protoreflect.FileDescriptor
 
 const file_api_err_user_proto_rawDesc = "" +
 	"\n" +
-	"\x12api/err/user.proto\x12\fapi.err.user\x1a\x13errors/errors.proto*f\n" +
+	"\x12api/err/user.proto\x12\fapi.err.user\x1a\x13errors/errors.proto*\x84\x01\n" +
 	"\vErrorReason\x12\x18\n" +
 	"\x0eUSER_NOT_FOUND\x10\x00\x1a\x04\xa8E\xad\x02\x12\x19\n" +
 	"\x0fCONTENT_MISSING\x10\x01\x1a\x04\xa8E\xad\x02\x12\x1c\n" +
-	"\x12PASSWORD_NOT_MATCH\x10\x02\x1a\x04\xa8E\xad\x02\x1a\x04\xa0E\xf4\x03B:\n" +
-	"\fapi.err.userP\x01Z(github.com/cin/cin-app/api/err/user;userb\x06proto3"
+	"\x12PASSWORD_NOT_MATCH\x10\x02\x1a\x04\xa8E\xad\x02\x12\x1c\n" +
+	"\x12USER_ALREADY_EXIST\x10\x03\x1a\x04\xa8E\xad\x02\x1a\x04\xa0E\xf4\x03B%\n" +
+	"\fapi.err.userP\x01Z\x13cyi-app/api/err;errb\x06proto3"
 
 var (
 	file_api_err_user_proto_rawDescOnce sync.Once

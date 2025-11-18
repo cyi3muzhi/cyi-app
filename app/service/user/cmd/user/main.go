@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cin/cin-app/app/service/user/internal/conf"
+	"cyi-app/app/service/user/internal/conf"
+
 	"github.com/google/uuid"
 
-	consulConfig "github.com/cin/cin-app/pkg/util/config"
-	cgrpc "github.com/cin/cin-app/pkg/util/grpc"
+	consulConfig "cyi-app/pkg/util/config"
+	cgrpc "cyi-app/pkg/util/grpc"
+
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"

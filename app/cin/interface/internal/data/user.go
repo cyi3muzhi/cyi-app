@@ -4,9 +4,10 @@ import (
 	"context"
 	"time"
 
-	v1 "github.com/cin/cin-app/api/service/user/v1"
-	"github.com/cin/cin-app/app/cin/interface/internal/biz"
-	cr "github.com/cin/cin-app/pkg/util/redis"
+	v1 "cyi-app/api/service/user/v1"
+	"cyi-app/app/cin/interface/internal/biz"
+	cr "cyi-app/pkg/util/redis"
+	kerr "cyi-app/api/err"
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -58,6 +59,20 @@ func (u *userRepo) Save(ctx context.Context, user *biz.User) (*biz.User, error) 
 		Password: user.Password,
 		Username: user.Username,
 	}
+	// 检查用户是否存在
+	exist, err := u.data.uc.CheckUserExist(ctx, &v1.CheckUserExistRequest{
+		Phone:    user.Phone,
+		Username: user.Username,
+	})
+	if err != nil {
+		u.log.Errorf("Failed to check user exist: %v", err)
+		return nil, err
+	}
+	if exist.Exist {
+		u.log.Errorf("User already exist: %v", err)
+		return nil, kerr.ErrorUserAlreadyExist("user already exist")
+	}
+
 	// 调用 gRPC 服务方法
 	reply, err := u.data.uc.CreateUser(ctx, req)
 	if err != nil {

@@ -1,8 +1,9 @@
 package server
 
 import (
-	"github.com/cin/cin-app/app/service/user/internal/conf"
-	consul "github.com/cin/cin-app/pkg/util/config"
+	"cyi-app/app/service/user/internal/conf"
+	consul "cyi-app/pkg/util/config"
+
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/google/wire"
 )
@@ -21,5 +22,3 @@ func NewRegistrar(conf *conf.Registry) registry.Registrar {
 	}
 	return reg
 }
-
-

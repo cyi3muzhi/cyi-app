@@ -1,7 +1,9 @@
 package data
 
 import (
-	"github.com/cin/cin-app/app/service/user/internal/conf"
+	"cyi-app/app/service/user/internal/conf"
+	mod "cyi-app/app/service/user/internal/model"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -35,6 +37,7 @@ func NewData(c *conf.Data, db *gorm.DB, logger log.Logger) (*Data, func(), error
 func NewDB(c *conf.Data) *gorm.DB {
 	db, err := gorm.Open(mysql.Open(c.Database.Source), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
+			// 表名不使用复数
 			SingularTable: true,
 		},
 		SkipDefaultTransaction: true,
@@ -43,7 +46,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 		panic(err)
 	}
 
-	if err := db.AutoMigrate(&User{}); err != nil {
+	if err := db.AutoMigrate(&mod.User{}); err != nil {
 		panic(err)
 	}
 	return db

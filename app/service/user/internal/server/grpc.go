@@ -1,13 +1,14 @@
 package server
 
 import (
-	"github.com/cin/cin-app/app/service/user/internal/conf"
-	"github.com/cin/cin-app/app/service/user/internal/service"
+	"cyi-app/app/service/user/internal/conf"
+	"cyi-app/app/service/user/internal/service"
+
+	userSrv "cyi-app/api/service/user/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
-	userSrv "github.com/cin/cin-app/api/service/user/v1"
 )
 
 // NewGRPCServer new a gRPC server.

@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"fmt"
 
-	pb "github.com/cin/cin-app/api/service/user/v1"
-	"github.com/cin/cin-app/app/service/user/internal/biz"
+	pb "cyi-app/api/service/user/v1"
+	"cyi-app/app/service/user/internal/biz"
+
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -52,4 +54,42 @@ func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 }
 func (s *UserService) ListUser(ctx context.Context, req *pb.ListUserRequest) (*pb.ListUserReply, error) {
 	return &pb.ListUserReply{}, nil
+}
+
+// 校验用户是否存在
+func (s *UserService) CheckUserExist(ctx context.Context, req *pb.CheckUserExistRequest) (*pb.CheckUserExistReply, error) {
+	fmt.Println("phone:", req.Phone)
+	// 查询用户是否存在
+	user, err := s.uc.GetUser(ctx, &biz.User{
+		Phone: req.Phone,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("1")
+	if user.ID != 0 {
+		return &pb.CheckUserExistReply{
+			Exist: true,
+		}, nil
+	}
+	// 查询用户是否存在
+	user, err = s.uc.GetUser(ctx, &biz.User{
+		Username: req.Username,
+	})
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("2")
+
+	if user.ID != 0 {
+		return &pb.CheckUserExistReply{
+			Exist: true,
+		}, nil
+	}
+	fmt.Println("3")
+
+	return &pb.CheckUserExistReply{
+		Exist: false,
+	}, nil
 }

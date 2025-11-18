@@ -12,6 +12,8 @@ service User {
 	rpc DeleteUser (DeleteUserRequest) returns (DeleteUserReply);
 	rpc GetUser (GetUserRequest) returns (GetUserReply);
 	rpc ListUser (ListUserRequest) returns (ListUserReply);
+	// 校验账号是否存在
+	rpc CheckUserExist (CheckUserExistRequest) returns (CheckUserExistReply);
 }
 
 message CreateUserRequest {
@@ -50,3 +52,13 @@ message GetUserReply {
 
 message ListUserRequest {}
 message ListUserReply {}
+
+message CheckUserExistRequest {
+	// 手机号
+	string phone = 1;
+	// 用户名
+	string username = 2;
+}
+message CheckUserExistReply{
+	bool exist = 1;
+}

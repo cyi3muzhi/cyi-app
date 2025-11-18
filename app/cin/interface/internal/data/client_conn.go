@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	userRpc "github.com/cin/cin-app/api/service/user/v1"
-	"github.com/cin/cin-app/app/cin/interface/internal/conf"
-	cgrpc "github.com/cin/cin-app/pkg/util/grpc"
+	userRpc "cyi-app/api/service/user/v1"
+	"cyi-app/app/cin/interface/internal/conf"
+	cgrpc "cyi-app/pkg/util/grpc"
+
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/registry"

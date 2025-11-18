@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api.err.user;
 
-option go_package = "github.com/cin/cin-app/api/err/user;user";
+option go_package = "cyi-app/api/err;err";
 option java_multiple_files = true;
 option java_package = "api.err.user";
 import "errors/errors.proto";
@@ -16,4 +16,6 @@ enum ErrorReason {
 	CONTENT_MISSING = 1 [(errors.code) = 301];
 	// 密码不一致
 	PASSWORD_NOT_MATCH = 2 [(errors.code) = 301];
+	// 用户已存在
+	USER_ALREADY_EXIST = 3 [(errors.code) = 301];
 }

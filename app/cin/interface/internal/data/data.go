@@ -4,10 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/cin/cin-app/app/cin/interface/internal/conf"
+	"cyi-app/app/cin/interface/internal/conf"
+
 	"github.com/redis/go-redis/v9"
 
-	userRpc "github.com/cin/cin-app/api/service/user/v1"
+	userRpc "cyi-app/api/service/user/v1"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
 )
@@ -41,7 +43,7 @@ func NewRedisClient(c *conf.Data, logger log.Logger) *redis.Client {
 		Network:      c.Redis.Network,
 		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
 		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
-		Password:     c.Redis.Password, 
+		Password:     c.Redis.Password,
 	})
 	// client.AddHook(redisotel.NewTracingHook())
 	timeout, cancelFunc := context.WithTimeout(context.Background(), time.Second*2)

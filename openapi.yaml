@@ -3,8 +3,125 @@
 
 openapi: 3.0.3
 info:
-    title: ""
+    title: User API
     version: 0.0.1
-paths: {}
+paths:
+    user/v1/get/{id}:
+        get:
+            tags:
+                - User
+            description: 获取用户信息
+            operationId: User_GetUserInfo
+            parameters:
+                - name: id
+                  in: path
+                  description: 用户ID
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.user.GetUserInfoReply'
+    user/v1/login:
+        post:
+            tags:
+                - User
+            description: 登录
+            operationId: User_Login
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.user.LoginRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.user.LoginReply'
+    user/v1/register:
+        post:
+            tags:
+                - User
+            description: 注册
+            operationId: User_Register
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.user.RegisterRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.user.RegisterReply'
 components:
-    schemas: {}
+    schemas:
+        api.cin.interface.user.GetUserInfoReply:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 用户ID
+                name:
+                    type: string
+                    description: 姓名
+        api.cin.interface.user.LoginReply:
+            type: object
+            properties:
+                token:
+                    type: string
+                info:
+                    $ref: '#/components/schemas/api.cin.interface.user.LoginReply_UserInfo'
+        api.cin.interface.user.LoginReply_UserInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                username:
+                    type: string
+                email:
+                    type: string
+                phone:
+                    type: string
+                sex:
+                    type: integer
+                    format: int32
+        api.cin.interface.user.LoginRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                password:
+                    type: string
+        api.cin.interface.user.RegisterReply:
+            type: object
+            properties:
+                ok:
+                    type: boolean
+        api.cin.interface.user.RegisterRequest:
+            type: object
+            properties:
+                phone:
+                    type: string
+                    description: 手机号验证（中国大陆手机号示例）
+                password:
+                    type: string
+                    description: 密码长度验证
+                confirmPassword:
+                    type: string
+                    description: 确认密码
+                username:
+                    type: string
+                    description: 用户名验证
+tags:
+    - name: User

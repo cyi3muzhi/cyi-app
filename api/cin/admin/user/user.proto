@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api.cin.admin.user;
 
-option go_package = "github.com/cin/cin-app/api/cin/admin/user;user";
+option go_package = "cyi-app/api/cin/admin/user;user";
 option java_multiple_files = true;
 option java_package = "api.cin.admin.user";
 

@@ -1,11 +1,11 @@
 package server
 
 import (
-	"github.com/cin/cin-app/app/cin/admin/internal/conf"
+	"cyi-app/app/cin/admin/internal/conf"
+	consul "cyi-app/pkg/util/config"
+
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/google/wire"
-	consul "github.com/cin/cin-app/pkg/util/config"
-
 )
 
 // ProviderSet is server providers.

@@ -469,6 +469,104 @@ func (*ListUserReply) Descriptor() ([]byte, []int) {
 	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{9}
 }
 
+type CheckUserExistRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 手机号
+	Phone string `protobuf:"bytes,1,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 用户名
+	Username      string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckUserExistRequest) Reset() {
+	*x = CheckUserExistRequest{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckUserExistRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckUserExistRequest) ProtoMessage() {}
+
+func (x *CheckUserExistRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckUserExistRequest.ProtoReflect.Descriptor instead.
+func (*CheckUserExistRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *CheckUserExistRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *CheckUserExistRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+type CheckUserExistReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Exist         bool                   `protobuf:"varint,1,opt,name=exist,proto3" json:"exist,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckUserExistReply) Reset() {
+	*x = CheckUserExistReply{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckUserExistReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckUserExistReply) ProtoMessage() {}
+
+func (x *CheckUserExistReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckUserExistReply.ProtoReflect.Descriptor instead.
+func (*CheckUserExistReply) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *CheckUserExistReply) GetExist() bool {
+	if x != nil {
+		return x.Exist
+	}
+	return false
+}
+
 var File_api_service_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_api_service_user_v1_user_proto_rawDesc = "" +
@@ -493,7 +591,12 @@ const file_api_service_user_v1_user_proto_rawDesc = "" +
 	"\fGetUserReply\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"\x11\n" +
 	"\x0fListUserRequest\"\x0f\n" +
-	"\rListUserReply2\xc3\x03\n" +
+	"\rListUserReply\"I\n" +
+	"\x15CheckUserExistRequest\x12\x14\n" +
+	"\x05phone\x18\x01 \x01(\tR\x05phone\x12\x1a\n" +
+	"\busername\x18\x02 \x01(\tR\busername\"+\n" +
+	"\x13CheckUserExistReply\x12\x14\n" +
+	"\x05exist\x18\x01 \x01(\bR\x05exist2\xab\x04\n" +
 	"\x04User\x12Z\n" +
 	"\n" +
 	"CreateUser\x12&.api.service.user.v1.CreateUserRequest\x1a$.api.service.user.v1.CreateUserReply\x12Z\n" +
@@ -502,7 +605,8 @@ const file_api_service_user_v1_user_proto_rawDesc = "" +
 	"\n" +
 	"DeleteUser\x12&.api.service.user.v1.DeleteUserRequest\x1a$.api.service.user.v1.DeleteUserReply\x12Q\n" +
 	"\aGetUser\x12#.api.service.user.v1.GetUserRequest\x1a!.api.service.user.v1.GetUserReply\x12T\n" +
-	"\bListUser\x12$.api.service.user.v1.ListUserRequest\x1a\".api.service.user.v1.ListUserReplyB7\n" +
+	"\bListUser\x12$.api.service.user.v1.ListUserRequest\x1a\".api.service.user.v1.ListUserReply\x12f\n" +
+	"\x0eCheckUserExist\x12*.api.service.user.v1.CheckUserExistRequest\x1a(.api.service.user.v1.CheckUserExistReplyB7\n" +
 	"\x13api.service.user.v1P\x01Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
 
 var (
@@ -517,35 +621,39 @@ func file_api_service_user_v1_user_proto_rawDescGZIP() []byte {
 	return file_api_service_user_v1_user_proto_rawDescData
 }
 
-var file_api_service_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_api_service_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_api_service_user_v1_user_proto_goTypes = []any{
-	(*CreateUserRequest)(nil), // 0: api.service.user.v1.CreateUserRequest
-	(*CreateUserReply)(nil),   // 1: api.service.user.v1.CreateUserReply
-	(*UpdateUserRequest)(nil), // 2: api.service.user.v1.UpdateUserRequest
-	(*UpdateUserReply)(nil),   // 3: api.service.user.v1.UpdateUserReply
-	(*DeleteUserRequest)(nil), // 4: api.service.user.v1.DeleteUserRequest
-	(*DeleteUserReply)(nil),   // 5: api.service.user.v1.DeleteUserReply
-	(*GetUserRequest)(nil),    // 6: api.service.user.v1.GetUserRequest
-	(*GetUserReply)(nil),      // 7: api.service.user.v1.GetUserReply
-	(*ListUserRequest)(nil),   // 8: api.service.user.v1.ListUserRequest
-	(*ListUserReply)(nil),     // 9: api.service.user.v1.ListUserReply
+	(*CreateUserRequest)(nil),     // 0: api.service.user.v1.CreateUserRequest
+	(*CreateUserReply)(nil),       // 1: api.service.user.v1.CreateUserReply
+	(*UpdateUserRequest)(nil),     // 2: api.service.user.v1.UpdateUserRequest
+	(*UpdateUserReply)(nil),       // 3: api.service.user.v1.UpdateUserReply
+	(*DeleteUserRequest)(nil),     // 4: api.service.user.v1.DeleteUserRequest
+	(*DeleteUserReply)(nil),       // 5: api.service.user.v1.DeleteUserReply
+	(*GetUserRequest)(nil),        // 6: api.service.user.v1.GetUserRequest
+	(*GetUserReply)(nil),          // 7: api.service.user.v1.GetUserReply
+	(*ListUserRequest)(nil),       // 8: api.service.user.v1.ListUserRequest
+	(*ListUserReply)(nil),         // 9: api.service.user.v1.ListUserReply
+	(*CheckUserExistRequest)(nil), // 10: api.service.user.v1.CheckUserExistRequest
+	(*CheckUserExistReply)(nil),   // 11: api.service.user.v1.CheckUserExistReply
 }
 var file_api_service_user_v1_user_proto_depIdxs = []int32{
-	0, // 0: api.service.user.v1.User.CreateUser:input_type -> api.service.user.v1.CreateUserRequest
-	2, // 1: api.service.user.v1.User.UpdateUser:input_type -> api.service.user.v1.UpdateUserRequest
-	4, // 2: api.service.user.v1.User.DeleteUser:input_type -> api.service.user.v1.DeleteUserRequest
-	6, // 3: api.service.user.v1.User.GetUser:input_type -> api.service.user.v1.GetUserRequest
-	8, // 4: api.service.user.v1.User.ListUser:input_type -> api.service.user.v1.ListUserRequest
-	1, // 5: api.service.user.v1.User.CreateUser:output_type -> api.service.user.v1.CreateUserReply
-	3, // 6: api.service.user.v1.User.UpdateUser:output_type -> api.service.user.v1.UpdateUserReply
-	5, // 7: api.service.user.v1.User.DeleteUser:output_type -> api.service.user.v1.DeleteUserReply
-	7, // 8: api.service.user.v1.User.GetUser:output_type -> api.service.user.v1.GetUserReply
-	9, // 9: api.service.user.v1.User.ListUser:output_type -> api.service.user.v1.ListUserReply
-	5, // [5:10] is the sub-list for method output_type
-	0, // [0:5] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: api.service.user.v1.User.CreateUser:input_type -> api.service.user.v1.CreateUserRequest
+	2,  // 1: api.service.user.v1.User.UpdateUser:input_type -> api.service.user.v1.UpdateUserRequest
+	4,  // 2: api.service.user.v1.User.DeleteUser:input_type -> api.service.user.v1.DeleteUserRequest
+	6,  // 3: api.service.user.v1.User.GetUser:input_type -> api.service.user.v1.GetUserRequest
+	8,  // 4: api.service.user.v1.User.ListUser:input_type -> api.service.user.v1.ListUserRequest
+	10, // 5: api.service.user.v1.User.CheckUserExist:input_type -> api.service.user.v1.CheckUserExistRequest
+	1,  // 6: api.service.user.v1.User.CreateUser:output_type -> api.service.user.v1.CreateUserReply
+	3,  // 7: api.service.user.v1.User.UpdateUser:output_type -> api.service.user.v1.UpdateUserReply
+	5,  // 8: api.service.user.v1.User.DeleteUser:output_type -> api.service.user.v1.DeleteUserReply
+	7,  // 9: api.service.user.v1.User.GetUser:output_type -> api.service.user.v1.GetUserReply
+	9,  // 10: api.service.user.v1.User.ListUser:output_type -> api.service.user.v1.ListUserReply
+	11, // 11: api.service.user.v1.User.CheckUserExist:output_type -> api.service.user.v1.CheckUserExistReply
+	6,  // [6:12] is the sub-list for method output_type
+	0,  // [0:6] is the sub-list for method input_type
+	0,  // [0:0] is the sub-list for extension type_name
+	0,  // [0:0] is the sub-list for extension extendee
+	0,  // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_api_service_user_v1_user_proto_init() }
@@ -559,7 +667,7 @@ func file_api_service_user_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_service_user_v1_user_proto_rawDesc), len(file_api_service_user_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

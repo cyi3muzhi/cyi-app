@@ -1,8 +1,9 @@
 package server
 
 import (
-	"github.com/cin/cin-app/app/cin/interface/internal/conf"
-	consul "github.com/cin/cin-app/pkg/util/config"
+	"cyi-app/app/cin/interface/internal/conf"
+	consul "cyi-app/pkg/util/config"
+
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/google/wire"
 )
