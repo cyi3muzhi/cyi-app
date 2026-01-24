@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package api.cin.interface.v1;
+
+option go_package = "cyi-app/api/cin/interface/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.cin.interface.v1";
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+
+service CinInterface {
+	// 登录
+	rpc Login (LoginRequest) returns (LoginReply){
+		option (google.api.http) = {
+			post: "user/v1/login"
+			body: "*"
+		};
+	};
+
+	// 注册
+    rpc Register (RegisterReq) returns (RegisterReply) {
+        option (google.api.http) = {
+            post: "/v1/register"
+            body: "*"
+        };
+    }
+	// 获取用户信息
+	rpc GetUserInfo (GetUserInfoRequest) returns (GetUserInfoReply){
+		option (google.api.http) = {
+			get: "user/v1/get/{id}"
+		};
+	};
+}
+
+message LoginRequest {
+	// 用户名或手机号 可以为空
+	string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
+	string phone = 2 [(validate.rules).string = {pattern: "^1[3-9]\\d{9}$"}];
+	string password = 3 [(validate.rules).string = {min_len: 6, max_len: 20}];
+}
+message LoginReply {
+	string token = 1 [(validate.rules).string = {min_len: 10, max_len: 128}];
+	UserInfo info = 2 [(validate.rules).message = {required: true}];
+	message UserInfo {
+		int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+		string username = 2 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
+		// string email = 3 [(validate.rules).string = {email: true}];
+		string phone = 4 [(validate.rules).string = {pattern: "^1[3-9]\\d{9}$"}];
+		// int32 sex = 5 [(validate.rules).int32 = {gte: 0, lte: 2}];
+	}
+}
+
+message RegisterReq {
+	// 用户名验证
+    string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
+    // 密码长度验证
+    string password = 2 [(validate.rules).string = {min_len: 6, max_len: 20}];
+}
+message RegisterReply {
+    bool success = 1;
+}
+
+message GetUserInfoRequest {
+	// 用户ID
+	int64 id = 1;
+}
+message GetUserInfoReply {
+	// 用户ID
+	int64 id = 1;
+	// 姓名
+	string name = 2;
+}

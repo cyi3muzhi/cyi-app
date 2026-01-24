@@ -93,3 +93,14 @@ func (s *UserService) CheckUserExist(ctx context.Context, req *pb.CheckUserExist
 		Exist: false,
 	}, nil
 }
+
+func (s *UserService) GetUserByUsername(ctx context.Context, in *pb.GetUserByUsernameReq) (*pb.GetUserByUsernameReply, error) {
+	user, err := s.uc.GetUserByUsername(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetUserByUsernameReply{
+		Id:       user.ID,
+		Username: user.Username,
+	}, nil
+}

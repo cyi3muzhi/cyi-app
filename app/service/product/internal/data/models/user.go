@@ -1,8 +1,18 @@
-package gorminterface
+package models
 
-import mod "cyi-app/app/service/user/internal/model"
+import (
+	cgorm "cyi-app/pkg/util/gorm"
+)
 
-type Query[T any] interface {
+type User struct {
+	cgorm.Model
+	Name     string `gorm:"column:name"`
+	Phone    string `gorm:"column:phone"`
+	Password string `gorm:"column:password"`
+	Username string `gorm:"column:username"`
+}
+
+type UserRepo[T any] interface {
 	// GetByID 根据 ID 进行查询
 	// SELECT * FROM @@table WHERE id=@id
 	GetByID(id int) (T, error)
@@ -21,7 +31,7 @@ type Query[T any] interface {
 	//   {{else if user.Username != ""}}
 	//       WHERE username=@user.Username
 	//   {{end}}
-	QueryWith(user mod.User) (T, error)
+	QueryWith(user User) (T, error)
 
 	// UPDATE @@table
 	//  {{set}}
@@ -45,4 +55,10 @@ type Query[T any] interface {
 	//    {{end}}
 	//  {{end}}
 	// FilterWithTime(start, end time.Time) ([]T, error)
+
+
+	// CreateUser 创建用户
+	// INSERT INTO @@table (name, phone, password, username)
+	// VALUES (@user.Name, @user.Phone, @user.Password, @user.Username)
+	CreateUser(user User) (User, error)
 }

@@ -3,15 +3,34 @@
 
 openapi: 3.0.3
 info:
-    title: User API
+    title: CinInterface API
     version: 0.0.1
 paths:
+    /v1/register:
+        post:
+            tags:
+                - CinInterface
+            description: 注册
+            operationId: CinInterface_Register
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.RegisterReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.RegisterReply'
     user/v1/get/{id}:
         get:
             tags:
-                - User
+                - CinInterface
             description: 获取用户信息
-            operationId: User_GetUserInfo
+            operationId: CinInterface_GetUserInfo
             parameters:
                 - name: id
                   in: path
@@ -25,18 +44,18 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/api.cin.interface.user.GetUserInfoReply'
+                                $ref: '#/components/schemas/api.cin.interface.v1.GetUserInfoReply'
     user/v1/login:
         post:
             tags:
-                - User
+                - CinInterface
             description: 登录
-            operationId: User_Login
+            operationId: CinInterface_Login
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/api.cin.interface.user.LoginRequest'
+                            $ref: '#/components/schemas/api.cin.interface.v1.LoginRequest'
                 required: true
             responses:
                 "200":
@@ -44,29 +63,10 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/api.cin.interface.user.LoginReply'
-    user/v1/register:
-        post:
-            tags:
-                - User
-            description: 注册
-            operationId: User_Register
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/api.cin.interface.user.RegisterRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/api.cin.interface.user.RegisterReply'
+                                $ref: '#/components/schemas/api.cin.interface.v1.LoginReply'
 components:
     schemas:
-        api.cin.interface.user.GetUserInfoReply:
+        api.cin.interface.v1.GetUserInfoReply:
             type: object
             properties:
                 id:
@@ -75,53 +75,46 @@ components:
                 name:
                     type: string
                     description: 姓名
-        api.cin.interface.user.LoginReply:
+        api.cin.interface.v1.LoginReply:
             type: object
             properties:
                 token:
                     type: string
                 info:
-                    $ref: '#/components/schemas/api.cin.interface.user.LoginReply_UserInfo'
-        api.cin.interface.user.LoginReply_UserInfo:
+                    $ref: '#/components/schemas/api.cin.interface.v1.LoginReply_UserInfo'
+        api.cin.interface.v1.LoginReply_UserInfo:
             type: object
             properties:
                 id:
                     type: string
                 username:
                     type: string
-                email:
-                    type: string
                 phone:
                     type: string
-                sex:
-                    type: integer
-                    format: int32
-        api.cin.interface.user.LoginRequest:
+                    description: 'string email = 3 [(validate.rules).string = {email: true}];'
+        api.cin.interface.v1.LoginRequest:
             type: object
             properties:
                 username:
                     type: string
-                password:
-                    type: string
-        api.cin.interface.user.RegisterReply:
-            type: object
-            properties:
-                ok:
-                    type: boolean
-        api.cin.interface.user.RegisterRequest:
-            type: object
-            properties:
+                    description: 用户名或手机号 可以为空
                 phone:
                     type: string
-                    description: 手机号验证（中国大陆手机号示例）
                 password:
                     type: string
-                    description: 密码长度验证
-                confirmPassword:
-                    type: string
-                    description: 确认密码
+        api.cin.interface.v1.RegisterReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.RegisterReq:
+            type: object
+            properties:
                 username:
                     type: string
                     description: 用户名验证
+                password:
+                    type: string
+                    description: 密码长度验证
 tags:
-    - name: User
+    - name: CinInterface

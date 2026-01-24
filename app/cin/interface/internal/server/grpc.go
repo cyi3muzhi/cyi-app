@@ -1,10 +1,9 @@
 package server
 
 import (
+	v1 "cyi-app/api/cin/interface/v1"
 	"cyi-app/app/cin/interface/internal/conf"
 	"cyi-app/app/cin/interface/internal/service"
-
-	userSrv "cyi-app/api/cin/interface/user"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -14,7 +13,7 @@ import (
 
 // NewGRPCServer new a gRPC server.
 func NewGRPCServer(c *conf.Server,
-	userService *service.UserService,
+	cinInterface *service.CinInterface,
 	logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
@@ -32,7 +31,7 @@ func NewGRPCServer(c *conf.Server,
 		opts = append(opts, grpc.Timeout(c.Grpc.Timeout.AsDuration()))
 	}
 	srv := grpc.NewServer(opts...)
-	userSrv.RegisterUserServer(srv, userService)
+	v1.RegisterCinInterfaceServer(srv, cinInterface)
 
 	return srv
 }

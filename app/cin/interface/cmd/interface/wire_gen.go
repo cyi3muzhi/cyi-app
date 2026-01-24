@@ -12,10 +12,11 @@ import (
 	"cyi-app/app/cin/interface/internal/data"
 	"cyi-app/app/cin/interface/internal/server"
 	"cyi-app/app/cin/interface/internal/service"
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+)
 
+import (
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -32,9 +33,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	}
 	userRepo := data.NewUserRepo(dataData, logger)
 	userUseCase := biz.NewUserUseCase(userRepo, logger)
-	userService := service.NewUserService(userUseCase, logger)
-	grpcServer := server.NewGRPCServer(confServer, userService, logger)
-	httpServer := server.NewHTTPServer(confServer, userService, logger)
+	authUseCase := biz.NewAuthUseCase(userRepo, auth, logger)
+	cinInterface := service.NewCinInterface(userUseCase, authUseCase, logger)
+	grpcServer := server.NewGRPCServer(confServer, cinInterface, logger)
+	httpServer := server.NewHTTPServer(confServer, cinInterface, logger)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {

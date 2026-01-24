@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-http v2.9.0
 // - protoc             v5.27.2
-// source: cin/interface/user/user.proto
+// source: cin/interface/v1/cin_interface.proto
 
-package user
+package v1
 
 import (
 	context "context"
@@ -19,27 +19,27 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationUserGetUserInfo = "/api.cin.interface.user.User/GetUserInfo"
-const OperationUserLogin = "/api.cin.interface.user.User/Login"
-const OperationUserRegister = "/api.cin.interface.user.User/Register"
+const OperationCinInterfaceGetUserInfo = "/api.cin.interface.v1.CinInterface/GetUserInfo"
+const OperationCinInterfaceLogin = "/api.cin.interface.v1.CinInterface/Login"
+const OperationCinInterfaceRegister = "/api.cin.interface.v1.CinInterface/Register"
 
-type UserHTTPServer interface {
+type CinInterfaceHTTPServer interface {
 	// GetUserInfo 获取用户信息
 	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoReply, error)
 	// Login 登录
 	Login(context.Context, *LoginRequest) (*LoginReply, error)
 	// Register 注册
-	Register(context.Context, *RegisterRequest) (*RegisterReply, error)
+	Register(context.Context, *RegisterReq) (*RegisterReply, error)
 }
 
-func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
+func RegisterCinInterfaceHTTPServer(s *http.Server, srv CinInterfaceHTTPServer) {
 	r := s.Route("/")
-	r.POST("user/v1/login", _User_Login0_HTTP_Handler(srv))
-	r.POST("user/v1/register", _User_Register0_HTTP_Handler(srv))
-	r.GET("user/v1/get/{id}", _User_GetUserInfo0_HTTP_Handler(srv))
+	r.POST("user/v1/login", _CinInterface_Login0_HTTP_Handler(srv))
+	r.POST("/v1/register", _CinInterface_Register0_HTTP_Handler(srv))
+	r.GET("user/v1/get/{id}", _CinInterface_GetUserInfo0_HTTP_Handler(srv))
 }
 
-func _User_Login0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+func _CinInterface_Login0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in LoginRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -48,7 +48,7 @@ func _User_Login0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error 
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationUserLogin)
+		http.SetOperation(ctx, OperationCinInterfaceLogin)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return srv.Login(ctx, req.(*LoginRequest))
 		})
@@ -61,18 +61,18 @@ func _User_Login0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error 
 	}
 }
 
-func _User_Register0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+func _CinInterface_Register0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in RegisterRequest
+		var in RegisterReq
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationUserRegister)
+		http.SetOperation(ctx, OperationCinInterfaceRegister)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.Register(ctx, req.(*RegisterRequest))
+			return srv.Register(ctx, req.(*RegisterReq))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
@@ -83,7 +83,7 @@ func _User_Register0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) err
 	}
 }
 
-func _User_GetUserInfo0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+func _CinInterface_GetUserInfo0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in GetUserInfoRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -92,7 +92,7 @@ func _User_GetUserInfo0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) 
 		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationUserGetUserInfo)
+		http.SetOperation(ctx, OperationCinInterfaceGetUserInfo)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return srv.GetUserInfo(ctx, req.(*GetUserInfoRequest))
 		})
@@ -105,29 +105,29 @@ func _User_GetUserInfo0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) 
 	}
 }
 
-type UserHTTPClient interface {
+type CinInterfaceHTTPClient interface {
 	// GetUserInfo 获取用户信息
 	GetUserInfo(ctx context.Context, req *GetUserInfoRequest, opts ...http.CallOption) (rsp *GetUserInfoReply, err error)
 	// Login 登录
 	Login(ctx context.Context, req *LoginRequest, opts ...http.CallOption) (rsp *LoginReply, err error)
 	// Register 注册
-	Register(ctx context.Context, req *RegisterRequest, opts ...http.CallOption) (rsp *RegisterReply, err error)
+	Register(ctx context.Context, req *RegisterReq, opts ...http.CallOption) (rsp *RegisterReply, err error)
 }
 
-type UserHTTPClientImpl struct {
+type CinInterfaceHTTPClientImpl struct {
 	cc *http.Client
 }
 
-func NewUserHTTPClient(client *http.Client) UserHTTPClient {
-	return &UserHTTPClientImpl{client}
+func NewCinInterfaceHTTPClient(client *http.Client) CinInterfaceHTTPClient {
+	return &CinInterfaceHTTPClientImpl{client}
 }
 
 // GetUserInfo 获取用户信息
-func (c *UserHTTPClientImpl) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...http.CallOption) (*GetUserInfoReply, error) {
+func (c *CinInterfaceHTTPClientImpl) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...http.CallOption) (*GetUserInfoReply, error) {
 	var out GetUserInfoReply
 	pattern := "user/v1/get/{id}"
 	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationUserGetUserInfo))
+	opts = append(opts, http.Operation(OperationCinInterfaceGetUserInfo))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
@@ -137,11 +137,11 @@ func (c *UserHTTPClientImpl) GetUserInfo(ctx context.Context, in *GetUserInfoReq
 }
 
 // Login 登录
-func (c *UserHTTPClientImpl) Login(ctx context.Context, in *LoginRequest, opts ...http.CallOption) (*LoginReply, error) {
+func (c *CinInterfaceHTTPClientImpl) Login(ctx context.Context, in *LoginRequest, opts ...http.CallOption) (*LoginReply, error) {
 	var out LoginReply
 	pattern := "user/v1/login"
 	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationUserLogin))
+	opts = append(opts, http.Operation(OperationCinInterfaceLogin))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
@@ -151,11 +151,11 @@ func (c *UserHTTPClientImpl) Login(ctx context.Context, in *LoginRequest, opts .
 }
 
 // Register 注册
-func (c *UserHTTPClientImpl) Register(ctx context.Context, in *RegisterRequest, opts ...http.CallOption) (*RegisterReply, error) {
+func (c *CinInterfaceHTTPClientImpl) Register(ctx context.Context, in *RegisterReq, opts ...http.CallOption) (*RegisterReply, error) {
 	var out RegisterReply
-	pattern := "user/v1/register"
+	pattern := "/v1/register"
 	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationUserRegister))
+	opts = append(opts, http.Operation(OperationCinInterfaceRegister))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

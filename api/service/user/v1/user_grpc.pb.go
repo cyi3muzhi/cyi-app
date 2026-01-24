@@ -19,12 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	User_CreateUser_FullMethodName     = "/api.service.user.v1.User/CreateUser"
-	User_UpdateUser_FullMethodName     = "/api.service.user.v1.User/UpdateUser"
-	User_DeleteUser_FullMethodName     = "/api.service.user.v1.User/DeleteUser"
-	User_GetUser_FullMethodName        = "/api.service.user.v1.User/GetUser"
-	User_ListUser_FullMethodName       = "/api.service.user.v1.User/ListUser"
-	User_CheckUserExist_FullMethodName = "/api.service.user.v1.User/CheckUserExist"
+	User_CreateUser_FullMethodName        = "/api.service.user.v1.User/CreateUser"
+	User_UpdateUser_FullMethodName        = "/api.service.user.v1.User/UpdateUser"
+	User_DeleteUser_FullMethodName        = "/api.service.user.v1.User/DeleteUser"
+	User_GetUser_FullMethodName           = "/api.service.user.v1.User/GetUser"
+	User_ListUser_FullMethodName          = "/api.service.user.v1.User/ListUser"
+	User_CheckUserExist_FullMethodName    = "/api.service.user.v1.User/CheckUserExist"
+	User_GetUserByUsername_FullMethodName = "/api.service.user.v1.User/GetUserByUsername"
 )
 
 // UserClient is the client API for User service.
@@ -38,6 +39,7 @@ type UserClient interface {
 	ListUser(ctx context.Context, in *ListUserRequest, opts ...grpc.CallOption) (*ListUserReply, error)
 	// 校验账号是否存在
 	CheckUserExist(ctx context.Context, in *CheckUserExistRequest, opts ...grpc.CallOption) (*CheckUserExistReply, error)
+	GetUserByUsername(ctx context.Context, in *GetUserByUsernameReq, opts ...grpc.CallOption) (*GetUserByUsernameReply, error)
 }
 
 type userClient struct {
@@ -108,6 +110,16 @@ func (c *userClient) CheckUserExist(ctx context.Context, in *CheckUserExistReque
 	return out, nil
 }
 
+func (c *userClient) GetUserByUsername(ctx context.Context, in *GetUserByUsernameReq, opts ...grpc.CallOption) (*GetUserByUsernameReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserByUsernameReply)
+	err := c.cc.Invoke(ctx, User_GetUserByUsername_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility.
@@ -119,6 +131,7 @@ type UserServer interface {
 	ListUser(context.Context, *ListUserRequest) (*ListUserReply, error)
 	// 校验账号是否存在
 	CheckUserExist(context.Context, *CheckUserExistRequest) (*CheckUserExistReply, error)
+	GetUserByUsername(context.Context, *GetUserByUsernameReq) (*GetUserByUsernameReply, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -146,6 +159,9 @@ func (UnimplementedUserServer) ListUser(context.Context, *ListUserRequest) (*Lis
 }
 func (UnimplementedUserServer) CheckUserExist(context.Context, *CheckUserExistRequest) (*CheckUserExistReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckUserExist not implemented")
+}
+func (UnimplementedUserServer) GetUserByUsername(context.Context, *GetUserByUsernameReq) (*GetUserByUsernameReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserByUsername not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 func (UnimplementedUserServer) testEmbeddedByValue()              {}
@@ -276,6 +292,24 @@ func _User_CheckUserExist_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_GetUserByUsername_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserByUsernameReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).GetUserByUsername(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_GetUserByUsername_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).GetUserByUsername(ctx, req.(*GetUserByUsernameReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -306,6 +340,10 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckUserExist",
 			Handler:    _User_CheckUserExist_Handler,
+		},
+		{
+			MethodName: "GetUserByUsername",
+			Handler:    _User_GetUserByUsername_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

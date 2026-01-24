@@ -59,6 +59,12 @@ func (m *CreateUserRequest) validate(all bool) error {
 
 	// no validation rules for Name
 
+	// no validation rules for Phone
+
+	// no validation rules for Password
+
+	// no validation rules for Username
+
 	if len(errors) > 0 {
 		return CreateUserRequestMultiError(errors)
 	}
@@ -164,6 +170,10 @@ func (m *CreateUserReply) validate(all bool) error {
 	// no validation rules for Id
 
 	// no validation rules for Name
+
+	// no validation rules for Phone
+
+	// no validation rules for Username
 
 	if len(errors) > 0 {
 		return CreateUserReplyMultiError(errors)
@@ -1049,3 +1059,213 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListUserReplyValidationError{}
+
+// Validate checks the field values on CheckUserExistRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CheckUserExistRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CheckUserExistRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CheckUserExistRequestMultiError, or nil if none found.
+func (m *CheckUserExistRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CheckUserExistRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Phone
+
+	// no validation rules for Username
+
+	if len(errors) > 0 {
+		return CheckUserExistRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CheckUserExistRequestMultiError is an error wrapping multiple validation
+// errors returned by CheckUserExistRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CheckUserExistRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CheckUserExistRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CheckUserExistRequestMultiError) AllErrors() []error { return m }
+
+// CheckUserExistRequestValidationError is the validation error returned by
+// CheckUserExistRequest.Validate if the designated constraints aren't met.
+type CheckUserExistRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CheckUserExistRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CheckUserExistRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CheckUserExistRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CheckUserExistRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CheckUserExistRequestValidationError) ErrorName() string {
+	return "CheckUserExistRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CheckUserExistRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCheckUserExistRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CheckUserExistRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CheckUserExistRequestValidationError{}
+
+// Validate checks the field values on CheckUserExistReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CheckUserExistReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CheckUserExistReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CheckUserExistReplyMultiError, or nil if none found.
+func (m *CheckUserExistReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CheckUserExistReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Exist
+
+	if len(errors) > 0 {
+		return CheckUserExistReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// CheckUserExistReplyMultiError is an error wrapping multiple validation
+// errors returned by CheckUserExistReply.ValidateAll() if the designated
+// constraints aren't met.
+type CheckUserExistReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CheckUserExistReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CheckUserExistReplyMultiError) AllErrors() []error { return m }
+
+// CheckUserExistReplyValidationError is the validation error returned by
+// CheckUserExistReply.Validate if the designated constraints aren't met.
+type CheckUserExistReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CheckUserExistReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CheckUserExistReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CheckUserExistReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CheckUserExistReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CheckUserExistReplyValidationError) ErrorName() string {
+	return "CheckUserExistReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CheckUserExistReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCheckUserExistReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CheckUserExistReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CheckUserExistReplyValidationError{}

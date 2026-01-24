@@ -14,6 +14,7 @@ service User {
 	rpc ListUser (ListUserRequest) returns (ListUserReply);
 	// 校验账号是否存在
 	rpc CheckUserExist (CheckUserExistRequest) returns (CheckUserExistReply);
+	rpc GetUserByUsername(GetUserByUsernameReq) returns (GetUserByUsernameReply);
 }
 
 message CreateUserRequest {
@@ -61,4 +62,13 @@ message CheckUserExistRequest {
 }
 message CheckUserExistReply{
 	bool exist = 1;
+}
+
+message GetUserByUsernameReq {
+    string username = 1;
+}
+
+message GetUserByUsernameReply {
+    int64 id = 1;
+    string username = 2;
 }

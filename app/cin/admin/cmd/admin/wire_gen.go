@@ -9,10 +9,11 @@ package main
 import (
 	"cyi-app/app/cin/admin/internal/conf"
 	"cyi-app/app/cin/admin/internal/server"
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+)
 
+import (
 	_ "go.uber.org/automaxprocs"
 )
 
