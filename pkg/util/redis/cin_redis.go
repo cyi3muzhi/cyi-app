@@ -86,3 +86,23 @@ func GetListRedis(ctx context.Context, rc *redis.Client, key interface{}, value 
 	return json.Unmarshal([]byte(jsonValue[0]), value)
 }
 
+// 分布式锁相关方法
+
+// AcquireDistributedLock 获取分布式锁
+func AcquireDistributedLock(ctx context.Context, rc *redis.Client, key interface{}, expiration time.Duration) bool {
+	keyStr := fmt.Sprintf("%v", key)
+	// 使用Redis SETNX命令获取锁
+	ok, err := rc.SetNX(ctx, keyStr, "1", expiration).Result()
+	if err != nil {
+		fmt.Printf("Failed to acquire distributed lock for %s: %v\n", keyStr, err)
+		return false
+	}
+	return ok
+}
+
+// ReleaseDistributedLock 释放分布式锁
+func ReleaseDistributedLock(ctx context.Context, rc *redis.Client, key interface{}) error {
+	keyStr := fmt.Sprintf("%v", key)
+	// 删除锁
+	return rc.Del(ctx, keyStr).Err()
+}

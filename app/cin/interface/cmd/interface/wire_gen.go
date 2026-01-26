@@ -14,6 +14,8 @@ import (
 	"cyi-app/app/cin/interface/internal/service"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+	"go.opentelemetry.io/otel/sdk/trace"
+	trace2 "go.opentelemetry.io/otel/trace"
 )
 
 import (
@@ -23,7 +25,8 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider) (*kratos.App, func(), error) {
+	traceTracerProvider := provideTracerProvider(tracerProvider)
 	discovery := server.NewDiscovery(registry)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth)
 	client := data.NewRedisClient(confData, logger)
@@ -35,11 +38,18 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	userUseCase := biz.NewUserUseCase(userRepo, logger)
 	authUseCase := biz.NewAuthUseCase(userRepo, auth, logger)
 	cinInterface := service.NewCinInterface(userUseCase, authUseCase, logger)
-	grpcServer := server.NewGRPCServer(confServer, cinInterface, logger)
-	httpServer := server.NewHTTPServer(confServer, cinInterface, logger)
+	grpcServer := server.NewGRPCServer(confServer, auth, logger, traceTracerProvider, cinInterface)
+	httpServer := server.NewHTTPServer(confServer, traceTracerProvider, logger, auth, cinInterface)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {
 		cleanup()
 	}, nil
+}
+
+// wire.go:
+
+// 将 *tracesdk.TracerProvider 转换为 trace.TracerProvider 接口
+func provideTracerProvider(tp *trace.TracerProvider) trace2.TracerProvider {
+	return tp
 }

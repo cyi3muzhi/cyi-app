@@ -34,13 +34,13 @@ type User struct {
 	Username string `json:"username"`
 }
 
-func (uc *AuthUseCase) Register(ctx context.Context, user *User) error {
+func (uc *AuthUseCase) Register(ctx context.Context, in *User) error {
 
 	// 业务逻辑
 	// 查看用户是否存在
-	existingUser, err := uc.userRepo.FindByUsername(ctx, user.Username)
-	if err == nil && existingUser != nil && existingUser.ID != 0 {
-		uc.log.Infof("User already exists: %v", existingUser)
+	user, err := uc.userRepo.FindByUsername(ctx, in.Username)
+	if err == nil && user != nil && user.ID != 0 {
+		uc.log.Infof("User already exists: %v", user)
 		// 用户已存在
 		return v1.ErrorUserAlreadyRegistered("username already exists")
 	}
@@ -53,14 +53,39 @@ func (uc *AuthUseCase) Register(ctx context.Context, user *User) error {
 	}
 
 	// save user
-	if err := uc.userRepo.Save(ctx, user); err != nil {
+	if err := uc.userRepo.Save(ctx, in); err != nil {
 		uc.log.Errorf("Failed to save user: %v", err)
 		return v1.ErrorUserRegisterFailed("save user failed")
 	}
 	return nil
 }
 
-func (u *AuthUseCase) Login(ctx context.Context, user *User) (*User, error) {
+func (uc *AuthUseCase) Login(ctx context.Context, in *User) (*v1.LoginReply, error) {
 
-	return nil, nil
+	// 业务逻辑
+	// 查看用户是否存在
+	user, err := uc.userRepo.FindByUsername(ctx, in.Username)
+	if err != nil {
+		// 用户不存在
+		uc.log.Errorf("User not found: %v", err)
+		return nil, v1.ErrorUserNotFound("user not found")
+	}
+	// check permission(password blacklist etc...)
+	err = uc.userRepo.VerifyPassword(ctx, user, in.Password)
+	if err != nil {
+		// 密码错误
+		uc.log.Errorf("Password error: %v", err)
+		return nil, v1.ErrorPasswordError("password not match")
+	}
+	// // generate token
+	// claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	// 	"user_id": user.Id,
+	// })
+	// signedString, err := claims.SignedString([]byte(uc.key))
+	// if err != nil {
+	// 	return nil, v1.ErrorLoginFailed("generate token failed: %s", err.Error())
+	// }
+	return &v1.LoginReply{
+		// Token: signedString,
+	}, nil
 }

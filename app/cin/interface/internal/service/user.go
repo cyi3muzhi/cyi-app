@@ -21,3 +21,16 @@ func (s *CinInterface) Register(ctx context.Context, req *v1.RegisterReq) (*v1.R
 		Success: true,
 	}, nil
 }
+
+func (s *CinInterface) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginReply, error) {
+	reply, err := s.ac.Login(ctx, &biz.User{
+		Username: req.Username,
+		Password: req.Password,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &v1.LoginReply{
+		Token: reply.Token,
+	}, nil
+}

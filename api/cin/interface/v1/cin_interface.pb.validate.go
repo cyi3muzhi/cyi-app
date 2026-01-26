@@ -79,17 +79,6 @@ func (m *LoginRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if !_LoginRequest_Phone_Pattern.MatchString(m.GetPhone()) {
-		err := LoginRequestValidationError{
-			field:  "Phone",
-			reason: "value does not match regex pattern \"^1[3-9]\\\\d{9}$\"",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if l := utf8.RuneCountInString(m.GetPassword()); l < 6 || l > 20 {
 		err := LoginRequestValidationError{
 			field:  "Password",
@@ -180,8 +169,6 @@ var _ interface {
 
 var _LoginRequest_Username_Pattern = regexp.MustCompile("^[\\w\\p{Han}]+$")
 
-var _LoginRequest_Phone_Pattern = regexp.MustCompile("^1[3-9]\\d{9}$")
-
 // Validate checks the field values on LoginReply with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -204,56 +191,7 @@ func (m *LoginReply) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetToken()); l < 10 || l > 128 {
-		err := LoginReplyValidationError{
-			field:  "Token",
-			reason: "value length must be between 10 and 128 runes, inclusive",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if m.GetInfo() == nil {
-		err := LoginReplyValidationError{
-			field:  "Info",
-			reason: "value is required",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if all {
-		switch v := interface{}(m.GetInfo()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, LoginReplyValidationError{
-					field:  "Info",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, LoginReplyValidationError{
-					field:  "Info",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetInfo()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return LoginReplyValidationError{
-				field:  "Info",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Token
 
 	if len(errors) > 0 {
 		return LoginReplyMultiError(errors)
@@ -488,7 +426,7 @@ func (m *RegisterReply) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Id
+	// no validation rules for Success
 
 	if len(errors) > 0 {
 		return RegisterReplyMultiError(errors)
@@ -775,153 +713,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetUserInfoReplyValidationError{}
-
-// Validate checks the field values on LoginReply_UserInfo with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *LoginReply_UserInfo) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on LoginReply_UserInfo with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// LoginReply_UserInfoMultiError, or nil if none found.
-func (m *LoginReply_UserInfo) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *LoginReply_UserInfo) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if m.GetId() <= 0 {
-		err := LoginReply_UserInfoValidationError{
-			field:  "Id",
-			reason: "value must be greater than 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if l := utf8.RuneCountInString(m.GetUsername()); l < 2 || l > 24 {
-		err := LoginReply_UserInfoValidationError{
-			field:  "Username",
-			reason: "value length must be between 2 and 24 runes, inclusive",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if !_LoginReply_UserInfo_Username_Pattern.MatchString(m.GetUsername()) {
-		err := LoginReply_UserInfoValidationError{
-			field:  "Username",
-			reason: "value does not match regex pattern \"^[\\\\w\\\\p{Han}]+$\"",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if !_LoginReply_UserInfo_Phone_Pattern.MatchString(m.GetPhone()) {
-		err := LoginReply_UserInfoValidationError{
-			field:  "Phone",
-			reason: "value does not match regex pattern \"^1[3-9]\\\\d{9}$\"",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if len(errors) > 0 {
-		return LoginReply_UserInfoMultiError(errors)
-	}
-
-	return nil
-}
-
-// LoginReply_UserInfoMultiError is an error wrapping multiple validation
-// errors returned by LoginReply_UserInfo.ValidateAll() if the designated
-// constraints aren't met.
-type LoginReply_UserInfoMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m LoginReply_UserInfoMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m LoginReply_UserInfoMultiError) AllErrors() []error { return m }
-
-// LoginReply_UserInfoValidationError is the validation error returned by
-// LoginReply_UserInfo.Validate if the designated constraints aren't met.
-type LoginReply_UserInfoValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e LoginReply_UserInfoValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e LoginReply_UserInfoValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e LoginReply_UserInfoValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e LoginReply_UserInfoValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e LoginReply_UserInfoValidationError) ErrorName() string {
-	return "LoginReply_UserInfoValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e LoginReply_UserInfoValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sLoginReply_UserInfo.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = LoginReply_UserInfoValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = LoginReply_UserInfoValidationError{}
-
-var _LoginReply_UserInfo_Username_Pattern = regexp.MustCompile("^[\\w\\p{Han}]+$")
-
-var _LoginReply_UserInfo_Phone_Pattern = regexp.MustCompile("^1[3-9]\\d{9}$")

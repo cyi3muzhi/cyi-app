@@ -50,3 +50,31 @@ func IsUserRegisterFailed(err error) bool {
 func ErrorUserRegisterFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(400, CinInterfaceErrorReason_USER_REGISTER_FAILED.String(), fmt.Sprintf(format, args...))
 }
+
+// 用户不存在
+func IsUserNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == CinInterfaceErrorReason_USER_NOT_FOUND.String() && e.Code == 404
+}
+
+// 用户不存在
+func ErrorUserNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(404, CinInterfaceErrorReason_USER_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+}
+
+// 密码错误
+func IsPasswordError(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == CinInterfaceErrorReason_PASSWORD_ERROR.String() && e.Code == 400
+}
+
+// 密码错误
+func ErrorPasswordError(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, CinInterfaceErrorReason_PASSWORD_ERROR.String(), fmt.Sprintf(format, args...))
+}

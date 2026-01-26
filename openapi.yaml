@@ -6,7 +6,26 @@ info:
     title: CinInterface API
     version: 0.0.1
 paths:
-    /v1/register:
+    /user/v1/login:
+        post:
+            tags:
+                - CinInterface
+            description: 登录
+            operationId: CinInterface_Login
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.LoginRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.LoginReply'
+    /user/v1/register:
         post:
             tags:
                 - CinInterface
@@ -45,25 +64,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.GetUserInfoReply'
-    user/v1/login:
-        post:
-            tags:
-                - CinInterface
-            description: 登录
-            operationId: CinInterface_Login
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/api.cin.interface.v1.LoginRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/api.cin.interface.v1.LoginReply'
 components:
     schemas:
         api.cin.interface.v1.GetUserInfoReply:
@@ -80,28 +80,15 @@ components:
             properties:
                 token:
                     type: string
-                info:
-                    $ref: '#/components/schemas/api.cin.interface.v1.LoginReply_UserInfo'
-        api.cin.interface.v1.LoginReply_UserInfo:
-            type: object
-            properties:
-                id:
-                    type: string
-                username:
-                    type: string
-                phone:
-                    type: string
-                    description: 'string email = 3 [(validate.rules).string = {email: true}];'
         api.cin.interface.v1.LoginRequest:
             type: object
             properties:
                 username:
                     type: string
                     description: 用户名或手机号 可以为空
-                phone:
-                    type: string
                 password:
                     type: string
+                    description: 'string phone = 2 [(validate.rules).string = {pattern: "^1[3-9]\\d{9}$"}];'
         api.cin.interface.v1.RegisterReply:
             type: object
             properties:

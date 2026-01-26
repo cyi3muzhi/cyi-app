@@ -34,8 +34,8 @@ type CinInterfaceHTTPServer interface {
 
 func RegisterCinInterfaceHTTPServer(s *http.Server, srv CinInterfaceHTTPServer) {
 	r := s.Route("/")
-	r.POST("user/v1/login", _CinInterface_Login0_HTTP_Handler(srv))
-	r.POST("/v1/register", _CinInterface_Register0_HTTP_Handler(srv))
+	r.POST("/user/v1/login", _CinInterface_Login0_HTTP_Handler(srv))
+	r.POST("/user/v1/register", _CinInterface_Register0_HTTP_Handler(srv))
 	r.GET("user/v1/get/{id}", _CinInterface_GetUserInfo0_HTTP_Handler(srv))
 }
 
@@ -139,7 +139,7 @@ func (c *CinInterfaceHTTPClientImpl) GetUserInfo(ctx context.Context, in *GetUse
 // Login 登录
 func (c *CinInterfaceHTTPClientImpl) Login(ctx context.Context, in *LoginRequest, opts ...http.CallOption) (*LoginReply, error) {
 	var out LoginReply
-	pattern := "user/v1/login"
+	pattern := "/user/v1/login"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationCinInterfaceLogin))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -153,7 +153,7 @@ func (c *CinInterfaceHTTPClientImpl) Login(ctx context.Context, in *LoginRequest
 // Register 注册
 func (c *CinInterfaceHTTPClientImpl) Register(ctx context.Context, in *RegisterReq, opts ...http.CallOption) (*RegisterReply, error) {
 	var out RegisterReply
-	pattern := "/v1/register"
+	pattern := "/user/v1/register"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationCinInterfaceRegister))
 	opts = append(opts, http.PathTemplate(pattern))

@@ -9,6 +9,8 @@ import (
 type UserRepo interface {
 	FindByUsername(ctx context.Context, username string) (*User, error)
 	Save(ctx context.Context, user *User) error
+	// 校验密码是否正确
+	VerifyPassword(ctx context.Context, user *User, password string) error
 }
 
 type UserUseCase struct {
