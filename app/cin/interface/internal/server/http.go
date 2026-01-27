@@ -22,10 +22,9 @@ import (
 )
 
 func NewWhiteListMatcher() selector.MatchFunc {
-
 	whiteList := make(map[string]struct{})
-	whiteList["/shop.interface.v1.ShopInterface/Login"] = struct{}{}
-	whiteList["/shop.interface.v1.ShopInterface/Register"] = struct{}{}
+	whiteList[v1.OperationCinInterfaceLogin] = struct{}{}
+	whiteList[v1.OperationCinInterfaceRegister] = struct{}{}
 	return func(ctx context.Context, operation string) bool {
 		if _, ok := whiteList[operation]; ok {
 			return false

@@ -69,3 +69,22 @@ services:
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
+
+  # Jaeger服务 - 用于分布式追踪
+  jaeger:
+    image: jaegertracing/all-in-one:1.49
+    container_name: cin_jaeger
+    restart: always
+    ports:
+      - "16686:16686"  # Jaeger UI端口
+      - "14268:14268"  # Jaeger收集器端口（HTTP）
+      - "14250:14250"  # Jaeger收集器端口（gRPC）
+      - "6831:6831/udp"  # Jaeger Thrift 二进制端口
+      - "6832:6832/udp"  # Jaeger Thrift 压缩端口
+      - "4318:4318"  # OTLP gRPC端口
+      - "4317:4317"  # OTLP HTTP端口
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true  # 启用OTLP收集器
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411  # 启用Zipkin收集器
+    command:
+      - --log-level=info

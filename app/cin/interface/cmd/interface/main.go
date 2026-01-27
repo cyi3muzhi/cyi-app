@@ -91,6 +91,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println(bc.Trace.Endpoint)
 	tp := tracesdk.NewTracerProvider(
 		tracesdk.WithBatcher(exp),
 		tracesdk.WithResource(resource.NewSchemaless(
