@@ -7,6 +7,14 @@ import (
 	"cyi-app/app/service/user/internal/pkg/encryption"
 )
 
+type User struct {
+	ID       int64
+	Name     string
+	Phone    string
+	Password string
+	Username string
+}
+
 type UserRepo interface {
 	CreateUser(ctx context.Context, u *User) (*User, error)
 	GetUser(ctx context.Context, u *User) (*User, error)
