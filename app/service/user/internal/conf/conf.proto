@@ -8,6 +8,8 @@ import "google/protobuf/duration.proto";
 message Bootstrap {
   Server server = 1;
   Data data = 2;
+  Auth auth = 3;
+  Trace trace = 4;
 }
 
 message Server {
@@ -52,4 +54,12 @@ message Registry {
         int32 check_interval = 9;  // 健康检查间隔(秒)
     }
     Consul consul = 1;
+}
+
+message Auth {
+    string api_key = 1;
+}
+
+message Trace {
+    string endpoint = 1;
 }

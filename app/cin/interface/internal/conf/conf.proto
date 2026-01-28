@@ -64,3 +64,13 @@ message Auth {
 message Trace {
     string endpoint = 1;
 }
+
+// 认证白名单
+message AuthWhiteList {
+    repeated string white_list = 1;
+}
+
+// 事务管理名单
+message TransactionList {
+    repeated string transactions = 1;
+}

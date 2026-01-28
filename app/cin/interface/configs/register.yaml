@@ -1,0 +1,5 @@
+consul:
+  address: 127.0.0.1:8500
+  scheme: http
+  enable_health_check: true
+  check_interval: 2

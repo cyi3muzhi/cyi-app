@@ -22,7 +22,7 @@ var userCacheKey = func(username string) string {
 
 type userRepo struct {
 	data  *Data
-	db    *gorm.DB
+	db    func(ctx context.Context) *gorm.DB
 	cache *redis.Client
 	log   *log.Helper
 }
@@ -39,7 +39,7 @@ func (r *userRepo) CreateUser(ctx context.Context, u *biz.User) (*biz.User, erro
 		Username: u.Username,
 	}
 	// 使用userDB方法简化调用
-	if err := userImp.UserRepo[mod.User](r.db).Create(ctx, user); err != nil {
+	if err := userImp.UserRepo[mod.User](r.db(ctx)).Create(ctx, user); err != nil {
 		return nil, err
 	}
 	// cache
@@ -56,7 +56,7 @@ func (r *userRepo) CreateUser(ctx context.Context, u *biz.User) (*biz.User, erro
 }
 
 func (r *userRepo) GetUser(ctx context.Context, u *biz.User) (*biz.User, error) {
-	user, err := userImp.UserRepo[mod.User](r.db).QueryWith(ctx, mod.User{
+	user, err := userImp.UserRepo[mod.User](r.db(ctx)).QueryWith(ctx, mod.User{
 		Phone:    u.Phone,
 		Username: u.Username,
 	})
@@ -89,7 +89,7 @@ func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.Us
 	}
 
 	// 3. 缓存未命中或错误，查询数据库
-	target, err = userImp.UserRepo[*mod.User](r.db).QueryWith(ctx, mod.User{
+	target, err = userImp.UserRepo[*mod.User](r.db(ctx)).QueryWith(ctx, mod.User{
 		Username: username,
 	})
 

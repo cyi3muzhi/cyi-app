@@ -74,6 +74,15 @@ func main() {
 		panic(err)
 	}
 
+	var awl conf.AuthWhiteList
+	if err = c.Scan(&awl); err != nil {
+		panic(err)
+	}
+	fmt.Println("awl:", awl)
+	var tl conf.TransactionList
+	if err = c.Scan(&tl); err != nil {
+		panic(err)
+	}
 	logger := log.With(log.NewStdLogger(os.Stdout),
 		"ts", log.DefaultTimestamp,
 		"caller", log.DefaultCaller,
@@ -91,7 +100,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(bc.Trace.Endpoint)
 	tp := tracesdk.NewTracerProvider(
 		tracesdk.WithBatcher(exp),
 		tracesdk.WithResource(resource.NewSchemaless(
@@ -99,7 +107,7 @@ func main() {
 		)),
 	)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, &cb, logger, tp)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, &cb, logger, tp, &awl, &tl)
 	if err != nil {
 		panic(err)
 	}

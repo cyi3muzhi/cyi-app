@@ -4,6 +4,7 @@ import (
 	"context"
 	"cyi-app/app/service/user/internal/conf"
 	mod "cyi-app/app/service/user/internal/data/models"
+	"fmt"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -24,7 +25,7 @@ var ProviderSet = wire.NewSet(
 )
 
 type Data struct {
-	db    *gorm.DB
+	db    func(ctx context.Context) *gorm.DB
 	cache *redis.Client
 }
 
@@ -34,8 +35,18 @@ func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, logger log.Logger) 
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
+	// 获取事务数据库
+	getTxDB := func(ctx context.Context) *gorm.DB {
+		fmt.Println("ctx:", ctx.Value("tx_db"))
+		if txDB, ok := ctx.Value("tx_db").(*gorm.DB); ok {
+			fmt.Println("txDB:", txDB)
+			return txDB
+		}
+		return db
+	}
+
 	return &Data{
-		db:    db,
+		db:    getTxDB,
 		cache: cache,
 	}, cleanup, nil
 }

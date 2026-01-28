@@ -14,6 +14,8 @@ import (
 	"cyi-app/app/service/user/internal/service"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+	"go.opentelemetry.io/otel/sdk/trace"
+	trace2 "go.opentelemetry.io/otel/trace"
 )
 
 import (
@@ -23,7 +25,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider) (*kratos.App, func(), error) {
 	db := data.NewDB(confData)
 	client := data.NewRedisClient(confData, logger)
 	dataData, cleanup, err := data.NewData(confData, db, client, logger)
@@ -33,10 +35,18 @@ func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Regist
 	userRepo := data.NewUserRepo(dataData, logger)
 	userUseCase := biz.NewUserUseCase(userRepo)
 	userService := service.NewUserService(userUseCase, logger)
-	grpcServer := server.NewGRPCServer(confServer, userService, logger)
+	traceTracerProvider := provideTracerProvider(tracerProvider)
+	grpcServer := server.NewGRPCServer(confServer, userService, traceTracerProvider, auth, logger)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, grpcServer, registrar)
 	return app, func() {
 		cleanup()
 	}, nil
+}
+
+// wire.go:
+
+// 将 *tracesdk.TracerProvider 转换为 trace.TracerProvider 接口
+func provideTracerProvider(tp *trace.TracerProvider) trace2.TracerProvider {
+	return tp
 }
