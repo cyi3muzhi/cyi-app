@@ -10,16 +10,19 @@ import (
 	jwt2 "github.com/golang-jwt/jwt/v5"
 )
 
-func NewWhiteListMatcher(awl []string) selector.MatchFunc {
+
+
+//  创建白名单匹配器
+func NewWhiteListMatcher(wl []string) selector.MatchFunc {
 	whiteList := make(map[string]struct{})
-	if awl == nil {
+	if wl == nil {
 		whiteList[v1.OperationCinInterfaceLogin] = struct{}{}
 		whiteList[v1.OperationCinInterfaceRegister] = struct{}{}
 		return func(ctx context.Context, operation string) bool {
 			return false
 		}
 	}
-	for _, op := range awl {
+	for _, op := range wl {
 		whiteList[op] = struct{}{}
 	}
 	return func(ctx context.Context, operation string) bool {
@@ -30,6 +33,7 @@ func NewWhiteListMatcher(awl []string) selector.MatchFunc {
 	}
 }
 
+//  服务端认证中间件
 func AuthServiceMiddleware(auth Auth) middleware.Middleware {
 	if auth.ApiKey == "" {
 		panic("AuthMiddleware: ApiKey is empty")
@@ -52,6 +56,7 @@ func AuthServiceMiddleware(auth Auth) middleware.Middleware {
 	}))
 }
 
+//  客户端认证中间件
 func AuthClientMiddleware(auth Auth) middleware.Middleware {
 	return jwt.Client(func(token *jwt2.Token) (interface{}, error) {
 		return []byte(auth.ServiceKey), nil
