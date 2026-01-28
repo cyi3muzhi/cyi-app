@@ -25,11 +25,16 @@ func NewHTTPServer(
 	tx *gorm.DB,
 ) *http.Server {
 	// 合并默认中间件和自定义中间件
-	allMiddlewares := cmid.GetDefaultMiddlewares(tp, logger, auth.ApiKey, authWhiteList.WhiteList)
+	middlewares := cmid.GetMiddlewares(tp, logger,
+		cmid.WithAuthMiddleware(cmid.Auth{
+			ApiKey:    auth.ApiKey,
+			WhiteList: authWhiteList.WhiteList,
+		}),
+	)
 	// 事务管理中间件
-	allMiddlewares = append(allMiddlewares, cmid.TransactionMiddleware(tx, transactionList.Transactions))
+	// allMiddlewares = append(allMiddlewares, cmid.TransactionMiddleware(tx, transactionList.Transactions))
 
-	var opts = cmid.NewHttpServerOpt(allMiddlewares...)
+	var opts = cmid.NewHttpServerOpt(middlewares...)
 	if c.Http.Network != "" {
 		opts = append(opts, http.Network(c.Http.Network))
 	}
