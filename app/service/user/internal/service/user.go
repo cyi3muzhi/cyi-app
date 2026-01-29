@@ -104,3 +104,14 @@ func (s *UserService) GetUserByUsername(ctx context.Context, in *pb.GetUserByUse
 		Username: user.Username,
 	}, nil
 }
+
+// 校验密码
+func (s *UserService)VerifyPassword(ctx context.Context, in *pb.VerifyPasswordRequest)(*pb.VerifyPasswordReply,error){
+	if err := s.uc.VerifyPassword(ctx,&biz.User{
+		Username: in.Username,
+		Password: in.Password,
+	}); err !=nil {
+		return &pb.VerifyPasswordReply{Valid: false},err
+	}
+	return &pb.VerifyPasswordReply{Valid: true},nil
+}

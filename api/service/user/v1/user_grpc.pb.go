@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	User_CreateUser_FullMethodName         = "/api.service.user.v1.User/CreateUser"
-	User_UpdateUser_FullMethodName         = "/api.service.user.v1.User/UpdateUser"
-	User_DeleteUser_FullMethodName         = "/api.service.user.v1.User/DeleteUser"
-	User_GetUser_FullMethodName            = "/api.service.user.v1.User/GetUser"
-	User_ListUser_FullMethodName           = "/api.service.user.v1.User/ListUser"
-	User_CheckUserExist_FullMethodName     = "/api.service.user.v1.User/CheckUserExist"
-	User_GetUserByUsername_FullMethodName  = "/api.service.user.v1.User/GetUserByUsername"
-	User_VerifyUserPassword_FullMethodName = "/api.service.user.v1.User/VerifyUserPassword"
+	User_CreateUser_FullMethodName        = "/api.service.user.v1.User/CreateUser"
+	User_UpdateUser_FullMethodName        = "/api.service.user.v1.User/UpdateUser"
+	User_DeleteUser_FullMethodName        = "/api.service.user.v1.User/DeleteUser"
+	User_GetUser_FullMethodName           = "/api.service.user.v1.User/GetUser"
+	User_ListUser_FullMethodName          = "/api.service.user.v1.User/ListUser"
+	User_CheckUserExist_FullMethodName    = "/api.service.user.v1.User/CheckUserExist"
+	User_GetUserByUsername_FullMethodName = "/api.service.user.v1.User/GetUserByUsername"
+	User_VerifyPassword_FullMethodName    = "/api.service.user.v1.User/VerifyPassword"
 )
 
 // UserClient is the client API for User service.
@@ -42,7 +42,7 @@ type UserClient interface {
 	CheckUserExist(ctx context.Context, in *CheckUserExistRequest, opts ...grpc.CallOption) (*CheckUserExistReply, error)
 	GetUserByUsername(ctx context.Context, in *GetUserByUsernameReq, opts ...grpc.CallOption) (*GetUserByUsernameReply, error)
 	// 校验密码是否正确
-	VerifyUserPassword(ctx context.Context, in *VerifyUserPasswordRequest, opts ...grpc.CallOption) (*VerifyUserPasswordReply, error)
+	VerifyPassword(ctx context.Context, in *VerifyPasswordRequest, opts ...grpc.CallOption) (*VerifyPasswordReply, error)
 }
 
 type userClient struct {
@@ -123,10 +123,10 @@ func (c *userClient) GetUserByUsername(ctx context.Context, in *GetUserByUsernam
 	return out, nil
 }
 
-func (c *userClient) VerifyUserPassword(ctx context.Context, in *VerifyUserPasswordRequest, opts ...grpc.CallOption) (*VerifyUserPasswordReply, error) {
+func (c *userClient) VerifyPassword(ctx context.Context, in *VerifyPasswordRequest, opts ...grpc.CallOption) (*VerifyPasswordReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(VerifyUserPasswordReply)
-	err := c.cc.Invoke(ctx, User_VerifyUserPassword_FullMethodName, in, out, cOpts...)
+	out := new(VerifyPasswordReply)
+	err := c.cc.Invoke(ctx, User_VerifyPassword_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ type UserServer interface {
 	CheckUserExist(context.Context, *CheckUserExistRequest) (*CheckUserExistReply, error)
 	GetUserByUsername(context.Context, *GetUserByUsernameReq) (*GetUserByUsernameReply, error)
 	// 校验密码是否正确
-	VerifyUserPassword(context.Context, *VerifyUserPasswordRequest) (*VerifyUserPasswordReply, error)
+	VerifyPassword(context.Context, *VerifyPasswordRequest) (*VerifyPasswordReply, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -178,8 +178,8 @@ func (UnimplementedUserServer) CheckUserExist(context.Context, *CheckUserExistRe
 func (UnimplementedUserServer) GetUserByUsername(context.Context, *GetUserByUsernameReq) (*GetUserByUsernameReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserByUsername not implemented")
 }
-func (UnimplementedUserServer) VerifyUserPassword(context.Context, *VerifyUserPasswordRequest) (*VerifyUserPasswordReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method VerifyUserPassword not implemented")
+func (UnimplementedUserServer) VerifyPassword(context.Context, *VerifyPasswordRequest) (*VerifyPasswordReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyPassword not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 func (UnimplementedUserServer) testEmbeddedByValue()              {}
@@ -328,20 +328,20 @@ func _User_GetUserByUsername_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _User_VerifyUserPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(VerifyUserPasswordRequest)
+func _User_VerifyPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyPasswordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServer).VerifyUserPassword(ctx, in)
+		return srv.(UserServer).VerifyPassword(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: User_VerifyUserPassword_FullMethodName,
+		FullMethod: User_VerifyPassword_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServer).VerifyUserPassword(ctx, req.(*VerifyUserPasswordRequest))
+		return srv.(UserServer).VerifyPassword(ctx, req.(*VerifyPasswordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -382,8 +382,8 @@ var User_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _User_GetUserByUsername_Handler,
 		},
 		{
-			MethodName: "VerifyUserPassword",
-			Handler:    _User_VerifyUserPassword_Handler,
+			MethodName: "VerifyPassword",
+			Handler:    _User_VerifyPassword_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

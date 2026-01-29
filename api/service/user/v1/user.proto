@@ -16,7 +16,7 @@ service User {
 	rpc CheckUserExist (CheckUserExistRequest) returns (CheckUserExistReply);
 	rpc GetUserByUsername(GetUserByUsernameReq) returns (GetUserByUsernameReply);
 	// 校验密码是否正确
-	rpc VerifyUserPassword (VerifyUserPasswordRequest) returns (VerifyUserPasswordReply);
+	rpc VerifyPassword (VerifyPasswordRequest) returns (VerifyPasswordReply);
 }
 
 message CreateUserRequest {
@@ -75,13 +75,13 @@ message GetUserByUsernameReply {
     string username = 2;
 }
 
-message VerifyUserPasswordRequest {
-	// 用户正确密码
-	string password = 1;
-	// 校验的密码
-	string verify_password = 2;
+message VerifyPasswordRequest {
+	// 账号
+	string username = 1;
+	// 密码
+	string password = 2;
 }
 
-message VerifyUserPasswordReply {
+message VerifyPasswordReply {
     bool valid = 1;
 }

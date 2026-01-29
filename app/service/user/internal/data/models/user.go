@@ -61,4 +61,7 @@ type UserRepo[T any] interface {
 	// INSERT INTO @@table (name, phone, password, username)
 	// VALUES (@user.Name, @user.Phone, @user.Password, @user.Username)
 	CreateUser(user User) (User, error)
+
+	// 根据用户账号查询指定用户字段
+	// SELECT 
 }

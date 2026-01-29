@@ -19,6 +19,7 @@ type UserRepo interface {
 	CreateUser(ctx context.Context, u *User) (*User, error)
 	GetUser(ctx context.Context, u *User) (*User, error)
 	FindByUsername(ctx context.Context, username string) (*User, error)
+	VerifyPassword(ctx context.Context, u *User) error
 }
 
 type UserUseCase struct {
@@ -53,4 +54,9 @@ func (uc *UserUseCase) GetUserByUsername(ctx context.Context, in *v1.GetUserByUs
 		return nil, v1.ErrorUserNotFound("%s", err.Error())
 	}
 	return user, nil
+}
+
+// 校验密码
+func (uc *UserUseCase)VerifyPassword(ctx context.Context, u *User)error{
+	return uc.repo.VerifyPassword(ctx,u)
 }

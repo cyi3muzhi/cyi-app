@@ -80,9 +80,9 @@ func (rp *userRepo) Save(ctx context.Context, u *biz.User) error {
 
 // VerifyPassword 校验密码是否正确
 func (rp *userRepo) VerifyPassword(ctx context.Context, u *biz.User, password string) error {
-	_, err := rp.data.uc.VerifyUserPassword(ctx, &usV1.VerifyUserPasswordRequest{
-		Password:       u.Password,
-		VerifyPassword: password,
+	_, err := rp.data.uc.VerifyPassword(ctx, &usV1.VerifyPasswordRequest{
+		Password: password,
+		Username: u.Username,
 	})
 	return err
 }

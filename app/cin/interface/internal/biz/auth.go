@@ -9,6 +9,7 @@ import (
 	usv1 "cyi-app/api/service/user/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type AuthUseCase struct {
@@ -77,15 +78,15 @@ func (uc *AuthUseCase) Login(ctx context.Context, in *User) (*v1.LoginReply, err
 		uc.log.Errorf("Password error: %v", err)
 		return nil, v1.ErrorPasswordError("password not match")
 	}
-	// // generate token
-	// claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-	// 	"user_id": user.Id,
-	// })
-	// signedString, err := claims.SignedString([]byte(uc.key))
-	// if err != nil {
-	// 	return nil, v1.ErrorLoginFailed("generate token failed: %s", err.Error())
-	// }
+	// generate token
+	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.ID,
+	})
+	signedString, err := claims.SignedString([]byte(uc.key))
+	if err != nil {
+		return nil, err
+	}
 	return &v1.LoginReply{
-		// Token: signedString,
+		Token: signedString,
 	}, nil
 }

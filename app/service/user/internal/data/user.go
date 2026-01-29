@@ -8,6 +8,7 @@ import (
 	"cyi-app/app/service/user/internal/biz"
 	mod "cyi-app/app/service/user/internal/data/models"
 	userImp "cyi-app/app/service/user/internal/data/models/user"
+	"cyi-app/app/service/user/internal/pkg/encryption"
 
 	cr "cyi-app/pkg/util/redis"
 
@@ -22,7 +23,7 @@ var userCacheKey = func(username string) string {
 
 type userRepo struct {
 	data  *Data
-	db    func(ctx context.Context) *gorm.DB
+	db    *gorm.DB
 	cache *redis.Client
 	log   *log.Helper
 }
@@ -39,7 +40,7 @@ func (r *userRepo) CreateUser(ctx context.Context, u *biz.User) (*biz.User, erro
 		Username: u.Username,
 	}
 	// 使用userDB方法简化调用
-	if err := userImp.UserRepo[mod.User](r.db(ctx)).Create(ctx, user); err != nil {
+	if err := userImp.UserRepo[mod.User](r.db).Create(ctx, user); err != nil {
 		return nil, err
 	}
 	// cache
@@ -56,7 +57,7 @@ func (r *userRepo) CreateUser(ctx context.Context, u *biz.User) (*biz.User, erro
 }
 
 func (r *userRepo) GetUser(ctx context.Context, u *biz.User) (*biz.User, error) {
-	user, err := userImp.UserRepo[mod.User](r.db(ctx)).QueryWith(ctx, mod.User{
+	user, err := userImp.UserRepo[mod.User](r.db).QueryWith(ctx, mod.User{
 		Phone:    u.Phone,
 		Username: u.Username,
 	})
@@ -89,7 +90,7 @@ func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.Us
 	}
 
 	// 3. 缓存未命中或错误，查询数据库
-	target, err = userImp.UserRepo[*mod.User](r.db(ctx)).QueryWith(ctx, mod.User{
+	target, err = userImp.UserRepo[*mod.User](r.db).QueryWith(ctx, mod.User{
 		Username: username,
 	})
 
@@ -115,4 +116,20 @@ func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.Us
 		Phone:    target.Phone,
 		Username: target.Username,
 	}, nil
+}
+
+func (r *userRepo) VerifyPassword(ctx context.Context, u *biz.User) error {
+	// 查询用户密码
+	target, err := userImp.UserRepo[*mod.User](r.db).QueryWith(ctx, mod.User{
+		Username: u.Username,
+	})
+	if err != nil {
+		return err
+	}
+	ok := encryption.CheckPassword(u.Password, target.Password)
+	if ok {
+		r.log.Warnf("Password verification failed for user %s", u.Username)
+		return nil
+	}
+	return errors.New("密码不匹配")
 }
