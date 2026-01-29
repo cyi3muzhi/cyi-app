@@ -38,3 +38,5 @@ bin/
 *.swp
 study/
 *.exe
+logs/
+.trae/

@@ -112,7 +112,6 @@ func NewConsulRegistry(opts *ConsulRegistryOptions) (*consul.Registry, error) {
 
 	// 修复健康检查间隔逻辑：只有当间隔大于0时才添加
 	if opts.CheckInterval > 0 {
-		fmt.Printf("Using health check interval: %d\n", opts.CheckInterval)
 		consulOpts = append(consulOpts, consul.WithHealthCheckInterval(int(opts.CheckInterval)))
 	}
 

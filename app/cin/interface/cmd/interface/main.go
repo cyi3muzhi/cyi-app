@@ -3,13 +3,15 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"cyi-app/app/cin/interface/internal/conf"
-
-	"github.com/google/uuid"
+	logutil "cyi-app/pkg/util/log"
 
 	consulConfig "cyi-app/pkg/util/config"
 	cgrpc "cyi-app/pkg/util/grpc"
+
+	tr "cyi-app/pkg/util/tracing"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
@@ -17,8 +19,8 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/google/uuid"
 	_ "go.uber.org/automaxprocs"
-	tr "cyi-app/pkg/util/tracing"
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
@@ -28,7 +30,8 @@ var (
 	// Version is the version of the compiled software.
 	Version string = cgrpc.CIN_VERSION
 
-	id = uuid.NewString()
+	// 小写切去掉中间“-”
+	id = strings.ReplaceAll(strings.ToLower(uuid.NewString()), "-", "")
 )
 
 func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, reg registry.Registrar) *kratos.App {
@@ -78,9 +81,19 @@ func main() {
 	if err = c.Scan(&tl); err != nil {
 		panic(err)
 	}
-	logger := log.With(log.NewStdLogger(os.Stdout),
-		"ts", log.DefaultTimestamp,
-		"caller", log.DefaultCaller,
+	// 创建zerolog适配器
+	zerologAdapter := logutil.NewZerologAdapterWithConfig(&logutil.LogConfig{
+		Level:               bc.Log.Level,
+		EnableConsoleOutput: bc.Log.EnableConsole,
+		EnableFileOutput:    bc.Log.EnableFile,
+		LogDir:              bc.Log.LogDir,
+		TimeFormat:          bc.Log.TimeFormat,
+		EnableColor:         bc.Log.EnableColor,
+		ServiceName:         Name,
+	})
+
+	// 创建增强版日志器
+	logger := log.With(zerologAdapter,
 		"service.id", id,
 		"service.name", Name,
 		"service.version", Version,

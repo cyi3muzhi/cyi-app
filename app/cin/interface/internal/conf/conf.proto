@@ -10,6 +10,7 @@ message Bootstrap {
   Data data = 2;
   Auth auth = 3;
   Trace trace = 4;
+  Log log = 5;
 }
 
 message Server {
@@ -73,4 +74,14 @@ message AuthWhiteList {
 // 事务管理名单
 message TransactionList {
     repeated string transactions = 1;
+}
+
+// 日志配置
+message Log {
+    string level = 1; // 日志级别
+    bool enable_console = 2; // 是否启用控制台输出
+    bool enable_file = 3; // 是否启用文件输出
+    string log_dir = 4; // 日志目录
+    string time_format = 5; // 时间格式
+    bool enable_color = 6; // 是否启用颜色
 }
