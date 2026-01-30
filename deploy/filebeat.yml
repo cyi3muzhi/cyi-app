@@ -1,0 +1,47 @@
+﻿filebeat.inputs:
+# 用户服务日志
+- type: log
+  enabled: true
+  paths:
+    - /logs/user-service/*.log
+  encoding: utf-8
+  multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+  multiline.negate: true
+  multiline.match: after
+  fields:
+    service: user-service
+    environment: development
+
+# 接口服务日志
+- type: log
+  enabled: true
+  paths:
+    - /logs/interface-service/*.log
+  encoding: utf-8
+  multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+  multiline.negate: true
+  multiline.match: after
+  fields:
+    service: interface-service
+    environment: development
+
+output.elasticsearch:
+  hosts: ["cyi-app-elasticsearch:9200"]
+  index: "cyi-app-logs-%{+yyyy.MM.dd}"
+
+# 禁用 ILM，使用自定义索引名称
+setup.ilm.enabled: false
+
+# 索引模板设置
+setup.template.name: "cyi-app-logs"
+setup.template.pattern: "cyi-app-logs-*"
+setup.template.enabled: true
+setup.template.overwrite: true
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /usr/share/filebeat/logs
+  name: filebeat.log
+  keepfiles: 7
+  permissions: 0644

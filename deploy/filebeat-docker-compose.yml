@@ -1,0 +1,17 @@
+﻿version: '3.8'
+
+services:
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.10
+    container_name: cyi-app-filebeat
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - e:/me/cyi-app/app/service/user/cmd/user/logs:/logs/user-service:ro
+      - e:/me/cyi-app/app/cin/interface/cmd/interface/logs:/logs/interface-service:ro
+    networks:
+      - deploy_default
+    command: filebeat -e -strict.perms=false
+
+networks:
+  deploy_default:
+    external: true
