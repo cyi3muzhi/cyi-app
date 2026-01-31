@@ -26,6 +26,8 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider) (*kratos.App, func(), error) {
+	traceTracerProvider := provideTracerProvider(tracerProvider)
+	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, auth)
 	db := data.NewDB(confData)
 	client := data.NewRedisClient(confData, logger)
 	dataData, cleanup, err := data.NewData(confData, db, client, logger)
@@ -35,10 +37,9 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	userRepo := data.NewUserRepo(dataData, logger)
 	userUseCase := biz.NewUserUseCase(userRepo)
 	userService := service.NewUserService(userUseCase, logger)
-	traceTracerProvider := provideTracerProvider(tracerProvider)
-	grpcServer := server.NewGRPCServer(confServer, userService, traceTracerProvider, auth, logger)
+	server2 := server.NewServer(grpcServer, userService)
 	registrar := server.NewRegistrar(registry)
-	app := newApp(logger, grpcServer, registrar)
+	app := newApp(logger, server2, registrar)
 	return app, func() {
 		cleanup()
 	}, nil

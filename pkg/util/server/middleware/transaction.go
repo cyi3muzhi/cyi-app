@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// 事务管理中间件
+// Deprecated: 事务管理中间件
 func TransactionMiddleware(db *gorm.DB, transactionList []string) middleware.Middleware {
 	return selector.Server(
 		func(handler middleware.Handler) middleware.Handler {

@@ -73,14 +73,6 @@ func main() {
 		panic(err)
 	}
 
-	var awl conf.AuthWhiteList
-	if err = c.Scan(&awl); err != nil {
-		panic(err)
-	}
-	var tl conf.TransactionList
-	if err = c.Scan(&tl); err != nil {
-		panic(err)
-	}
 	// 创建zerolog适配器
 	zerologAdapter := logutil.NewZerologAdapterWithConfig(&logutil.LogConfig{
 		Level:               bc.Log.Level,
@@ -103,7 +95,7 @@ func main() {
 	// 创建TracerProvider
 	tp := tr.NewTracerProvider(Name, bc.Trace.Endpoint)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, &cb, logger, tp, &awl, &tl)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, &cb, logger, tp)
 	if err != nil {
 		panic(err)
 	}

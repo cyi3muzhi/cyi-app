@@ -55,10 +55,12 @@ func Middlewares(tp trace.TracerProvider, middlewareType MiddlewareType, opts ..
 	return middlewareList
 }
 
+// 客户端中间件列表
 func ClientMiddlewares(tp trace.TracerProvider, opts ...MiddlewareOption) []middleware.Middleware {
 	return Middlewares(tp, Client, opts...)
 }
 
+// 服务端中间件列表
 func ServerMiddlewares(tp trace.TracerProvider, opts ...MiddlewareOption) []middleware.Middleware {
 	return Middlewares(tp, Server, opts...)
 }

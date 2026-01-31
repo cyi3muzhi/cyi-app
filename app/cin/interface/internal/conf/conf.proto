@@ -11,6 +11,7 @@ message Bootstrap {
   Auth auth = 3;
   Trace trace = 4;
   Log log = 5;
+  // Transaction transaction = 6;
 }
 
 message Server {
@@ -60,6 +61,7 @@ message Registry {
 message Auth {
     string service_key = 1;
     string api_key = 2;
+    repeated string white_list = 3;
 }
 
 message Trace {
@@ -67,14 +69,13 @@ message Trace {
 }
 
 // 认证白名单
-message AuthWhiteList {
-    repeated string white_list = 1;
-}
+// message AuthWhiteList {
+// }
 
 // 事务管理名单
-message TransactionList {
-    repeated string transactions = 1;
-}
+// message Transaction {
+//     repeated string white_list = 1;
+// }
 
 // 日志配置
 message Log {
