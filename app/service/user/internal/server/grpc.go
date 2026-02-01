@@ -5,7 +5,7 @@ import (
 
 	v1 "cyi-app/api/service/user/v1"
 
-	ts "cyi-app/pkg/util/server/transporter"
+	ts "cyi-app/pkg/kratos/server/transporter"
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 )

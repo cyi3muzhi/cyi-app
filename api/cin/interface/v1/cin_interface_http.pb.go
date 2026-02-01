@@ -10,6 +10,7 @@ import (
 	context "context"
 	http "github.com/go-kratos/kratos/v2/transport/http"
 	binding "github.com/go-kratos/kratos/v2/transport/http/binding"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -22,6 +23,7 @@ const _ = http.SupportPackageIsVersion1
 const OperationCinInterfaceGetUserInfo = "/api.cin.interface.v1.CinInterface/GetUserInfo"
 const OperationCinInterfaceLogin = "/api.cin.interface.v1.CinInterface/Login"
 const OperationCinInterfaceRegister = "/api.cin.interface.v1.CinInterface/Register"
+const OperationCinInterfaceUserInfo = "/api.cin.interface.v1.CinInterface/UserInfo"
 
 type CinInterfaceHTTPServer interface {
 	// GetUserInfo 获取用户信息
@@ -30,13 +32,16 @@ type CinInterfaceHTTPServer interface {
 	Login(context.Context, *LoginRequest) (*LoginReply, error)
 	// Register 注册
 	Register(context.Context, *RegisterReq) (*RegisterReply, error)
+	// UserInfo 获取个人信息
+	UserInfo(context.Context, *emptypb.Empty) (*UserInfoReply, error)
 }
 
 func RegisterCinInterfaceHTTPServer(s *http.Server, srv CinInterfaceHTTPServer) {
 	r := s.Route("/")
 	r.POST("/user/v1/login", _CinInterface_Login0_HTTP_Handler(srv))
 	r.POST("/user/v1/register", _CinInterface_Register0_HTTP_Handler(srv))
-	r.GET("user/v1/get/{id}", _CinInterface_GetUserInfo0_HTTP_Handler(srv))
+	r.GET("/user/v1/get/{id}", _CinInterface_GetUserInfo0_HTTP_Handler(srv))
+	r.GET("/user/v1/info", _CinInterface_UserInfo0_HTTP_Handler(srv))
 }
 
 func _CinInterface_Login0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx http.Context) error {
@@ -105,6 +110,25 @@ func _CinInterface_GetUserInfo0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ct
 	}
 }
 
+func _CinInterface_UserInfo0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in emptypb.Empty
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationCinInterfaceUserInfo)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UserInfo(ctx, req.(*emptypb.Empty))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UserInfoReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type CinInterfaceHTTPClient interface {
 	// GetUserInfo 获取用户信息
 	GetUserInfo(ctx context.Context, req *GetUserInfoRequest, opts ...http.CallOption) (rsp *GetUserInfoReply, err error)
@@ -112,6 +136,8 @@ type CinInterfaceHTTPClient interface {
 	Login(ctx context.Context, req *LoginRequest, opts ...http.CallOption) (rsp *LoginReply, err error)
 	// Register 注册
 	Register(ctx context.Context, req *RegisterReq, opts ...http.CallOption) (rsp *RegisterReply, err error)
+	// UserInfo 获取个人信息
+	UserInfo(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *UserInfoReply, err error)
 }
 
 type CinInterfaceHTTPClientImpl struct {
@@ -125,7 +151,7 @@ func NewCinInterfaceHTTPClient(client *http.Client) CinInterfaceHTTPClient {
 // GetUserInfo 获取用户信息
 func (c *CinInterfaceHTTPClientImpl) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...http.CallOption) (*GetUserInfoReply, error) {
 	var out GetUserInfoReply
-	pattern := "user/v1/get/{id}"
+	pattern := "/user/v1/get/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationCinInterfaceGetUserInfo))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -158,6 +184,20 @@ func (c *CinInterfaceHTTPClientImpl) Register(ctx context.Context, in *RegisterR
 	opts = append(opts, http.Operation(OperationCinInterfaceRegister))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// UserInfo 获取个人信息
+func (c *CinInterfaceHTTPClientImpl) UserInfo(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*UserInfoReply, error) {
+	var out UserInfoReply
+	pattern := "/user/v1/info"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationCinInterfaceUserInfo))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

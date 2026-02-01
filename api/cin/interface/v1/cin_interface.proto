@@ -7,6 +7,8 @@ option java_multiple_files = true;
 option java_package = "api.cin.interface.v1";
 import "validate/validate.proto";
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
 
 
 service CinInterface {
@@ -28,7 +30,13 @@ service CinInterface {
 	// 获取用户信息
 	rpc GetUserInfo (GetUserInfoRequest) returns (GetUserInfoReply){
 		option (google.api.http) = {
-			get: "user/v1/get/{id}"
+			get: "/user/v1/get/{id}"
+		};
+	};
+	// 获取个人信息
+	rpc UserInfo (google.protobuf.Empty) returns (UserInfoReply){
+		option (google.api.http) = {
+			get: "/user/v1/info"
 		};
 	};
 }
@@ -70,4 +78,11 @@ message GetUserInfoReply {
 	int64 id = 1;
 	// 姓名
 	string name = 2;
+}
+
+message UserInfoReply{
+	// 用户ID
+	int64 id = 1;
+	// 姓名
+	string username = 2;
 }

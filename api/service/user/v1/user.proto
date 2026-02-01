@@ -51,6 +51,12 @@ message GetUserRequest {
 }
 message GetUserReply {
 	int64 id = 1;
+	// 姓名
+	string name = 2;
+	// 手机号
+	string phone = 3;
+	// 用户名
+	string username = 4;
 }
 
 message ListUserRequest {}

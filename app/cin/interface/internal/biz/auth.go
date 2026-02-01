@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/golang-jwt/jwt/v5"
+	server "cyi-app/pkg/kratos/server/middleware"
 )
 
 type AuthUseCase struct {
@@ -79,8 +80,9 @@ func (uc *AuthUseCase) Login(ctx context.Context, in *User) (*v1.LoginReply, err
 		return nil, v1.ErrorPasswordError("password not match")
 	}
 	// generate token
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": user.ID,
+	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, server.UserClaims{
+		ID: user.ID,
+		Username: user.Username,
 	})
 	signedString, err := claims.SignedString([]byte(uc.key))
 	if err != nil {

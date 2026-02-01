@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	mid "cyi-app/pkg/util/server/middleware"
+	mid "cyi-app/pkg/kratos/server/middleware"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"

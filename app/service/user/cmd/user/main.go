@@ -7,12 +7,12 @@ import (
 
 	"cyi-app/app/service/user/internal/conf"
 
-	consulConfig "cyi-app/pkg/util/config"
-	cgrpc "cyi-app/pkg/util/grpc"
+	consulConfig "cyi-app/pkg/kratos/config"
+	cgrpc "cyi-app/pkg/kratos/client"
 
-	tr "cyi-app/pkg/util/tracing"
+	tr "cyi-app/pkg/kratos/tracing"
 
-	logutil "cyi-app/pkg/util/log"
+	logutil "cyi-app/pkg/kratos/log"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"

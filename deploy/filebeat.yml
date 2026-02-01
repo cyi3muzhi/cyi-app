@@ -38,7 +38,7 @@ setup.template.pattern: "cyi-app-logs-*"
 setup.template.enabled: true
 setup.template.overwrite: true
 
-logging.level: err
+logging.level: error
 logging.to_files: true
 logging.files:
   path: /usr/share/filebeat/logs

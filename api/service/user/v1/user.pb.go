@@ -354,8 +354,14 @@ func (x *GetUserRequest) GetId() int64 {
 }
 
 type GetUserReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 姓名
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 手机号
+	Phone string `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 用户名
+	Username      string `protobuf:"bytes,4,opt,name=username,proto3" json:"username,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -395,6 +401,27 @@ func (x *GetUserReply) GetId() int64 {
 		return x.Id
 	}
 	return 0
+}
+
+func (x *GetUserReply) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *GetUserReply) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *GetUserReply) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
 }
 
 type ListUserRequest struct {
@@ -781,9 +808,12 @@ const file_service_user_v1_user_proto_rawDesc = "" +
 	"\x11DeleteUserRequest\"\x11\n" +
 	"\x0fDeleteUserReply\" \n" +
 	"\x0eGetUserRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"\x1e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"d\n" +
 	"\fGetUserReply\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"\x11\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
+	"\x05phone\x18\x03 \x01(\tR\x05phone\x12\x1a\n" +
+	"\busername\x18\x04 \x01(\tR\busername\"\x11\n" +
 	"\x0fListUserRequest\"\x0f\n" +
 	"\rListUserReply\"I\n" +
 	"\x15CheckUserExistRequest\x12\x14\n" +

@@ -11,6 +11,7 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -318,11 +319,65 @@ func (x *GetUserInfoReply) GetName() string {
 	return ""
 }
 
+type UserInfoReply struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 姓名
+	Username      string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserInfoReply) Reset() {
+	*x = UserInfoReply{}
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserInfoReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserInfoReply) ProtoMessage() {}
+
+func (x *UserInfoReply) ProtoReflect() protoreflect.Message {
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserInfoReply.ProtoReflect.Descriptor instead.
+func (*UserInfoReply) Descriptor() ([]byte, []int) {
+	return file_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *UserInfoReply) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *UserInfoReply) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
 var File_cin_interface_v1_cin_interface_proto protoreflect.FileDescriptor
 
 const file_cin_interface_v1_cin_interface_proto_rawDesc = "" +
 	"\n" +
-	"$cin/interface/v1/cin_interface.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"l\n" +
+	"$cin/interface/v1/cin_interface.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"l\n" +
 	"\fLoginRequest\x125\n" +
 	"\busername\x18\x01 \x01(\tB\x19\xfaB\x16r\x14\x10\x02\x18\x182\x0e^[\\w\\p{Han}]+$R\busername\x12%\n" +
 	"\bpassword\x18\x03 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18\x14R\bpassword\"\"\n" +
@@ -338,11 +393,15 @@ const file_cin_interface_v1_cin_interface_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"6\n" +
 	"\x10GetUserInfoReply\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name2\xe5\x02\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\";\n" +
+	"\rUserInfoReply\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
+	"\busername\x18\x02 \x01(\tR\busername2\xc6\x03\n" +
 	"\fCinInterface\x12h\n" +
 	"\x05Login\x12\".api.cin.interface.v1.LoginRequest\x1a .api.cin.interface.v1.LoginReply\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/user/v1/login\x12p\n" +
-	"\bRegister\x12!.api.cin.interface.v1.RegisterReq\x1a#.api.cin.interface.v1.RegisterReply\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/user/v1/register\x12y\n" +
-	"\vGetUserInfo\x12(.api.cin.interface.v1.GetUserInfoRequest\x1a&.api.cin.interface.v1.GetUserInfoReply\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10user/v1/get/{id}B9\n" +
+	"\bRegister\x12!.api.cin.interface.v1.RegisterReq\x1a#.api.cin.interface.v1.RegisterReply\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/user/v1/register\x12z\n" +
+	"\vGetUserInfo\x12(.api.cin.interface.v1.GetUserInfoRequest\x1a&.api.cin.interface.v1.GetUserInfoReply\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/user/v1/get/{id}\x12^\n" +
+	"\bUserInfo\x12\x16.google.protobuf.Empty\x1a#.api.cin.interface.v1.UserInfoReply\"\x15\x82\xd3\xe4\x93\x02\x0f\x12\r/user/v1/infoB9\n" +
 	"\x14api.cin.interface.v1P\x01Z\x1fcyi-app/api/cin/interface/v1;v1b\x06proto3"
 
 var (
@@ -357,7 +416,7 @@ func file_cin_interface_v1_cin_interface_proto_rawDescGZIP() []byte {
 	return file_cin_interface_v1_cin_interface_proto_rawDescData
 }
 
-var file_cin_interface_v1_cin_interface_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_cin_interface_v1_cin_interface_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_cin_interface_v1_cin_interface_proto_goTypes = []any{
 	(*LoginRequest)(nil),       // 0: api.cin.interface.v1.LoginRequest
 	(*LoginReply)(nil),         // 1: api.cin.interface.v1.LoginReply
@@ -365,16 +424,20 @@ var file_cin_interface_v1_cin_interface_proto_goTypes = []any{
 	(*RegisterReply)(nil),      // 3: api.cin.interface.v1.RegisterReply
 	(*GetUserInfoRequest)(nil), // 4: api.cin.interface.v1.GetUserInfoRequest
 	(*GetUserInfoReply)(nil),   // 5: api.cin.interface.v1.GetUserInfoReply
+	(*UserInfoReply)(nil),      // 6: api.cin.interface.v1.UserInfoReply
+	(*emptypb.Empty)(nil),      // 7: google.protobuf.Empty
 }
 var file_cin_interface_v1_cin_interface_proto_depIdxs = []int32{
 	0, // 0: api.cin.interface.v1.CinInterface.Login:input_type -> api.cin.interface.v1.LoginRequest
 	2, // 1: api.cin.interface.v1.CinInterface.Register:input_type -> api.cin.interface.v1.RegisterReq
 	4, // 2: api.cin.interface.v1.CinInterface.GetUserInfo:input_type -> api.cin.interface.v1.GetUserInfoRequest
-	1, // 3: api.cin.interface.v1.CinInterface.Login:output_type -> api.cin.interface.v1.LoginReply
-	3, // 4: api.cin.interface.v1.CinInterface.Register:output_type -> api.cin.interface.v1.RegisterReply
-	5, // 5: api.cin.interface.v1.CinInterface.GetUserInfo:output_type -> api.cin.interface.v1.GetUserInfoReply
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	7, // 3: api.cin.interface.v1.CinInterface.UserInfo:input_type -> google.protobuf.Empty
+	1, // 4: api.cin.interface.v1.CinInterface.Login:output_type -> api.cin.interface.v1.LoginReply
+	3, // 5: api.cin.interface.v1.CinInterface.Register:output_type -> api.cin.interface.v1.RegisterReply
+	5, // 6: api.cin.interface.v1.CinInterface.GetUserInfo:output_type -> api.cin.interface.v1.GetUserInfoReply
+	6, // 7: api.cin.interface.v1.CinInterface.UserInfo:output_type -> api.cin.interface.v1.UserInfoReply
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -391,7 +454,7 @@ func file_cin_interface_v1_cin_interface_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cin_interface_v1_cin_interface_proto_rawDesc), len(file_cin_interface_v1_cin_interface_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

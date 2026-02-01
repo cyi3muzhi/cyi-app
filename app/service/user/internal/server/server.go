@@ -2,14 +2,14 @@ package server
 
 import (
 	"cyi-app/app/service/user/internal/conf"
-	consul "cyi-app/pkg/util/config"
+	consul "cyi-app/pkg/kratos/config"
 
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 
 	"github.com/google/wire"
 
-	ts "cyi-app/pkg/util/server/transporter"
+	ts "cyi-app/pkg/kratos/server/transporter"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"go.opentelemetry.io/otel/trace"

@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -22,6 +23,7 @@ const (
 	CinInterface_Login_FullMethodName       = "/api.cin.interface.v1.CinInterface/Login"
 	CinInterface_Register_FullMethodName    = "/api.cin.interface.v1.CinInterface/Register"
 	CinInterface_GetUserInfo_FullMethodName = "/api.cin.interface.v1.CinInterface/GetUserInfo"
+	CinInterface_UserInfo_FullMethodName    = "/api.cin.interface.v1.CinInterface/UserInfo"
 )
 
 // CinInterfaceClient is the client API for CinInterface service.
@@ -34,6 +36,8 @@ type CinInterfaceClient interface {
 	Register(ctx context.Context, in *RegisterReq, opts ...grpc.CallOption) (*RegisterReply, error)
 	// 获取用户信息
 	GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoReply, error)
+	// 获取个人信息
+	UserInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserInfoReply, error)
 }
 
 type cinInterfaceClient struct {
@@ -74,6 +78,16 @@ func (c *cinInterfaceClient) GetUserInfo(ctx context.Context, in *GetUserInfoReq
 	return out, nil
 }
 
+func (c *cinInterfaceClient) UserInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserInfoReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserInfoReply)
+	err := c.cc.Invoke(ctx, CinInterface_UserInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CinInterfaceServer is the server API for CinInterface service.
 // All implementations must embed UnimplementedCinInterfaceServer
 // for forward compatibility.
@@ -84,6 +98,8 @@ type CinInterfaceServer interface {
 	Register(context.Context, *RegisterReq) (*RegisterReply, error)
 	// 获取用户信息
 	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoReply, error)
+	// 获取个人信息
+	UserInfo(context.Context, *emptypb.Empty) (*UserInfoReply, error)
 	mustEmbedUnimplementedCinInterfaceServer()
 }
 
@@ -102,6 +118,9 @@ func (UnimplementedCinInterfaceServer) Register(context.Context, *RegisterReq) (
 }
 func (UnimplementedCinInterfaceServer) GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
+}
+func (UnimplementedCinInterfaceServer) UserInfo(context.Context, *emptypb.Empty) (*UserInfoReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserInfo not implemented")
 }
 func (UnimplementedCinInterfaceServer) mustEmbedUnimplementedCinInterfaceServer() {}
 func (UnimplementedCinInterfaceServer) testEmbeddedByValue()                      {}
@@ -178,6 +197,24 @@ func _CinInterface_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CinInterface_UserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CinInterfaceServer).UserInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CinInterface_UserInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CinInterfaceServer).UserInfo(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CinInterface_ServiceDesc is the grpc.ServiceDesc for CinInterface service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -196,6 +233,10 @@ var CinInterface_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserInfo",
 			Handler:    _CinInterface_GetUserInfo_Handler,
+		},
+		{
+			MethodName: "UserInfo",
+			Handler:    _CinInterface_UserInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

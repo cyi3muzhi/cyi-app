@@ -6,7 +6,7 @@ import (
 	v1 "cyi-app/api/cin/interface/v1"
 
 	"github.com/go-kratos/kratos/v2/transport/http"
-	ts "cyi-app/pkg/util/server/transporter"
+	ts "cyi-app/pkg/kratos/server/transporter"
 )
 
 // NewHTTPServer new an HTTP server.

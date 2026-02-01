@@ -48,8 +48,17 @@ func (s *UserService) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest)
 	return &pb.DeleteUserReply{}, nil
 }
 func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserReply, error) {
+	user, err := s.uc.GetUser(ctx, &biz.User{
+		ID: req.Id,
+	})
+	if err != nil {
+		return nil, err
+	}
 	return &pb.GetUserReply{
-		Id: req.Id,
+		Id:       user.ID,
+		Name:     user.Name,
+		Phone:    user.Phone,
+		Username: user.Username,
 	}, nil
 }
 func (s *UserService) ListUser(ctx context.Context, req *pb.ListUserRequest) (*pb.ListUserReply, error) {

@@ -70,8 +70,8 @@ func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.Us
 	return result.(*biz.User), nil
 }
 
-func (rp *userRepo) Save(ctx context.Context, u *biz.User) error {
-	_, err := rp.data.uc.CreateUser(ctx, &usV1.CreateUserRequest{
+func (r *userRepo) Save(ctx context.Context, u *biz.User) error {
+	_, err := r.data.uc.CreateUser(ctx, &usV1.CreateUserRequest{
 		Username: u.Username,
 		Password: u.Password,
 	})
@@ -79,10 +79,45 @@ func (rp *userRepo) Save(ctx context.Context, u *biz.User) error {
 }
 
 // VerifyPassword 校验密码是否正确
-func (rp *userRepo) VerifyPassword(ctx context.Context, u *biz.User, password string) error {
-	_, err := rp.data.uc.VerifyPassword(ctx, &usV1.VerifyPasswordRequest{
+func (r *userRepo) VerifyPassword(ctx context.Context, u *biz.User, password string) error {
+	_, err := r.data.uc.VerifyPassword(ctx, &usV1.VerifyPasswordRequest{
 		Password: password,
 		Username: u.Username,
 	})
 	return err
+}
+
+// GetUser 获取用户信息
+func (r *userRepo) GetUser(ctx context.Context, id int64) (*biz.User, error) {
+	result, err, _ := r.sg.Do(fmt.Sprintf("get_user_%d", id), func() (interface{}, error) {
+		// 生成分布式锁键
+		lockKey := fmt.Sprintf("lock:user:id:%d", id)
+		// 尝试获取分布式锁，防止多实例并发请求，设置10秒过期时间
+		lock := cr.AcquireDistributedLock(ctx, r.data.rc, lockKey, 10*time.Second)
+		if !lock {
+			// 锁获取失败，返回错误或重试
+			r.log.Errorf("Failed to acquire distributed lock for user %d", id)
+			return nil, fmt.Errorf("failed to acquire distributed lock for user %d", id)
+		}
+		// 确保锁释放
+		defer func() {
+			if err := cr.ReleaseDistributedLock(ctx, r.data.rc, lockKey); err != nil {
+				r.log.Errorf("Failed to release distributed lock for user %d: %v", id, err)
+			}
+		}()
+		user, err := r.data.uc.GetUser(ctx, &usV1.GetUserRequest{
+			Id: id,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return &biz.User{
+			ID:       user.Id,
+			Username: user.Username,
+		}, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*biz.User), nil
 }

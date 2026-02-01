@@ -6,6 +6,39 @@ info:
     title: CinInterface API
     version: 0.0.1
 paths:
+    /user/v1/get/{id}:
+        get:
+            tags:
+                - CinInterface
+            description: 获取用户信息
+            operationId: CinInterface_GetUserInfo
+            parameters:
+                - name: id
+                  in: path
+                  description: 用户ID
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.GetUserInfoReply'
+    /user/v1/info:
+        get:
+            tags:
+                - CinInterface
+            description: 获取个人信息
+            operationId: CinInterface_UserInfo
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.UserInfoReply'
     /user/v1/login:
         post:
             tags:
@@ -44,26 +77,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.RegisterReply'
-    user/v1/get/{id}:
-        get:
-            tags:
-                - CinInterface
-            description: 获取用户信息
-            operationId: CinInterface_GetUserInfo
-            parameters:
-                - name: id
-                  in: path
-                  description: 用户ID
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/api.cin.interface.v1.GetUserInfoReply'
 components:
     schemas:
         api.cin.interface.v1.GetUserInfoReply:
@@ -103,5 +116,14 @@ components:
                 password:
                     type: string
                     description: 密码长度验证
+        api.cin.interface.v1.UserInfoReply:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 用户ID
+                username:
+                    type: string
+                    description: 姓名
 tags:
     - name: CinInterface

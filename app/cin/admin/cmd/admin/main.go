@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 
-	consulConfig "cyi-app/pkg/util/config"
-	cgrpc "cyi-app/pkg/util/grpc"
+	consulConfig "cyi-app/pkg/kratos/config"
+	cgrpc "cyi-app/pkg/kratos/client"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"

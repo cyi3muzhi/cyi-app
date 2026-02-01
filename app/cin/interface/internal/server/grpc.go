@@ -5,7 +5,7 @@ import (
 	"cyi-app/app/cin/interface/internal/service"
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
-	ts "cyi-app/pkg/util/server/transporter"
+	ts "cyi-app/pkg/kratos/server/transporter"
 )
 
 // NewGRPCServer new a gRPC server.

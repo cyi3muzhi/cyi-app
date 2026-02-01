@@ -6,9 +6,9 @@ import (
 
 	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/cin/interface/internal/conf"
-	grpc "cyi-app/pkg/util/grpc"
+	grpc "cyi-app/pkg/kratos/client"
 
-	ts "cyi-app/pkg/util/server/transporter"
+	ts "cyi-app/pkg/kratos/server/transporter"
 
 	"github.com/go-kratos/kratos/v2/registry"
 	"go.opentelemetry.io/otel/trace"

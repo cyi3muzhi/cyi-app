@@ -6,12 +6,12 @@ import (
 	"strings"
 
 	"cyi-app/app/cin/interface/internal/conf"
-	logutil "cyi-app/pkg/util/log"
+	logutil "cyi-app/pkg/kratos/log"
 
-	consulConfig "cyi-app/pkg/util/config"
-	cgrpc "cyi-app/pkg/util/grpc"
+	cgrpc "cyi-app/pkg/kratos/client"
+	consulConfig "cyi-app/pkg/kratos/config"
 
-	tr "cyi-app/pkg/util/tracing"
+	tr "cyi-app/pkg/kratos/tracing"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
