@@ -3,7 +3,6 @@ package data
 import (
 	"context"
 	"cyi-app/app/service/user/internal/conf"
-	"fmt"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -11,10 +10,11 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
+	mod "cyi-app/app/service/user/internal/data/models"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
 	"github.com/redis/go-redis/v9"
-	mod "cyi-app/app/service/user/internal/data/models"
 )
 
 // ProviderSet is dat  a providers.
@@ -56,12 +56,9 @@ func NewDB(c *conf.Data) *gorm.DB {
 		panic(err)
 	}
 	// 自动迁移：创建或更新数据库表结构
-	fmt.Println("开始自动迁移数据库表结构...")
 	if err := db.AutoMigrate(&mod.User{}); err != nil {
-		fmt.Printf("自动迁移失败: %v\n", err)
 		panic(err)
 	}
-	fmt.Println("自动迁移完成！")
 	// 初始化生成器（可选，用于生成查询代码）
 	g := gen.NewGenerator(gen.Config{
 		OutPath: "../../internal/data/curd",                // 生成文件的输出路径
