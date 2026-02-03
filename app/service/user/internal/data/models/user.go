@@ -12,6 +12,13 @@ type User struct {
 	Password string `gorm:"column:password"`
 	Username string `gorm:"column:username"`
 }
+
+type Address struct {
+	gorm.Model
+	UserID int `gorm:"column:user_id"`
+	Detail string `gorm:"column:detail"`
+}
+
 type IUser interface {
 	// GetByID 根据 ID 进行查询
 	// SELECT * FROM @@table WHERE id=@id
@@ -60,4 +67,10 @@ type IUser interface {
 	// INSERT INTO @@table (name, phone, password, username)
 	// VALUES (@user.Name, @user.Phone, @user.Password, @user.Username)
 	CreateUser(user User) (User, error)
+}
+
+type IAddress interface {
+	// QueryAddress 查询用户地址
+	// SELECT * FROM @@table WHERE user_id=@userID
+	QueryAddress(userID int) ([]Address, error)
 }

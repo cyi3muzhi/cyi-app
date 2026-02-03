@@ -6,6 +6,7 @@ import (
 
 	pb "cyi-app/api/service/user/v1"
 	"cyi-app/app/service/user/internal/biz"
+	"cyi-app/pkg/util/convert"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -24,22 +25,20 @@ func NewUserService(uc *biz.UserUseCase, logger log.Logger) *UserService {
 }
 
 func (s *UserService) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserReply, error) {
-	u := &biz.User{
-		Name:     req.Name,
-		Phone:    req.Phone,
-		Password: req.Password,
-		Username: req.Username,
+	u := &biz.User{}
+	if err := convert.Convert(req, u); err != nil {
+		return nil, err
 	}
 	user, err := s.uc.CreateUser(ctx, u)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.CreateUserReply{
-		Id:       user.ID,
-		Name:     user.Name,
-		Phone:    user.Phone,
-		Username: user.Username,
-	}, nil
+	reply := &pb.CreateUserReply{}
+	if err := convert.Convert(user, reply); err != nil {
+		return nil, err
+	}
+
+	return reply, nil
 }
 func (s *UserService) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserReply, error) {
 	return &pb.UpdateUserReply{}, nil
@@ -54,12 +53,11 @@ func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 	if err != nil {
 		return nil, err
 	}
-	return &pb.GetUserReply{
-		Id:       user.ID,
-		Name:     user.Name,
-		Phone:    user.Phone,
-		Username: user.Username,
-	}, nil
+	reply := &pb.GetUserReply{}
+	if err := convert.Convert(user, reply); err != nil {
+		return nil, err
+	}
+	return reply, nil
 }
 func (s *UserService) ListUser(ctx context.Context, req *pb.ListUserRequest) (*pb.ListUserReply, error) {
 	return &pb.ListUserReply{}, nil
@@ -115,12 +113,14 @@ func (s *UserService) GetUserByUsername(ctx context.Context, in *pb.GetUserByUse
 }
 
 // 校验密码
-func (s *UserService)VerifyPassword(ctx context.Context, in *pb.VerifyPasswordRequest)(*pb.VerifyPasswordReply,error){
-	if err := s.uc.VerifyPassword(ctx,&biz.User{
-		Username: in.Username,
-		Password: in.Password,
-	}); err !=nil {
-		return &pb.VerifyPasswordReply{Valid: false},err
+func (s *UserService) VerifyPassword(ctx context.Context, in *pb.VerifyPasswordRequest) (*pb.VerifyPasswordReply, error) {
+	u := &biz.User{}
+	if err := convert.Convert(in, u); err != nil {
+		return nil, err
 	}
-	return &pb.VerifyPasswordReply{Valid: true},nil
+
+	if err := s.uc.VerifyPassword(ctx, u); err != nil {
+		return &pb.VerifyPasswordReply{Valid: false}, err
+	}
+	return &pb.VerifyPasswordReply{Valid: true}, nil
 }

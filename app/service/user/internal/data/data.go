@@ -71,6 +71,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 		&mod.User{},
 	)
 	g.ApplyInterface(func(mod.IUser) {}, mod.User{})
+	g.ApplyInterface(func(mod.IAddress) {}, mod.Address{})
 	// 执行生成代码
 	g.Execute()
 	return db

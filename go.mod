@@ -13,7 +13,7 @@ require (
 	github.com/google/wire v0.7.0
 	github.com/gorilla/handlers v1.5.2
 	github.com/hashicorp/consul/api v1.32.4
-	github.com/pkg/errors v0.9.1
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/redis/go-redis/v9 v9.14.0
 	github.com/rs/zerolog v1.34.0
 	go.opentelemetry.io/otel v1.39.0

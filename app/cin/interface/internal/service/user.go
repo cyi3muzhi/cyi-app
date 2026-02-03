@@ -8,15 +8,17 @@ import (
 	"cyi-app/app/cin/interface/internal/biz"
 
 	service "cyi-app/pkg/kratos/service"
+	"cyi-app/pkg/util/convert"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (s *CinInterface) Register(ctx context.Context, req *v1.RegisterReq) (*v1.RegisterReply, error) {
-	err := s.ac.Register(ctx, &biz.User{
-		Username: req.Username,
-		Password: req.Password,
-	})
+	in := &biz.User{}
+	if err := convert.Convert(req, in); err != nil {
+		return nil, err
+	}
+	err := s.ac.Register(ctx, in)
 	if err != nil {
 		return nil, err
 	}
@@ -27,16 +29,11 @@ func (s *CinInterface) Register(ctx context.Context, req *v1.RegisterReq) (*v1.R
 }
 
 func (s *CinInterface) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginReply, error) {
-	reply, err := s.ac.Login(ctx, &biz.User{
-		Username: req.Username,
-		Password: req.Password,
-	})
-	if err != nil {
+	in := &biz.User{}
+	if err := convert.Convert(req, in); err != nil {
 		return nil, err
 	}
-	return &v1.LoginReply{
-		Token: reply.Token,
-	}, nil
+	return s.ac.Login(ctx, in)
 }
 
 // 获取用户信息
@@ -46,15 +43,15 @@ func (s *CinInterface) UserInfo(ctx context.Context, _ *emptypb.Empty) (*v1.User
 	if err != nil {
 		return nil, err
 	}
-	s.log.Infof("UserInfo: %v", id)
 
 	// 获取用户信息
 	user, err := s.uc.UserInfo(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return &v1.UserInfoReply{
-		Id:       user.ID,
-		Username: user.Username,
-	}, nil
+	reply := &v1.UserInfoReply{}
+	if err := convert.Convert(user, reply); err != nil {
+		return nil, err
+	}
+	return reply, nil
 }

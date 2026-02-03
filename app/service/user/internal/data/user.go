@@ -11,6 +11,7 @@ import (
 	mod "cyi-app/app/service/user/internal/data/models"
 	"cyi-app/app/service/user/internal/pkg/encryption"
 
+	"cyi-app/pkg/util/convert"
 	cr "cyi-app/pkg/util/redis"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -38,13 +39,8 @@ func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
 
 func (r *userRepo) CreateUser(ctx context.Context, u *biz.User) (*biz.User, error) {
 
-	user := &mod.User{
-		Name:     u.Name,
-		Phone:    u.Phone,
-		Password: u.Password,
-		Username: u.Username,
-	}
-
+	user := &mod.User{}
+	convert.Convert(u, user)
 	if err := curd.User.WithContext(ctx).Create(user); err != nil {
 		return nil, err
 	}
@@ -58,12 +54,8 @@ func (r *userRepo) CreateUser(ctx context.Context, u *biz.User) (*biz.User, erro
 	if err := cr.SetRedis(ctx, r.cache, cacheKey, user, redis.KeepTTL); err != nil {
 		r.log.Warnf("Failed to set user cache for %d: %v", user.ID, err)
 	}
-	return &biz.User{
-		ID:       user.ID,
-		Name:     user.Name,
-		Phone:    user.Phone,
-		Username: user.Username,
-	}, nil
+	convert.Convert(user, u)
+	return u, nil
 }
 func (r *userRepo) GetUser(ctx context.Context, u *biz.User) (*biz.User, error) {
 
@@ -143,7 +135,7 @@ func (r *userRepo) getUser(ctx context.Context, cacheKey string, query mod.User)
 	if err != nil {
 		return nil, err
 	}
-	if user == nil {
+	if user == nil || user.ID == 0 {
 		return nil, errors.New("user not found")
 	}
 
