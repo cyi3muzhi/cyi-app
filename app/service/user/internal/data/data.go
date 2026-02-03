@@ -3,19 +3,21 @@ package data
 import (
 	"context"
 	"cyi-app/app/service/user/internal/conf"
-	mod "cyi-app/app/service/user/internal/data/models"
+	"fmt"
 	"time"
 
 	"gorm.io/driver/mysql"
+	"gorm.io/gen"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
 	"github.com/redis/go-redis/v9"
+	mod "cyi-app/app/service/user/internal/data/models"
 )
 
-// ProviderSet is data providers.
+// ProviderSet is dat  a providers.
 var ProviderSet = wire.NewSet(
 	NewUserRepo,
 	NewData,
@@ -42,6 +44,7 @@ func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, logger log.Logger) 
 }
 
 func NewDB(c *conf.Data) *gorm.DB {
+	// 连接数据库
 	db, err := gorm.Open(mysql.Open(c.Database.Source), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			// 表名不使用复数
@@ -52,10 +55,27 @@ func NewDB(c *conf.Data) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-
+	// 自动迁移：创建或更新数据库表结构
+	fmt.Println("开始自动迁移数据库表结构...")
 	if err := db.AutoMigrate(&mod.User{}); err != nil {
+		fmt.Printf("自动迁移失败: %v\n", err)
 		panic(err)
 	}
+	fmt.Println("自动迁移完成！")
+	// 初始化生成器（可选，用于生成查询代码）
+	g := gen.NewGenerator(gen.Config{
+		OutPath: "../../internal/data/curd",                // 生成文件的输出路径
+		Mode:    gen.WithoutContext | gen.WithDefaultQuery, // 生成模式
+	})
+	// 添加数据库连接
+	g.UseDB(db)
+	// 生成模型的查询代码
+	g.ApplyBasic(
+		&mod.User{},
+	)
+	g.ApplyInterface(func(mod.IUser) {}, mod.User{})
+	// 执行生成代码
+	g.Execute()
 	return db
 }
 

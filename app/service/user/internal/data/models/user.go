@@ -1,25 +1,25 @@
 package models
 
 import (
-	cgorm "cyi-app/pkg/util/gorm"
+	"cyi-app/app/service/user/internal/biz"
+	"cyi-app/pkg/util/gorm"
 )
 
 type User struct {
-	cgorm.Model
+	gorm.Model
 	Name     string `gorm:"column:name"`
 	Phone    string `gorm:"column:phone"`
 	Password string `gorm:"column:password"`
 	Username string `gorm:"column:username"`
 }
-
-type UserRepo[T any] interface {
+type IUser interface {
 	// GetByID 根据 ID 进行查询
 	// SELECT * FROM @@table WHERE id=@id
-	GetByID(id int) (T, error)
+	GetByID(id int) (*biz.User, error)
 
 	// FilterWithColumn 根据列名和值进行查询
 	// SELECT * FROM @@table WHERE @@column=@value
-	FilterWithColumn(column string, value string) (T, error)
+	FilterWithColumn(column string, value string) (User, error)
 
 	// SELECT * FROM @@table
 	//   {{if user.ID > 0}}
@@ -31,7 +31,7 @@ type UserRepo[T any] interface {
 	//   {{else if user.Username != ""}}
 	//       WHERE username=@user.Username
 	//   {{end}}
-	QueryWith(user User) (T, error)
+	QueryWith(user User) (User, error)
 
 	// UPDATE @@table
 	//  {{set}}
@@ -56,12 +56,8 @@ type UserRepo[T any] interface {
 	//  {{end}}
 	// FilterWithTime(start, end time.Time) ([]T, error)
 
-
 	// CreateUser 创建用户
 	// INSERT INTO @@table (name, phone, password, username)
 	// VALUES (@user.Name, @user.Phone, @user.Password, @user.Username)
 	CreateUser(user User) (User, error)
-
-	// 根据用户账号查询指定用户字段
-	// SELECT 
 }

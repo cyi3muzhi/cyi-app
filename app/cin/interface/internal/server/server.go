@@ -3,7 +3,6 @@ package server
 import (
 	"cyi-app/app/cin/interface/internal/conf"
 	consul "cyi-app/pkg/kratos/config"
-	"fmt"
 
 	ts "cyi-app/pkg/kratos/server/transporter"
 
@@ -27,7 +26,6 @@ func NewHTTPServerConf(
 	tp trace.TracerProvider,
 	logger log.Logger,
 	auth *conf.Auth) *ts.HttpServer {
-	fmt.Println(auth.WhiteList)
 	srv := http.NewServer(ts.NewHttpServerOpt(
 		&ts.TransporterOpt{
 			Network: c.Http.Network,

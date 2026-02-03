@@ -4,13 +4,16 @@ package biz
 import (
 	"context"
 	"cyi-app/app/cin/interface/internal/conf"
+	"time"
 
 	v1 "cyi-app/api/cin/interface/v1"
 	usv1 "cyi-app/api/service/user/v1"
 
+	server "cyi-app/pkg/kratos/server/middleware"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/golang-jwt/jwt/v5"
-	server "cyi-app/pkg/kratos/server/middleware"
+	"github.com/google/uuid"
 )
 
 type AuthUseCase struct {
@@ -81,8 +84,15 @@ func (uc *AuthUseCase) Login(ctx context.Context, in *User) (*v1.LoginReply, err
 	}
 	// generate token
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, server.UserClaims{
-		ID: user.ID,
+		ID:       user.ID,
 		Username: user.Username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			Issuer:    "cin",
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+			ID:        uuid.New().String(),
+		},
 	})
 	signedString, err := claims.SignedString([]byte(uc.key))
 	if err != nil {

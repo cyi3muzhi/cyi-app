@@ -2,21 +2,19 @@ package data
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"time"
 
-	"github.com/pkg/errors"
-
 	"cyi-app/app/service/user/internal/biz"
+	"cyi-app/app/service/user/internal/data/curd"
 	mod "cyi-app/app/service/user/internal/data/models"
-	userImp "cyi-app/app/service/user/internal/data/models/user"
 	"cyi-app/app/service/user/internal/pkg/encryption"
 
 	cr "cyi-app/pkg/util/redis"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 )
 
 var userCacheKeyByUsername = func(username string) string {
@@ -29,24 +27,25 @@ var userCacheKeyByID = func(id int64) string {
 
 type userRepo struct {
 	data  *Data
-	db    *gorm.DB
 	cache *redis.Client
 	log   *log.Helper
 }
 
 func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
-	return &userRepo{data: data, db: data.db, cache: data.cache, log: log.NewHelper(logger)}
+	curd.SetDefault(data.db)
+	return &userRepo{data: data, cache: data.cache, log: log.NewHelper(logger)}
 }
 
 func (r *userRepo) CreateUser(ctx context.Context, u *biz.User) (*biz.User, error) {
+
 	user := &mod.User{
 		Name:     u.Name,
 		Phone:    u.Phone,
 		Password: u.Password,
 		Username: u.Username,
 	}
-	// 使用userDB方法简化调用
-	if err := userImp.UserRepo[mod.User](r.db).Create(ctx, user); err != nil {
+
+	if err := curd.User.WithContext(ctx).Create(user); err != nil {
 		return nil, err
 	}
 	// cache
@@ -67,25 +66,26 @@ func (r *userRepo) CreateUser(ctx context.Context, u *biz.User) (*biz.User, erro
 	}, nil
 }
 func (r *userRepo) GetUser(ctx context.Context, u *biz.User) (*biz.User, error) {
-    // 确定缓存键
-    var cacheKey string
-    if u.ID > 0 {
-        cacheKey = userCacheKeyByID(u.ID)
-    } else if u.Username != "" {
-        cacheKey = userCacheKeyByUsername(u.Username)
-    } else {
-        // 没有有效的查询条件
-        return nil, errors.New("invalid user query conditions")
-    }
 
-    // 构建查询条件
-    query := mod.User{
-        Phone:    u.Phone,
-        Username: u.Username,
-    }
+	// 确定缓存键
+	var cacheKey string
+	if u.ID > 0 {
+		cacheKey = userCacheKeyByID(u.ID)
+	} else if u.Username != "" {
+		cacheKey = userCacheKeyByUsername(u.Username)
+	} else {
+		// 没有有效的查询条件
+		return nil, errors.New("invalid user query conditions")
+	}
 
-    // 调用通用函数
-    return r.getUser(ctx, cacheKey, query)
+	// 构建查询条件
+	query := mod.User{
+		Phone:    u.Phone,
+		Username: u.Username,
+	}
+
+	// 调用通用函数
+	return r.getUser(ctx, cacheKey, query)
 }
 
 // func (r *userRepo) GetUser(ctx context.Context, u *biz.User) (*biz.User, error) {
@@ -125,23 +125,24 @@ func (r *userRepo) GetUser(ctx context.Context, u *biz.User) (*biz.User, error) 
 // 	}, nil
 // }
 
-
 func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.User, error) {
-    if username == "" {
-        return nil, errors.New("username is required")
-    }
 
-    // 生成缓存键
-    cacheKey := userCacheKeyByUsername(username)
+	if username == "" {
+		return nil, errors.New("username is required")
+	}
 
-    // 构建查询条件
-    query := mod.User{
-        Username: username,
-    }
+	// 生成缓存键
+	cacheKey := userCacheKeyByUsername(username)
 
-    // 调用通用函数
-    return r.getUser(ctx, cacheKey, query)
+	// 构建查询条件
+	query := mod.User{
+		Username: username,
+	}
+
+	// 调用通用函数
+	return r.getUser(ctx, cacheKey, query)
 }
+
 // func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.User, error) {
 // 	var target *mod.User // 修复变量名拼写
 // 	cacheKey := userCacheKeyByUsername(username)
@@ -189,8 +190,9 @@ func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.Us
 // }
 
 func (r *userRepo) VerifyPassword(ctx context.Context, u *biz.User) error {
+
 	// 查询用户密码
-	target, err := userImp.UserRepo[*mod.User](r.db).QueryWith(ctx, mod.User{
+	target, err := curd.User.WithContext(ctx).QueryWith(mod.User{
 		Username: u.Username,
 	})
 	if err != nil {
@@ -217,9 +219,10 @@ func (r *userRepo) getUser(ctx context.Context, cacheKey string, query mod.User)
 			Username: target.Username,
 		}, nil
 	}
+	s := curd.User
 
 	// 2. 缓存未命中，从数据库查询
-	user, err := userImp.UserRepo[*mod.User](r.db).QueryWith(ctx, query)
+	user, err := s.WithContext(ctx).QueryWith(query)
 	if err != nil {
 		return nil, err
 	}
