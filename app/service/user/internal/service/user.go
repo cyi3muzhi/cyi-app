@@ -106,10 +106,11 @@ func (s *UserService) GetUserByUsername(ctx context.Context, in *pb.GetUserByUse
 	if err != nil {
 		return nil, err
 	}
-	return &pb.GetUserByUsernameReply{
-		Id:       user.ID,
-		Username: user.Username,
-	}, nil
+	reply := &pb.GetUserByUsernameReply{}
+	if err := convert.Convert(user, reply); err != nil {
+		return nil, err
+	}
+	return reply, nil
 }
 
 // 校验密码

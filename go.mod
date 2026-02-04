@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
+	github.com/fatih/structs v1.1.0
 	github.com/go-kratos/kratos/contrib/config/consul/v2 v2.0.0-20250912104010-25b6c0fb9f38
 	github.com/go-kratos/kratos/contrib/middleware/validate/v2 v2.0.0-20260105075216-c7a58ff59f80
 	github.com/go-kratos/kratos/contrib/registry/consul/v2 v2.0.0-20250912104010-25b6c0fb9f38

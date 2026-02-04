@@ -9,6 +9,14 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+const (
+	OneDay = time.Hour * 24
+	OneWeek = time.Hour * 24 * 7
+	OneMonth = time.Hour * 24 * 30
+	OneYear = time.Hour * 24 * 365
+	KeepTTL = redis.KeepTTL
+)
+
 // string
 func SetRedis(ctx context.Context, rc *redis.Client, key interface{}, value interface{}, expiration time.Duration) error {
 	keyStr := fmt.Sprintf("%v", key)

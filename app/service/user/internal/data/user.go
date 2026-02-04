@@ -33,7 +33,6 @@ type userRepo struct {
 }
 
 func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
-	curd.SetDefault(data.db)
 	return &userRepo{data: data, cache: data.cache, log: log.NewHelper(logger)}
 }
 
@@ -46,12 +45,12 @@ func (r *userRepo) CreateUser(ctx context.Context, u *biz.User) (*biz.User, erro
 	}
 	// cache
 	cacheKey := userCacheKeyByUsername(user.Username)
-	if err := cr.SetRedis(ctx, r.cache, cacheKey, user, redis.KeepTTL); err != nil {
+	if err := cr.SetRedis(ctx, r.cache, cacheKey, user, cr.OneDay); err != nil {
 		r.log.Warnf("Failed to set user cache for %s: %v", user.Username, err)
 	}
 	// 2. 缓存命中且无错误
 	cacheKey = userCacheKeyByID(user.ID)
-	if err := cr.SetRedis(ctx, r.cache, cacheKey, user, redis.KeepTTL); err != nil {
+	if err := cr.SetRedis(ctx, r.cache, cacheKey, user, cr.OneDay); err != nil {
 		r.log.Warnf("Failed to set user cache for %d: %v", user.ID, err)
 	}
 	convert.Convert(user, u)

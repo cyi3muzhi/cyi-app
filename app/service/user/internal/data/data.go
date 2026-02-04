@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
+	"cyi-app/app/service/user/internal/data/curd"
 	mod "cyi-app/app/service/user/internal/data/models"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -36,7 +37,7 @@ func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, logger log.Logger) 
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-
+	curd.SetDefault(db)
 	return &Data{
 		db:    db,
 		cache: cache,
