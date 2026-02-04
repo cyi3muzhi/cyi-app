@@ -25,8 +25,6 @@ var templateFiles = map[string]string{
 	"cmd/service/main.go.tmpl":           "cmd/{{.ServiceNameLower}}/main.go",
 	"cmd/service/wire_gen.go.tmpl":       "cmd/{{.ServiceNameLower}}/wire_gen.go",
 	"cmd/service/wire.go.tmpl":           "cmd/{{.ServiceNameLower}}/wire.go",
-	"configs/config.yaml.tmpl":           "configs/config.yaml",
-	"configs/register.yaml.tmpl":         "configs/register.yaml",
 	"internal/biz/biz.go.tmpl":           "internal/biz/biz.go",
 	"internal/biz/service.go.tmpl":       "internal/biz/{{.ServiceNameLower}}.go",
 	"internal/conf/conf.proto.tmpl":      "internal/conf/conf.proto",
@@ -39,6 +37,7 @@ var templateFiles = map[string]string{
 	"internal/service/service.go.tmpl":   "internal/service/service.go",
 	"internal/service/handler.go.tmpl":   "internal/service/{{.ServiceNameLower}}.go",
 	"api/service/proto.tmpl":             "../../../api/service/{{.ServiceNameLower}}/v1/{{.ServiceNameLower}}.proto",
+	"api/service/err_proto.tmpl":         "../../../api/service/{{.ServiceNameLower}}/v1/{{.ServiceNameLower}}_error.proto",
 }
 
 func main() {
