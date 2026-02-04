@@ -27,7 +27,6 @@ var ProviderSet = wire.NewSet(
 )
 
 type Data struct {
-	db    *gorm.DB
 	cache *redis.Client
 }
 
@@ -39,7 +38,6 @@ func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, logger log.Logger) 
 	}
 	curd.SetDefault(db)
 	return &Data{
-		db:    db,
 		cache: cache,
 	}, cleanup, nil
 }

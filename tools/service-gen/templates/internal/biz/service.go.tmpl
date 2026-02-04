@@ -1,0 +1,34 @@
+package biz
+
+import (
+	"context"
+)
+
+type {{.ServiceNameTitle}}Repo interface {
+	Create{{.ServiceNameTitle}}(ctx context.Context, in *{{.ServiceNameTitle}}) error
+	Update{{.ServiceNameTitle}}(ctx context.Context, in *{{.ServiceNameTitle}}) error
+}
+
+
+type {{.ServiceNameTitle}} struct {
+}
+
+
+type {{.ServiceNameTitle}}UseCase struct {
+	repo {{.ServiceNameTitle}}Repo
+}
+
+
+func New{{.ServiceNameTitle}}UseCase(repo {{.ServiceNameTitle}}Repo) *{{.ServiceNameTitle}}UseCase {
+	return &{{.ServiceNameTitle}}UseCase{repo: repo}
+}
+
+
+func (uc *{{.ServiceNameTitle}}UseCase) Create{{.ServiceNameTitle}}(ctx context.Context, in *{{.ServiceNameTitle}}) error {
+	return nil
+}
+
+
+func (uc *{{.ServiceNameTitle}}UseCase) Update{{.ServiceNameTitle}}(ctx context.Context, in *{{.ServiceNameTitle}}) error {	
+	return nil
+}

@@ -1,0 +1,12 @@
+package models
+
+import (
+	"cyi-app/pkg/util/gorm"
+)
+
+type {{.ServiceNameTitle}} struct {
+	*gorm.Model
+}
+
+type I{{.ServiceNameTitle}} interface {
+}

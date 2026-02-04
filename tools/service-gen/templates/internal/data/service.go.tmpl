@@ -1,0 +1,33 @@
+package data
+
+import (
+	"context"
+	"cyi-app/app/service/{{.ServiceNameLower}}/internal/biz"
+	mod "cyi-app/app/service/{{.ServiceNameLower}}/internal/data/models"
+	"cyi-app/pkg/util/convert"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/redis/go-redis/v9"
+)
+
+type {{.ServiceNameLower}}Repo struct {
+	data  *Data
+	cache *redis.Client
+	log   *log.Helper
+}
+
+func New{{.ServiceNameTitle}}Repo(data *Data, logger log.Logger) biz.{{.ServiceNameTitle}}Repo {
+	return &{{.ServiceNameLower}}Repo{data: data, cache: data.cache, log: log.NewHelper(logger)}
+}
+
+func (r *{{.ServiceNameLower}}Repo) Create{{.ServiceNameTitle}}(ctx context.Context, in *biz.{{.ServiceNameTitle}}) error {
+	{{.ServiceNameTitle}} := &mod.{{.ServiceNameTitle}}{}
+	convert.Convert(in, {{.ServiceNameTitle}})
+	return nil
+}
+
+func (r *{{.ServiceNameLower}}Repo) Update{{.ServiceNameTitle}}(ctx context.Context, in *biz.{{.ServiceNameTitle}}) error {
+	{{.ServiceNameTitle}} := &mod.{{.ServiceNameTitle}}{}
+	convert.Convert(in, {{.ServiceNameTitle}})
+	return nil
+}

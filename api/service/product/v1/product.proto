@@ -15,16 +15,21 @@ service Product {
 }
 
 message CreateProductRequest {}
+
 message CreateProductReply {}
 
 message UpdateProductRequest {}
+
 message UpdateProductReply {}
 
 message DeleteProductRequest {}
+
 message DeleteProductReply {}
 
 message GetProductRequest {}
+
 message GetProductReply {}
 
 message ListProductRequest {}
+
 message ListProductReply {}

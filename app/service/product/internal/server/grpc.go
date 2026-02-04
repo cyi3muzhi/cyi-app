@@ -1,36 +1,17 @@
 package server
 
 import (
-	"cyi-app/app/service/user/internal/conf"
-	"cyi-app/app/service/user/internal/service"
+	"cyi-app/app/service/product/internal/service"
 
-	userSrv "cyi-app/api/service/user/v1"
+	v1 "cyi-app/api/service/product/v1"
 
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	ts "cyi-app/pkg/kratos/server/transporter"
+
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server,
-	userService *service.UserService,
-	logger log.Logger) *grpc.Server {
-	var opts = []grpc.ServerOption{
-		grpc.Middleware(
-			recovery.Recovery(),
-		),
-	}
-	if c.Grpc.Network != "" {
-		opts = append(opts, grpc.Network(c.Grpc.Network))
-	}
-	if c.Grpc.Addr != "" {
-		opts = append(opts, grpc.Address(c.Grpc.Addr))
-	}
-	if c.Grpc.Timeout != nil {
-		opts = append(opts, grpc.Timeout(c.Grpc.Timeout.AsDuration()))
-	}
-	srv := grpc.NewServer(opts...)
-	userSrv.RegisterUserServer(srv, userService)
-
-	return srv
+func NewServer(s *ts.GrpcServer, productService *service.ProductService) *grpc.Server {
+	v1.RegisterProductServer(s.GrpcServer, productService)
+	return s.GrpcServer
 }

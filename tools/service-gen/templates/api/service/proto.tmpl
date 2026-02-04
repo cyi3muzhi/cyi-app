@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package api.service.{{.ServiceNameLower}}.v1;
+
+option go_package = "cyi-app/api/service/{{.ServiceNameLower}}/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.service.{{.ServiceNameLower}}.v1";
+
+service {{.ServiceNameTitle}} {
+	rpc Create{{.ServiceNameTitle}} (Create{{.ServiceNameTitle}}Request) returns (Create{{.ServiceNameTitle}}Reply);
+	rpc Update{{.ServiceNameTitle}} (Update{{.ServiceNameTitle}}Request) returns (Update{{.ServiceNameTitle}}Reply);
+	rpc Delete{{.ServiceNameTitle}} (Delete{{.ServiceNameTitle}}Request) returns (Delete{{.ServiceNameTitle}}Reply);
+	rpc Get{{.ServiceNameTitle}} (Get{{.ServiceNameTitle}}Request) returns (Get{{.ServiceNameTitle}}Reply);
+	rpc List{{.ServiceNameTitle}} (List{{.ServiceNameTitle}}Request) returns (List{{.ServiceNameTitle}}Reply);
+}
+
+message Create{{.ServiceNameTitle}}Request {}
+
+message Create{{.ServiceNameTitle}}Reply {}
+
+message Update{{.ServiceNameTitle}}Request {}
+
+message Update{{.ServiceNameTitle}}Reply {}
+
+message Delete{{.ServiceNameTitle}}Request {}
+
+message Delete{{.ServiceNameTitle}}Reply {}
+
+message Get{{.ServiceNameTitle}}Request {}
+
+message Get{{.ServiceNameTitle}}Reply {}
+
+message List{{.ServiceNameTitle}}Request {}
+
+message List{{.ServiceNameTitle}}Reply {}
