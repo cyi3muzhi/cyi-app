@@ -34,10 +34,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	if err != nil {
 		return nil, nil, err
 	}
-	OrderRepo := data.NewOrderRepo(dataData, logger)
-	OrderUseCase := biz.NewOrderUseCase(OrderRepo)	
-	OrderService := service.NewOrderService(OrderUseCase, logger)
-	server2 := server.NewServer(grpcServer, OrderService)
+	orderRepo := data.NewOrderRepo(dataData, logger)
+	orderUseCase := biz.NewOrderUseCase(orderRepo)
+	orderService := service.NewOrderService(orderUseCase, logger)
+	server2 := server.NewServer(grpcServer, orderService)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, server2, registrar)
 	return app, func() {
