@@ -1,0 +1,167 @@
+package rustfs
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"io"
+	"time"
+
+	"github.com/Scorpio69t/rustfs-go"
+	"github.com/Scorpio69t/rustfs-go/pkg/credentials"
+	"github.com/Scorpio69t/rustfs-go/types"
+)
+
+// RustFSClient RustFS客户端结构体
+type RustFSClient struct {
+	client *rustfs.Client
+}
+
+// Config RustFS配置结构体
+type Config struct {
+	Endpoint  string
+	AccessKey string
+	SecretKey string
+}
+
+// NewRustFSClient 创建RustFS客户端实例
+func NewRustFSClient(cfg *Config) (*RustFSClient, error) {
+	if cfg.Endpoint == "" || cfg.AccessKey == "" || cfg.SecretKey == "" {
+		return nil, fmt.Errorf("missing required config: Endpoint, AccessKey, SecretKey")
+	}
+
+	// 创建RustFS客户端
+	client, err := rustfs.New(cfg.Endpoint, &rustfs.Options{
+		Credentials:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
+		Secure:       false,
+		BucketLookup: types.BucketLookupPath,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create RustFS client: %v", err)
+	}
+
+	return &RustFSClient{
+		client: client,
+	}, nil
+}
+
+func (r *RustFSClient) CreateBucket(ctx context.Context, bucketName string) error {
+	return r.client.Bucket().Create(ctx, bucketName)
+}
+
+func (r *RustFSClient) DeleteBucket(ctx context.Context, bucketName string) error {
+	return r.client.Bucket().Delete(ctx, bucketName)
+}
+
+func (r *RustFSClient) ListBuckets(ctx context.Context) ([]string, error) {
+	buckets, err := r.client.Bucket().List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	bucketNames := make([]string, 0, len(buckets))
+	for _, b := range buckets {
+		bucketNames = append(bucketNames, b.Name)
+	}
+
+	return bucketNames, nil
+}
+
+func (r *RustFSClient) ListObjects(ctx context.Context, bucketName string, prefix string) ([]string, error) {
+	var objectNames []string
+
+	for obj := range r.client.Object().List(ctx, bucketName) {
+		objectNames = append(objectNames, obj.Key)
+	}
+
+	return objectNames, nil
+}
+
+func (r *RustFSClient) UploadObject(ctx context.Context, bucketName, objectKey string, body io.Reader) error {
+	data, err := io.ReadAll(body)
+	if err != nil {
+		return err
+	}
+
+	_, err = r.client.Object().Put(ctx, bucketName, objectKey, io.NopCloser(bytes.NewReader(data)), int64(len(data)))
+	return err
+}
+
+func (r *RustFSClient) UploadFile(ctx context.Context, bucketName, objectKey, filePath string) error {
+	_, err := r.client.Object().FPut(ctx, bucketName, objectKey, filePath)
+	return err
+}
+
+func (r *RustFSClient) DownloadObject(ctx context.Context, bucketName, objectKey string) ([]byte, error) {
+	body, _, err := r.client.Object().Get(ctx, bucketName, objectKey)
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+
+	return io.ReadAll(body)
+}
+
+func (r *RustFSClient) DownloadFile(ctx context.Context, bucketName, objectKey, filePath string) error {
+	_, err := r.client.Object().FGet(ctx, bucketName, objectKey, filePath)
+	return err
+}
+
+func (r *RustFSClient) DeleteObject(ctx context.Context, bucketName, objectKey string) error {
+	return r.client.Object().Delete(ctx, bucketName, objectKey)
+}
+
+func (r *RustFSClient) GetPresignedURL(ctx context.Context, bucketName, objectKey string, expiry int) (string, error) {
+	presignedURL, _, err := r.client.Object().PresignGet(ctx, bucketName, objectKey, time.Duration(expiry)*time.Second, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return presignedURL.String(), nil
+}
+
+func (r *RustFSClient) BucketExists(ctx context.Context, bucketName string) (bool, error) {
+	return r.client.Bucket().Exists(ctx, bucketName)
+}
+
+func (r *RustFSClient) ObjectExists(ctx context.Context, bucketName, objectKey string) (bool, error) {
+	_, err := r.client.Object().Stat(ctx, bucketName, objectKey)
+	if err != nil {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+type BucketName string
+const (
+	UserServiceBucket BucketName = "user-service"
+)
+
+// 上传文件并返回链接
+func (o *RustFSClient) UploadFileAndGetURL(ctx context.Context, bucketName BucketName, objectKey string, body io.Reader) (string, error) {
+	// 2. 创建存储桶
+	exists, err := o.BucketExists(ctx, string(bucketName))
+	if err != nil {
+		return "", err
+	}
+
+	if !exists {
+		err = o.CreateBucket(ctx, string(bucketName))
+		if err != nil {
+			return "", err
+		}
+	}
+	// 从路径中提取存储桶名和对象键
+	err = o.UploadObject(ctx, string(bucketName), objectKey, body)
+	if err != nil {
+		return "", err
+	}
+
+	presignedURL, err := o.GetPresignedURL(ctx, string(bucketName), objectKey, 3600)
+	if err != nil {
+		return "", err
+	}
+
+	return presignedURL, nil
+}

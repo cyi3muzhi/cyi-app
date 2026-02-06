@@ -30,7 +30,11 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, auth)
 	db := data.NewDB(confData)
 	client := data.NewRedisClient(confData, logger)
-	dataData, cleanup, err := data.NewData(confData, db, client, logger)
+	rustFSClient, err := data.NewOssClient(confData)
+	if err != nil {
+		return nil, nil, err
+	}
+	dataData, cleanup, err := data.NewData(confData, db, client, rustFSClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}

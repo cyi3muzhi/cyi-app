@@ -10,6 +10,12 @@ volumes:
   # MySQL数据卷
   mysql_data:
     driver: local
+  # RustFS数据卷
+  rustfs_data:
+    driver: local
+# 日志目录
+  rustfs_logs:
+    driver: local
 
 services:
   # Consul服务 - 用于服务发现和配置管理
@@ -29,6 +35,8 @@ services:
     command: >
       consul agent -server -bootstrap-expect=1 -ui -client=0.0.0.0 -bind=0.0.0.0
       -data-dir=/consul/data -config-dir=/consul/config
+    networks:
+      - cyi-network
 
   # Redis服务 - 用于缓存
   redis:
@@ -49,6 +57,8 @@ services:
       - --maxmemory ${REDIS_MAXMEMORY:-1gb}
       - --maxmemory-policy ${REDIS_MAXMEMORY_POLICY:-allkeys-lru}
       - --appendonly yes  # 启用AOF持久化
+    networks:
+      - cyi-network
 
   # MySQL服务 - 用于数据库存储
   mysql:
@@ -69,6 +79,8 @@ services:
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
+    networks:
+      - cyi-network
 
   # Jaeger服务 - 用于分布式追踪
   jaeger:
@@ -88,3 +100,26 @@ services:
       - COLLECTOR_ZIPKIN_HOST_PORT=:9411  # 启用Zipkin收集器
     command:
       - --log-level=info
+    networks:
+      - cyi-network
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: rustfs
+    ports:
+      - "9000:9000"  # Web控制台端口
+      - "9001:9001"  # API端口
+    volumes:
+      - rustfs_data:/data  # 数据存储目录
+      - rustfs_logs:/logs  # 日志目录
+    environment:
+      - RUSTFS_ROOT_USER=rustfsadmin  # 管理员用户名
+      - RUSTFS_ROOT_PASSWORD=rustfsadmin  # 管理员密码
+      - RUSTFS_REGION=us-east-1  # 区域设置
+    restart: always
+    networks:
+      - cyi-network
+
+networks:
+  cyi-network:
+    driver: bridge

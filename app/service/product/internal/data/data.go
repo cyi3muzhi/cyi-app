@@ -85,3 +85,4 @@ func NewRedisClient(c *conf.Data, logger log.Logger) *redis.Client {
 	}
 	return client
 }
+

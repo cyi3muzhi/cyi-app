@@ -68,12 +68,16 @@ func (r *userRepo) GetUser(ctx context.Context, u *biz.User) (*biz.User, error) 
 		// 没有有效的查询条件
 		return nil, errors.New("invalid user query conditions")
 	}
-
+	query := &mod.User{}
+	convert.Convert(u, query)
+	query.ID = u.ID
 	// 构建查询条件
-	query := mod.User{
-		Phone:    u.Phone,
-		Username: u.Username,
-	}
+	// queryStr, _ := sonic.MarshalString(query)
+	// url, err := r.data.oss.UploadFileAndGetURL(ctx, rustfs.UserServiceBucket, "user_query.json", strings.NewReader(queryStr))
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// fmt.Println(url)
 
 	// 调用通用函数
 	return r.getUser(ctx, cacheKey, query)
@@ -89,7 +93,7 @@ func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.Us
 	cacheKey := userCacheKeyByUsername(username)
 
 	// 构建查询条件
-	query := mod.User{
+	query := &mod.User{
 		Username: username,
 	}
 
@@ -115,7 +119,7 @@ func (r *userRepo) VerifyPassword(ctx context.Context, u *biz.User) error {
 }
 
 // getUser 通用获取用户函数
-func (r *userRepo) getUser(ctx context.Context, cacheKey string, query mod.User) (*biz.User, error) {
+func (r *userRepo) getUser(ctx context.Context, cacheKey string, query *mod.User) (*biz.User, error) {
 	// 1. 尝试从缓存获取
 	var target *mod.User
 	err := cr.GetRedis(ctx, r.cache, cacheKey, &target)
@@ -130,7 +134,7 @@ func (r *userRepo) getUser(ctx context.Context, cacheKey string, query mod.User)
 	s := curd.User
 
 	// 2. 缓存未命中，从数据库查询
-	user, err := s.WithContext(ctx).QueryWith(query)
+	user, err := s.WithContext(ctx).QueryWith(*query)
 	if err != nil {
 		return nil, err
 	}

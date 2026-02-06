@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"cyi-app/app/service/user/internal/conf"
+	"cyi-app/pkg/util/rustfs"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -24,14 +25,16 @@ var ProviderSet = wire.NewSet(
 	NewData,
 	NewDB,
 	NewRedisClient,
+	NewOssClient,
 )
 
 type Data struct {
 	cache *redis.Client
+	oss   *rustfs.RustFSClient
 }
 
 // NewData .
-func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, oss *rustfs.RustFSClient, logger log.Logger) (*Data, func(), error) {
 
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
@@ -39,6 +42,7 @@ func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, logger log.Logger) 
 	curd.SetDefault(db)
 	return &Data{
 		cache: cache,
+		oss:   oss,
 	}, cleanup, nil
 }
 
@@ -93,4 +97,12 @@ func NewRedisClient(c *conf.Data, logger log.Logger) *redis.Client {
 		panic(err)
 	}
 	return client
+}
+
+func NewOssClient(cfg *conf.Data) (*rustfs.RustFSClient, error) {
+	return rustfs.NewRustFSClient(&rustfs.Config{
+		Endpoint:  cfg.Oss.Endpoint,
+		AccessKey: cfg.Oss.AccessKey,
+		SecretKey: cfg.Oss.SecretKey,
+	})
 }
