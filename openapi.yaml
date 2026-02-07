@@ -77,6 +77,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.RegisterReply'
+    /user/v1/update:
+        put:
+            tags:
+                - CinInterface
+            description: 更新用户信息
+            operationId: CinInterface_UpdateUserInfo
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.UpdateUserInfoRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.UpdateUserInfoReply'
 components:
     schemas:
         api.cin.interface.v1.GetUserInfoReply:
@@ -116,6 +135,23 @@ components:
                 password:
                     type: string
                     description: 密码长度验证
+        api.cin.interface.v1.UpdateUserInfoReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.UpdateUserInfoRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 用户ID
+                name:
+                    type: string
+                    description: 姓名
+                avatar:
+                    type: string
+                    description: 头像URL
         api.cin.interface.v1.UserInfoReply:
             type: object
             properties:
@@ -124,6 +160,6 @@ components:
                     description: 用户ID
                 username:
                     type: string
-                    description: 姓名
+                    description: 用户账号
 tags:
     - name: CinInterface

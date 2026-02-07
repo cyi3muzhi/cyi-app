@@ -28,5 +28,7 @@ enum CinInterfaceErrorReason {
 	USER_NOT_FOUND = 3 [(errors.code) = 404];
 	// 密码错误
 	PASSWORD_ERROR = 4 [(errors.code) = 400];
+	// 修改用户信息失败
+	USER_UPDATE_FAILED = 5 [(errors.code) = 400];
 
 }

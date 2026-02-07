@@ -70,13 +70,41 @@ func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.Us
 	return result.(*biz.User), nil
 }
 
-func (r *userRepo) Save(ctx context.Context, u *biz.User) error {
+func (r *userRepo) AddUser(ctx context.Context, u *biz.User) error {
 	_, err := r.data.uc.CreateUser(ctx, &usV1.CreateUserRequest{
 		Username: u.Username,
 		Password: u.Password,
 	})
 	return err
 }
+
+// RemoveUser 移除用户
+func (r *userRepo) RemoveUser(ctx context.Context, id int64) error {
+	// _, err := r.data.uc.DeleteUser(ctx, &usV1.DeleteUserRequest{
+	// 	Id: id,
+	// })
+	return nil
+}
+
+// ModifyUser 修改用户
+func (r *userRepo) ModifyUser(ctx context.Context, u *biz.User) error {
+	_, err := r.data.uc.UpdateUser(ctx, &usV1.UpdateUserRequest{
+		Id:       u.ID,
+		Name: u.Name,
+		Avatar: u.Avatar,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func  (r *userRepo) FindUserList(ctx context.Context)([]*biz.User, error){
+	return nil, nil
+}
+
+
+
 
 // VerifyPassword 校验密码是否正确
 func (r *userRepo) VerifyPassword(ctx context.Context, u *biz.User, password string) error {

@@ -40,8 +40,17 @@ message CreateUserReply {
 	string username = 4;
 }
 
-message UpdateUserRequest {}
-message UpdateUserReply {}
+message UpdateUserRequest {
+	// 用户id
+	int64 id = 1;
+	// 姓名
+	string name = 2;
+	// 头像
+	string avatar = 3;
+}
+message UpdateUserReply {
+	bool success = 1;
+}
 
 message DeleteUserRequest {}
 message DeleteUserReply {}

@@ -41,7 +41,18 @@ func (s *UserService) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	return reply, nil
 }
 func (s *UserService) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserReply, error) {
-	return &pb.UpdateUserReply{}, nil
+	u := &biz.User{}
+	if err := convert.Convert(req, u); err != nil {
+		return nil, err
+	}
+	if err := s.uc.UpdateUser(ctx, u); err != nil {
+		return &pb.UpdateUserReply{
+			Success: false,
+		}, err
+	}
+	return &pb.UpdateUserReply{
+		Success: true,
+	}, nil
 }
 func (s *UserService) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb.DeleteUserReply, error) {
 	return &pb.DeleteUserReply{}, nil

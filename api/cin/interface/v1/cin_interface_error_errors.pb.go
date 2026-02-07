@@ -78,3 +78,17 @@ func IsPasswordError(err error) bool {
 func ErrorPasswordError(format string, args ...interface{}) *errors.Error {
 	return errors.New(400, CinInterfaceErrorReason_PASSWORD_ERROR.String(), fmt.Sprintf(format, args...))
 }
+
+// 修改用户信息失败
+func IsUserUpdateFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == CinInterfaceErrorReason_USER_UPDATE_FAILED.String() && e.Code == 400
+}
+
+// 修改用户信息失败
+func ErrorUserUpdateFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, CinInterfaceErrorReason_USER_UPDATE_FAILED.String(), fmt.Sprintf(format, args...))
+}

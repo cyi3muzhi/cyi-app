@@ -37,6 +37,10 @@ type User struct {
 	Password string `json:"password"`
 	// 用户名
 	Username string `json:"username"`
+	// 姓名
+	Name string `json:"name"`
+	// 头像URL
+	Avatar string `json:"avatar"`
 }
 
 func (uc *AuthUseCase) Register(ctx context.Context, in *User) error {
@@ -57,10 +61,10 @@ func (uc *AuthUseCase) Register(ctx context.Context, in *User) error {
 		return v1.ErrorUserRegisterFailed("check user existence failed")
 	}
 
-	// save user
-	if err := uc.userRepo.Save(ctx, in); err != nil {
-		uc.log.Errorf("Failed to save user: %v", err)
-		return v1.ErrorUserRegisterFailed("save user failed")
+	// 添加用户
+	if err := uc.userRepo.AddUser(ctx, in); err != nil {
+		uc.log.Errorf("Failed to add user: %v", err)
+		return v1.ErrorUserRegisterFailed("add user failed")
 	}
 	return nil
 }

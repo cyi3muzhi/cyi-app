@@ -20,10 +20,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CinInterface_Login_FullMethodName       = "/api.cin.interface.v1.CinInterface/Login"
-	CinInterface_Register_FullMethodName    = "/api.cin.interface.v1.CinInterface/Register"
-	CinInterface_GetUserInfo_FullMethodName = "/api.cin.interface.v1.CinInterface/GetUserInfo"
-	CinInterface_UserInfo_FullMethodName    = "/api.cin.interface.v1.CinInterface/UserInfo"
+	CinInterface_Login_FullMethodName          = "/api.cin.interface.v1.CinInterface/Login"
+	CinInterface_Register_FullMethodName       = "/api.cin.interface.v1.CinInterface/Register"
+	CinInterface_GetUserInfo_FullMethodName    = "/api.cin.interface.v1.CinInterface/GetUserInfo"
+	CinInterface_UserInfo_FullMethodName       = "/api.cin.interface.v1.CinInterface/UserInfo"
+	CinInterface_UpdateUserInfo_FullMethodName = "/api.cin.interface.v1.CinInterface/UpdateUserInfo"
 )
 
 // CinInterfaceClient is the client API for CinInterface service.
@@ -38,6 +39,8 @@ type CinInterfaceClient interface {
 	GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoReply, error)
 	// 获取个人信息
 	UserInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserInfoReply, error)
+	// 更新用户信息
+	UpdateUserInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*UpdateUserInfoReply, error)
 }
 
 type cinInterfaceClient struct {
@@ -88,6 +91,16 @@ func (c *cinInterfaceClient) UserInfo(ctx context.Context, in *emptypb.Empty, op
 	return out, nil
 }
 
+func (c *cinInterfaceClient) UpdateUserInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*UpdateUserInfoReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateUserInfoReply)
+	err := c.cc.Invoke(ctx, CinInterface_UpdateUserInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CinInterfaceServer is the server API for CinInterface service.
 // All implementations must embed UnimplementedCinInterfaceServer
 // for forward compatibility.
@@ -100,6 +113,8 @@ type CinInterfaceServer interface {
 	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoReply, error)
 	// 获取个人信息
 	UserInfo(context.Context, *emptypb.Empty) (*UserInfoReply, error)
+	// 更新用户信息
+	UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoReply, error)
 	mustEmbedUnimplementedCinInterfaceServer()
 }
 
@@ -121,6 +136,9 @@ func (UnimplementedCinInterfaceServer) GetUserInfo(context.Context, *GetUserInfo
 }
 func (UnimplementedCinInterfaceServer) UserInfo(context.Context, *emptypb.Empty) (*UserInfoReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UserInfo not implemented")
+}
+func (UnimplementedCinInterfaceServer) UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserInfo not implemented")
 }
 func (UnimplementedCinInterfaceServer) mustEmbedUnimplementedCinInterfaceServer() {}
 func (UnimplementedCinInterfaceServer) testEmbeddedByValue()                      {}
@@ -215,6 +233,24 @@ func _CinInterface_UserInfo_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CinInterface_UpdateUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CinInterfaceServer).UpdateUserInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CinInterface_UpdateUserInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CinInterfaceServer).UpdateUserInfo(ctx, req.(*UpdateUserInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CinInterface_ServiceDesc is the grpc.ServiceDesc for CinInterface service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -237,6 +273,10 @@ var CinInterface_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UserInfo",
 			Handler:    _CinInterface_UserInfo_Handler,
+		},
+		{
+			MethodName: "UpdateUserInfo",
+			Handler:    _CinInterface_UpdateUserInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

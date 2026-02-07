@@ -39,6 +39,13 @@ service CinInterface {
 			get: "/user/v1/info"
 		};
 	};
+	// 更新用户信息
+	rpc UpdateUserInfo (UpdateUserInfoRequest) returns (UpdateUserInfoReply){
+		option (google.api.http) = {
+			put: "/user/v1/update"
+			body: "*"
+		};
+	};
 }
 
 message LoginRequest {
@@ -83,6 +90,19 @@ message GetUserInfoReply {
 message UserInfoReply{
 	// 用户ID
 	int64 id = 1;
-	// 姓名
+	// 用户账号
 	string username = 2;
+}
+
+message UpdateUserInfoRequest{
+	// 用户ID
+	int64 id = 1;
+	// 姓名
+	string name = 2 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
+	// 头像URL
+	string avatar = 3 [(validate.rules).string = {uri: true}];
+}
+
+message UpdateUserInfoReply{
+	bool success = 1;
 }

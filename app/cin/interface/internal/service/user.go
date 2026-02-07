@@ -55,3 +55,29 @@ func (s *CinInterface) UserInfo(ctx context.Context, _ *emptypb.Empty) (*v1.User
 	}
 	return reply, nil
 }
+
+// 更新用户信息
+func (s *CinInterface) UpdateUserInfo(ctx context.Context, req *v1.UpdateUserInfoRequest) (*v1.UpdateUserInfoReply, error) {
+	// 获取上下文的用户id
+	id, err := service.GetUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	in := &biz.User{}
+	if err := convert.Convert(req, in); err != nil {
+		return nil, err
+	}
+	in.ID = id
+
+	// 更新用户信息
+	err = s.uc.UpdateUserInfo(ctx, in)
+	if err != nil {
+		return &v1.UpdateUserInfoReply{
+			Success: false,
+		}, err
+	}
+	reply := &v1.UpdateUserInfoReply{
+		Success: true,
+	}
+	return reply, nil
+}

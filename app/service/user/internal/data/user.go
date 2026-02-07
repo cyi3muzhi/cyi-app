@@ -155,3 +155,27 @@ func (r *userRepo) getUser(ctx context.Context, cacheKey string, query *mod.User
 		Username: user.Username,
 	}, nil
 }
+
+func (r *userRepo) UpdateUser(ctx context.Context, u *biz.User) error {
+	user := &mod.User{}
+	convert.Convert(u, user)
+	info, err := curd.User.WithContext(ctx).Updates(user); 
+	if err != nil {
+		return err
+	}
+	if info.RowsAffected == 0 {
+		return errors.New("user not found")
+	}
+
+	// cache
+	cacheKey := userCacheKeyByUsername(user.Username)
+	if err := cr.SetRedis(ctx, r.cache, cacheKey, user, cr.OneDay); err != nil {
+		r.log.Warnf("Failed to set user cache for %s: %v", user.Username, err)
+	}
+	// 2. 缓存命中且无错误
+	cacheKey = userCacheKeyByID(user.ID)
+	if err := cr.SetRedis(ctx, r.cache, cacheKey, user, cr.OneDay); err != nil {
+		r.log.Warnf("Failed to set user cache for %d: %v", user.ID, err)
+	}
+	return nil
+}
