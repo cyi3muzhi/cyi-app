@@ -5,12 +5,14 @@ import (
 
 	v1 "cyi-app/api/cin/interface/v1"
 
-	"github.com/go-kratos/kratos/v2/transport/http"
 	ts "cyi-app/pkg/kratos/server/transporter"
+
+	"github.com/go-kratos/kratos/v2/transport/http"
 )
 
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(s *ts.HttpServer, cinInterface *service.CinInterface) *http.Server {
 	v1.RegisterCinInterfaceHTTPServer(s.HttpServer, cinInterface)
+	s.HttpServer.HandleFunc("/ws/chat", cinInterface.UserChat)
 	return s.HttpServer
 }

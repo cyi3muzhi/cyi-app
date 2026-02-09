@@ -38,7 +38,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	userRepo := data.NewUserRepo(dataData, logger)
 	userUseCase := biz.NewUserUseCase(userRepo, logger)
 	authUseCase := biz.NewAuthUseCase(userRepo, auth, logger)
-	cinInterface := service.NewCinInterface(userUseCase, authUseCase, logger)
+	cinInterface := service.NewCinInterface(userUseCase, authUseCase, logger, auth)
 	server2 := server.NewGRPCServer(grpcServer, cinInterface)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, auth)
 	server3 := server.NewHTTPServer(httpServer, cinInterface)

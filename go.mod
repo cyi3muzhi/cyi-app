@@ -4,7 +4,6 @@ go 1.25.0
 
 require (
 	github.com/Scorpio69t/rustfs-go v1.0.6
-	github.com/bytedance/sonic v1.15.0
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/fatih/structs v1.1.0
 	github.com/go-kratos/kratos/contrib/config/consul/v2 v2.0.0-20250912104010-25b6c0fb9f38
@@ -15,6 +14,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.7.0
 	github.com/gorilla/handlers v1.5.2
+	github.com/gorilla/websocket v1.5.3
 	github.com/hashicorp/consul/api v1.32.4
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/redis/go-redis/v9 v9.14.0
@@ -35,15 +35,7 @@ require (
 	gorm.io/plugin/soft_delete v1.2.1
 )
 
-require (
-	github.com/bytedance/gopkg v0.1.3 // indirect
-	github.com/bytedance/sonic/loader v0.5.0 // indirect
-	github.com/cloudwego/base64x v0.1.6 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.9 // indirect
-	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
-	gopkg.in/ini.v1 v1.67.1 // indirect
-)
+require gopkg.in/ini.v1 v1.67.1 // indirect
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.6-20250717165733-d22d418d82d8.1 // indirect

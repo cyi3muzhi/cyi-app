@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.9
 // 	protoc        v5.27.2
-// source: api/cin/interface/v1/cin_interface.proto
+// source: cin/interface/v1/cin_interface.proto
 
 package v1
 
@@ -36,7 +36,7 @@ type LoginRequest struct {
 
 func (x *LoginRequest) Reset() {
 	*x = LoginRequest{}
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[0]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48,7 +48,7 @@ func (x *LoginRequest) String() string {
 func (*LoginRequest) ProtoMessage() {}
 
 func (x *LoginRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[0]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61,7 +61,7 @@ func (x *LoginRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginRequest.ProtoReflect.Descriptor instead.
 func (*LoginRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{0}
+	return file_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *LoginRequest) GetUsername() string {
@@ -87,7 +87,7 @@ type LoginReply struct {
 
 func (x *LoginReply) Reset() {
 	*x = LoginReply{}
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[1]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -99,7 +99,7 @@ func (x *LoginReply) String() string {
 func (*LoginReply) ProtoMessage() {}
 
 func (x *LoginReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[1]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -112,7 +112,7 @@ func (x *LoginReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginReply.ProtoReflect.Descriptor instead.
 func (*LoginReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{1}
+	return file_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *LoginReply) GetToken() string {
@@ -134,7 +134,7 @@ type RegisterReq struct {
 
 func (x *RegisterReq) Reset() {
 	*x = RegisterReq{}
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[2]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -146,7 +146,7 @@ func (x *RegisterReq) String() string {
 func (*RegisterReq) ProtoMessage() {}
 
 func (x *RegisterReq) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[2]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -159,7 +159,7 @@ func (x *RegisterReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterReq.ProtoReflect.Descriptor instead.
 func (*RegisterReq) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{2}
+	return file_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RegisterReq) GetUsername() string {
@@ -185,7 +185,7 @@ type RegisterReply struct {
 
 func (x *RegisterReply) Reset() {
 	*x = RegisterReply{}
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[3]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -197,7 +197,7 @@ func (x *RegisterReply) String() string {
 func (*RegisterReply) ProtoMessage() {}
 
 func (x *RegisterReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[3]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -210,7 +210,7 @@ func (x *RegisterReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterReply.ProtoReflect.Descriptor instead.
 func (*RegisterReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{3}
+	return file_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *RegisterReply) GetSuccess() bool {
@@ -230,7 +230,7 @@ type GetUserInfoRequest struct {
 
 func (x *GetUserInfoRequest) Reset() {
 	*x = GetUserInfoRequest{}
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[4]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -242,7 +242,7 @@ func (x *GetUserInfoRequest) String() string {
 func (*GetUserInfoRequest) ProtoMessage() {}
 
 func (x *GetUserInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[4]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -255,7 +255,7 @@ func (x *GetUserInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserInfoRequest.ProtoReflect.Descriptor instead.
 func (*GetUserInfoRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{4}
+	return file_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetUserInfoRequest) GetId() int64 {
@@ -277,7 +277,7 @@ type GetUserInfoReply struct {
 
 func (x *GetUserInfoReply) Reset() {
 	*x = GetUserInfoReply{}
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[5]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -289,7 +289,7 @@ func (x *GetUserInfoReply) String() string {
 func (*GetUserInfoReply) ProtoMessage() {}
 
 func (x *GetUserInfoReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[5]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -302,7 +302,7 @@ func (x *GetUserInfoReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserInfoReply.ProtoReflect.Descriptor instead.
 func (*GetUserInfoReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{5}
+	return file_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetUserInfoReply) GetId() int64 {
@@ -331,7 +331,7 @@ type UserInfoReply struct {
 
 func (x *UserInfoReply) Reset() {
 	*x = UserInfoReply{}
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[6]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -343,7 +343,7 @@ func (x *UserInfoReply) String() string {
 func (*UserInfoReply) ProtoMessage() {}
 
 func (x *UserInfoReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[6]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -356,7 +356,7 @@ func (x *UserInfoReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserInfoReply.ProtoReflect.Descriptor instead.
 func (*UserInfoReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{6}
+	return file_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *UserInfoReply) GetId() int64 {
@@ -387,7 +387,7 @@ type UpdateUserInfoRequest struct {
 
 func (x *UpdateUserInfoRequest) Reset() {
 	*x = UpdateUserInfoRequest{}
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[7]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -399,7 +399,7 @@ func (x *UpdateUserInfoRequest) String() string {
 func (*UpdateUserInfoRequest) ProtoMessage() {}
 
 func (x *UpdateUserInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[7]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -412,7 +412,7 @@ func (x *UpdateUserInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUserInfoRequest.ProtoReflect.Descriptor instead.
 func (*UpdateUserInfoRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{7}
+	return file_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateUserInfoRequest) GetId() int64 {
@@ -445,7 +445,7 @@ type UpdateUserInfoReply struct {
 
 func (x *UpdateUserInfoReply) Reset() {
 	*x = UpdateUserInfoReply{}
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[8]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -457,7 +457,7 @@ func (x *UpdateUserInfoReply) String() string {
 func (*UpdateUserInfoReply) ProtoMessage() {}
 
 func (x *UpdateUserInfoReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[8]
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -470,7 +470,7 @@ func (x *UpdateUserInfoReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUserInfoReply.ProtoReflect.Descriptor instead.
 func (*UpdateUserInfoReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{8}
+	return file_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UpdateUserInfoReply) GetSuccess() bool {
@@ -480,11 +480,11 @@ func (x *UpdateUserInfoReply) GetSuccess() bool {
 	return false
 }
 
-var File_api_cin_interface_v1_cin_interface_proto protoreflect.FileDescriptor
+var File_cin_interface_v1_cin_interface_proto protoreflect.FileDescriptor
 
-const file_api_cin_interface_v1_cin_interface_proto_rawDesc = "" +
+const file_cin_interface_v1_cin_interface_proto_rawDesc = "" +
 	"\n" +
-	"(api/cin/interface/v1/cin_interface.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"l\n" +
+	"$cin/interface/v1/cin_interface.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"l\n" +
 	"\fLoginRequest\x125\n" +
 	"\busername\x18\x01 \x01(\tB\x19\xfaB\x16r\x14\x10\x02\x18\x182\x0e^[\\w\\p{Han}]+$R\busername\x12%\n" +
 	"\bpassword\x18\x03 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18\x14R\bpassword\"\"\n" +
@@ -519,19 +519,19 @@ const file_api_cin_interface_v1_cin_interface_proto_rawDesc = "" +
 	"\x14api.cin.interface.v1P\x01Z\x1fcyi-app/api/cin/interface/v1;v1b\x06proto3"
 
 var (
-	file_api_cin_interface_v1_cin_interface_proto_rawDescOnce sync.Once
-	file_api_cin_interface_v1_cin_interface_proto_rawDescData []byte
+	file_cin_interface_v1_cin_interface_proto_rawDescOnce sync.Once
+	file_cin_interface_v1_cin_interface_proto_rawDescData []byte
 )
 
-func file_api_cin_interface_v1_cin_interface_proto_rawDescGZIP() []byte {
-	file_api_cin_interface_v1_cin_interface_proto_rawDescOnce.Do(func() {
-		file_api_cin_interface_v1_cin_interface_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_cin_interface_v1_cin_interface_proto_rawDesc), len(file_api_cin_interface_v1_cin_interface_proto_rawDesc)))
+func file_cin_interface_v1_cin_interface_proto_rawDescGZIP() []byte {
+	file_cin_interface_v1_cin_interface_proto_rawDescOnce.Do(func() {
+		file_cin_interface_v1_cin_interface_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_cin_interface_v1_cin_interface_proto_rawDesc), len(file_cin_interface_v1_cin_interface_proto_rawDesc)))
 	})
-	return file_api_cin_interface_v1_cin_interface_proto_rawDescData
+	return file_cin_interface_v1_cin_interface_proto_rawDescData
 }
 
-var file_api_cin_interface_v1_cin_interface_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
-var file_api_cin_interface_v1_cin_interface_proto_goTypes = []any{
+var file_cin_interface_v1_cin_interface_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_cin_interface_v1_cin_interface_proto_goTypes = []any{
 	(*LoginRequest)(nil),          // 0: api.cin.interface.v1.LoginRequest
 	(*LoginReply)(nil),            // 1: api.cin.interface.v1.LoginReply
 	(*RegisterReq)(nil),           // 2: api.cin.interface.v1.RegisterReq
@@ -543,7 +543,7 @@ var file_api_cin_interface_v1_cin_interface_proto_goTypes = []any{
 	(*UpdateUserInfoReply)(nil),   // 8: api.cin.interface.v1.UpdateUserInfoReply
 	(*emptypb.Empty)(nil),         // 9: google.protobuf.Empty
 }
-var file_api_cin_interface_v1_cin_interface_proto_depIdxs = []int32{
+var file_cin_interface_v1_cin_interface_proto_depIdxs = []int32{
 	0, // 0: api.cin.interface.v1.CinInterface.Login:input_type -> api.cin.interface.v1.LoginRequest
 	2, // 1: api.cin.interface.v1.CinInterface.Register:input_type -> api.cin.interface.v1.RegisterReq
 	4, // 2: api.cin.interface.v1.CinInterface.GetUserInfo:input_type -> api.cin.interface.v1.GetUserInfoRequest
@@ -561,26 +561,26 @@ var file_api_cin_interface_v1_cin_interface_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_api_cin_interface_v1_cin_interface_proto_init() }
-func file_api_cin_interface_v1_cin_interface_proto_init() {
-	if File_api_cin_interface_v1_cin_interface_proto != nil {
+func init() { file_cin_interface_v1_cin_interface_proto_init() }
+func file_cin_interface_v1_cin_interface_proto_init() {
+	if File_cin_interface_v1_cin_interface_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_interface_v1_cin_interface_proto_rawDesc), len(file_api_cin_interface_v1_cin_interface_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cin_interface_v1_cin_interface_proto_rawDesc), len(file_cin_interface_v1_cin_interface_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_api_cin_interface_v1_cin_interface_proto_goTypes,
-		DependencyIndexes: file_api_cin_interface_v1_cin_interface_proto_depIdxs,
-		MessageInfos:      file_api_cin_interface_v1_cin_interface_proto_msgTypes,
+		GoTypes:           file_cin_interface_v1_cin_interface_proto_goTypes,
+		DependencyIndexes: file_cin_interface_v1_cin_interface_proto_depIdxs,
+		MessageInfos:      file_cin_interface_v1_cin_interface_proto_msgTypes,
 	}.Build()
-	File_api_cin_interface_v1_cin_interface_proto = out.File
-	file_api_cin_interface_v1_cin_interface_proto_goTypes = nil
-	file_api_cin_interface_v1_cin_interface_proto_depIdxs = nil
+	File_cin_interface_v1_cin_interface_proto = out.File
+	file_cin_interface_v1_cin_interface_proto_goTypes = nil
+	file_cin_interface_v1_cin_interface_proto_depIdxs = nil
 }
