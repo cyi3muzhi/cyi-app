@@ -30,7 +30,7 @@ init:
 config:
 	protoc --proto_path=./internal \
 	       --proto_path=./third_party \
- 	       --go_out=paths=source_relative:./internal \
+   	       --go_out=paths=source_relative:./internal \
 	       $(INTERNAL_PROTO_FILES)
 
 .PHONY: api
@@ -38,9 +38,9 @@ config:
 api:
 	protoc --proto_path=./api \
 	       --proto_path=./third_party \
- 	       --go_out=paths=source_relative:./api \
- 	       --go-http_out=paths=source_relative:./api \
- 	       --go-grpc_out=paths=source_relative:./api \
+   	       --go_out=paths=source_relative:./api \
+   	       --go-http_out=paths=source_relative:./api \
+   	       --go-grpc_out=paths=source_relative:./api \
 	       --openapi_out=fq_schema_naming=true,default_response=false:. \
 	       $(API_PROTO_FILES)
 
@@ -82,9 +82,16 @@ all:
 	make config;
 	make generate;
 
+.PHONY: service
+# generate service template
+# Example: make service order --description="Order service" --features=grpc,redis,mysql
+service:
+	@powershell -Command "$$goals = '$(MAKECMDGOALS)'.Split(' '); $$args = $$goals | Where-Object { $$_ -ne 'service' }; if ($$args.Count -eq 0) { echo 'Error: Service name is required. Usage: make service <service-name> [options]'; echo 'Options: --description=<description> --version=<version> --author=<author> --features=<features>'; exit 1; } cd tools/service-gen; go run main.go $$args"
+
 # wire
 wire:
 	go generate ./...
+
 # show help
 help:
 	@echo ''
@@ -103,3 +110,7 @@ help:
 	{ lastLine = $$0 }' $(MAKEFILE_LIST)
 
 .DEFAULT_GOAL := help
+
+# Ignore any arguments passed to service target
+%:
+	@:
