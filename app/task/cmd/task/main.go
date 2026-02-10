@@ -7,8 +7,8 @@ import (
 
 	"cyi-app/app/task/internal/conf"
 
-	consulConfig "cyi-app/pkg/kratos/config"
 	cgrpc "cyi-app/pkg/kratos/client"
+	consulConfig "cyi-app/pkg/kratos/config"
 
 	tr "cyi-app/pkg/kratos/tracing"
 
@@ -21,15 +21,17 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/google/uuid"
 	_ "go.uber.org/automaxprocs"
+	"github.com/go-kratos/kratos/v2/transport/http"
+
 )
 
 var (
-	Name string = fmt.Sprintf("%s.%s", os.Getenv("SERVICE_ENV"), cgrpc.TASK)
+	Name    string = fmt.Sprintf("%s.%s", os.Getenv("SERVICE_ENV"), cgrpc.TASK)
 	Version string = cgrpc.TASK_VERSION
-	id = strings.ReplaceAll(strings.ToLower(uuid.NewString()), "-", "")
+	id             = strings.ReplaceAll(strings.ToLower(uuid.NewString()), "-", "")
 )
 
-func newApp(logger log.Logger, gs *grpc.Server, reg registry.Registrar) *kratos.App {
+func newApp(logger log.Logger, hp *http.Server, gs *grpc.Server, reg registry.Registrar) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -38,6 +40,7 @@ func newApp(logger log.Logger, gs *grpc.Server, reg registry.Registrar) *kratos.
 		kratos.Logger(logger),
 		kratos.Server(
 			gs,
+			hp,
 		),
 		kratos.Registrar(reg),
 	)
