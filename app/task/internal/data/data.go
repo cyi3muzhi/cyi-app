@@ -29,7 +29,6 @@ func NewData(c *conf.Data, cache redis.UniversalClient, logger log.Logger, serve
 		server.Shutdown()
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	// curd.SetDefault(db)
 	return &Data{
 		cache: cache,
 	}, cleanup, nil

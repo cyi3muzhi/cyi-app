@@ -10,6 +10,7 @@ const (
 	PRODUCT_SERVICE = "product.service"
 	ORDER_SERVICE = "order.service"
 	TASK = "task"
+	JOB = "job"
 )
 
 const (
@@ -20,4 +21,5 @@ const (
 	ORDER_VERSION = "v1"
 
 	TASK_VERSION = "v1"
+	JOB_VERSION = "v1"
 )

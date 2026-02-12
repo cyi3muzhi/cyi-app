@@ -149,3 +149,23 @@ type GrpcServer struct {
 type TaskServer struct {
 	TaskServer *asynq.ServeMux
 }
+
+type Scheduler struct {
+	Scheduler *asynq.Scheduler
+}
+
+func (s *TaskServer) CronHandleFunc(name string, f asynq.HandlerFunc) {
+	s.TaskServer.HandleFunc(CronName(name), f)
+}
+
+func CronName(name string) string {
+	return fmt.Sprintf("%s:%s", "cron", name)
+}
+
+func AsyncName(name string) string {
+	return fmt.Sprintf("%s:%s", "async", name)
+}
+
+func DelayName(name string) string {
+	return fmt.Sprintf("%s:%s", "delay", name)
+}

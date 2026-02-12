@@ -8,6 +8,6 @@ import (
 )
 
 func ProcessTask(m *ts.TaskServer, task *service.TaskService) *asynq.ServeMux {
-	m.TaskServer.HandleFunc("email:send", task.EmailTask)
+	m.TaskServer.HandleFunc(ts.AsyncName("email:send"), task.EmailTask)
 	return m.TaskServer
 }
