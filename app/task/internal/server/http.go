@@ -1,15 +1,16 @@
 package server
 
 import (
-	"cyi-app/app/task/internal/service"
-
 	ts "cyi-app/pkg/kratos/server/transporter"
 
+	aqhelper "cyi-app/pkg/util/asynq_helper"
+
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/redis/go-redis/v9"
 )
 
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(s *ts.HttpServer, taskService *service.TaskService) *http.Server {
-	// v1.RegisterHTTPTaskServer(s.HttpServer, taskService)
+func NewHTTPServer(s *ts.HttpServer, r redis.UniversalClient) *http.Server {
+	s.HttpServer.HandlePrefix("/asynq/", aqhelper.NewMonitor(r))
 	return s.HttpServer
 }

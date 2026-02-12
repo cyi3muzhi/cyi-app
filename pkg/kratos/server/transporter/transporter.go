@@ -11,6 +11,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/gorilla/handlers"
+	"github.com/hibiken/asynq"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
@@ -143,4 +144,8 @@ type HttpServer struct {
 
 type GrpcServer struct {
 	GrpcServer *grpc.Server
+}
+
+type TaskServer struct {
+	TaskServer *asynq.ServeMux
 }

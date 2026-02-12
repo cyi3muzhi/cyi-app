@@ -5,16 +5,11 @@ import (
 	"cyi-app/app/task/internal/conf"
 	"time"
 
-	"gorm.io/driver/mysql"
-	"gorm.io/gen"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
-
 	// "cyi-app/app/service/task/internal/data/curd"
-	mod "cyi-app/app/task/internal/data/models"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
+	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -22,17 +17,16 @@ import (
 var ProviderSet = wire.NewSet(
 	NewTaskRepo,
 	NewData,
-	NewDB,
 	NewRedisClient,
 )
 
 type Data struct {
-	cache *redis.Client
+	cache redis.UniversalClient
 }
 
-func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, logger log.Logger) (*Data, func(), error) {
-
+func NewData(c *conf.Data, cache redis.UniversalClient, logger log.Logger, server *asynq.Server) (*Data, func(), error) {
 	cleanup := func() {
+		server.Shutdown()
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	// curd.SetDefault(db)
@@ -41,35 +35,7 @@ func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, logger log.Logger) 
 	}, cleanup, nil
 }
 
-func NewDB(c *conf.Data) *gorm.DB {
-	db, err := gorm.Open(mysql.Open(c.Database.Source), &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			SingularTable: true,
-		},
-		SkipDefaultTransaction: true,
-	})
-	if err != nil {
-		panic(err)
-	}
-	if err := db.AutoMigrate(&mod.Task{}); err != nil {
-		panic(err)
-	}
-	g := gen.NewGenerator(gen.Config{
-		OutPath: "../../internal/data/curd",             
-		Mode:    gen.WithoutContext | gen.WithDefaultQuery,
-	})
-	g.UseDB(db)
-	g.ApplyBasic(
-		&mod.Task{},
-	)
-	g.ApplyInterface(func(mod.ITask) {},
-		mod.Task{},
-	)
-	g.Execute()
-	return db
-}
-
-func NewRedisClient(c *conf.Data, logger log.Logger) *redis.Client {
+func NewRedisClient(c *conf.Data, logger log.Logger) redis.UniversalClient {
 	client := redis.NewClient(&redis.Options{
 		Addr:         c.Redis.Addr,
 		Network:      c.Redis.Network,

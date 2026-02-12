@@ -55,7 +55,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 		panic(err)
 	}
 	g := gen.NewGenerator(gen.Config{
-		OutPath: "../../internal/data/curd",             
+		OutPath: "../../internal/data/curd",
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery,
 	})
 	g.UseDB(db)
@@ -85,4 +85,3 @@ func NewRedisClient(c *conf.Data, logger log.Logger) *redis.Client {
 	}
 	return client
 }
-

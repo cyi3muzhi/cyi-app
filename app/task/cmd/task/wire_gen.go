@@ -25,23 +25,23 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider) (*kratos.App, func(), error) {
 	traceTracerProvider := provideTracerProvider(tracerProvider)
-	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, auth)
-	db := data.NewDB(confData)
-	client := data.NewRedisClient(confData, logger)
-	dataData, cleanup, err := data.NewData(confData, db, client, logger)
+	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger)
+	universalClient := data.NewRedisClient(confData, logger)
+	server2 := server.NewHTTPServer(httpServer, universalClient)
+	registrar := server.NewRegistrar(registry)
+	asynqServer := server.NewTaskServer(universalClient, logger)
+	taskServer := server.NewServerMux(logger)
+	dataData, cleanup, err := data.NewData(confData, universalClient, logger, asynqServer)
 	if err != nil {
 		return nil, nil, err
 	}
 	taskRepo := data.NewTaskRepo(dataData, logger)
 	taskUseCase := biz.NewTaskUseCase(taskRepo)
 	taskService := service.NewTaskService(taskUseCase, logger)
-	server2 := server.NewHTTPServer(httpServer, taskService)
-	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, auth)
-	server3 := server.NewServer(grpcServer, taskService)
-	registrar := server.NewRegistrar(registry)
-	app := newApp(logger, server2, server3, registrar)
+	serveMux := server.ProcessTask(taskServer, taskService)
+	app := newApp(logger, server2, registrar, asynqServer, serveMux)
 	return app, func() {
 		cleanup()
 	}, nil

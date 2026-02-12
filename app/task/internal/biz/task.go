@@ -6,7 +6,6 @@ import (
 
 type TaskRepo interface {
 	CreateTask(ctx context.Context, in *Task) error
-	UpdateTask(ctx context.Context, in *Task) error
 }
 
 
@@ -25,10 +24,5 @@ func NewTaskUseCase(repo TaskRepo) *TaskUseCase {
 
 
 func (uc *TaskUseCase) CreateTask(ctx context.Context, in *Task) error {
-	return nil
-}
-
-
-func (uc *TaskUseCase) UpdateTask(ctx context.Context, in *Task) error {	
 	return nil
 }

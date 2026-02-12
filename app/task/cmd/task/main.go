@@ -18,11 +18,10 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/registry"
-	"github.com/go-kratos/kratos/v2/transport/grpc"
-	"github.com/google/uuid"
-	_ "go.uber.org/automaxprocs"
 	"github.com/go-kratos/kratos/v2/transport/http"
-
+	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
+	_ "go.uber.org/automaxprocs"
 )
 
 var (
@@ -31,7 +30,13 @@ var (
 	id             = strings.ReplaceAll(strings.ToLower(uuid.NewString()), "-", "")
 )
 
-func newApp(logger log.Logger, hp *http.Server, gs *grpc.Server, reg registry.Registrar) *kratos.App {
+func newApp(logger log.Logger, hp *http.Server,reg registry.Registrar, server *asynq.Server, mux *asynq.ServeMux) *kratos.App {
+	go func() {
+		if err := server.Run(mux); err != nil {
+			log.NewHelper(logger).Errorf("asynq server failed: %v", err)
+			
+		}
+	}()
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -39,7 +44,6 @@ func newApp(logger log.Logger, hp *http.Server, gs *grpc.Server, reg registry.Re
 		kratos.Metadata(map[string]string{}),
 		kratos.Logger(logger),
 		kratos.Server(
-			gs,
 			hp,
 		),
 		kratos.Registrar(reg),
@@ -54,7 +58,6 @@ func main() {
 	}
 
 	defer c.Close()
-
 	// 加载配置
 	if err = c.Load(); err != nil {
 		panic(err)
@@ -91,14 +94,14 @@ func main() {
 	// 创建TracerProvider
 	tp := tr.NewTracerProvider(Name, bc.Trace.Endpoint)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, &cb, logger, tp)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, &cb, logger, tp)
 	if err != nil {
 		panic(err)
 	}
 	defer cleanup()
 
 	// start and wait for stop signal
-	if err := app.Run(); err != nil {
+	if err := app.Run();err != nil {
 		panic(err)
 	}
 }
