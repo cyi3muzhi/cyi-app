@@ -21,6 +21,7 @@ type UserRepo interface {
 	GetUser(ctx context.Context, u *User) (*User, error)
 	FindByUsername(ctx context.Context, username string) (*User, error)
 	VerifyPassword(ctx context.Context, u *User) error
+	UserCount(ctx context.Context) (int64, error)
 }
 
 type UserUseCase struct {
@@ -65,4 +66,9 @@ func (uc *UserUseCase)VerifyPassword(ctx context.Context, u *User)error{
 // 更新用户信息
 func (uc *UserUseCase) UpdateUser(ctx context.Context, u *User) error {
 	return uc.repo.UpdateUser(ctx, u)
+}
+
+// 统计用户数量
+func (uc *UserUseCase) UserCount(ctx context.Context) (int64, error) {
+	return uc.repo.UserCount(ctx)
 }

@@ -25,7 +25,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, auth *conf.Auth) (*kratos.App, func(), error) {
 	traceTracerProvider := provideTracerProvider(tracerProvider)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger)
 	universalClient := data.NewRedisClient(confData, logger)
@@ -33,13 +33,17 @@ func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Regist
 	registrar := server.NewRegistrar(registry)
 	asynqServer := server.NewTaskServer(universalClient, logger)
 	taskServer := server.NewServerMux(logger)
-	dataData, cleanup, err := data.NewData(confData, universalClient, logger, asynqServer)
+	discovery := server.NewDiscovery(registry)
+	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider)
+	dataData, cleanup, err := data.NewData(confData, universalClient, logger, asynqServer, userClient)
 	if err != nil {
 		return nil, nil, err
 	}
 	taskRepo := data.NewTaskRepo(dataData, logger)
 	taskUseCase := biz.NewTaskUseCase(taskRepo)
-	taskService := service.NewTaskService(taskUseCase, logger)
+	userRepo := data.NewUserRepo(dataData)
+	userUseCase := biz.NewUserUseCase(userRepo, logger)
+	taskService := service.NewTaskService(taskUseCase, userUseCase, logger)
 	serveMux := server.ProcessTask(taskServer, taskService)
 	app := newApp(logger, server2, registrar, asynqServer, serveMux)
 	return app, func() {

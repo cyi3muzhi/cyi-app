@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
-	"github.com/gorilla/websocket"
+	"github.com/coder/websocket"
 )
 
 // ProviderSet is service providers.

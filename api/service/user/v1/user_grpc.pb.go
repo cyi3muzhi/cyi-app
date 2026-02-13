@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -27,6 +28,7 @@ const (
 	User_CheckUserExist_FullMethodName    = "/api.service.user.v1.User/CheckUserExist"
 	User_GetUserByUsername_FullMethodName = "/api.service.user.v1.User/GetUserByUsername"
 	User_VerifyPassword_FullMethodName    = "/api.service.user.v1.User/VerifyPassword"
+	User_UserCount_FullMethodName         = "/api.service.user.v1.User/UserCount"
 )
 
 // UserClient is the client API for User service.
@@ -43,6 +45,8 @@ type UserClient interface {
 	GetUserByUsername(ctx context.Context, in *GetUserByUsernameReq, opts ...grpc.CallOption) (*GetUserByUsernameReply, error)
 	// 校验密码是否正确
 	VerifyPassword(ctx context.Context, in *VerifyPasswordRequest, opts ...grpc.CallOption) (*VerifyPasswordReply, error)
+	// 统计用户数量
+	UserCount(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserCountReply, error)
 }
 
 type userClient struct {
@@ -133,6 +137,16 @@ func (c *userClient) VerifyPassword(ctx context.Context, in *VerifyPasswordReque
 	return out, nil
 }
 
+func (c *userClient) UserCount(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserCountReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserCountReply)
+	err := c.cc.Invoke(ctx, User_UserCount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility.
@@ -147,6 +161,8 @@ type UserServer interface {
 	GetUserByUsername(context.Context, *GetUserByUsernameReq) (*GetUserByUsernameReply, error)
 	// 校验密码是否正确
 	VerifyPassword(context.Context, *VerifyPasswordRequest) (*VerifyPasswordReply, error)
+	// 统计用户数量
+	UserCount(context.Context, *emptypb.Empty) (*UserCountReply, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -180,6 +196,9 @@ func (UnimplementedUserServer) GetUserByUsername(context.Context, *GetUserByUser
 }
 func (UnimplementedUserServer) VerifyPassword(context.Context, *VerifyPasswordRequest) (*VerifyPasswordReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyPassword not implemented")
+}
+func (UnimplementedUserServer) UserCount(context.Context, *emptypb.Empty) (*UserCountReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserCount not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 func (UnimplementedUserServer) testEmbeddedByValue()              {}
@@ -346,6 +365,24 @@ func _User_VerifyPassword_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_UserCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).UserCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_UserCount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).UserCount(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -384,6 +421,10 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "VerifyPassword",
 			Handler:    _User_VerifyPassword_Handler,
+		},
+		{
+			MethodName: "UserCount",
+			Handler:    _User_UserCount_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

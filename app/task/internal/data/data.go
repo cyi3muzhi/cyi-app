@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/task/internal/conf"
 	"time"
 
@@ -15,22 +16,26 @@ import (
 
 // ProviderSet is data providers.
 var ProviderSet = wire.NewSet(
+	NewUserRepo,
 	NewTaskRepo,
 	NewData,
 	NewRedisClient,
+	NewUserServiceClient,
 )
 
 type Data struct {
-	cache redis.UniversalClient
+	userC userRpc.UserClient
+	cache      redis.UniversalClient
 }
 
-func NewData(c *conf.Data, cache redis.UniversalClient, logger log.Logger, server *asynq.Server) (*Data, func(), error) {
+func NewData(c *conf.Data, cache redis.UniversalClient, logger log.Logger, server *asynq.Server, userC userRpc.UserClient) (*Data, func(), error) {
 	cleanup := func() {
 		server.Shutdown()
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	return &Data{
-		cache: cache,
+		cache:      cache,
+		userC: userC,
 	}, cleanup, nil
 }
 

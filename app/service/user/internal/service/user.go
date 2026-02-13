@@ -9,6 +9,7 @@ import (
 	"cyi-app/pkg/util/convert"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type UserService struct {
@@ -135,4 +136,13 @@ func (s *UserService) VerifyPassword(ctx context.Context, in *pb.VerifyPasswordR
 		return &pb.VerifyPasswordReply{Valid: false}, err
 	}
 	return &pb.VerifyPasswordReply{Valid: true}, nil
+}
+
+// 统计用户数量
+func (s *UserService) UserCount(ctx context.Context, _ *emptypb.Empty) (*pb.UserCountReply, error) {
+	count, err := s.uc.UserCount(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UserCountReply{Count: count}, nil
 }

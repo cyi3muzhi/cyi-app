@@ -12,6 +12,7 @@ message Bootstrap {
   Trace trace = 3;
   Log log = 4;
   repeated Task tasks = 5;
+  Auth auth = 6;
 }
 
 message Server {
@@ -20,13 +21,13 @@ message Server {
     string addr = 2;
     google.protobuf.Duration timeout = 3;
   }
-  // message GRPC {
-  //   string network = 1;
-  //   string addr = 2;
-  //   google.protobuf.Duration timeout = 3;
-  // }
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
   HTTP http = 1;
-  // GRPC grpc = 2;
+  GRPC grpc = 2;
 }
 
 message Data {
@@ -86,4 +87,8 @@ message Task {
       google.protobuf.Duration timeout = 3;
     }
     Options options = 3;
+}
+
+message Auth {
+    string service_key = 1;
 }

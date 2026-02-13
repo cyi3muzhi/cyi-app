@@ -179,3 +179,8 @@ func (r *userRepo) UpdateUser(ctx context.Context, u *biz.User) error {
 	}
 	return nil
 }
+
+// 统计用户数量
+func (r *userRepo) UserCount(ctx context.Context) (int64, error) {
+	return curd.User.WithContext(ctx).Count()
+}

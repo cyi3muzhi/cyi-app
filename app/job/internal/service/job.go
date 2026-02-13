@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"cyi-app/app/job/internal/biz"
 
@@ -11,22 +10,26 @@ import (
 )
 
 type JobService struct {
-	uc  *biz.JobUseCase
-	log *log.Helper
+	uc     *biz.JobUseCase
+	userUc biz.UserRepo
+	log    *log.Helper
 }
 
-func NewJobService(uc *biz.JobUseCase, logger log.Logger) *JobService {
+func NewJobService(uc *biz.JobUseCase, userUc biz.UserRepo, logger log.Logger) *JobService {
 	return &JobService{
-		uc:  uc,
-		log: log.NewHelper(logger),
+		uc:     uc,
+		userUc: userUc,
+		log:    log.NewHelper(logger),
 	}
 }
 
 // 统计用户数量
-func (s *JobService) UserCount(ctx context.Context, payload *asynq.Task) error {
-	// 解压处理
-	payloadBytes := payload.Payload()
-	fmt.Println(string(payloadBytes))
-	s.log.Infof("UserCount: %s", string(payloadBytes))
+func (s *JobService) UserCount(ctx context.Context, _ *asynq.Task) error {
+	// 统计用户数量
+	count, err := s.userUc.UserCount(ctx)
+	if err != nil {
+		return err
+	}
+	s.log.Infof("UserCount: %d", count)
 	return nil
 }

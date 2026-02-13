@@ -9,6 +9,6 @@ import (
 )
 
 func ProcessTask(m *ts.TaskServer, job *service.JobService) *asynq.ServeMux {
-	m.CronHandleFunc(v1.JobType_user_count.String(), job.UserCount)
+	m.CronHandleFunc(v1.JobName_user_count.String(), job.UserCount)
 	return m.TaskServer
 }

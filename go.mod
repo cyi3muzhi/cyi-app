@@ -4,6 +4,8 @@ go 1.25.0
 
 require (
 	github.com/Scorpio69t/rustfs-go v1.0.6
+	github.com/bytedance/sonic v1.15.0
+	github.com/coder/websocket v1.8.14
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/fatih/structs v1.1.0
 	github.com/go-kratos/kratos/contrib/config/consul/v2 v2.0.0-20250912104010-25b6c0fb9f38
@@ -14,7 +16,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.7.0
 	github.com/gorilla/handlers v1.5.2
-	github.com/gorilla/websocket v1.5.3
 	github.com/hashicorp/consul/api v1.32.4
 	github.com/hibiken/asynq v0.26.0
 	github.com/hibiken/asynqmon v0.7.2
@@ -48,8 +49,11 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
+	github.com/bytedance/gopkg v0.1.3 // indirect
+	github.com/bytedance/sonic/loader v0.5.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
@@ -73,6 +77,7 @@ require (
 	github.com/hashicorp/serf v0.10.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.9 // indirect
 	github.com/lufia/plan9stats v0.0.0-20230326075908-cb1d2100619a // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -85,11 +90,13 @@ require (
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.11 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
+	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.39.0 // indirect
 	go.opentelemetry.io/otel/metric v1.39.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.9.0 // indirect
+	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 	golang.org/x/exp v0.0.0-20250808145144-a408d31f581a // indirect
 	golang.org/x/mod v0.31.0 // indirect
 	golang.org/x/net v0.49.0 // indirect

@@ -3,9 +3,11 @@ package transporter
 import (
 	"fmt"
 	"os"
+	"time"
 
 	mid "cyi-app/pkg/kratos/server/middleware"
 
+	"github.com/bytedance/sonic"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
@@ -158,6 +160,14 @@ func (s *TaskServer) CronHandleFunc(name string, f asynq.HandlerFunc) {
 	s.TaskServer.HandleFunc(CronName(name), f)
 }
 
+func (s *TaskServer) AsyncHandleFunc(name string, f asynq.HandlerFunc) {
+	s.TaskServer.HandleFunc(AsyncName(name), f)
+}
+
+func (s *TaskServer) DelayHandleFunc(name string, f asynq.HandlerFunc) {
+	s.TaskServer.HandleFunc(DelayName(name), f)
+}
+
 func CronName(name string) string {
 	return fmt.Sprintf("%s:%s", "cron", name)
 }
@@ -168,4 +178,38 @@ func AsyncName(name string) string {
 
 func DelayName(name string) string {
 	return fmt.Sprintf("%s:%s", "delay", name)
+}
+
+func NewAsyncTask(name string, payload interface{}, log *log.Helper) *asynq.Task {
+	if payload == nil {
+		payload = []byte{}
+	}
+	// 编码
+	payloadBytes, err := sonic.Marshal(payload)
+	if err != nil {
+		log.Errorw("NewTask json.Marshal payload failed", "err", err)
+		return nil
+	}
+
+	return asynq.NewTask(AsyncName(name), payloadBytes)
+}
+
+func NewDelayTask(name string, payload interface{}, log *log.Helper, delay time.Duration) *asynq.Task {
+	if payload == nil {
+		payload = []byte{}
+	}
+	// 编码
+	payloadBytes, err := sonic.Marshal(payload)
+	if err != nil {
+		log.Errorw("NewTask json.Marshal payload failed", "err", err)
+		return nil
+	}
+	if delay <= 0 {
+		delay = time.Second
+	}
+	opts := []asynq.Option{
+		asynq.ProcessIn(delay),
+	}
+
+	return asynq.NewTask(DelayName(name), payloadBytes, opts...)
 }

@@ -1,29 +1,18 @@
 package server
 
 import (
-	"cyi-app/app/cin/admin/internal/conf"
+	"cyi-app/app/cin/interface/internal/service"
 
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	v1 "cyi-app/api/cin/interface/v1"
+
+	ts "cyi-app/pkg/kratos/server/transporter"
+
 	"github.com/go-kratos/kratos/v2/transport/http"
 )
 
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(c *conf.Server, logger log.Logger) *http.Server {
-	var opts = []http.ServerOption{
-		http.Middleware(
-			recovery.Recovery(),
-		),
-	}
-	if c.Http.Network != "" {
-		opts = append(opts, http.Network(c.Http.Network))
-	}
-	if c.Http.Addr != "" {
-		opts = append(opts, http.Address(c.Http.Addr))
-	}
-	if c.Http.Timeout != nil {
-		opts = append(opts, http.Timeout(c.Http.Timeout.AsDuration()))
-	}
-	srv := http.NewServer(opts...)
-	return srv
+func NewHTTPServer(s *ts.HttpServer, cinInterface *service.CinInterface) *http.Server {
+	v1.RegisterCinInterfaceHTTPServer(s.HttpServer, cinInterface)
+	// s.HttpServer.HandleFunc("/ws/chat", cinInterface.UserChat)
+	return s.HttpServer
 }

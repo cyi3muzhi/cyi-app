@@ -6,6 +6,8 @@ option go_package = "cyi-app/api/service/user/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.service.user.v1";
 
+import "google/protobuf/empty.proto";
+
 service User {
 	rpc CreateUser (CreateUserRequest) returns (CreateUserReply);
 	rpc UpdateUser (UpdateUserRequest) returns (UpdateUserReply);
@@ -17,6 +19,8 @@ service User {
 	rpc GetUserByUsername(GetUserByUsernameReq) returns (GetUserByUsernameReply);
 	// 校验密码是否正确
 	rpc VerifyPassword (VerifyPasswordRequest) returns (VerifyPasswordReply);
+	// 统计用户数量
+	rpc UserCount (google.protobuf.Empty) returns (UserCountReply);
 }
 
 message CreateUserRequest {
@@ -99,4 +103,8 @@ message VerifyPasswordRequest {
 
 message VerifyPasswordReply {
     bool valid = 1;
+}
+
+message UserCountReply {
+    int64 count = 1;
 }

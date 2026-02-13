@@ -94,7 +94,7 @@ func main() {
 	// 创建TracerProvider
 	tp := tr.NewTracerProvider(Name, bc.Trace.Endpoint)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, &cb, logger, tp)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, &cb, logger, tp, bc.Auth)
 	if err != nil {
 		panic(err)
 	}

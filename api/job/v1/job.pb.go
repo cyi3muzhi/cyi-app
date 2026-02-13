@@ -21,47 +21,47 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type JobType int32
+type JobName int32
 
 const (
 	// 定时统计用户数量
-	JobType_user_count JobType = 0
+	JobName_user_count JobName = 0
 )
 
-// Enum value maps for JobType.
+// Enum value maps for JobName.
 var (
-	JobType_name = map[int32]string{
+	JobName_name = map[int32]string{
 		0: "user_count",
 	}
-	JobType_value = map[string]int32{
+	JobName_value = map[string]int32{
 		"user_count": 0,
 	}
 )
 
-func (x JobType) Enum() *JobType {
-	p := new(JobType)
+func (x JobName) Enum() *JobName {
+	p := new(JobName)
 	*p = x
 	return p
 }
 
-func (x JobType) String() string {
+func (x JobName) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (JobType) Descriptor() protoreflect.EnumDescriptor {
+func (JobName) Descriptor() protoreflect.EnumDescriptor {
 	return file_job_v1_job_proto_enumTypes[0].Descriptor()
 }
 
-func (JobType) Type() protoreflect.EnumType {
+func (JobName) Type() protoreflect.EnumType {
 	return &file_job_v1_job_proto_enumTypes[0]
 }
 
-func (x JobType) Number() protoreflect.EnumNumber {
+func (x JobName) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use JobType.Descriptor instead.
-func (JobType) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use JobName.Descriptor instead.
+func (JobName) EnumDescriptor() ([]byte, []int) {
 	return file_job_v1_job_proto_rawDescGZIP(), []int{0}
 }
 
@@ -71,7 +71,7 @@ const file_job_v1_job_proto_rawDesc = "" +
 	"\n" +
 	"\x10job/v1/job.proto\x12\n" +
 	"api.job.v1*\x19\n" +
-	"\aJobType\x12\x0e\n" +
+	"\aJobName\x12\x0e\n" +
 	"\n" +
 	"user_count\x10\x00B%\n" +
 	"\n" +
@@ -91,7 +91,7 @@ func file_job_v1_job_proto_rawDescGZIP() []byte {
 
 var file_job_v1_job_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_job_v1_job_proto_goTypes = []any{
-	(JobType)(0), // 0: api.job.v1.JobType
+	(JobName)(0), // 0: api.job.v1.JobName
 }
 var file_job_v1_job_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type

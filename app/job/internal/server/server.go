@@ -21,6 +21,7 @@ import (
 // ProviderSet is server providers.
 var ProviderSet = wire.NewSet(
 	NewRegistrar,
+	NewDiscovery,
 	NewHTTPServerConf,
 	NewHTTPServer,
 	ProcessTask,
@@ -57,6 +58,18 @@ func NewRegistrar(conf *conf.Registry) registry.Registrar {
 		panic(err)
 	}
 	return reg
+}
+
+// 发现服务器
+func NewDiscovery(conf *conf.Registry) registry.Discovery {
+	dis, err := consul.NewConsulRegistry(&consul.ConsulRegistryOptions{
+		Address: conf.Consul.Address,
+		Scheme:  conf.Consul.Scheme,
+	})
+	if err != nil {
+		panic(err)
+	}
+	return dis
 }
 
 func NewTaskServer(r redis.UniversalClient, logger log.Logger) *asynq.Server {

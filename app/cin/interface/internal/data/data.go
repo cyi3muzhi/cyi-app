@@ -6,6 +6,7 @@ import (
 
 	"cyi-app/app/cin/interface/internal/conf"
 
+	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
 
 	userRpc "cyi-app/api/service/user/v1"
@@ -20,24 +21,26 @@ var ProviderSet = wire.NewSet(
 	NewUserRepo,
 	NewUserServiceClient,
 	NewRedisClient,
+	NewAsynqClient,
 )
 
 // Data .
 type Data struct {
 	uc userRpc.UserClient
-	rc *redis.Client
+	rc redis.UniversalClient
+	mq *asynq.Client
 }
 
 // NewData .
-func NewData(c *conf.Data, uc userRpc.UserClient, rc *redis.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, uc userRpc.UserClient, rc redis.UniversalClient, logger log.Logger, mq *asynq.Client) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{uc: uc, rc: rc}, cleanup, nil
+	return &Data{uc: uc, rc: rc, mq: mq}, cleanup, nil
 }
 
 // NewRedisClient .
-func NewRedisClient(c *conf.Data, logger log.Logger) *redis.Client {
+func NewRedisClient(c *conf.Data, logger log.Logger) redis.UniversalClient {
 	client := redis.NewClient(&redis.Options{
 		Addr:         c.Redis.Addr,
 		Network:      c.Redis.Network,

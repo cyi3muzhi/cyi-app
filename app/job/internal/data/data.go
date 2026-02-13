@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/job/internal/conf"
 	"time"
 
@@ -15,23 +16,27 @@ import (
 
 // ProviderSet is data providers.
 var ProviderSet = wire.NewSet(
+	NewUserRepo,
 	NewJobRepo,
 	NewData,
 	NewRedisClient,
+	NewUserServiceClient,
 )
 
 type Data struct {
+	userC userRpc.UserClient
+
 	cache redis.UniversalClient
 }
 
-func NewData(c *conf.Data, cache redis.UniversalClient, logger log.Logger, server *asynq.Server, scheduler *asynq.Scheduler) (*Data, func(), error) {
+func NewData(c *conf.Data, cache redis.UniversalClient, logger log.Logger, server *asynq.Server, scheduler *asynq.Scheduler, userC userRpc.UserClient) (*Data, func(), error) {
 	cleanup := func() {
 		server.Shutdown()
 		scheduler.Shutdown()
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	// curd.SetDefault(db)
 	return &Data{
+		userC: userC,
 		cache: cache,
 	}, cleanup, nil
 }
@@ -52,5 +57,3 @@ func NewRedisClient(c *conf.Data, logger log.Logger) redis.UniversalClient {
 	}
 	return client
 }
-
-

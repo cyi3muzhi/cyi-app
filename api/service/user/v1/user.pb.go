@@ -9,6 +9,7 @@ package v1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -823,11 +824,55 @@ func (x *VerifyPasswordReply) GetValid() bool {
 	return false
 }
 
+type UserCountReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Count         int64                  `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserCountReply) Reset() {
+	*x = UserCountReply{}
+	mi := &file_service_user_v1_user_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserCountReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserCountReply) ProtoMessage() {}
+
+func (x *UserCountReply) ProtoReflect() protoreflect.Message {
+	mi := &file_service_user_v1_user_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserCountReply.ProtoReflect.Descriptor instead.
+func (*UserCountReply) Descriptor() ([]byte, []int) {
+	return file_service_user_v1_user_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *UserCountReply) GetCount() int64 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
 var File_service_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_service_user_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x1aservice/user/v1/user.proto\x12\x13api.service.user.v1\"u\n" +
+	"\x1aservice/user/v1/user.proto\x12\x13api.service.user.v1\x1a\x1bgoogle/protobuf/empty.proto\"u\n" +
 	"\x11CreateUserRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05phone\x18\x02 \x01(\tR\x05phone\x12\x1a\n" +
@@ -869,7 +914,9 @@ const file_service_user_v1_user_proto_rawDesc = "" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\"+\n" +
 	"\x13VerifyPasswordReply\x12\x14\n" +
-	"\x05valid\x18\x01 \x01(\bR\x05valid2\x80\x06\n" +
+	"\x05valid\x18\x01 \x01(\bR\x05valid\"&\n" +
+	"\x0eUserCountReply\x12\x14\n" +
+	"\x05count\x18\x01 \x01(\x03R\x05count2\xca\x06\n" +
 	"\x04User\x12Z\n" +
 	"\n" +
 	"CreateUser\x12&.api.service.user.v1.CreateUserRequest\x1a$.api.service.user.v1.CreateUserReply\x12Z\n" +
@@ -881,7 +928,8 @@ const file_service_user_v1_user_proto_rawDesc = "" +
 	"\bListUser\x12$.api.service.user.v1.ListUserRequest\x1a\".api.service.user.v1.ListUserReply\x12f\n" +
 	"\x0eCheckUserExist\x12*.api.service.user.v1.CheckUserExistRequest\x1a(.api.service.user.v1.CheckUserExistReply\x12k\n" +
 	"\x11GetUserByUsername\x12).api.service.user.v1.GetUserByUsernameReq\x1a+.api.service.user.v1.GetUserByUsernameReply\x12f\n" +
-	"\x0eVerifyPassword\x12*.api.service.user.v1.VerifyPasswordRequest\x1a(.api.service.user.v1.VerifyPasswordReplyB7\n" +
+	"\x0eVerifyPassword\x12*.api.service.user.v1.VerifyPasswordRequest\x1a(.api.service.user.v1.VerifyPasswordReply\x12H\n" +
+	"\tUserCount\x12\x16.google.protobuf.Empty\x1a#.api.service.user.v1.UserCountReplyB7\n" +
 	"\x13api.service.user.v1P\x01Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
 
 var (
@@ -896,7 +944,7 @@ func file_service_user_v1_user_proto_rawDescGZIP() []byte {
 	return file_service_user_v1_user_proto_rawDescData
 }
 
-var file_service_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_service_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_service_user_v1_user_proto_goTypes = []any{
 	(*CreateUserRequest)(nil),      // 0: api.service.user.v1.CreateUserRequest
 	(*CreateUserReply)(nil),        // 1: api.service.user.v1.CreateUserReply
@@ -914,6 +962,8 @@ var file_service_user_v1_user_proto_goTypes = []any{
 	(*GetUserByUsernameReply)(nil), // 13: api.service.user.v1.GetUserByUsernameReply
 	(*VerifyPasswordRequest)(nil),  // 14: api.service.user.v1.VerifyPasswordRequest
 	(*VerifyPasswordReply)(nil),    // 15: api.service.user.v1.VerifyPasswordReply
+	(*UserCountReply)(nil),         // 16: api.service.user.v1.UserCountReply
+	(*emptypb.Empty)(nil),          // 17: google.protobuf.Empty
 }
 var file_service_user_v1_user_proto_depIdxs = []int32{
 	0,  // 0: api.service.user.v1.User.CreateUser:input_type -> api.service.user.v1.CreateUserRequest
@@ -924,16 +974,18 @@ var file_service_user_v1_user_proto_depIdxs = []int32{
 	10, // 5: api.service.user.v1.User.CheckUserExist:input_type -> api.service.user.v1.CheckUserExistRequest
 	12, // 6: api.service.user.v1.User.GetUserByUsername:input_type -> api.service.user.v1.GetUserByUsernameReq
 	14, // 7: api.service.user.v1.User.VerifyPassword:input_type -> api.service.user.v1.VerifyPasswordRequest
-	1,  // 8: api.service.user.v1.User.CreateUser:output_type -> api.service.user.v1.CreateUserReply
-	3,  // 9: api.service.user.v1.User.UpdateUser:output_type -> api.service.user.v1.UpdateUserReply
-	5,  // 10: api.service.user.v1.User.DeleteUser:output_type -> api.service.user.v1.DeleteUserReply
-	7,  // 11: api.service.user.v1.User.GetUser:output_type -> api.service.user.v1.GetUserReply
-	9,  // 12: api.service.user.v1.User.ListUser:output_type -> api.service.user.v1.ListUserReply
-	11, // 13: api.service.user.v1.User.CheckUserExist:output_type -> api.service.user.v1.CheckUserExistReply
-	13, // 14: api.service.user.v1.User.GetUserByUsername:output_type -> api.service.user.v1.GetUserByUsernameReply
-	15, // 15: api.service.user.v1.User.VerifyPassword:output_type -> api.service.user.v1.VerifyPasswordReply
-	8,  // [8:16] is the sub-list for method output_type
-	0,  // [0:8] is the sub-list for method input_type
+	17, // 8: api.service.user.v1.User.UserCount:input_type -> google.protobuf.Empty
+	1,  // 9: api.service.user.v1.User.CreateUser:output_type -> api.service.user.v1.CreateUserReply
+	3,  // 10: api.service.user.v1.User.UpdateUser:output_type -> api.service.user.v1.UpdateUserReply
+	5,  // 11: api.service.user.v1.User.DeleteUser:output_type -> api.service.user.v1.DeleteUserReply
+	7,  // 12: api.service.user.v1.User.GetUser:output_type -> api.service.user.v1.GetUserReply
+	9,  // 13: api.service.user.v1.User.ListUser:output_type -> api.service.user.v1.ListUserReply
+	11, // 14: api.service.user.v1.User.CheckUserExist:output_type -> api.service.user.v1.CheckUserExistReply
+	13, // 15: api.service.user.v1.User.GetUserByUsername:output_type -> api.service.user.v1.GetUserByUsernameReply
+	15, // 16: api.service.user.v1.User.VerifyPassword:output_type -> api.service.user.v1.VerifyPasswordReply
+	16, // 17: api.service.user.v1.User.UserCount:output_type -> api.service.user.v1.UserCountReply
+	9,  // [9:18] is the sub-list for method output_type
+	0,  // [0:9] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
@@ -950,7 +1002,7 @@ func file_service_user_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_service_user_v1_user_proto_rawDesc), len(file_service_user_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   16,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

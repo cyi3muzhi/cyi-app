@@ -11,6 +11,8 @@ import (
 	ts "cyi-app/pkg/kratos/server/transporter"
 
 	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/hibiken/asynq"
+	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -30,4 +32,9 @@ func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Au
 		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.USER_SERVICE, err))
 	}
 	return userRpc.NewUserClient(conn)
+}
+
+// 创建asynq客户端
+func NewAsynqClient(r redis.UniversalClient) *asynq.Client {
+	return asynq.NewClientFromRedisClient(r)
 }

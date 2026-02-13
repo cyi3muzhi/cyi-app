@@ -13,6 +13,6 @@ import (
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(s *ts.HttpServer, cinInterface *service.CinInterface) *http.Server {
 	v1.RegisterCinInterfaceHTTPServer(s.HttpServer, cinInterface)
-	s.HttpServer.HandleFunc("/ws/chat", cinInterface.UserChat)
+	// s.HttpServer.HandleFunc("/ws/chat", cinInterface.UserChat)
 	return s.HttpServer
 }

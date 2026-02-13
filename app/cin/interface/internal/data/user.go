@@ -12,6 +12,10 @@ import (
 
 	cr "cyi-app/pkg/util/redis"
 
+	ts "cyi-app/pkg/kratos/server/transporter"
+
+	taskV1 "cyi-app/api/task/v1"
+
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -71,11 +75,20 @@ func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.Us
 }
 
 func (r *userRepo) AddUser(ctx context.Context, u *biz.User) error {
-	_, err := r.data.uc.CreateUser(ctx, &usV1.CreateUserRequest{
+	// _, err := r.data.uc.CreateUser(ctx, &usV1.CreateUserRequest{
+	// 	Username: u.Username,
+	// 	Password: u.Password,
+	// })
+	task := ts.NewAsyncTask(taskV1.TaskName_create_user.String(), &taskV1.CreateUserTask{
 		Username: u.Username,
 		Password: u.Password,
-	})
-	return err
+	}, r.log)
+	info, err := r.data.mq.Enqueue(task)
+	if err != nil {
+		return err
+	}
+	r.log.Infof("CreateUserTask: %s", info)
+	return nil
 }
 
 // RemoveUser 移除用户
@@ -89,8 +102,8 @@ func (r *userRepo) RemoveUser(ctx context.Context, id int64) error {
 // ModifyUser 修改用户
 func (r *userRepo) ModifyUser(ctx context.Context, u *biz.User) error {
 	_, err := r.data.uc.UpdateUser(ctx, &usV1.UpdateUserRequest{
-		Id:       u.ID,
-		Name: u.Name,
+		Id:     u.ID,
+		Name:   u.Name,
 		Avatar: u.Avatar,
 	})
 	if err != nil {
@@ -99,12 +112,9 @@ func (r *userRepo) ModifyUser(ctx context.Context, u *biz.User) error {
 	return nil
 }
 
-func  (r *userRepo) FindUserList(ctx context.Context)([]*biz.User, error){
+func (r *userRepo) FindUserList(ctx context.Context) ([]*biz.User, error) {
 	return nil, nil
 }
-
-
-
 
 // VerifyPassword 校验密码是否正确
 func (r *userRepo) VerifyPassword(ctx context.Context, u *biz.User, password string) error {

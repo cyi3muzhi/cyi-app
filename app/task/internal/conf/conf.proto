@@ -11,6 +11,7 @@ message Bootstrap {
   Data data = 2;
   Trace trace = 3;
   Log log = 4;
+  Auth auth = 5;
 }
 
 message Server {
@@ -19,13 +20,13 @@ message Server {
     string addr = 2;
     google.protobuf.Duration timeout = 3;
   }
-  // message GRPC {
-  //   string network = 1;
-  //   string addr = 2;
-  //   google.protobuf.Duration timeout = 3;
-  // }
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
   HTTP http = 1;
-  // GRPC grpc = 2;
+  GRPC grpc = 2;
 }
 
 message Data {
@@ -70,4 +71,8 @@ message Log {
     string log_dir = 4; // 日志目录
     string time_format = 5; // 时间格式
     bool enable_color = 6; // 是否启用颜色
+}
+
+message Auth {
+    string service_key = 1;
 }

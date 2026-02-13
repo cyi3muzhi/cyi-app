@@ -1,7 +1,7 @@
 syntax = "proto3";
 package kratos.api;
 
-option go_package = "cyi-app/app/cin/admin/internal/conf;conf";
+option go_package = "cyi-app/app/cin/interface/internal/conf;conf";
 
 import "google/protobuf/duration.proto";
 
@@ -9,6 +9,9 @@ message Bootstrap {
   Server server = 1;
   Data data = 2;
   Auth auth = 3;
+  Trace trace = 4;
+  Log log = 5;
+  // Transaction transaction = 6;
 }
 
 message Server {
@@ -36,6 +39,7 @@ message Data {
     string addr = 2;
     google.protobuf.Duration read_timeout = 3;
     google.protobuf.Duration write_timeout = 4;
+    string password = 5;
   }
   Database database = 1;
   Redis redis = 2;
@@ -57,4 +61,28 @@ message Registry {
 message Auth {
     string service_key = 1;
     string api_key = 2;
+    repeated string white_list = 3;
+}
+
+message Trace {
+    string endpoint = 1;
+}
+
+// 认证白名单
+// message AuthWhiteList {
+// }
+
+// 事务管理名单
+// message Transaction {
+//     repeated string white_list = 1;
+// }
+
+// 日志配置
+message Log {
+    string level = 1; // 日志级别
+    bool enable_console = 2; // 是否启用控制台输出
+    bool enable_file = 3; // 是否启用文件输出
+    string log_dir = 4; // 日志目录
+    string time_format = 5; // 时间格式
+    bool enable_color = 6; // 是否启用颜色
 }

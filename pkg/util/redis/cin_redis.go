@@ -18,7 +18,7 @@ const (
 )
 
 // string
-func SetRedis(ctx context.Context, rc *redis.Client, key interface{}, value interface{}, expiration time.Duration) error {
+func SetRedis(ctx context.Context, rc redis.UniversalClient, key interface{}, value interface{}, expiration time.Duration) error {
 	keyStr := fmt.Sprintf("%v", key)
 	if valueStr, ok := value.(string); ok {
 		return rc.Set(ctx, keyStr, valueStr, expiration).Err()
@@ -32,7 +32,7 @@ func SetRedis(ctx context.Context, rc *redis.Client, key interface{}, value inte
 	return rc.Set(ctx, keyStr, jsonValue, expiration).Err()
 }
 
-func GetRedis(ctx context.Context, rc *redis.Client, key interface{}, value interface{}) error {
+func GetRedis(ctx context.Context, rc redis.UniversalClient, key interface{}, value interface{}) error {
 	keyStr := fmt.Sprintf("%v", key)
 	jsonValue, err := rc.Get(ctx, keyStr).Result()
 	if err != nil {
@@ -41,13 +41,13 @@ func GetRedis(ctx context.Context, rc *redis.Client, key interface{}, value inte
 	return json.Unmarshal([]byte(jsonValue), value)
 }
 
-func DelRedis(ctx context.Context, rc *redis.Client, key interface{}) error {
+func DelRedis(ctx context.Context, rc redis.UniversalClient, key interface{}) error {
 	keyStr := fmt.Sprintf("%v", key)
 	return rc.Del(ctx, keyStr).Err()
 }
 
 // hash
-func SetHashRedis(ctx context.Context, rc *redis.Client, key interface{}, field interface{}, value interface{}, expiration time.Duration) error {
+func SetHashRedis(ctx context.Context, rc redis.UniversalClient, key interface{}, field interface{}, value interface{}, expiration time.Duration) error {
 	keyStr := fmt.Sprintf("%v", key)
 	fieldStr := fmt.Sprintf("%v", field)
 	if valueStr, ok := value.(string); ok {
@@ -61,7 +61,7 @@ func SetHashRedis(ctx context.Context, rc *redis.Client, key interface{}, field 
 	return rc.HSet(ctx, keyStr, fieldStr, jsonValue).Err()
 }
 
-func GetHashRedis(ctx context.Context, rc *redis.Client, key interface{}, field interface{}, value interface{}) error {
+func GetHashRedis(ctx context.Context, rc redis.UniversalClient, key interface{}, field interface{}, value interface{}) error {
 	keyStr := fmt.Sprintf("%v", key)
 	fieldStr := fmt.Sprintf("%v", field)
 	jsonValue, err := rc.HGet(ctx, keyStr, fieldStr).Result()
@@ -72,7 +72,7 @@ func GetHashRedis(ctx context.Context, rc *redis.Client, key interface{}, field 
 }
 
 // list
-func SetListRedis(ctx context.Context, rc *redis.Client, key interface{}, value interface{}, expiration time.Duration) error {
+func SetListRedis(ctx context.Context, rc redis.UniversalClient, key interface{}, value interface{}, expiration time.Duration) error {
 	keyStr := fmt.Sprintf("%v", key)
 	if valueStr, ok := value.(string); ok {
 		return rc.LPush(ctx, keyStr, valueStr).Err()
@@ -85,7 +85,7 @@ func SetListRedis(ctx context.Context, rc *redis.Client, key interface{}, value 
 	return rc.LPush(ctx, keyStr, jsonValue).Err()
 }
 
-func GetListRedis(ctx context.Context, rc *redis.Client, key interface{}, value interface{}) error {
+func GetListRedis(ctx context.Context, rc redis.UniversalClient, key interface{}, value interface{}) error {
 	keyStr := fmt.Sprintf("%v", key)
 	jsonValue, err := rc.LRange(ctx, keyStr, 0, -1).Result()
 	if err != nil {
@@ -97,7 +97,7 @@ func GetListRedis(ctx context.Context, rc *redis.Client, key interface{}, value 
 // 分布式锁相关方法
 
 // AcquireDistributedLock 获取分布式锁
-func AcquireDistributedLock(ctx context.Context, rc *redis.Client, key interface{}, expiration time.Duration) bool {
+func AcquireDistributedLock(ctx context.Context, rc redis.UniversalClient, key interface{}, expiration time.Duration) bool {
 	keyStr := fmt.Sprintf("%v", key)
 	// 使用Redis SETNX命令获取锁
 	ok, err := rc.SetNX(ctx, keyStr, "1", expiration).Result()
@@ -109,7 +109,7 @@ func AcquireDistributedLock(ctx context.Context, rc *redis.Client, key interface
 }
 
 // ReleaseDistributedLock 释放分布式锁
-func ReleaseDistributedLock(ctx context.Context, rc *redis.Client, key interface{}) error {
+func ReleaseDistributedLock(ctx context.Context, rc redis.UniversalClient, key interface{}) error {
 	keyStr := fmt.Sprintf("%v", key)
 	// 删除锁
 	return rc.Del(ctx, keyStr).Err()

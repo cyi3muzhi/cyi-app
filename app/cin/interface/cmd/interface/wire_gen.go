@@ -30,8 +30,9 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, auth)
 	discovery := server.NewDiscovery(registry)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider)
-	client := data.NewRedisClient(confData, logger)
-	dataData, cleanup, err := data.NewData(confData, userClient, client, logger)
+	universalClient := data.NewRedisClient(confData, logger)
+	client := data.NewAsynqClient(universalClient)
+	dataData, cleanup, err := data.NewData(confData, userClient, universalClient, logger, client)
 	if err != nil {
 		return nil, nil, err
 	}
