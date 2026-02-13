@@ -30,7 +30,7 @@ var (
 	id             = strings.ReplaceAll(strings.ToLower(uuid.NewString()), "-", "")
 )
 
-func newApp(logger log.Logger, hp *http.Server,reg registry.Registrar, server *asynq.Server, mux *asynq.ServeMux, scheduler *asynq.Scheduler) *kratos.App {
+func newApp(logger log.Logger, hp *http.Server, reg registry.Registrar, server *asynq.Server, mux *asynq.ServeMux, scheduler *asynq.Scheduler) *kratos.App {
 	go func() {
 		if err := server.Run(mux); err != nil {
 			log.NewHelper(logger).Errorf("asynq server failed: %v", err)
@@ -100,14 +100,14 @@ func main() {
 	// 创建TracerProvider
 	tp := tr.NewTracerProvider(Name, bc.Trace.Endpoint)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, &cb, logger, tp, bc.Tasks,bc.Auth)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, &cb, logger, tp, bc.Tasks, bc.Auth)
 	if err != nil {
 		panic(err)
 	}
 	defer cleanup()
 
 	// start and wait for stop signal
-	if err := app.Run();err != nil {
+	if err := app.Run(); err != nil {
 		panic(err)
 	}
 }
