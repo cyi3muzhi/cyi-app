@@ -7,8 +7,8 @@ import (
 
 	"cyi-app/app/service/user/internal/conf"
 
-	consulConfig "cyi-app/pkg/kratos/config"
 	cgrpc "cyi-app/pkg/kratos/client"
+	consulConfig "cyi-app/pkg/kratos/config"
 
 	tr "cyi-app/pkg/kratos/tracing"
 
@@ -16,11 +16,15 @@ import (
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware/metrics"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/exporters/prometheus"
 	_ "go.uber.org/automaxprocs"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	mid "cyi-app/pkg/kratos/server/middleware"
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
@@ -31,7 +35,34 @@ var (
 	Version string = cgrpc.USER_VERSION
 	// 小写切去掉中间“-”
 	id = strings.ReplaceAll(strings.ToLower(uuid.NewString()), "-", "")
+
+	meteric *mid.Meter
 )
+
+func init() {
+
+	exporter, err := prometheus.New()
+	if err != nil {
+		panic(err)
+	}
+
+	provider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(exporter))
+	meter := provider.Meter(Name)
+
+	_metricRequests, err := metrics.DefaultRequestsCounter(meter, metrics.DefaultServerRequestsCounterName)
+	if err != nil {
+		panic(err)
+	}
+
+	_metricSeconds, err := metrics.DefaultSecondsHistogram(meter, metrics.DefaultServerSecondsHistogramName)
+	if err != nil {
+		panic(err)
+	}
+	meteric = &mid.Meter{
+		Requests: _metricRequests,
+		Seconds:  _metricSeconds,
+	}
+}
 
 func newApp(logger log.Logger, gs *grpc.Server, reg registry.Registrar) *kratos.App {
 	return kratos.New(
@@ -92,7 +123,7 @@ func main() {
 	// 创建TracerProvider
 	tp := tr.NewTracerProvider(Name, bc.Trace.Endpoint)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, &cb, logger, tp)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, &cb, logger, tp, meteric)
 	if err != nil {
 		panic(err)
 	}

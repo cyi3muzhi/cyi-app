@@ -12,6 +12,7 @@ import (
 	"cyi-app/app/task/internal/data"
 	"cyi-app/app/task/internal/server"
 	"cyi-app/app/task/internal/service"
+	"cyi-app/pkg/kratos/server/middleware"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"go.opentelemetry.io/otel/sdk/trace"
@@ -25,16 +26,16 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, auth *conf.Auth) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, auth *conf.Auth, meter *middleware.Meter) (*kratos.App, func(), error) {
 	traceTracerProvider := provideTracerProvider(tracerProvider)
-	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger)
+	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, meter, logger)
 	universalClient := data.NewRedisClient(confData, logger)
 	server2 := server.NewHTTPServer(httpServer, universalClient)
 	registrar := server.NewRegistrar(registry)
 	asynqServer := server.NewTaskServer(universalClient, logger)
 	taskServer := server.NewServerMux(logger)
 	discovery := server.NewDiscovery(registry)
-	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider)
+	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	dataData, cleanup, err := data.NewData(confData, universalClient, logger, asynqServer, userClient)
 	if err != nil {
 		return nil, nil, err

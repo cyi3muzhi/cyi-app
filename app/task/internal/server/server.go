@@ -17,6 +17,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"go.opentelemetry.io/otel/trace"
+	mid "cyi-app/pkg/kratos/server/middleware"
 )
 
 // ProviderSet is server providers.
@@ -33,6 +34,7 @@ var ProviderSet = wire.NewSet(
 func NewHTTPServerConf(
 	c *conf.Server,
 	tp trace.TracerProvider,
+	metric *mid.Meter,
 	logger log.Logger) *ts.HttpServer {
 	srv := http.NewServer(ts.NewHttpServerOpt(
 		&ts.TransporterOpt{
@@ -43,6 +45,7 @@ func NewHTTPServerConf(
 		&ts.MiddlewareOpt{
 			Logger:         logger,
 			TracerProvider: tp,
+			Meter:          metric,
 		})...)
 	return &ts.HttpServer{HttpServer: srv}
 }

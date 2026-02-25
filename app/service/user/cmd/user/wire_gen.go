@@ -12,6 +12,7 @@ import (
 	"cyi-app/app/service/user/internal/data"
 	"cyi-app/app/service/user/internal/server"
 	"cyi-app/app/service/user/internal/service"
+	"cyi-app/pkg/kratos/server/middleware"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"go.opentelemetry.io/otel/sdk/trace"
@@ -25,9 +26,9 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, meter *middleware.Meter) (*kratos.App, func(), error) {
 	traceTracerProvider := provideTracerProvider(tracerProvider)
-	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, auth)
+	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	db := data.NewDB(confData)
 	client := data.NewRedisClient(confData, logger)
 	rustFSClient, err := data.NewOssClient(confData)

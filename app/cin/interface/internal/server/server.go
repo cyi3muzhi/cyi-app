@@ -9,9 +9,12 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/google/wire"
 
+	mid "cyi-app/pkg/kratos/server/middleware"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -22,6 +25,7 @@ func NewHTTPServerConf(
 	c *conf.Server,
 	tp trace.TracerProvider,
 	logger log.Logger,
+	metric *mid.Meter,
 	auth *conf.Auth) *ts.HttpServer {
 	srv := http.NewServer(ts.NewHttpServerOpt(
 		&ts.TransporterOpt{
@@ -34,7 +38,9 @@ func NewHTTPServerConf(
 			WhiteList:      auth.WhiteList,
 			Logger:         logger,
 			TracerProvider: tp,
+			Meter:          metric,
 		})...)
+	srv.Handle("/metrics", promhttp.Handler())
 	return &ts.HttpServer{HttpServer: srv}
 }
 
@@ -42,6 +48,7 @@ func NewGRPCServerConf(
 	c *conf.Server,
 	tp trace.TracerProvider,
 	logger log.Logger,
+	metric *mid.Meter,
 	ac *conf.Auth,
 ) *ts.GrpcServer {
 	srv := grpc.NewServer(ts.NewGrpcServerOpt(&ts.TransporterOpt{
@@ -52,6 +59,7 @@ func NewGRPCServerConf(
 		TracerProvider: tp,
 		Logger:         logger,
 		ApiKey:         ac.ApiKey,
+		Meter:          metric,
 	})...)
 
 	return &ts.GrpcServer{GrpcServer: srv}

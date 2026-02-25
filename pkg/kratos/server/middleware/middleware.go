@@ -4,13 +4,14 @@ import (
 	"github.com/go-kratos/kratos/contrib/middleware/validate/v2"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
+	"github.com/go-kratos/kratos/v2/middleware/metrics"
 	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"go.opentelemetry.io/otel/trace"
 )
 
-//  获取默认中间件列表
+// 获取默认中间件列表
 func Middlewares(tp trace.TracerProvider, middlewareType MiddlewareType, opts ...MiddlewareOption) []middleware.Middleware {
 	options := &MiddlewareOptions{
 		Auth: Auth{
@@ -19,6 +20,10 @@ func Middlewares(tp trace.TracerProvider, middlewareType MiddlewareType, opts ..
 			WhiteList:  []string{},
 		},
 		logger: nil,
+		Meter: &Meter{
+			Requests: nil,
+			Seconds:  nil,
+		},
 	}
 	for _, opt := range opts {
 		opt(options)
@@ -29,6 +34,13 @@ func Middlewares(tp trace.TracerProvider, middlewareType MiddlewareType, opts ..
 			recovery.Recovery(),
 			tracing.Client(tracing.WithTracerProvider(tp)),
 		)
+		if options.Meter.Requests != nil || options.Meter.Seconds != nil {
+			middlewareList = append(middlewareList, metrics.Client(
+				metrics.WithSeconds(options.Meter.Seconds),
+				metrics.WithRequests(options.Meter.Requests),
+			))
+		}
+
 		if options.Auth.ServiceKey != "" {
 			middlewareList = append(middlewareList,
 				AuthClientMiddleware(options.Auth),
@@ -43,6 +55,13 @@ func Middlewares(tp trace.TracerProvider, middlewareType MiddlewareType, opts ..
 		if options.logger != nil {
 			middlewareList = append(middlewareList, logging.Server(options.logger))
 		}
+		if options.Meter.Requests != nil || options.Meter.Seconds != nil {
+			middlewareList = append(middlewareList, metrics.Server(
+				metrics.WithSeconds(options.Meter.Seconds),
+				metrics.WithRequests(options.Meter.Requests),
+			))
+		}
+
 		if options.Auth.ApiKey != "" {
 			middlewareList = append(middlewareList, AuthServiceMiddleware(options.Auth))
 		}

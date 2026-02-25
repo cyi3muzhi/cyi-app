@@ -38,6 +38,8 @@ type MiddlewareOpt struct {
 	TracerProvider trace.TracerProvider
 	// 日志 *
 	Logger log.Logger
+	// 指标 *
+	Meter *mid.Meter
 }
 
 // http服务器选项
@@ -49,6 +51,9 @@ func NewHttpServerOpt(httpOpt *TransporterOpt, midOpt *MiddlewareOpt) []http.Ser
 	if midOpt.Logger == nil {
 		panic("NewHttpServerOpt Logger is nil")
 	}
+	if midOpt.Meter.Requests == nil || midOpt.Meter.Seconds == nil {
+		panic("NewHttpServerOpt Meter is nil")
+	}
 	mids = append(mids, mid.WithLoggerMiddleware(midOpt.Logger))
 	if midOpt.ApiKey != "" {
 		mids = append(mids, mid.WithAuthMiddleware(mid.Auth{
@@ -56,6 +61,7 @@ func NewHttpServerOpt(httpOpt *TransporterOpt, midOpt *MiddlewareOpt) []http.Ser
 			WhiteList: midOpt.WhiteList,
 		}))
 	}
+	mids = append(mids, mid.WithMetricsMiddleware(midOpt.Meter))
 	middlewares := mid.ServerMiddlewares(midOpt.TracerProvider, mids...)
 
 	opts := []http.ServerOption{
@@ -87,12 +93,16 @@ func NewGrpcServerOpt(grpcOpt *TransporterOpt, midOpt *MiddlewareOpt) []grpc.Ser
 	if midOpt.Logger == nil {
 		panic("NewGrpcServerOpt Logger is nil")
 	}
+	if midOpt.Meter.Requests == nil || midOpt.Meter.Seconds == nil {
+		panic("NewGrpcServerOpt Meter is nil")
+	}
 	mids = append(mids, mid.WithLoggerMiddleware(midOpt.Logger))
 	if midOpt.ApiKey != "" {
 		mids = append(mids, mid.WithAuthMiddleware(mid.Auth{
 			ApiKey: midOpt.ApiKey,
 		}))
 	}
+	mids = append(mids, mid.WithMetricsMiddleware(midOpt.Meter))
 	middlewares := mid.ServerMiddlewares(midOpt.TracerProvider, mids...)
 	opts := []grpc.ServerOption{
 		grpc.Middleware(middlewares...),
@@ -130,6 +140,10 @@ func NewGrpcClientOpt(grpcOpt *TransporterOpt, midOpt *MiddlewareOpt) []grpc.Cli
 			ServiceKey: midOpt.ServiceKey,
 		}))
 	}
+	if midOpt.Meter.Requests == nil || midOpt.Meter.Seconds == nil {
+		panic("NewGrpcClientOpt Meter is nil")
+	}
+	mids = append(mids, mid.WithMetricsMiddleware(midOpt.Meter))
 	middlewares := mid.ClientMiddlewares(midOpt.TracerProvider, mids...)
 	opts := []grpc.ClientOption{
 		grpc.WithEndpoint(fmt.Sprintf("discovery:///%v.%v", os.Getenv("SERVICE_ENV"), grpcOpt.ServiceName)),

@@ -12,6 +12,8 @@ import (
 	"cyi-app/app/cin/interface/internal/server"
 	"cyi-app/app/cin/interface/internal/service"
 
+	mid "cyi-app/pkg/kratos/server/middleware"
+
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -24,9 +26,8 @@ func provideTracerProvider(tp *tracesdk.TracerProvider) trace.TracerProvider {
 	return tp
 }
 
-
 // wireApp init kratos application.
-func wireApp(*conf.Server, *conf.Data, *conf.Auth, *conf.Registry, log.Logger, *tracesdk.TracerProvider) (*kratos.App, func(), error) {
+func wireApp(*conf.Server, *conf.Data, *conf.Auth, *conf.Registry, log.Logger, *tracesdk.TracerProvider, *mid.Meter) (*kratos.App, func(), error) {
 	panic(wire.Build(
 		server.ProviderSet,
 		data.ProviderSet,

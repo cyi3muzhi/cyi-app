@@ -1,6 +1,9 @@
 package middleware
 
-import "github.com/go-kratos/kratos/v2/log"
+import (
+	"github.com/go-kratos/kratos/v2/log"
+	"go.opentelemetry.io/otel/metric"
+)
 
 const (
 	Server = false
@@ -13,11 +16,17 @@ type Auth struct {
 	WhiteList  []string
 }
 
+type Meter struct {
+	Requests metric.Int64Counter
+	Seconds  metric.Float64Histogram
+}
+
 type MiddlewareType bool
 
 type MiddlewareOptions struct {
 	Auth   Auth
 	logger log.Logger
+	Meter  *Meter
 }
 
 type MiddlewareOption func(*MiddlewareOptions)
@@ -33,5 +42,12 @@ func WithLoggerMiddleware(logger log.Logger) MiddlewareOption {
 func WithAuthMiddleware(auth Auth) MiddlewareOption {
 	return func(o *MiddlewareOptions) {
 		o.Auth = auth
+	}
+}
+
+// 添加指标中间件
+func WithMetricsMiddleware(meter*Meter) MiddlewareOption {
+	return func(o *MiddlewareOptions) {
+		o.Meter = meter
 	}
 }

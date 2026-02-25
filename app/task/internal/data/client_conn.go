@@ -12,9 +12,10 @@ import (
 
 	"github.com/go-kratos/kratos/v2/registry"
 	"go.opentelemetry.io/otel/trace"
+	mid "cyi-app/pkg/kratos/server/middleware"
 )
 
-func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider) userRpc.UserClient {
+func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, meter *mid.Meter) userRpc.UserClient {
 	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
 		&ts.TransporterOpt{
 			Timeout:     conf.Grpc.Timeout,
@@ -24,6 +25,7 @@ func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Au
 		&ts.MiddlewareOpt{
 			TracerProvider: tp,
 			ServiceKey:     auth.ServiceKey,
+			Meter:          meter,
 		},
 	))
 	if err != nil {

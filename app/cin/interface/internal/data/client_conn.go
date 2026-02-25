@@ -14,9 +14,10 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/otel/trace"
+	mid "cyi-app/pkg/kratos/server/middleware"
 )
 
-func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider) userRpc.UserClient {
+func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) userRpc.UserClient {
 	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
 		&ts.TransporterOpt{
 			Timeout:     conf.Grpc.Timeout,
@@ -26,6 +27,7 @@ func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Au
 		&ts.MiddlewareOpt{
 			TracerProvider: tp,
 			ServiceKey:     auth.ServiceKey,
+			Meter:          metric,
 		},
 	))
 	if err != nil {
