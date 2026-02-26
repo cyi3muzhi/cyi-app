@@ -3,6 +3,7 @@ package server
 import (
 	"cyi-app/app/cin/interface/internal/conf"
 	consul "cyi-app/pkg/kratos/config"
+	"net"
 
 	ts "cyi-app/pkg/kratos/server/transporter"
 
@@ -21,6 +22,21 @@ import (
 // ProviderSet is server providers.
 var ProviderSet = wire.NewSet(NewGRPCServer, NewHTTPServer, NewRegistrar, NewDiscovery, NewGRPCServerConf, NewHTTPServerConf)
 
+// 获取当前IP地址
+func getLocalIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "127.0.0.1"
+	}
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return "127.0.0.1"
+}
 func NewHTTPServerConf(
 	c *conf.Server,
 	tp trace.TracerProvider,
@@ -41,6 +57,8 @@ func NewHTTPServerConf(
 			Meter:          metric,
 		})...)
 	srv.Handle("/metrics", promhttp.Handler())
+	// 日志打印当前IP
+	log.NewHelper(logger).Infof("Current IP: %s", getLocalIP())
 	return &ts.HttpServer{HttpServer: srv}
 }
 

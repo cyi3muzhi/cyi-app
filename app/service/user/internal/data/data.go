@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"gorm.io/driver/mysql"
-	"gorm.io/gen"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
@@ -62,21 +61,21 @@ func NewDB(c *conf.Data) *gorm.DB {
 	if err := db.AutoMigrate(&mod.User{}); err != nil {
 		panic(err)
 	}
-	// 初始化生成器（可选，用于生成查询代码）
-	g := gen.NewGenerator(gen.Config{
-		OutPath: "../../internal/data/curd",                // 生成文件的输出路径
-		Mode:    gen.WithoutContext | gen.WithDefaultQuery, // 生成模式
-	})
-	// 添加数据库连接
-	g.UseDB(db)
-	// 生成模型的查询代码
-	g.ApplyBasic(
-		&mod.User{},
-	)
-	g.ApplyInterface(func(mod.IUser) {}, mod.User{})
-	g.ApplyInterface(func(mod.IAddress) {}, mod.Address{})
-	// 执行生成代码
-	g.Execute()
+	// // 初始化生成器（可选，用于生成查询代码）
+	// g := gen.NewGenerator(gen.Config{
+	// 	OutPath: "../../internal/data/curd",                // 生成文件的输出路径
+	// 	Mode:    gen.WithoutContext | gen.WithDefaultQuery, // 生成模式
+	// })
+	// // 添加数据库连接
+	// g.UseDB(db)
+	// // 生成模型的查询代码
+	// g.ApplyBasic(
+	// 	&mod.User{},
+	// )
+	// g.ApplyInterface(func(mod.IUser) {}, mod.User{})
+	// g.ApplyInterface(func(mod.IAddress) {}, mod.Address{})
+	// // 执行生成代码
+	// g.Execute()
 	return db
 }
 

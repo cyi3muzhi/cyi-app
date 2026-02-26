@@ -120,6 +120,130 @@ services:
     networks:
       - cyi-network
 
+  # Interface 服务 - 业务微服务
+  interface-server:
+    build:
+      context: ..  # 项目根目录作为构建上下文
+      dockerfile: app/cin/interface/Dockerfile
+    container_name: cin_interface
+    restart: always
+    ports:
+      - "8003:8003"  # HTTP 端口
+      - "9003:9003"  # gRPC 端口
+    environment:
+      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_PATH=/cyi-app/cin/interface
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - redis
+      - jaeger
+      - user-server
+    networks:
+      - cyi-network
+
+  # task 任务服务
+  task-server:
+    build:
+      context: ..  # 项目根目录作为构建上下文
+      dockerfile: app/task/Dockerfile
+    container_name: task_server
+    restart: always
+    ports:
+      - "9400:9400"  # gRPC 端口
+    environment:
+      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_PATH=/cyi-app/task
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - mysql
+      - redis
+    networks:
+      - cyi-network
+
+  job-server:
+    build:
+      context: ..  # 项目根目录作为构建上下文
+      dockerfile: app/job/Dockerfile
+    container_name: task_server
+    restart: always
+    ports:
+      - "9400:9400"  # gRPC 端口
+    environment:
+      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_PATH=/cyi-app/job
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - mysql
+      - redis
+    networks:
+      - cyi-network
+
+  # User 服务 - 技术微服务
+  user-server:
+    build:
+      context: ..  # 项目根目录作为构建上下文
+      dockerfile: app/service/user/Dockerfile
+    container_name: user_server
+    restart: always
+    ports:
+      - "9100:9100"  # gRPC 端口
+    environment:
+      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_PATH=/cyi-app/service/user
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - mysql
+      - redis
+    networks:
+      - cyi-network
+   # Product 服务 - 技术微服务
+  product-server:
+    build:
+      context: ..  # 项目根目录作为构建上下文
+      dockerfile: app/service/product/Dockerfile
+    container_name: product_server
+    restart: always
+    ports:
+      - "9200:9200"  # gRPC 端口
+    environment:
+      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_PATH=/cyi-app/service/product
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - mysql
+      - redis
+    networks:
+      - cyi-network
+
+  # Order 服务 - 技术微服务
+  order-server:
+    build:
+      context: ..  # 项目根目录作为构建上下文
+      dockerfile: app/service/order/Dockerfile
+    container_name: order_server
+    restart: always
+    ports:
+      - "9300:9300"  # gRPC 端口
+    environment:
+      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_PATH=/cyi-app/service/order
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - mysql
+      - redis
+    networks:
+      - cyi-network
 networks:
   cyi-network:
     driver: bridge
