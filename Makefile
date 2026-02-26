@@ -4,6 +4,7 @@ VERSION=$(shell git describe --tags --always) # 获取当前 Git 仓库的版本
 SERVICE_CMD_DIRS := $(wildcard app/*/*/cmd/* app/*/cmd/*) # 查找所有服务的 cmd 目录
 SERVICE_NAMES := $(foreach dir,$(SERVICE_CMD_DIRS),$(notdir $(dir))) # 从 cmd 目录中提取服务名称
 $(foreach service,$(SERVICE_NAMES),$(eval wire-$(service):; cd $(filter %/cmd/$(service),$(SERVICE_CMD_DIRS)) && wire)) # 为每个服务生成 wire 代码
+$(foreach service,$(SERVICE_NAMES),$(eval docker-build-$(service):; cd $(patsubst %/cmd/$(service),%,$(filter %/cmd/$(service),$(SERVICE_CMD_DIRS))) && make docker)) # 为每个服务生成 docker-build 目标
 APP_RELATIVE_PATH=$(notdir $(patsubst %/,%,$(dir $(CURDIR))))/$(notdir $(CURDIR))
 ifeq ($(GOHOSTOS), windows)
 	#the `find.exe` is different from `find` in bash/shell.
@@ -109,7 +110,7 @@ docker-down:
 .PHONY: docker-build
 # build docker image 构建 docker 镜像
 docker-build:
-	
+	$(foreach service,$(SERVICE_NAMES),$(MAKE) docker-build-$(service))
 
 # show env 显示环境变量
 env:

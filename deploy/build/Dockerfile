@@ -22,5 +22,11 @@ COPY --from=builder /src/app/${APP_RELATIVE_PATH}/bin /app
 
 WORKDIR /app
 
+# 设置环境变量
+ENV APP_NAME=${APP_NAME}
 
-CMD ["./$APP_NAME"]
+# 给可执行文件添加执行权限
+RUN chmod +x ./${APP_NAME}
+
+# 启动命令（使用 shell 格式，环境变量会被展开）
+CMD ./${APP_NAME}

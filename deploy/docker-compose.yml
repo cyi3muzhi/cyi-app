@@ -137,7 +137,6 @@ services:
       - consul
       - redis
       - jaeger
-      - user-server
     networks:
       - cyi-network
 
