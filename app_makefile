@@ -1,0 +1,186 @@
+# 获取 GOPATH
+GOPATH:=$(shell go env GOPATH)
+
+# 获取版本号（跨平台兼容）
+VERSION=$(shell git describe --tags --always 2>/dev/null || echo "dev")
+
+# 获取当前目录和父目录名称（跨平台兼容）
+CURRENT_DIR=$(notdir $(CURDIR))
+PARENT_DIR=$(notdir $(patsubst %/,%,$(dir $(CURDIR))))
+# 计算 APP_RELATIVE_PATH：如果父目录是 app，只使用当前目录名称
+ifeq ($(PARENT_DIR),app)
+    APP_RELATIVE_PATH=$(CURRENT_DIR)
+else
+    APP_RELATIVE_PATH=$(PARENT_DIR)/$(CURRENT_DIR)
+endif
+# 根据 app_makefile 位置定位项目根目录
+# 获取 app_makefile 文件的绝对路径
+APP_MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+# 获取 app_makefile 所在目录（即项目根目录）
+PROJECT_ROOT := $(dir $(APP_MAKEFILE_PATH))
+# 移除末尾的斜杠
+PROJECT_ROOT := $(patsubst %/,%,$(PROJECT_ROOT))
+
+# 获取内部 proto 文件（跨平台兼容）
+ifeq ($(OS),Windows_NT)
+    # Windows PowerShell 语法
+    INTERNAL_PROTO_FILES=$(shell powershell -Command "Get-ChildItem -Recurse -Path internal -Filter '*.proto' | ForEach-Object { $_.FullName }")
+else
+    # macOS/Linux bash 语法
+    INTERNAL_PROTO_FILES=$(shell find internal -name *.proto)
+endif
+
+# 获取 API proto 文件（跨平台兼容）
+ifeq ($(OS),Windows_NT)
+    # Windows PowerShell 语法
+    API_PROTO_FILES=$(shell powershell -Command "cd ../../../api/$(APP_RELATIVE_PATH); Get-ChildItem -Recurse -Path . -Filter '*.proto' | ForEach-Object { $_.FullName }")
+else
+    # macOS/Linux bash 语法
+    API_PROTO_FILES=$(shell cd ../../../api/$(APP_RELATIVE_PATH) && find . -name *.proto)
+endif
+
+# 获取 Kratos 版本（跨平台兼容）
+ifeq ($(OS),Windows_NT)
+    # Windows PowerShell 语法
+    KRATOS_VERSION=$(shell powershell -Command "go mod graph | Select-String 'go-kratos/kratos/v2' | Select-Object -First 1 | ForEach-Object { $_.ToString().Split('@')[1] }")
+else
+    # macOS/Linux bash 语法
+    KRATOS_VERSION=$(shell go mod graph | grep go-kratos/kratos/v2 | head -n 1 | awk -F '@' '{print $$2}')
+endif
+
+
+# 设置 Kratos 路径
+KRATOS=$(GOPATH)/pkg/mod/github.com/go-kratos/kratos/v2@$(KRATOS_VERSION)
+
+# 生成应用名称（跨平台兼容）
+# APP_NAME=$(subst /,-,$(APP_RELATIVE_PATH))
+APP_NAME=$(notdir $(APP_RELATIVE_PATH))
+DOCKER_IMAGE_NAME=$(subst /,-,$(APP_RELATIVE_PATH))
+
+# 生成 Docker 镜像名称
+DOCKER_IMAGE=go-kratos/$(DOCKER_IMAGE_NAME):0.1.0
+# .PHONY: init
+# # init env
+# init:
+# 	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
+# 	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
+# 	go get -u github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2
+# 	go get -u github.com/google/wire/cmd/wire
+# 	go get -u github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
+
+# .PHONY: grpc
+# # generate grpc code
+# grpc:
+# 	 cd ../../../api/$(APP_RELATIVE_PATH) && protoc --proto_path=. \
+#            --proto_path=../../../third_party \
+#            --go_out=paths=source_relative:. \
+#            --go-grpc_out=paths=source_relative:. \
+#            $(API_PROTO_FILES)
+
+# .PHONY: http
+# # generate http code
+# http:
+# 	cd ../../../api/$(APP_RELATIVE_PATH) && protoc --proto_path=. \
+#            --proto_path=../../../third_party \
+#            --go_out=paths=source_relative:. \
+#            --go-http_out=paths=source_relative:. \
+#            $(API_PROTO_FILES)
+
+# .PHONY: errors
+# # generate errors code
+# errors:
+# 	cd ../../../api/$(APP_RELATIVE_PATH) && protoc --proto_path=. \
+#            --proto_path=../../../third_party \
+#            --go_out=paths=source_relative:. \
+#            --go-errors_out=paths=source_relative:. \
+#            $(API_PROTO_FILES)
+
+# .PHONY: swagger
+# # generate swagger
+# swagger:
+# 	cd ../../../api/$(APP_RELATIVE_PATH) && protoc --proto_path=. \
+# 	        --proto_path=../../../third_party \
+# 	        --openapiv2_out . \
+# 	        --openapiv2_opt logtostderr=true \
+#            $(API_PROTO_FILES)
+
+# .PHONY: proto
+# # generate internal proto struct
+# proto:
+# 	protoc --proto_path=. \
+#            --proto_path=../../../third_party \
+#            --go_out=paths=source_relative:. \
+#            $(INTERNAL_PROTO_FILES)
+
+# .PHONY: generate
+# # generate client code
+# generate:
+# 	go generate ./...
+
+.PHONY: build
+# build
+build:
+	mkdir -p bin/ && go build -ldflags "-X main.Version=$(VERSION)" -o ./bin/ ./...
+
+# .PHONY: test
+# # test
+# test:
+# 	go test -v ./... -cover
+
+# .PHONY: run
+# run:
+# 	cd cmd/server/ && go run .
+
+# .PHONY: ent
+# ent:
+# 	cd internal/data/ && ent generate ./ent/schema
+
+.PHONY: docker
+docker:
+	cd $(PROJECT_ROOT) && docker build -f deploy/build/Dockerfile \
+		--build-arg APP_RELATIVE_PATH=$(APP_RELATIVE_PATH) \
+		--build-arg APP_NAME=$(APP_NAME) \
+		-t $(DOCKER_IMAGE) .
+
+# .PHONY: wire
+# # generate wire
+# wire:
+# 	cd cmd/server && wire
+
+# .PHONY: api
+# # generate api proto
+# api: grpc http swagger errors
+
+# .PHONY: all
+# # generate all
+# all: grpc http proto generate build test
+.PHONY: env
+env:
+	@echo GOPATH=$(GOPATH)
+	@echo VERSION=$(VERSION)
+	@echo CURRENT_DIR=$(CURRENT_DIR)
+	@echo PARENT_DIR=$(PARENT_DIR)
+	@echo APP_RELATIVE_PATH=$(APP_RELATIVE_PATH)
+	@echo APP_NAME=$(APP_NAME)
+	@echo DOCKER_IMAGE=$(DOCKER_IMAGE)
+	@echo PROJECT_ROOT=$(PROJECT_ROOT)
+	@echo APP_MAKEFILE_PATH=$(APP_MAKEFILE_PATH)
+
+# show help
+help:
+	@echo ''
+	@echo 'Usage:'
+	@echo ' make [target]'
+	@echo ''
+	@echo 'Targets:'
+	@awk '/^[a-zA-Z\-\_0-9]+:/ { \
+	helpMessage = match(lastLine, /^# (.*)/); \
+		if (helpMessage) { \
+			helpCommand = substr($$1, 0, index($$1, ":")-1); \
+			helpMessage = substr(lastLine, RSTART + 2, RLENGTH); \
+			printf "\033[36m%-22s\033[0m %s\n", helpCommand,helpMessage; \
+		} \
+	} \
+	{ lastLine = $$0 }' $(MAKEFILE_LIST)
+
+.DEFAULT_GOAL := help

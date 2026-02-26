@@ -1,11 +1,16 @@
 FROM golang:1.25 AS builder
 
+ARG APP_RELATIVE_PATH
+
 COPY . /src
-WORKDIR /src
+WORKDIR /src/app/${APP_RELATIVE_PATH}
 
 RUN GOPROXY=https://goproxy.cn make build
 
 FROM debian:stable-slim
+
+ARG APP_RELATIVE_PATH
+ARG APP_NAME
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 		ca-certificates  \
@@ -13,8 +18,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         && rm -rf /var/lib/apt/lists/ \
         && apt-get autoremove -y && apt-get autoclean -y
 
-COPY --from=builder /src/bin /app
+COPY --from=builder /src/app/${APP_RELATIVE_PATH}/bin /app
 
 WORKDIR /app
 
-CMD ["./task"]
+
+CMD ["./$APP_NAME"]
