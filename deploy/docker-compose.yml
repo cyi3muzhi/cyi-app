@@ -13,21 +13,30 @@ volumes:
   # RustFS数据卷
   rustfs_data:
     driver: local
-# 日志目录
+  # 日志目录
   rustfs_logs:
+    driver: local
+  # Elasticsearch 数据卷
+  es_data:
+    driver: local
+  # Logstash 配置卷
+  logstash_config:
+    driver: local
+  # Kibana 配置卷
+  kibana_config:
     driver: local
 
 services:
   # Consul服务 - 用于服务发现和配置管理
   consul:
     image: hashicorp/consul:1.22
-    container_name: cin_consul
+    container_name: consul
     restart: always
     volumes:
       - consul-data:/consul/data
       - consul-config:/consul/config
     ports:
-      - "8500:8500"  # HTTP API端口
+      - "${CONSUL_PORT}:8500"  # HTTP API端口
       - "8600:8600/udp"  # DNS端口
       - "8300:8300"  # 服务器RPC端口
     environment:
@@ -41,12 +50,12 @@ services:
   # Redis服务 - 用于缓存
   redis:
     image: redis:7.0.12
-    container_name: cin_redis
+    container_name: redis
     restart: always
     volumes:
       - redis_data:/data
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     environment:
       - REDIS_PASSWORD=redis0411  # 设置Redis密码
       - REDIS_MAXMEMORY=1gb  # 设置最大内存使用
@@ -63,14 +72,14 @@ services:
   # MySQL服务 - 用于数据库存储
   mysql:
     image: mysql:8.0
-    container_name: cin_mysql
+    container_name: mysql
     restart: always
     volumes:
       - mysql_data:/var/lib/mysql
       # 可选：挂载初始化脚本目录
       # - ./mysql/init:/docker-entrypoint-initdb.d
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT}:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=mysql0411  # 设置root密码
       - MYSQL_DATABASE=cin_test  # 创建默认数据库
@@ -85,16 +94,16 @@ services:
   # Jaeger服务 - 用于分布式追踪
   jaeger:
     image: jaegertracing/all-in-one:1.49
-    container_name: cin_jaeger
+    container_name: jaeger
     restart: always
     ports:
-      - "16686:16686"  # Jaeger UI端口
-      - "14268:14268"  # Jaeger收集器端口（HTTP）
-      - "14250:14250"  # Jaeger收集器端口（gRPC）
-      - "6831:6831/udp"  # Jaeger Thrift 二进制端口
-      - "6832:6832/udp"  # Jaeger Thrift 压缩端口
-      - "4318:4318"  # OTLP gRPC端口
-      - "4317:4317"  # OTLP HTTP端口
+      - "${JAEGER_UI_PORT}:16686"  # Jaeger UI端口
+      - "${JAEGER_HTTP_PORT}:14268"  # Jaeger收集器端口（HTTP）
+      - "${JAEGER_GRPC_PORT}:14250"  # Jaeger收集器端口（gRPC）
+      - "${JAEGER_THRIFT_BINARY_PORT}:6831/udp"  # Jaeger Thrift 二进制端口
+      - "${JAEGER_THRIFT_COMPACT_PORT}:6832/udp"  # Jaeger Thrift 压缩端口
+      - "${JAEGER_OTLP_GRPC_PORT}:4318"  # OTLP gRPC端口
+      - "${JAEGER_OTLP_HTTP_PORT}:4317"  # OTLP HTTP端口
     environment:
       - COLLECTOR_OTLP_ENABLED=true  # 启用OTLP收集器
       - COLLECTOR_ZIPKIN_HOST_PORT=:9411  # 启用Zipkin收集器
@@ -107,8 +116,8 @@ services:
     image: rustfs/rustfs:latest
     container_name: rustfs
     ports:
-      - "9000:9000"  # Web控制台端口
-      - "9001:9001"  # API端口
+      - "${RUSTFS_WEB_PORT}:9000"  # Web控制台端口
+      - "${RUSTFS_API_PORT}:9001"  # API端口
     volumes:
       - rustfs_data:/data  # 数据存储目录
       - rustfs_logs:/logs  # 日志目录
@@ -120,15 +129,88 @@ services:
     networks:
       - cyi-network
 
+  # Elasticsearch 服务
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+    container_name: elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=cyi-app-cluster
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - ELASTIC_PASSWORD=changeme
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - "${ELASTICSEARCH_PORT}:9200"
+      - "${ELASTICSEARCH_TRANSPORT_PORT}:9300"
+    healthcheck:
+      test: curl -s http://localhost:9200/_cluster/health | grep -v 'status":"red"'
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - cyi-network
+
+  # Logstash 服务
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.10
+    container_name: logstash
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - logstash_config:/usr/share/logstash/config
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    ports:
+      - "${LOGSTASH_BEATS_PORT}:5044"  # Filebeat 输入端口
+      - "${LOGSTASH_API_PORT}:9600"  # Logstash API 端口
+    environment:
+      - LS_JAVA_OPTS=-Xms512m -Xmx512m
+    networks:
+      - cyi-network
+
+  # Kibana 服务
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.10
+    container_name: kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - kibana_config:/usr/share/kibana/config
+    ports:
+      - "${KIBANA_PORT}:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=changeme
+    networks:
+      - cyi-network
+
+  # Filebeat 服务 - 用于日志收集
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.10
+    container_name: cyi-app-filebeat
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - e:/me/cyi-app/app/service/user/cmd/user/logs:/logs/user-service:ro
+      - e:/me/cyi-app/app/cin/interface/cmd/interface/logs:/logs/interface-service:ro
+    networks:
+      - cyi-network
+    command: filebeat -e -strict.perms=false
+    depends_on:
+      - logstash
+
   # Interface 服务 - 业务微服务
   service-interface:
     # 使用本地生成的镜像
     image: go-kratos/cin-interface:0.1.0
-    container_name: cin_interface_service
+    container_name: service-cin-interface
     restart: always
     ports:
-      - "8010:8000"  # HTTP 端口
-      - "9010:9000"  # gRPC 端口
+      - "${INTERFACE_HTTP_PORT}:8000"  # HTTP 端口
+      - "${INTERFACE_GRPC_PORT}:9000"  # gRPC 端口
     environment:
       - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
       - CONSUL_PATH=/develop/cyi-app/cin/interface
@@ -144,10 +226,10 @@ services:
   service-task:
     # 使用本地生成的镜像
     image: go-kratos/task:0.1.0
-    container_name: task_service
+    container_name: service-task
     restart: always
     ports:
-      - "10100:8000"  # gRPC 端口
+      - "${TASK_PORT}:8000"  # gRPC 端口
     environment:
       - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
       - CONSUL_PATH=/develop/cyi-app/task
@@ -163,10 +245,10 @@ services:
   service-job:
     # 使用本地生成的镜像
     image: go-kratos/job:0.1.0
-    container_name: job_service
+    container_name: service-job
     restart: always
     ports:
-      - "10200:8000"  # HTTP 端口
+      - "${JOB_PORT}:8000"  # HTTP 端口
     environment:
       - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
       - CONSUL_PATH=/develop/cyi-app/job
@@ -182,10 +264,10 @@ services:
   service-user:
     # 使用本地生成的镜像
     image: go-kratos/service-user:0.1.0
-    container_name: user_service
+    container_name: service-user
     restart: always
     ports:
-      - "9100:9000"  # gRPC 端口
+      - "${USER_GRPC_PORT}:9000"  # gRPC 端口
     environment:
       - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
       - CONSUL_PATH=/develop/cyi-app/service/user
