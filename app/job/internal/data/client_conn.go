@@ -23,7 +23,7 @@ func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Au
 			Discovery:   r,
 		},
 		&ts.MiddlewareOpt{
-			TracerProvider: tp,
+			TracerProvider: tp,	
 			ServiceKey:     auth.ServiceKey[grpc.USER_SERVICE],
 			Meter:          meteric,
 		},

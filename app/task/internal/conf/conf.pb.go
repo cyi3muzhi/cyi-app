@@ -369,8 +369,9 @@ func (x *Log) GetEnableColor() bool {
 }
 
 type Auth struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ServiceKey    string                 `protobuf:"bytes,1,opt,name=service_key,json=serviceKey,proto3" json:"service_key,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 服务名对应密钥
+	ServiceKey    map[string]string `protobuf:"bytes,1,rep,name=service_key,json=serviceKey,proto3" json:"service_key,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -405,11 +406,11 @@ func (*Auth) Descriptor() ([]byte, []int) {
 	return file_app_task_internal_conf_conf_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *Auth) GetServiceKey() string {
+func (x *Auth) GetServiceKey() map[string]string {
 	if x != nil {
 		return x.ServiceKey
 	}
-	return ""
+	return nil
 }
 
 type Server_HTTP struct {
@@ -754,10 +755,13 @@ const file_app_task_internal_conf_conf_proto_rawDesc = "" +
 	"\alog_dir\x18\x04 \x01(\tR\x06logDir\x12\x1f\n" +
 	"\vtime_format\x18\x05 \x01(\tR\n" +
 	"timeFormat\x12!\n" +
-	"\fenable_color\x18\x06 \x01(\bR\venableColor\"'\n" +
-	"\x04Auth\x12\x1f\n" +
-	"\vservice_key\x18\x01 \x01(\tR\n" +
-	"serviceKeyB(Z&cyi-app/app/service/task/internal/confb\x06proto3"
+	"\fenable_color\x18\x06 \x01(\bR\venableColor\"\x97\x01\n" +
+	"\x04Auth\x12P\n" +
+	"\vservice_key\x18\x01 \x03(\v2/.cyi.app.service.task.conf.Auth.ServiceKeyEntryR\n" +
+	"serviceKey\x1a=\n" +
+	"\x0fServiceKeyEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B(Z&cyi-app/app/service/task/internal/confb\x06proto3"
 
 var (
 	file_app_task_internal_conf_conf_proto_rawDescOnce sync.Once
@@ -771,7 +775,7 @@ func file_app_task_internal_conf_conf_proto_rawDescGZIP() []byte {
 	return file_app_task_internal_conf_conf_proto_rawDescData
 }
 
-var file_app_task_internal_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_app_task_internal_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_app_task_internal_conf_conf_proto_goTypes = []any{
 	(*Bootstrap)(nil),           // 0: cyi.app.service.task.conf.Bootstrap
 	(*Server)(nil),              // 1: cyi.app.service.task.conf.Server
@@ -784,7 +788,8 @@ var file_app_task_internal_conf_conf_proto_goTypes = []any{
 	(*Server_GRPC)(nil),         // 8: cyi.app.service.task.conf.Server.GRPC
 	(*Data_Redis)(nil),          // 9: cyi.app.service.task.conf.Data.Redis
 	(*Registry_Consul)(nil),     // 10: cyi.app.service.task.conf.Registry.Consul
-	(*durationpb.Duration)(nil), // 11: google.protobuf.Duration
+	nil,                         // 11: cyi.app.service.task.conf.Auth.ServiceKeyEntry
+	(*durationpb.Duration)(nil), // 12: google.protobuf.Duration
 }
 var file_app_task_internal_conf_conf_proto_depIdxs = []int32{
 	1,  // 0: cyi.app.service.task.conf.Bootstrap.server:type_name -> cyi.app.service.task.conf.Server
@@ -796,15 +801,16 @@ var file_app_task_internal_conf_conf_proto_depIdxs = []int32{
 	8,  // 6: cyi.app.service.task.conf.Server.grpc:type_name -> cyi.app.service.task.conf.Server.GRPC
 	9,  // 7: cyi.app.service.task.conf.Data.redis:type_name -> cyi.app.service.task.conf.Data.Redis
 	10, // 8: cyi.app.service.task.conf.Registry.consul:type_name -> cyi.app.service.task.conf.Registry.Consul
-	11, // 9: cyi.app.service.task.conf.Server.HTTP.timeout:type_name -> google.protobuf.Duration
-	11, // 10: cyi.app.service.task.conf.Server.GRPC.timeout:type_name -> google.protobuf.Duration
-	11, // 11: cyi.app.service.task.conf.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
-	11, // 12: cyi.app.service.task.conf.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
-	13, // [13:13] is the sub-list for method output_type
-	13, // [13:13] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	11, // 9: cyi.app.service.task.conf.Auth.service_key:type_name -> cyi.app.service.task.conf.Auth.ServiceKeyEntry
+	12, // 10: cyi.app.service.task.conf.Server.HTTP.timeout:type_name -> google.protobuf.Duration
+	12, // 11: cyi.app.service.task.conf.Server.GRPC.timeout:type_name -> google.protobuf.Duration
+	12, // 12: cyi.app.service.task.conf.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
+	12, // 13: cyi.app.service.task.conf.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
+	14, // [14:14] is the sub-list for method output_type
+	14, // [14:14] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_app_task_internal_conf_conf_proto_init() }
@@ -818,7 +824,7 @@ func file_app_task_internal_conf_conf_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_app_task_internal_conf_conf_proto_rawDesc), len(file_app_task_internal_conf_conf_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

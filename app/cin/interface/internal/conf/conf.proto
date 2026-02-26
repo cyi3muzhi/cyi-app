@@ -59,7 +59,8 @@ message Registry {
 }
 
 message Auth {
-    string service_key = 1;
+    // 服务名对应密钥
+    map<string, string> service_key = 1;
     string api_key = 2;
     repeated string white_list = 3;
 }
