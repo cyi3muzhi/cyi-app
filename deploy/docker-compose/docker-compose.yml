@@ -25,6 +25,15 @@ volumes:
   # Kibana 配置卷
   kibana_config:
     driver: local
+  # Filebeat数据卷
+  filebeat_data: 
+    driver: local
+  # Jaeger数据卷
+  jaeger_data: 
+    driver: local
+  # Jaeger临时数据卷
+  jaeger_tmp: 
+    driver: local
 
 services:
   # Consul服务 - 用于服务发现和配置管理
@@ -107,6 +116,9 @@ services:
     environment:
       - COLLECTOR_OTLP_ENABLED=true  # 启用OTLP收集器
       - COLLECTOR_ZIPKIN_HOST_PORT=:9411  # 启用Zipkin收集器
+    volumes:
+      - jaeger_tmp:/tmp
+      - jaeger_data:/jaeger/tmp
     command:
       - --log-level=info
     networks:
@@ -199,6 +211,7 @@ services:
       - ../logs/interface-service:/logs/interface-service:ro
       - ../logs/task-service:/logs/task-service:ro
       - ../logs/job-service:/logs/job-service:ro
+      - filebeat_data:/usr/share/filebeat/data
     environment:
       - ENVIRONMENT=development  # 设置环境变量
     networks:
