@@ -34,6 +34,12 @@ volumes:
   # Jaeger临时数据卷
   jaeger_tmp: 
     driver: local
+  # Prometheus数据卷
+  prometheus_data:
+    driver: local
+  # Grafana数据卷
+  grafana_data:
+    driver: local
 
 services:
   # Consul服务 - 用于服务发现和配置管理
@@ -306,6 +312,36 @@ services:
       - redis
     networks:
       - cyi-network
+
+  # Prometheus 服务 - 用于监控数据采集
+  prometheus:
+    image: prom/prometheus:v2.43.0
+    container_name: prometheus
+    restart: always
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
+    networks:
+      - cyi-network
+
+  # Grafana 服务 - 用于监控数据可视化
+  grafana:
+    image: grafana/grafana:9.5.2
+    container_name: grafana
+    restart: always
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=muzhi0228
+    networks:
+      - cyi-network
+    depends_on:
+      - prometheus
   
 networks:
   cyi-network:

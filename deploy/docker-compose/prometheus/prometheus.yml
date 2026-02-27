@@ -1,0 +1,46 @@
+# Prometheus 配置文件
+
+# 全局配置
+global:
+  scrape_interval: 15s  # 抓取间隔
+  evaluation_interval: 15s  # 评估间隔
+
+# 告警配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+
+# 告警规则
+rule_files:
+
+# 抓取配置
+scrape_configs:
+  # 监控 Prometheus 自身
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # 监控 Interface 服务
+  - job_name: 'interface-service'
+    static_configs:
+      - targets: ['service-interface:8000']
+    metrics_path: '/metrics'
+
+  # 监控 User 服务
+  - job_name: 'user-service'
+    static_configs:
+      - targets: ['service-user:9000']
+    metrics_path: '/metrics'
+
+  # 监控 Job 服务
+  - job_name: 'job-service'
+    static_configs:
+      - targets: ['service-job:8000']
+    metrics_path: '/metrics'
+
+  # 监控 Task 服务
+  - job_name: 'task-service'
+    static_configs:
+      - targets: ['service-task:8000']
+    metrics_path: '/metrics'
