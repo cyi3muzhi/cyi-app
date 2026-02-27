@@ -1,0 +1,77 @@
+﻿# 文件输入（用于收集挂载的本地日志）
+filebeat.inputs:
+  # 用户服务日志
+  - type: log
+    enabled: true
+    paths:
+      - /logs/user-service/*.log
+    encoding: utf-8
+    multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+    multiline.negate: true
+    multiline.match: after
+    fields:
+      service: user-service
+      environment: ${ENVIRONMENT:development}
+    fields_under_root: true
+
+  # 接口服务日志
+  - type: log
+    enabled: true
+    paths:
+      - /logs/interface-service/*.log
+    encoding: utf-8
+    multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+    multiline.negate: true
+    multiline.match: after
+    fields:
+      service: interface-service
+      environment: ${ENVIRONMENT:development}
+    fields_under_root: true
+
+  # 任务服务日志
+  - type: log
+    enabled: true
+    paths:
+      - /logs/task-service/*.log
+    encoding: utf-8
+    multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+    multiline.negate: true
+    multiline.match: after
+    fields:
+      service: task-service
+      environment: ${ENVIRONMENT:development}
+    fields_under_root: true
+
+  # 作业服务日志
+  - type: log
+    enabled: true
+    paths:
+      - /logs/job-service/*.log
+    encoding: utf-8
+    multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+    multiline.negate: true
+    multiline.match: after
+    fields:
+      service: job-service
+      environment: ${ENVIRONMENT:development}
+    fields_under_root: true
+
+# Docker 输入（直接收集容器日志）
+  - type: docker
+    enabled: true
+    containers.ids: '*'
+    processors:
+      - add_docker_metadata: ~
+      - add_fields:
+          fields:
+            environment: ${ENVIRONMENT:development}
+          target: ''
+
+# 输出配置
+output.logstash:
+  hosts: ["logstash:5044"]
+  ssl.enabled: false
+
+# 日志配置
+logging.level: info
+logging.to_files: false

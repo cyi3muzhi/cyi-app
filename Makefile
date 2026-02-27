@@ -100,12 +100,12 @@ wire:
 .PHONY: docker-up
 # run docker container 运行 docker 容器
 docker-up:
-	cd deploy && docker-compose -p cyi-app up -d
+	cd deploy/docker-compose && docker-compose -p cyi-app up -d
 
 .PHONY: docker-down
 # stop docker container 停止 docker 容器
 docker-down:
-	cd deploy && docker-compose -p cyi-app down
+	cd deploy/docker-compose && docker-compose -p cyi-app down
 
 .PHONY: docker-build
 # build docker image 构建 docker 镜像

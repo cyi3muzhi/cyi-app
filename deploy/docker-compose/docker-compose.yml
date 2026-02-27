@@ -191,16 +191,22 @@ services:
   # Filebeat 服务 - 用于日志收集
   filebeat:
     image: docker.elastic.co/beats/filebeat:7.17.10
-    container_name: cyi-app-filebeat
+    container_name: filebeat
     volumes:
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - e:/me/cyi-app/app/service/user/cmd/user/logs:/logs/user-service:ro
-      - e:/me/cyi-app/app/cin/interface/cmd/interface/logs:/logs/interface-service:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # 用于收集 Docker 容器日志
+      - ../logs/user-service:/logs/user-service:ro
+      - ../logs/interface-service:/logs/interface-service:ro
+      - ../logs/task-service:/logs/task-service:ro
+      - ../logs/job-service:/logs/job-service:ro
+    environment:
+      - ENVIRONMENT=development  # 设置环境变量
     networks:
       - cyi-network
     command: filebeat -e -strict.perms=false
     depends_on:
       - logstash
+    restart: always
 
   # Interface 服务 - 业务微服务
   service-interface:
@@ -211,6 +217,8 @@ services:
     ports:
       - "${INTERFACE_HTTP_PORT}:8000"  # HTTP 端口
       - "${INTERFACE_GRPC_PORT}:9000"  # gRPC 端口
+    volumes:
+      - ../logs/interface-service:/app/logs
     environment:
       - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
       - CONSUL_PATH=/develop/cyi-app/cin/interface
@@ -230,6 +238,8 @@ services:
     restart: always
     ports:
       - "${TASK_PORT}:8000"  # gRPC 端口
+    volumes:
+      - ../logs/task-service:/app/logs
     environment:
       - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
       - CONSUL_PATH=/develop/cyi-app/task
@@ -249,6 +259,8 @@ services:
     restart: always
     ports:
       - "${JOB_PORT}:8000"  # HTTP 端口
+    volumes:
+      - ../logs/job-service:/app/logs
     environment:
       - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
       - CONSUL_PATH=/develop/cyi-app/job
@@ -268,6 +280,8 @@ services:
     restart: always
     ports:
       - "${USER_GRPC_PORT}:9000"  # gRPC 端口
+    volumes:
+      - ../logs/user-service:/app/logs
     environment:
       - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
       - CONSUL_PATH=/develop/cyi-app/service/user

@@ -18,6 +18,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         && rm -rf /var/lib/apt/lists/ \
         && apt-get autoremove -y && apt-get autoclean -y
 
+# 设置时区为上海
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+RUN echo "Asia/Shanghai" > /etc/timezone
+
 COPY --from=builder /src/app/${APP_RELATIVE_PATH}/bin /app
 
 WORKDIR /app
