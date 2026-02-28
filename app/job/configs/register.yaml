@@ -2,4 +2,4 @@ consul:
   address: consul:8500
   scheme: http
   enable_health_check: true
-  check_interval: 2
+  check_interval: 2s

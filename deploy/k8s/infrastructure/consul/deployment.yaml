@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consul
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consul
+  template:
+    metadata:
+      labels:
+        app: consul
+    spec:
+      containers:
+      - name: consul
+        image: hashicorp/consul:1.22
+        ports:
+        - containerPort: 8500
+        - containerPort: 8600
+          protocol: UDP
+        - containerPort: 8300
+        env:
+        - name: CONSUL_UI
+          value: "true"
+        command:
+        - consul
+        - agent
+        - -server
+        - -bootstrap-expect=1
+        - -ui
+        - -client=0.0.0.0
+        - -bind=0.0.0.0
+        - -data-dir=/consul/data
+        - -config-dir=/consul/config
+        volumeMounts:
+        - name: consul-data
+          mountPath: /consul/data
+        - name: consul-config
+          mountPath: /consul/config
+      volumes:
+      - name: consul-data
+        persistentVolumeClaim:
+          claimName: consul-data
+      - name: consul-config
+        persistentVolumeClaim:
+          claimName: consul-config

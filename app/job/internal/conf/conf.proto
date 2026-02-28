@@ -79,7 +79,7 @@ message Task {
     string cron = 1; // 定时任务表达式
     string name = 2; // 任务名称
     message Options {
-      // 任务队列
+      // 任务队列 优先级：critical > default > low
       string queue = 1;
       // 最大重试次数
       int32 max_retry = 2;

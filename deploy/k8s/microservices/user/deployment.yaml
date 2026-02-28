@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-user
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-user
+  template:
+    metadata:
+      labels:
+        app: service-user
+    spec:
+      containers:
+      - name: service-user
+        image: go-kratos/service-user:0.1.0
+        ports:
+        - containerPort: 9000
+        env:
+        - name: CONSUL_ADDR
+          valueFrom:
+            configMapKeyRef:
+              name: cyi-app-config
+              key: CONSUL_ADDR
+        - name: CONSUL_PATH
+          value: "/develop/cyi-app/service/user"
+        - name: SERVICE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: cyi-app-config
+              key: SERVICE_ENV
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: logs
+        emptyDir: {}

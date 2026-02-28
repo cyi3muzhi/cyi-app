@@ -112,6 +112,26 @@ docker-down:
 docker-build:
 	$(foreach service,$(SERVICE_NAMES),$(MAKE) docker-build-$(service))
 
+.PHONY: k8s-up
+# deploy kubernetes services 部署 Kubernetes 服务
+k8s-up:
+	cd deploy/k8s && powershell -ExecutionPolicy Bypass -File .\deploy-all.ps1
+
+.PHONY: k8s-down
+# stop kubernetes services 停止 Kubernetes 服务
+k8s-down:
+	kubectl delete deployment --all
+	kubectl delete service --all
+
+.PHONY: k8s-clean
+# clean kubernetes resources 清理 Kubernetes 资源
+k8s-clean:
+	kubectl delete deployment --all
+	kubectl delete service --all
+	kubectl delete pvc --all
+	kubectl delete configmap --all
+	kubectl delete secret --all
+
 # show env 显示环境变量
 env:
 	@echo 'GOHOSTOS: $(GOHOSTOS)'

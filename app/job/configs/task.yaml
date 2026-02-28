@@ -1,0 +1,10 @@
+tasks:
+ - cron: "*/1 * * * *"
+   name: "user_count"
+   options:
+      #   "critical": 6,
+      #   "default":  3,
+      #   "low":      1,
+      queue: "critical"
+      max_retry: 3
+      timeout: 5s

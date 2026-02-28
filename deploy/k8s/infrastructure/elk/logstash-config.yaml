@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  namespace: default
+data:
+  logstash.conf: |-
+    # Logstash 管道配置文件
+    # 用于处理来自 Filebeat 的日志数据
+
+    input {
+      # Filebeat 输入
+      beats {
+        port => 5044
+      }
+    }
+
+    filter {
+      # 保存原始日志到 log.message
+      mutate {
+        add_field => {
+          "[log][message]" => "%{message}"
+        }
+      }
+      
+      # 尝试匹配格式 1（包含 msg 字段）
+      grok {
+        match => {
+          "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} msg=\"%{DATA:msg}\" service.id=%{DATA:service_id} service.name=%{DATA:service_name} service.version=%{DATA:service_version} span.id=%{DATA:span_id} trace.id=%{DATA:trace_id}"
+        }
+        break_on_match => false
+      }
+      
+      # 尝试匹配格式 2（包含 args、code 等字段）
+      grok {
+        match => {
+          "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} args=%{DATA:args} code=%{NUMBER:code} component=%{DATA:component} kind=%{DATA:kind} latency=%{NUMBER:latency} operation=%{DATA:operation} reason=%{DATA:reason} service.id=%{DATA:service_id} service.name=%{DATA:service_name} service.version=%{DATA:service_version} span.id=%{DATA:span_id} stack=%{DATA:stack} trace.id=%{DATA:trace_id}"
+        }
+        break_on_match => false
+      }
+      
+      # 日期处理
+      date {
+        match => ["timestamp", "yyyy-MM-dd HH:mm:ss"]
+        target => "@timestamp"
+        remove_field => ["timestamp"]
+        timezone => "Asia/Shanghai"
+      }
+      
+      # 处理 msg 字段
+      if [msg] {
+        mutate {
+          replace => { 
+            "message" => "%{msg}" 
+          }
+          remove_field => ["msg"]
+        }
+      }else{
+        mutate {
+          replace => { "message" => " " }
+        }
+      }
+      
+      if [latency] {
+        ruby {
+          code => "event.set('latency_ms', (event.get('latency').to_f * 1000).round(3).to_s + 'ms')"
+        }
+        mutate {
+          remove_field => ["latency"]
+        }
+      }
+
+      # 处理空值
+      if [args] {
+        mutate {
+          add_field => {
+            "parameters" => "%{args}"
+          }
+          remove_field => ["args"]
+        }
+      }else{
+        mutate {
+          replace => { "parameters" => " " }
+        }
+      }
+      
+      # 确保服务名称字段存在且是字符串
+      if [service_name] {
+        mutate {
+          replace => {
+            "service" => "%{service_name}"
+          }
+        }
+      } else if ![service] {
+        mutate {
+          add_field => {
+            "service" => "app"
+          }
+        }
+      }
+      
+      # 移除不需要的字段
+      mutate {
+        remove_field => ["fields", "host", "agent", "ecs", "tags"]
+      }
+    }
+
+    output {
+      # 输出到 Elasticsearch，使用服务名称作为索引的一部分
+      elasticsearch {
+        hosts => ["elasticsearch:9200"]
+        index => "cyi-%{service}-%{+yyyy.MM.dd}"
+        user => "elastic"
+        password => "changeme"
+      }
+    }

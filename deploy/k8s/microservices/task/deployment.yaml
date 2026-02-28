@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-task
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-task
+  template:
+    metadata:
+      labels:
+        app: service-task
+    spec:
+      containers:
+      - name: service-task
+        image: go-kratos/task:0.1.0
+        ports:
+        - containerPort: 8000
+        env:
+        - name: CONSUL_ADDR
+          valueFrom:
+            configMapKeyRef:
+              name: cyi-app-config
+              key: CONSUL_ADDR
+        - name: CONSUL_PATH
+          value: "/develop/cyi-app/task"
+        - name: SERVICE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: cyi-app-config
+              key: SERVICE_ENV
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: logs
+        emptyDir: {}

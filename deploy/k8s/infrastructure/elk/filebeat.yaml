@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: filebeat
+  namespace: default
+  labels:
+    app: filebeat
+spec:
+  selector:
+    matchLabels:
+      app: filebeat
+  template:
+    metadata:
+      labels:
+        app: filebeat
+    spec:
+      containers:
+      - name: filebeat
+        image: docker.elastic.co/beats/filebeat:7.17.10
+        args:
+        - -e
+        - --strict.perms=false
+        env:
+        - name: ENVIRONMENT
+          value: development
+        volumeMounts:
+        - name: filebeat-config
+          mountPath: /usr/share/filebeat/filebeat.yml
+          subPath: filebeat.yml
+        - name: filebeat-data
+          mountPath: /usr/share/filebeat/data
+        - name: interface-logs
+          mountPath: /app/logs/interface
+        - name: user-logs
+          mountPath: /app/logs/user
+        - name: task-logs
+          mountPath: /app/logs/task
+        - name: job-logs
+          mountPath: /app/logs/job
+      volumes:
+      - name: filebeat-config
+        configMap:
+          name: filebeat-config
+      - name: filebeat-data
+        emptyDir: {}
+      - name: interface-logs
+        hostPath:
+          path: /mnt/e/me/cyi-app/app/cin/interface/cmd/interface/logs
+          type: DirectoryOrCreate
+      - name: user-logs
+        hostPath:
+          path: /mnt/e/me/cyi-app/app/service/user/cmd/user/logs
+          type: DirectoryOrCreate
+      - name: task-logs
+        hostPath:
+          path: /mnt/e/me/cyi-app/app/task/cmd/task/logs
+          type: DirectoryOrCreate
+      - name: job-logs
+        hostPath:
+          path: /mnt/e/me/cyi-app/app/job/cmd/job/logs
+          type: DirectoryOrCreate
