@@ -1,0 +1,24 @@
+server:
+  http:
+    addr: 0.0.0.0:8000
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9000
+    timeout: 1s
+data:
+  redis:
+    addr: redis:6379
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+    password: redis0411
+
+trace:
+  endpoint: jaeger:4318
+
+log:
+  level: info
+  enable_console: true
+  enable_file: true
+  log_dir: logs
+  time_format: "2006-01-02 15:04:05"
+  enable_color: true

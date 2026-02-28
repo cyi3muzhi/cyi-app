@@ -1,0 +1,7 @@
+tasks:
+ cron: "*/1 * * * * *"
+ name: "user_count"
+ options:
+    queue: "user_count"
+    max_retry: 3
+    timeout: 5s

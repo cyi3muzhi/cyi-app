@@ -1,0 +1,287 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consul
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consul
+  template:
+    metadata:
+      labels:
+        app: consul
+    spec:
+      containers:
+      - name: consul
+        image: hashicorp/consul:1.22
+        ports:
+        - containerPort: 8500
+        - containerPort: 8600
+          protocol: UDP
+        - containerPort: 8300
+        env:
+        - name: CONSUL_UI
+          value: "true"
+        command:
+        - consul
+        - agent
+        - -server
+        - -bootstrap-expect=1
+        - -ui
+        - -client=0.0.0.0
+        - -bind=0.0.0.0
+        - -data-dir=/consul/data
+        - -config-dir=/consul/config
+        volumeMounts:
+        - name: consul-data
+          mountPath: /consul/data
+        - name: consul-config
+          mountPath: /consul/config
+      volumes:
+      - name: consul-data
+        emptyDir: {}
+      - name: consul-config
+        emptyDir: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7.0.12
+        ports:
+        - containerPort: 6379
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cyi-app-secret
+              key: REDIS_PASSWORD
+        command:
+        - redis-server
+        - --requirepass
+        - $(REDIS_PASSWORD)
+        - --appendonly
+        - "yes"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cyi-app-secret
+              key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: cyi-app-config
+              key: MYSQL_DATABASE
+        args:
+        - --character-set-server=utf8mb4
+        - --collation-server=utf8mb4_unicode_ci
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger
+  template:
+    metadata:
+      labels:
+        app: jaeger
+    spec:
+      containers:
+      - name: jaeger
+        image: jaegertracing/all-in-one:1.49
+        ports:
+        - containerPort: 16686
+        - containerPort: 14268
+        env:
+        - name: COLLECTOR_OTLP_ENABLED
+          value: "true"
+        - name: COLLECTOR_ZIPKIN_HOST_PORT
+          value: ":9411"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-interface
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-interface
+  template:
+    metadata:
+      labels:
+        app: service-interface
+    spec:
+      containers:
+      - name: service-interface
+        image: go-kratos/cin-interface:0.1.0
+        ports:
+        - containerPort: 8000
+        - containerPort: 9000
+        env:
+        - name: CONSUL_ADDR
+          value: "consul:8500"
+        - name: CONSUL_PATH
+          value: "/develop/cyi-app/cin/interface"
+        - name: SERVICE_ENV
+          value: "dev"
+        - name: LOG_LEVEL
+          value: "debug"
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: logs
+        emptyDir: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-task
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-task
+  template:
+    metadata:
+      labels:
+        app: service-task
+    spec:
+      containers:
+      - name: service-task
+        image: go-kratos/task:0.1.0
+        ports:
+        - containerPort: 8000
+        env:
+        - name: CONSUL_ADDR
+          valueFrom:
+            configMapKeyRef:
+              name: cyi-app-config
+              key: CONSUL_ADDR
+        - name: CONSUL_PATH
+          value: "/develop/cyi-app/task"
+        - name: SERVICE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: cyi-app-config
+              key: SERVICE_ENV
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-job
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-job
+  template:
+    metadata:
+      labels:
+        app: service-job
+    spec:
+      containers:
+      - name: service-job
+        image: go-kratos/job:0.1.0
+        ports:
+        - containerPort: 8000
+        env:
+        - name: CONSUL_ADDR
+          valueFrom:
+            configMapKeyRef:
+              name: cyi-app-config
+              key: CONSUL_ADDR
+        - name: CONSUL_PATH
+          value: "/develop/cyi-app/job"
+        - name: SERVICE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: cyi-app-config
+              key: SERVICE_ENV
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-user
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-user
+  template:
+    metadata:
+      labels:
+        app: service-user
+    spec:
+      containers:
+      - name: service-user
+        image: go-kratos/service-user:0.1.0
+        ports:
+        - containerPort: 9000
+        env:
+        - name: CONSUL_ADDR
+          valueFrom:
+            configMapKeyRef:
+              name: cyi-app-config
+              key: CONSUL_ADDR
+        - name: CONSUL_PATH
+          value: "/develop/cyi-app/service/user"
+        - name: SERVICE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: cyi-app-config
+              key: SERVICE_ENV
