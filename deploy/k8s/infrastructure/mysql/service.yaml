@@ -1,11 +1,18 @@
-apiVersion: v1
-kind: Service
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 Service API
+kind: Service  # 资源类型，这里是 Service
 metadata:
-  name: mysql
-  namespace: default
+  name: mysql  # Service 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
   selector:
-    app: mysql
+    app: mysql  # 选择标签为 app: mysql 的 Pod
   ports:
-  - port: 3306
-    targetPort: 3306
+  - port: 3306  # 服务端口
+    targetPort: 3306  # 容器端口
+
+# 说明：
+# 1. 该 Service 为 MySQL 服务创建网络访问配置。
+# 2. 使用默认的 ClusterIP 类型，只允许集群内部访问。
+# 3. 暴露端口 3306，用于数据库连接。
+# 4. 该 Service 将流量路由到标签为 app: mysql 的 Pod。
+# 5. 集群内部的其他服务可以通过 mysql:3306 访问数据库。

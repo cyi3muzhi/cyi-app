@@ -1,11 +1,17 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 PersistentVolumeClaim API
+kind: PersistentVolumeClaim  # 资源类型，这里是 PersistentVolumeClaim
 metadata:
-  name: redis-data
-  namespace: default
+  name: redis-data  # 持久卷声明的名称，用于存储 Redis 数据
+  namespace: default  # 部署在 default 命名空间
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce  # 访问模式：单节点读写
   resources:
     requests:
-      storage: 2Gi
+      storage: 2Gi  # 存储请求：2GB
+
+# 说明：
+# 1. 该 PersistentVolumeClaim 为 Redis 服务创建持久卷声明，用于存储缓存数据。
+# 2. 请求 2GB 的存储空间，使用 ReadWriteOnce 访问模式。
+# 3. 该 PVC 确保 Redis 的数据在 Pod 重启后不会丢失。
+# 4. 存储的数据包括缓存内容、持久化文件等信息。

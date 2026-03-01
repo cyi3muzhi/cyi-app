@@ -1,8 +1,8 @@
-apiVersion: v1
-kind: ConfigMap
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 ConfigMap API
+kind: ConfigMap  # 资源类型，这里是 ConfigMap
 metadata:
-  name: logstash-config
-  namespace: default
+  name: logstash-config  # ConfigMap 的名称
+  namespace: default  # 部署在 default 命名空间
 data:
   logstash.conf: |-
     # Logstash 管道配置文件
@@ -11,7 +11,7 @@ data:
     input {
       # Filebeat 输入
       beats {
-        port => 5044
+        port => 5044  # 监听端口
       }
     }
 
@@ -19,54 +19,55 @@ data:
       # 保存原始日志到 log.message
       mutate {
         add_field => {
-          "[log][message]" => "%{message}"
+          "[log][message]" => "%{message}"  # 添加原始日志到 log.message 字段
         }
       }
       
       # 尝试匹配格式 1（包含 msg 字段）
       grok {
         match => {
-          "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} msg=\"%{DATA:msg}\" service.id=%{DATA:service_id} service.name=%{DATA:service_name} service.version=%{DATA:service_version} span.id=%{DATA:span_id} trace.id=%{DATA:trace_id}"
+          "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} msg=\"%{DATA:msg}\" service.id=%{DATA:service_id} service.name=%{DATA:service_name} service.version=%{DATA:service_version} span.id=%{DATA:span_id} trace.id=%{DATA:trace_id}"  # 匹配日志格式
         }
-        break_on_match => false
+        break_on_match => false  # 不中断匹配，继续尝试其他格式
       }
       
       # 尝试匹配格式 2（包含 args、code 等字段）
       grok {
         match => {
-          "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} args=%{DATA:args} code=%{NUMBER:code} component=%{DATA:component} kind=%{DATA:kind} latency=%{NUMBER:latency} operation=%{DATA:operation} reason=%{DATA:reason} service.id=%{DATA:service_id} service.name=%{DATA:service_name} service.version=%{DATA:service_version} span.id=%{DATA:span_id} stack=%{DATA:stack} trace.id=%{DATA:trace_id}"
+          "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} args=%{DATA:args} code=%{NUMBER:code} component=%{DATA:component} kind=%{DATA:kind} latency=%{NUMBER:latency} operation=%{DATA:operation} reason=%{DATA:reason} service.id=%{DATA:service_id} service.name=%{DATA:service_name} service.version=%{DATA:service_version} span.id=%{DATA:span_id} stack=%{DATA:stack} trace.id=%{DATA:trace_id}"  # 匹配日志格式
         }
-        break_on_match => false
+        break_on_match => false  # 不中断匹配，继续尝试其他格式
       }
       
       # 日期处理
       date {
-        match => ["timestamp", "yyyy-MM-dd HH:mm:ss"]
-        target => "@timestamp"
-        remove_field => ["timestamp"]
-        timezone => "Asia/Shanghai"
+        match => ["timestamp", "yyyy-MM-dd HH:mm:ss"]  # 匹配时间戳格式
+        target => "@timestamp"  # 目标字段
+        remove_field => ["timestamp"]  # 移除原始时间戳字段
+        timezone => "Asia/Shanghai"  # 时区
       }
       
       # 处理 msg 字段
       if [msg] {
         mutate {
           replace => { 
-            "message" => "%{msg}" 
+            "message" => "%{msg}"  # 将 message 字段替换为 msg 字段的值
           }
-          remove_field => ["msg"]
+          remove_field => ["msg"]  # 移除 msg 字段
         }
       }else{
         mutate {
-          replace => { "message" => " " }
+          replace => { "message" => " " }  # 如果没有 msg 字段，设置 message 为空字符串
         }
       }
       
+      # 处理 latency 字段
       if [latency] {
         ruby {
-          code => "event.set('latency_ms', (event.get('latency').to_f * 1000).round(3).to_s + 'ms')"
+          code => "event.set('latency_ms', (event.get('latency').to_f * 1000).round(3).to_s + 'ms')"  # 将 latency 转换为毫秒并添加单位
         }
         mutate {
-          remove_field => ["latency"]
+          remove_field => ["latency"]  # 移除原始 latency 字段
         }
       }
 
@@ -74,13 +75,13 @@ data:
       if [args] {
         mutate {
           add_field => {
-            "parameters" => "%{args}"
+            "parameters" => "%{args}"  # 将 args 字段重命名为 parameters
           }
-          remove_field => ["args"]
+          remove_field => ["args"]  # 移除 args 字段
         }
       }else{
         mutate {
-          replace => { "parameters" => " " }
+          replace => { "parameters" => " " }  # 如果没有 args 字段，设置 parameters 为空字符串
         }
       }
       
@@ -88,29 +89,38 @@ data:
       if [service_name] {
         mutate {
           replace => {
-            "service" => "%{service_name}"
+            "service" => "%{service_name}"  # 将 service_name 字段的值赋给 service 字段
           }
         }
       } else if ![service] {
         mutate {
           add_field => {
-            "service" => "app"
+            "service" => "app"  # 如果没有 service 字段，设置为 "app"
           }
         }
       }
       
       # 移除不需要的字段
       mutate {
-        remove_field => ["fields", "host", "agent", "ecs", "tags"]
+        remove_field => ["fields", "host", "agent", "ecs", "tags"]  # 移除不需要的字段
       }
     }
 
     output {
       # 输出到 Elasticsearch，使用服务名称作为索引的一部分
       elasticsearch {
-        hosts => ["elasticsearch:9200"]
-        index => "cyi-%{service}-%{+yyyy.MM.dd}"
-        user => "elastic"
-        password => "changeme"
+        hosts => ["elasticsearch:9200"]  # Elasticsearch 地址
+        index => "cyi-%{service}-%{+yyyy.MM.dd}"  # 索引名称，包含服务名称和日期
+        user => "elastic"  # 用户名
+        password => "changeme"  # 密码
       }
     }
+
+# 说明：
+# 1. 该 ConfigMap 存储 Logstash 的管道配置信息。
+# 2. 配置 Logstash 从 Filebeat 接收日志数据，端口为 5044。
+# 3. 使用 grok 过滤器匹配两种不同格式的日志。
+# 4. 处理日期、消息、延迟时间等字段，确保数据格式正确。
+# 5. 确保服务名称字段存在，用于 Elasticsearch 索引命名。
+# 6. 将处理后的日志输出到 Elasticsearch，使用服务名称和日期作为索引名称。
+# 7. 配置使用 elastic 用户名和 changeme 密码连接 Elasticsearch。

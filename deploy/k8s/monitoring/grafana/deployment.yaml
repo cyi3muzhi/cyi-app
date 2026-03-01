@@ -1,47 +1,57 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Kubernetes API 版本，使用 apps/v1 版本的 Deployment API
+kind: Deployment  # 资源类型，这里是 Deployment
 metadata:
-  name: grafana
-  namespace: default
+  name: grafana  # Deployment 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
-  replicas: 1
+  replicas: 1  # 运行 1 个副本
   selector:
     matchLabels:
-      app: grafana
+      app: grafana  # 选择标签为 app: grafana 的 Pod
   template:
     metadata:
       labels:
-        app: grafana
+        app: grafana  # Pod 的标签，与 selector 对应
     spec:
       containers:
-      - name: grafana
-        image: grafana/grafana:9.5.2
+      - name: grafana  # 容器名称
+        image: grafana/grafana:9.5.2  # 使用的容器镜像
         ports:
-        - containerPort: 3000
+        - containerPort: 3000  # 端口
         env:
-        - name: GF_SECURITY_ADMIN_USER
-          value: "admin"
-        - name: GF_SECURITY_ADMIN_PASSWORD
-          value: "muzhi0228"
-        volumeMounts:
-        - name: grafana-data
-          mountPath: /var/lib/grafana
-      volumes:
-      - name: grafana-data
+        - name: GF_SECURITY_ADMIN_USER  # Grafana 管理员用户名
+          value: "admin"  # 用户名值
+        - name: GF_SECURITY_ADMIN_PASSWORD  # Grafana 管理员密码
+          value: "muzhi0228"  # 密码值
+        volumeMounts:  # 卷挂载
+        - name: grafana-data  # 数据卷
+          mountPath: /var/lib/grafana  # 挂载到容器内的数据目录
+      volumes:  # 卷配置
+      - name: grafana-data  # 数据卷名称
         persistentVolumeClaim:
-          claimName: grafana-data
+          claimName: grafana-data  # 数据持久化卷声明名称
 
 ---
-apiVersion: v1
-kind: Service
+
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 Service API
+kind: Service  # 资源类型，这里是 Service
 metadata:
-  name: grafana
-  namespace: default
+  name: grafana  # Service 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
-  type: NodePort
+  type: NodePort  # 服务类型：NodePort，允许外部访问
   selector:
-    app: grafana
+    app: grafana  # 选择标签为 app: grafana 的 Pod
   ports:
-  - port: 3000
-    targetPort: 3000
-    nodePort: 30300
+  - port: 3000  # 服务端口
+    targetPort: 3000  # 容器端口
+    nodePort: 30300  # 节点端口，外部访问地址：http://localhost:30300
+
+# 说明：
+# 1. 该 Deployment 管理一个名为 grafana 的容器，用于提供监控面板服务。
+# 2. 容器使用 grafana/grafana:9.5.2 镜像。
+# 3. 容器暴露端口 3000，用于访问 Grafana UI。
+# 4. 配置 Grafana 管理员用户名和密码。
+# 5. 使用持久卷存储 Grafana 数据，确保配置和仪表板持久化。
+# 6. 该 Service 为 Grafana 服务创建网络访问配置，使用 NodePort 类型，允许外部访问。
+# 7. 通过节点端口 30300 可以访问 Grafana UI：http://localhost:30300

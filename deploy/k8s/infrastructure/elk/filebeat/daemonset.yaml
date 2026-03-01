@@ -1,43 +1,52 @@
-apiVersion: apps/v1
-kind: DaemonSet
+apiVersion: apps/v1  # Kubernetes API 版本，使用 apps/v1 版本的 DaemonSet API
+kind: DaemonSet  # 资源类型，这里是 DaemonSet
 metadata:
-  name: filebeat
-  namespace: default
+  name: filebeat  # DaemonSet 的名称
+  namespace: default  # 部署在 default 命名空间
   labels:
-    app: filebeat
+    app: filebeat  # 标签
+
 spec:
   selector:
     matchLabels:
-      app: filebeat
+      app: filebeat  # 选择标签为 app: filebeat 的 Pod
   template:
     metadata:
       labels:
-        app: filebeat
+        app: filebeat  # Pod 的标签，与 selector 对应
     spec:
       containers:
-      - name: filebeat
-        image: docker.elastic.co/beats/filebeat:7.17.10
+      - name: filebeat  # 容器名称
+        image: docker.elastic.co/beats/filebeat:7.17.10  # 使用的容器镜像
         args:
-        - -e
-        - --strict.perms=false
+        - -e  # 启用日志
+        - --strict.perms=false  # 禁用严格权限
         env:
-        - name: ENVIRONMENT
-          value: development
-        volumeMounts:
-        - name: filebeat-config
-          mountPath: /usr/share/filebeat/filebeat.yml
-          subPath: filebeat.yml
-        - name: filebeat-data
-          mountPath: /usr/share/filebeat/data
-        - name: logs
-          mountPath: /app/logs
-      volumes:
-      - name: filebeat-config
+        - name: ENVIRONMENT  # 环境变量
+          value: development  # 环境值
+        volumeMounts:  # 卷挂载
+        - name: filebeat-config  # 配置卷
+          mountPath: /usr/share/filebeat/filebeat.yml  # 挂载到容器内的配置文件
+          subPath: filebeat.yml  # 子路径
+        - name: filebeat-data  # 数据卷
+          mountPath: /usr/share/filebeat/data  # 挂载到容器内的数据目录
+        - name: logs  # 日志卷
+          mountPath: /app/logs  # 挂载到容器内的日志目录
+      volumes:  # 卷配置
+      - name: filebeat-config  # 配置卷名称
         configMap:
-          name: filebeat-config
-      - name: filebeat-data
-        emptyDir: {}
-      - name: logs
+          name: filebeat-config  # 配置映射名称
+      - name: filebeat-data  # 数据卷名称
+        emptyDir: {}  # 临时目录
+      - name: logs  # 日志卷名称
         hostPath:
-          path: /mnt/e/me/cyi-app/deploy/logs
-          type: DirectoryOrCreate
+          path: /mnt/e/me/cyi-app/deploy/logs  # 主机上的路径
+          type: DirectoryOrCreate  # 目录不存在则创建
+
+# 说明：
+# 1. 该 DaemonSet 在每个节点上运行一个 Filebeat 容器，用于收集容器日志。
+# 2. 容器使用 docker.elastic.co/beats/filebeat:7.17.10 镜像。
+# 3. 挂载配置文件、数据目录和日志目录。
+# 4. 从主机路径 /mnt/e/me/cyi-app/deploy/logs 收集日志，挂载到容器内的 /app/logs 目录。
+# 5. 使用 ConfigMap 存储 Filebeat 配置，确保配置的一致性。
+# 6. DaemonSet 确保每个节点上都有一个 Filebeat 实例，实现全集群的日志收集。

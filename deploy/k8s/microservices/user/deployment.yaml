@@ -1,41 +1,49 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Kubernetes API 版本，使用 apps/v1 版本的 Deployment API
+kind: Deployment  # 资源类型，这里是 Deployment
 metadata:
-  name: service-user
-  namespace: default
+  name: service-user  # Deployment 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
-  replicas: 1
+  replicas: 1  # 运行 1 个副本
   selector:
     matchLabels:
-      app: service-user
+      app: service-user  # 选择标签为 app: service-user 的 Pod
   template:
     metadata:
       labels:
-        app: service-user
+        app: service-user  # Pod 的标签，与 selector 对应
     spec:
       containers:
-      - name: service-user
-        image: go-kratos/service-user:0.1.0
+      - name: service-user  # 容器名称
+        image: go-kratos/service-user:0.1.0  # 使用的容器镜像
         ports:
-        - containerPort: 9000
+        - containerPort: 9000  # 端口
         env:
-        - name: CONSUL_ADDR
+        - name: CONSUL_ADDR  # Consul 地址
           valueFrom:
             configMapKeyRef:
-              name: cyi-app-config
-              key: CONSUL_ADDR
-        - name: CONSUL_PATH
-          value: "/develop/cyi-app/service/user"
-        - name: SERVICE_ENV
+              name: cyi-app-config  # 配置映射名称
+              key: CONSUL_ADDR  # 配置键
+        - name: CONSUL_PATH  # Consul 路径
+          value: "/develop/cyi-app/service/user"  # 路径值
+        - name: SERVICE_ENV  # 服务环境
           valueFrom:
             configMapKeyRef:
-              name: cyi-app-config
-              key: SERVICE_ENV
-        volumeMounts:
-        - name: logs
-          mountPath: /app/logs
-      volumes:
-      - name: logs
-        hostPath:
-          path: /mnt/e/me/cyi-app/deploy/logs/user
-          type: DirectoryOrCreate
+              name: cyi-app-config  # 配置映射名称
+              key: SERVICE_ENV  # 配置键
+        volumeMounts:  # 卷挂载
+        - name: logs  # 日志卷
+          mountPath: /app/logs  # 挂载到容器内的路径
+      volumes:  # 卷配置
+      - name: logs  # 卷名称，与 volumeMounts 对应
+        hostPath:  # 使用主机路径卷
+          path: /mnt/e/me/cyi-app/deploy/logs/user  # 主机上的路径
+          type: DirectoryOrCreate  # 目录不存在则创建
+
+# 说明：
+# 1. 该 Deployment 管理一个名为 service-user 的容器，用于提供用户服务。
+# 2. 容器使用 go-kratos/service-user:0.1.0 镜像。
+# 3. 容器暴露端口 9000，用于 gRPC 服务访问。
+# 4. 从 ConfigMap 中获取 Consul 地址和服务环境配置。
+# 5. 挂载主机路径 /mnt/e/me/cyi-app/deploy/logs/user 到容器内的 /app/logs 目录。
+# 6. 该服务处理用户相关的业务逻辑，如用户注册、登录、个人信息管理等。

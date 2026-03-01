@@ -1,48 +1,54 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Kubernetes API 版本，使用 apps/v1 版本的 Deployment API
+kind: Deployment  # 资源类型，这里是 Deployment
 metadata:
-  name: consul
-  namespace: default
+  name: consul  # Deployment 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
-  replicas: 1
+  replicas: 1  # 运行 1 个副本
   selector:
     matchLabels:
-      app: consul
+      app: consul  # 选择标签为 app: consul 的 Pod
   template:
     metadata:
       labels:
-        app: consul
+        app: consul  # Pod 的标签，与 selector 对应
     spec:
       containers:
-      - name: consul
-        image: hashicorp/consul:1.22
+      - name: consul  # 容器名称
+        image: hashicorp/consul:1.22  # 使用的容器镜像
         ports:
-        - containerPort: 8500
-        - containerPort: 8600
-          protocol: UDP
-        - containerPort: 8300
+        - containerPort: 8500  # HTTP 端口，用于 Consul UI 和 API
+        - containerPort: 8600  # DNS 端口，使用 UDP 协议
+        - containerPort: 8300  # 服务器间通信端口
         env:
-        - name: CONSUL_UI
-          value: "true"
-        command:
+        - name: CONSUL_UI  # Consul UI 启用配置
+          value: "true"  # 启用 Consul UI
+        command:  # 启动命令
         - consul
         - agent
-        - -server
-        - -bootstrap-expect=1
-        - -ui
-        - -client=0.0.0.0
-        - -bind=0.0.0.0
-        - -data-dir=/consul/data
-        - -config-dir=/consul/config
-        volumeMounts:
-        - name: consul-data
-          mountPath: /consul/data
-        - name: consul-config
-          mountPath: /consul/config
-      volumes:
-      - name: consul-data
+        - -server  # 以服务器模式运行
+        - -bootstrap-expect=1  # 期望的服务器数量
+        - -ui  # 启用 UI
+        - -client=0.0.0.0  # 客户端绑定地址
+        - -bind=0.0.0.0  # 绑定地址
+        - -data-dir=/consul/data  # 数据目录
+        - -config-dir=/consul/config  # 配置目录
+        volumeMounts:  # 卷挂载
+        - name: consul-data  # 数据卷
+          mountPath: /consul/data  # 挂载到容器内的数据目录
+        - name: consul-config  # 配置卷
+          mountPath: /consul/config  # 挂载到容器内的配置目录
+      volumes:  # 卷配置
+      - name: consul-data  # 数据卷名称
         persistentVolumeClaim:
-          claimName: consul-data
-      - name: consul-config
+          claimName: consul-data  # 数据持久卷声明名称
+      - name: consul-config  # 配置卷名称
         persistentVolumeClaim:
-          claimName: consul-config
+          claimName: consul-config  # 配置持久卷声明名称
+
+# 说明：
+# 1. 该 Deployment 管理一个名为 consul 的容器，用于提供服务发现和配置管理功能。
+# 2. 容器使用 hashicorp/consul:1.22 镜像。
+# 3. 容器暴露端口 8500（HTTP）、8600（DNS）和 8300（服务器间通信）。
+# 4. 启用了 Consul UI，并配置了数据和配置目录。
+# 5. 使用持久卷存储 Consul 数据和配置，确保数据持久化。

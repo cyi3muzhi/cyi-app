@@ -1,39 +1,48 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Kubernetes API 版本，使用 apps/v1 版本的 Deployment API
+kind: Deployment  # 资源类型，这里是 Deployment
 metadata:
-  name: redis
-  namespace: default
+  name: redis  # Deployment 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
-  replicas: 1
+  replicas: 1  # 运行 1 个副本
   selector:
     matchLabels:
-      app: redis
+      app: redis  # 选择标签为 app: redis 的 Pod
   template:
     metadata:
       labels:
-        app: redis
+        app: redis  # Pod 的标签，与 selector 对应
     spec:
       containers:
-      - name: redis
-        image: redis:7.0.12
+      - name: redis  # 容器名称
+        image: redis:7.0.12  # 使用的容器镜像
         ports:
-        - containerPort: 6379
+        - containerPort: 6379  # 端口
         env:
-        - name: REDIS_PASSWORD
+        - name: REDIS_PASSWORD  # Redis 密码
           valueFrom:
             secretKeyRef:
-              name: cyi-app-secret
-              key: REDIS_PASSWORD
-        command:
+              name: cyi-app-secret  # 密钥名称
+              key: REDIS_PASSWORD  # 密钥键
+        command:  # 启动命令
         - redis-server
         - --requirepass
-        - $(REDIS_PASSWORD)
+        - $(REDIS_PASSWORD)  # 使用环境变量中的密码
         - --appendonly
-        - "yes"
-        volumeMounts:
-        - name: redis-data
-          mountPath: /data
-      volumes:
-      - name: redis-data
+        - "yes"  # 启用 AOF 持久化
+        volumeMounts:  # 卷挂载
+        - name: redis-data  # 数据卷
+          mountPath: /data  # 挂载到容器内的数据目录
+      volumes:  # 卷配置
+      - name: redis-data  # 数据卷名称
         persistentVolumeClaim:
-          claimName: redis-data
+          claimName: redis-data  # 数据持久化卷声明名称
+
+# 说明：
+# 1. 该 Deployment 管理一个名为 redis 的容器，用于提供缓存服务。
+# 2. 容器使用 redis:7.0.12 镜像。
+# 3. 容器暴露端口 6379，用于 Redis 连接。
+# 4. 从 Secret 中获取 Redis 密码。
+# 5. 配置 Redis 启用密码认证和 AOF 持久化。
+# 6. 使用持久卷存储 Redis 数据，确保数据持久化。
+# 7. 该服务为应用提供缓存功能，提高性能。

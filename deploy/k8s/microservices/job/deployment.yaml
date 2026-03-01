@@ -1,41 +1,49 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Kubernetes API 版本，使用 apps/v1 版本的 Deployment API
+kind: Deployment  # 资源类型，这里是 Deployment
 metadata:
-  name: service-job
-  namespace: default
+  name: service-job  # Deployment 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
-  replicas: 1
+  replicas: 1  # 运行 1 个副本
   selector:
     matchLabels:
-      app: service-job
+      app: service-job  # 选择标签为 app: service-job 的 Pod
   template:
     metadata:
       labels:
-        app: service-job
+        app: service-job  # Pod 的标签，与 selector 对应
     spec:
       containers:
-      - name: service-job
-        image: go-kratos/job:0.1.0
+      - name: service-job  # 容器名称
+        image: go-kratos/job:0.1.0  # 使用的容器镜像
         ports:
-        - containerPort: 8000
+        - containerPort: 8000  # 端口
         env:
-        - name: CONSUL_ADDR
+        - name: CONSUL_ADDR  # Consul 地址
           valueFrom:
             configMapKeyRef:
-              name: cyi-app-config
-              key: CONSUL_ADDR
-        - name: CONSUL_PATH
-          value: "/develop/cyi-app/job"
-        - name: SERVICE_ENV
+              name: cyi-app-config  # 配置映射名称
+              key: CONSUL_ADDR  # 配置键
+        - name: CONSUL_PATH  # Consul 路径
+          value: "/develop/cyi-app/job"  # 路径值
+        - name: SERVICE_ENV  # 服务环境
           valueFrom:
             configMapKeyRef:
-              name: cyi-app-config
-              key: SERVICE_ENV
-        volumeMounts:
-        - name: logs
-          mountPath: /app/logs
-      volumes:
-      - name: logs
-        hostPath:
-          path: /mnt/e/me/cyi-app/deploy/logs/job
-          type: DirectoryOrCreate
+              name: cyi-app-config  # 配置映射名称
+              key: SERVICE_ENV  # 配置键
+        volumeMounts:  # 卷挂载
+        - name: logs  # 日志卷
+          mountPath: /app/logs  # 挂载到容器内的路径
+      volumes:  # 卷配置
+      - name: logs  # 卷名称，与 volumeMounts 对应
+        hostPath:  # 使用主机路径卷
+          path: /mnt/e/me/cyi-app/deploy/logs/job  # 主机上的路径
+          type: DirectoryOrCreate  # 目录不存在则创建
+
+# 说明：
+# 1. 该 Deployment 管理一个名为 service-job 的容器，用于提供任务服务。
+# 2. 容器使用 go-kratos/job:0.1.0 镜像。
+# 3. 容器暴露端口 8000，用于服务访问。
+# 4. 从 ConfigMap 中获取 Consul 地址和服务环境配置。
+# 5. 挂载主机路径 /mnt/e/me/cyi-app/deploy/logs/job 到容器内的 /app/logs 目录。
+# 6. 该服务处理定时任务和后台任务，如数据清理、统计分析等。

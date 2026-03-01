@@ -1,37 +1,46 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Kubernetes API 版本，使用 apps/v1 版本的 Deployment API
+kind: Deployment  # 资源类型，这里是 Deployment
 metadata:
-  name: jaeger
-  namespace: default
+  name: jaeger  # Deployment 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
-  replicas: 1
+  replicas: 1  # 运行 1 个副本
   selector:
     matchLabels:
-      app: jaeger
+      app: jaeger  # 选择标签为 app: jaeger 的 Pod
   template:
     metadata:
       labels:
-        app: jaeger
+        app: jaeger  # Pod 的标签，与 selector 对应
     spec:
       containers:
-      - name: jaeger
-        image: jaegertracing/all-in-one:1.49
+      - name: jaeger  # 容器名称
+        image: jaegertracing/all-in-one:1.49  # 使用的容器镜像
         ports:
-        - containerPort: 16686
-        - containerPort: 14268
+        - containerPort: 16686  # UI 端口
+        - containerPort: 14268  # 收集器端口
         env:
-        - name: COLLECTOR_OTLP_ENABLED
-          value: "true"
-        - name: COLLECTOR_ZIPKIN_HOST_PORT
-          value: ":9411"
-        - name: SPAN_STORAGE_TYPE
-          value: "badger"
-        - name: BADGER_DIR
-          value: "/data/badger"
-        volumeMounts:
-        - name: jaeger-data
-          mountPath: /data
-      volumes:
-      - name: jaeger-data
+        - name: COLLECTOR_OTLP_ENABLED  # 启用 OTLP 收集器
+          value: "true"  # 启用
+        - name: COLLECTOR_ZIPKIN_HOST_PORT  # Zipkin 收集器端口
+          value: ":9411"  # 端口值
+        - name: SPAN_STORAGE_TYPE  # 跨度存储类型
+          value: "badger"  # 使用 Badger 存储
+        - name: BADGER_DIR  # Badger 存储目录
+          value: "/data/badger"  # 目录路径
+        volumeMounts:  # 卷挂载
+        - name: jaeger-data  # 数据卷
+          mountPath: /data  # 挂载到容器内的数据目录
+      volumes:  # 卷配置
+      - name: jaeger-data  # 数据卷名称
         persistentVolumeClaim:
-          claimName: jaeger-data
+          claimName: jaeger-data  # 数据持久卷声明名称
+
+# 说明：
+# 1. 该 Deployment 管理一个名为 jaeger 的容器，用于提供分布式追踪服务。
+# 2. 容器使用 jaegertracing/all-in-one:1.49 镜像，包含所有 Jaeger 组件。
+# 3. 容器暴露端口 16686（UI）和 14268（收集器）。
+# 4. 启用 OTLP 收集器和 Zipkin 收集器。
+# 5. 使用 Badger 作为跨度存储，存储在 /data/badger 目录。
+# 6. 使用持久卷存储 Jaeger 数据，确保数据持久化。
+# 7. 该服务用于追踪分布式系统中的请求流程，便于故障排查和性能分析。

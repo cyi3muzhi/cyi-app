@@ -1,51 +1,63 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Kubernetes API 版本，使用 apps/v1 版本的 Deployment API
+kind: Deployment  # 资源类型，这里是 Deployment
 metadata:
-  name: logstash
-  namespace: default
+  name: logstash  # Deployment 的名称
+  namespace: default  # 部署在 default 命名空间
   labels:
-    app: logstash
+    app: logstash  # 标签
+
 spec:
-  replicas: 1
+  replicas: 1  # 运行 1 个副本
   selector:
     matchLabels:
-      app: logstash
+      app: logstash  # 选择标签为 app: logstash 的 Pod
   template:
     metadata:
       labels:
-        app: logstash
+        app: logstash  # Pod 的标签，与 selector 对应
     spec:
       containers:
-      - name: logstash
-        image: docker.elastic.co/logstash/logstash:7.17.10
+      - name: logstash  # 容器名称
+        image: docker.elastic.co/logstash/logstash:7.17.10  # 使用的容器镜像
         ports:
-        - containerPort: 5044
-        - containerPort: 9600
+        - containerPort: 5044  # Beats 输入端口
+        - containerPort: 9600  # API 端口
         env:
-        - name: LS_JAVA_OPTS
-          value: -Xms512m -Xmx512m
-        volumeMounts:
-        - name: logstash-config
-          mountPath: /usr/share/logstash/pipeline/logstash.conf
-          subPath: logstash.conf
-      volumes:
-      - name: logstash-config
+        - name: LS_JAVA_OPTS  # Logstash JAVA 选项
+          value: -Xms512m -Xmx512m  # 内存配置：最小 512MB，最大 512MB
+        volumeMounts:  # 卷挂载
+        - name: logstash-config  # 配置卷
+          mountPath: /usr/share/logstash/pipeline/logstash.conf  # 挂载到容器内的配置文件
+          subPath: logstash.conf  # 子路径
+      volumes:  # 卷配置
+      - name: logstash-config  # 配置卷名称
         configMap:
-          name: logstash-config
+          name: logstash-config  # 配置映射名称
+
 ---
-apiVersion: v1
-kind: Service
+
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 Service API
+kind: Service  # 资源类型，这里是 Service
 metadata:
-  name: logstash
-  namespace: default
+  name: logstash  # Service 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
   selector:
-    app: logstash
+    app: logstash  # 选择标签为 app: logstash 的 Pod
   ports:
-  - name: beats
-    port: 5044
-    targetPort: 5044
-  - name: api
-    port: 9600
-    targetPort: 9600
-  type: NodePort
+  - name: beats  # 端口名称
+    port: 5044  # 服务端口
+    targetPort: 5044  # 容器端口
+  - name: api  # 端口名称
+    port: 9600  # 服务端口
+    targetPort: 9600  # 容器端口
+  type: NodePort  # 服务类型：NodePort，允许外部访问
+
+# 说明：
+# 1. 该 Deployment 管理一个名为 logstash 的容器，用于处理和转换日志数据。
+# 2. 容器使用 docker.elastic.co/logstash/logstash:7.17.10 镜像。
+# 3. 容器暴露端口 5044（Beats 输入）和 9600（API）。
+# 4. 配置 JAVA 内存限制为 512MB。
+# 5. 挂载配置文件 logstash.conf，用于定义日志处理管道。
+# 6. 该 Service 为 Logstash 服务创建网络访问配置，使用 NodePort 类型，允许外部访问。
+# 7. 暴露两个端口：5044（Beats 输入）和 9600（API）。

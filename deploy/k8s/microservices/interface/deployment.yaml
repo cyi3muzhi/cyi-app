@@ -1,38 +1,46 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Kubernetes API 版本，使用 apps/v1 版本的 Deployment API
+kind: Deployment    # 资源类型，这里是 Deployment
 metadata:
-  name: service-interface
-  namespace: default
+  name: service-interface  # Deployment 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
-  replicas: 1
+  replicas: 1  # 运行 1 个副本
   selector:
     matchLabels:
-      app: service-interface
+      app: service-interface  # 选择标签为 app: service-interface 的 Pod
   template:
     metadata:
       labels:
-        app: service-interface
+        app: service-interface  # Pod 的标签，与 selector 对应
     spec:
       containers:
-      - name: service-interface
-        image: go-kratos/cin-interface:0.1.0
+      - name: service-interface  # 容器名称
+        image: go-kratos/cin-interface:0.1.0  # 使用的容器镜像
         ports:
-        - containerPort: 8000
-        - containerPort: 9000
-        env:
+        - containerPort: 8000  # 容器暴露的端口 8000（HTTP 端口）
+        - containerPort: 9000  # 容器暴露的端口 9000（gRPC 端口）
+        env:  # 环境变量配置
         - name: CONSUL_ADDR
-          value: "consul:8500"
+          value: "consul:8500"  # Consul 服务地址
         - name: CONSUL_PATH
-          value: "/develop/cyi-app/cin/interface"
+          value: "/develop/cyi-app/cin/interface"  # Consul 配置路径
         - name: SERVICE_ENV
-          value: "dev"
+          value: "dev"  # 服务环境
         - name: LOG_LEVEL
-          value: "debug"
-        volumeMounts:
-        - name: logs
-          mountPath: /app/logs
-      volumes:
-      - name: logs
-        hostPath:
-          path: /mnt/e/me/cyi-app/deploy/logs/interface
-          type: DirectoryOrCreate
+          value: "debug"  # 日志级别
+        volumeMounts:  # 卷挂载
+        - name: logs  # 卷名称
+          mountPath: /app/logs  # 挂载到容器内的路径
+      volumes:  # 卷配置
+      - name: logs  # 卷名称，与 volumeMounts 对应
+        hostPath:  # 使用主机路径卷
+          path: /mnt/e/me/cyi-app/deploy/logs/interface  # 主机上的路径
+          type: DirectoryOrCreate  # 目录不存在则创建
+
+
+  # 说明：
+  # 1. 该 Deployment 管理一个名为 service-interface 的容器，用于提供接口服务。
+  # 2. 容器使用 go-kratos/cin-interface:0.1.0 镜像。
+  # 3. 容器暴露端口 8000（HTTP）和 9000（gRPC）。
+  # 4. 环境变量包括 CONSUL_ADDR、CONSUL_PATH、SERVICE_ENV、LOG_LEVEL。
+  # 5. 挂载主机路径 /mnt/e/me/cyi-app/deploy/logs/interface 到容器内的 /app/logs 目录。

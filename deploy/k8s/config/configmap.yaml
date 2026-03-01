@@ -1,20 +1,26 @@
-apiVersion: v1
-kind: ConfigMap
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 ConfigMap API
+kind: ConfigMap  # 资源类型，这里是 ConfigMap
 metadata:
-  name: cyi-app-config
-  namespace: default
+  name: cyi-app-config  # ConfigMap 的名称
+  namespace: default  # 部署在 default 命名空间
 data:
   # 服务发现配置
-  CONSUL_ADDR: "consul:8500"
+  CONSUL_ADDR: "consul:8500"  # Consul 服务地址
   # 环境配置
-  SERVICE_ENV: "dev"
+  SERVICE_ENV: "dev"  # 服务环境
   # 数据库配置
-  MYSQL_HOST: "mysql"
-  MYSQL_PORT: "3306"
-  MYSQL_DATABASE: "cin_test"
+  MYSQL_HOST: "mysql"  # MySQL 主机名
+  MYSQL_PORT: "3306"  # MySQL 端口
+  MYSQL_DATABASE: "cin_test"  # 数据库名称
   # Redis配置
-  REDIS_HOST: "redis"
-  REDIS_PORT: "6379"
+  REDIS_HOST: "redis"  # Redis 主机名
+  REDIS_PORT: "6379"  # Redis 端口
   # Jaeger配置
-  JAEGER_HOST: "jaeger"
-  JAEGER_PORT: "14268"
+  JAEGER_HOST: "jaeger"  # Jaeger 主机名
+  JAEGER_PORT: "14268"  # Jaeger 端口
+
+# 说明：
+# 1. 该 ConfigMap 存储应用配置的键值对，将配置与应用代码分离。
+# 2. 包含服务发现、环境、数据库、Redis和Jaeger等配置。
+# 3. 配置项将作为环境变量注入到应用容器中。
+# 4. 当需要修改配置时，只需更新此文件并重新应用即可。

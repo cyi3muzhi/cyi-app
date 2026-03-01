@@ -1,11 +1,17 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 PersistentVolumeClaim API
+kind: PersistentVolumeClaim  # 资源类型，这里是 PersistentVolumeClaim
 metadata:
-  name: prometheus-data
-  namespace: default
+  name: prometheus-data  # PVC 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce  # 访问模式为读写一次
   resources:
     requests:
-      storage: 10Gi
+      storage: 10Gi  # 请求 10Gi 存储空间
+
+
+# 说明：
+# 1. 该 PersistentVolumeClaim 为 Prometheus 提供持久化存储。
+# 2. 存储容量为 10Gi，访问模式为 ReadWriteOnce。
+# 3. 用于存储 Prometheus 采集的监控数据和索引。

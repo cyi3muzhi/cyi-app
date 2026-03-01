@@ -1,59 +1,71 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Kubernetes API 版本，使用 apps/v1 版本的 Deployment API
+kind: Deployment  # 资源类型，这里是 Deployment
 metadata:
-  name: elasticsearch
-  namespace: default
+  name: elasticsearch  # Deployment 的名称
+  namespace: default  # 部署在 default 命名空间
   labels:
-    app: elasticsearch
+    app: elasticsearch  # 标签
+
 spec:
-  replicas: 1
+  replicas: 1  # 运行 1 个副本
   selector:
     matchLabels:
-      app: elasticsearch
+      app: elasticsearch  # 选择标签为 app: elasticsearch 的 Pod
   template:
     metadata:
       labels:
-        app: elasticsearch
+        app: elasticsearch  # Pod 的标签，与 selector 对应
     spec:
       containers:
-      - name: elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+      - name: elasticsearch  # 容器名称
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10  # 使用的容器镜像
         ports:
-        - containerPort: 9200
-        - containerPort: 9300
+        - containerPort: 9200  # HTTP 端口，用于 REST API
+        - containerPort: 9300  # 传输端口，用于节点间通信
         env:
-        - name: node.name
-          value: elasticsearch
-        - name: cluster.name
-          value: cyi-app-cluster
-        - name: discovery.type
-          value: single-node
-        - name: ES_JAVA_OPTS
-          value: -Xms1g -Xmx1g
-        - name: ELASTIC_PASSWORD
-          value: changeme
-        volumeMounts:
-        - name: elasticsearch-data
-          mountPath: /usr/share/elasticsearch/data
-      volumes:
-      - name: elasticsearch-data
+        - name: node.name  # 节点名称
+          value: elasticsearch  # 节点名称值
+        - name: cluster.name  # 集群名称
+          value: cyi-app-cluster  # 集群名称值
+        - name: discovery.type  # 发现类型
+          value: single-node  # 单节点模式
+        - name: ES_JAVA_OPTS  # JAVA 选项
+          value: -Xms1g -Xmx1g  # 内存配置：最小 1GB，最大 1GB
+        - name: ELASTIC_PASSWORD  # 弹性搜索密码
+          value: changeme  # 密码值
+        volumeMounts:  # 卷挂载
+        - name: elasticsearch-data  # 数据卷
+          mountPath: /usr/share/elasticsearch/data  # 挂载到容器内的数据目录
+      volumes:  # 卷配置
+      - name: elasticsearch-data  # 数据卷名称
         persistentVolumeClaim:
-          claimName: elasticsearch-data
+          claimName: elasticsearch-data  # 数据持久卷声明名称
+
 ---
-apiVersion: v1
-kind: Service
+
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 Service API
+kind: Service  # 资源类型，这里是 Service
 metadata:
-  name: elasticsearch
-  namespace: default
+  name: elasticsearch  # Service 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
   selector:
-    app: elasticsearch
+    app: elasticsearch  # 选择标签为 app: elasticsearch 的 Pod
   ports:
-  - name: http
-    port: 9200
-    targetPort: 9200
-    nodePort: 30200
-  - name: transport
-    port: 9300
-    targetPort: 9300
-  type: NodePort
+  - name: http  # 端口名称
+    port: 9200  # 服务端口
+    targetPort: 9200  # 容器端口
+    nodePort: 30200  # 节点端口，外部访问地址：http://localhost:30200
+  - name: transport  # 端口名称
+    port: 9300  # 服务端口
+    targetPort: 9300  # 容器端口
+  type: NodePort  # 服务类型：NodePort，允许外部访问
+
+# 说明：
+# 1. 该 Deployment 管理一个名为 elasticsearch 的容器，用于存储和索引日志数据。
+# 2. 容器使用 docker.elastic.co/elasticsearch/elasticsearch:7.17.10 镜像。
+# 3. 容器暴露端口 9200（HTTP，用于 REST API）和 9300（传输端口，用于节点间通信）。
+# 4. 配置为单节点模式，内存限制为 1GB。
+# 5. 使用持久卷存储 Elasticsearch 数据，确保数据持久化。
+# 6. 该 Service 为 Elasticsearch 服务创建网络访问配置，使用 NodePort 类型，允许外部访问。
+# 7. 通过节点端口 30200 可以访问 Elasticsearch API：http://localhost:30200

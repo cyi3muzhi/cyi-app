@@ -1,44 +1,55 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Kubernetes API 版本，使用 apps/v1 版本的 Deployment API
+kind: Deployment  # 资源类型，这里是 Deployment
 metadata:
-  name: kibana
-  namespace: default
+  name: kibana  # Deployment 的名称
+  namespace: default  # 部署在 default 命名空间
   labels:
-    app: kibana
+    app: kibana  # 标签
+
 spec:
-  replicas: 1
+  replicas: 1  # 运行 1 个副本
   selector:
     matchLabels:
-      app: kibana
+      app: kibana  # 选择标签为 app: kibana 的 Pod
   template:
     metadata:
       labels:
-        app: kibana
+        app: kibana  # Pod 的标签，与 selector 对应
     spec:
       containers:
-      - name: kibana
-        image: docker.elastic.co/kibana/kibana:7.17.10
+      - name: kibana  # 容器名称
+        image: docker.elastic.co/kibana/kibana:7.17.10  # 使用的容器镜像
         ports:
-        - containerPort: 5601
+        - containerPort: 5601  # 端口
         env:
-        - name: ELASTICSEARCH_HOSTS
-          value: http://elasticsearch:9200
-        - name: ELASTICSEARCH_USERNAME
-          value: elastic
-        - name: ELASTICSEARCH_PASSWORD
-          value: changeme
+        - name: ELASTICSEARCH_HOSTS  # Elasticsearch 地址
+          value: http://elasticsearch:9200  # 地址值
+        - name: ELASTICSEARCH_USERNAME  # Elasticsearch 用户名
+          value: elastic  # 用户名
+        - name: ELASTICSEARCH_PASSWORD  # Elasticsearch 密码
+          value: changeme  # 密码
+
 ---
-apiVersion: v1
-kind: Service
+
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 Service API
+kind: Service  # 资源类型，这里是 Service
 metadata:
-  name: kibana
-  namespace: default
+  name: kibana  # Service 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
   selector:
-    app: kibana
+    app: kibana  # 选择标签为 app: kibana 的 Pod
   ports:
-  - name: http
-    port: 5601
-    targetPort: 5601
-    nodePort: 30201
-  type: NodePort
+  - name: http  # 端口名称
+    port: 5601  # 服务端口
+    targetPort: 5601  # 容器端口
+    nodePort: 30201  # 节点端口，外部访问地址：http://localhost:30201
+  type: NodePort  # 服务类型：NodePort，允许外部访问
+
+# 说明：
+# 1. 该 Deployment 管理一个名为 kibana 的容器，用于可视化和分析日志数据。
+# 2. 容器使用 docker.elastic.co/kibana/kibana:7.17.10 镜像。
+# 3. 容器暴露端口 5601，用于访问 Kibana UI。
+# 4. 配置 Elasticsearch 地址、用户名和密码，用于连接 Elasticsearch 集群。
+# 5. 该 Service 为 Kibana 服务创建网络访问配置，使用 NodePort 类型，允许外部访问。
+# 6. 通过节点端口 30201 可以访问 Kibana UI：http://localhost:30201

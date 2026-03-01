@@ -1,14 +1,22 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 PersistentVolumeClaim API
+kind: PersistentVolumeClaim  # 资源类型，这里是 PersistentVolumeClaim
 metadata:
-  name: elasticsearch-data
-  namespace: default
+  name: elasticsearch-data  # 持久卷声明的名称，用于存储 Elasticsearch 数据
+  namespace: default  # 部署在 default 命名空间
   labels:
-    app: elasticsearch
+    app: elasticsearch  # 标签
+
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce  # 访问模式：单节点读写
   resources:
     requests:
-      storage: 10Gi
-  storageClassName: hostpath
+      storage: 10Gi  # 存储请求：10GB
+  storageClassName: hostpath  # 存储类名称
+
+# 说明：
+# 1. 该 PersistentVolumeClaim 为 Elasticsearch 服务创建持久卷声明，用于存储索引和数据。
+# 2. 请求 10GB 的存储空间，使用 ReadWriteOnce 访问模式。
+# 3. 使用 hostpath 存储类，适用于本地开发环境。
+# 4. 该 PVC 确保 Elasticsearch 的数据在 Pod 重启后不会丢失。
+# 5. 存储类名称为 hostpath，表示使用节点本地存储。

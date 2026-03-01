@@ -1,84 +1,92 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Kubernetes API 版本，使用 apps/v1 版本的 Deployment API
+kind: Deployment    # 资源类型，这里是 Deployment
 metadata:
-  name: prometheus
-  namespace: default
+  name: prometheus  # Deployment 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
-  replicas: 1
+  replicas: 1  # 运行 1 个副本
   selector:
     matchLabels:
-      app: prometheus
+      app: prometheus  # 选择标签为 app: prometheus 的 Pod
   template:
     metadata:
       labels:
-        app: prometheus
+        app: prometheus  # Pod 的标签，与 selector 对应
     spec:
       containers:
-      - name: prometheus
-        image: prom/prometheus:v2.43.0
+      - name: prometheus  # 容器名称
+        image: prom/prometheus:v2.43.0  # 使用的容器镜像
         ports:
-        - containerPort: 9090
-        volumeMounts:
-        - name: prometheus-config
-          mountPath: /etc/prometheus/prometheus.yml
-          subPath: prometheus.yml
-        - name: prometheus-data
-          mountPath: /prometheus
-      volumes:
-      - name: prometheus-config
-        configMap:
-          name: prometheus-config
-      - name: prometheus-data
-        persistentVolumeClaim:
-          claimName: prometheus-data
+        - containerPort: 9090  # 容器暴露的端口 9090
+        volumeMounts:  # 卷挂载
+        - name: prometheus-config  # 卷名称
+          mountPath: /etc/prometheus/prometheus.yml  # 挂载到容器内的路径
+          subPath: prometheus.yml  # 子路径
+        - name: prometheus-data  # 卷名称
+          mountPath: /prometheus  # 挂载到容器内的路径
+      volumes:  # 卷配置
+      - name: prometheus-config  # 卷名称，与 volumeMounts 对应
+        configMap:  # 使用 ConfigMap 卷
+          name: prometheus-config  # ConfigMap 的名称
+      - name: prometheus-data  # 卷名称，与 volumeMounts 对应
+        persistentVolumeClaim:  # 使用持久卷声明
+          claimName: prometheus-data  # PVC 的名称
 
 ---
-apiVersion: v1
-kind: Service
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 Service API
+kind: Service  # 资源类型，这里是 Service
 metadata:
-  name: prometheus
-  namespace: default
+  name: prometheus  # Service 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
-  type: NodePort
+  type: NodePort  # Service 类型为 NodePort，暴露到节点端口
   selector:
-    app: prometheus
+    app: prometheus  # 选择标签为 app: prometheus 的 Pod
   ports:
-  - port: 9090
-    targetPort: 9090
-    nodePort: 30900
+  - port: 9090  # Service 端口
+    targetPort: 9090  # 目标 Pod 端口
+    nodePort: 30900  # 节点端口
 
 ---
-apiVersion: v1
-kind: ConfigMap
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 ConfigMap API
+kind: ConfigMap  # 资源类型，这里是 ConfigMap
 metadata:
-  name: prometheus-config
-  namespace: default
+  name: prometheus-config  # ConfigMap 的名称
+  namespace: default  # 部署在 default 命名空间
 data:
   prometheus.yml: |
     global:
-      scrape_interval: 15s
+      scrape_interval: 15s  # 抓取间隔为 15 秒
     scrape_configs:
-    - job_name: 'kubernetes-services'
+    - job_name: 'kubernetes-services'  # 作业名称
       kubernetes_sd_configs:
-      - role: service
+      - role: service  # 服务发现角色为 service
       relabel_configs:
       - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
         action: keep
-        regex: true
+        regex: true  # 只保留带有 prometheus.io/scrape=true 注释的服务
       - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
         action: replace
         target_label: __metrics_path__
-        regex: (.+)
+        regex: (.+)  # 替换指标路径
       - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
         action: replace
         regex: ([^:]+)(?::\d+)?;(\d+)
         replacement: $1:$2
-        target_label: __address__
+        target_label: __address__  # 替换地址
       - action: labelmap
-        regex: __meta_kubernetes_service_label_(.+)
+        regex: __meta_kubernetes_service_label_(.+)  # 映射服务标签
       - source_labels: [__meta_kubernetes_namespace]
         action: replace
-        target_label: kubernetes_namespace
+        target_label: kubernetes_namespace  # 替换命名空间标签
       - source_labels: [__meta_kubernetes_service_name]
         action: replace
-        target_label: kubernetes_name
+        target_label: kubernetes_name  # 替换服务名称标签
+
+
+# 说明：
+# 1. 该文件包含三个资源：Deployment、Service 和 ConfigMap。
+# 2. Deployment 管理一个名为 prometheus 的容器，用于监控系统。
+# 3. Service 以 NodePort 方式暴露 prometheus 服务到节点端口 30900。
+# 4. ConfigMap 存储 prometheus 的配置，包括抓取间隔和服务发现规则。
+# 5. 容器使用 prom/prometheus:v2.43.0 镜像，挂载配置文件和数据卷。

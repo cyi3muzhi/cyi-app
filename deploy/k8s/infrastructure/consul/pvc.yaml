@@ -1,24 +1,32 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 PersistentVolumeClaim API
+kind: PersistentVolumeClaim  # 资源类型，这里是 PersistentVolumeClaim
 metadata:
-  name: consul-data
-  namespace: default
+  name: consul-data  # 持久卷声明的名称，用于存储 Consul 数据
+  namespace: default  # 部署在 default 命名空间
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce  # 访问模式：单节点读写
   resources:
     requests:
-      storage: 1Gi
+      storage: 1Gi  # 存储请求：1GB
 
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
+
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 PersistentVolumeClaim API
+kind: PersistentVolumeClaim  # 资源类型，这里是 PersistentVolumeClaim
 metadata:
-  name: consul-config
-  namespace: default
+  name: consul-config  # 持久卷声明的名称，用于存储 Consul 配置
+  namespace: default  # 部署在 default 命名空间
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce  # 访问模式：单节点读写
   resources:
     requests:
-      storage: 1Gi
+      storage: 1Gi  # 存储请求：1GB
+
+# 说明：
+# 1. 该文件定义了两个 PersistentVolumeClaim，分别用于存储 Consul 的数据和配置。
+# 2. consul-data PVC 用于存储 Consul 的持久化数据，如服务注册信息、KV 存储等。
+# 3. consul-config PVC 用于存储 Consul 的配置文件。
+# 4. 两个 PVC 都请求 1GB 的存储空间，并使用 ReadWriteOnce 访问模式。
+# 5. 这些 PVC 确保 Consul 的数据和配置在 Pod 重启后不会丢失。

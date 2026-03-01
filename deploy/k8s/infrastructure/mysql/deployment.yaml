@@ -1,41 +1,50 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1  # Kubernetes API 版本，使用 apps/v1 版本的 Deployment API
+kind: Deployment  # 资源类型，这里是 Deployment
 metadata:
-  name: mysql
-  namespace: default
+  name: mysql  # Deployment 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
-  replicas: 1
+  replicas: 1  # 运行 1 个副本
   selector:
     matchLabels:
-      app: mysql
+      app: mysql  # 选择标签为 app: mysql 的 Pod
   template:
     metadata:
       labels:
-        app: mysql
+        app: mysql  # Pod 的标签，与 selector 对应
     spec:
       containers:
-      - name: mysql
-        image: mysql:8.0
+      - name: mysql  # 容器名称
+        image: mysql:8.0  # 使用的容器镜像
         ports:
-        - containerPort: 3306
+        - containerPort: 3306  # 端口
         env:
-        - name: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_ROOT_PASSWORD  # MySQL 根密码
           valueFrom:
             secretKeyRef:
-              name: cyi-app-secret
-              key: MYSQL_ROOT_PASSWORD
-        - name: MYSQL_DATABASE
+              name: cyi-app-secret  # 密钥名称
+              key: MYSQL_ROOT_PASSWORD  # 密钥键
+        - name: MYSQL_DATABASE  # 数据库名称
           valueFrom:
             configMapKeyRef:
-              name: cyi-app-config
-              key: MYSQL_DATABASE
-        args:
-        - --character-set-server=utf8mb4
-        - --collation-server=utf8mb4_unicode_ci
-        volumeMounts:
-        - name: mysql-data
-          mountPath: /var/lib/mysql
-      volumes:
-      - name: mysql-data
+              name: cyi-app-config  # 配置映射名称
+              key: MYSQL_DATABASE  # 配置键
+        args:  # 启动参数
+        - --character-set-server=utf8mb4  # 字符集
+        - --collation-server=utf8mb4_unicode_ci  # 排序规则
+        volumeMounts:  # 卷挂载
+        - name: mysql-data  # 数据卷
+          mountPath: /var/lib/mysql  # 挂载到容器内的数据目录
+      volumes:  # 卷配置
+      - name: mysql-data  # 数据卷名称
         persistentVolumeClaim:
-          claimName: mysql-data
+          claimName: mysql-data  # 数据持久卷声明名称
+
+# 说明：
+# 1. 该 Deployment 管理一个名为 mysql 的容器，用于提供数据库服务。
+# 2. 容器使用 mysql:8.0 镜像。
+# 3. 容器暴露端口 3306，用于数据库连接。
+# 4. 从 Secret 中获取 MySQL 根密码，从 ConfigMap 中获取数据库名称。
+# 5. 配置 MySQL 使用 utf8mb4 字符集和 utf8mb4_unicode_ci 排序规则。
+# 6. 使用持久卷存储 MySQL 数据，确保数据持久化。
+# 7. 该服务为应用提供持久化数据存储功能。

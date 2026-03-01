@@ -1,19 +1,26 @@
-apiVersion: v1
-kind: Service
+apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 Service API
+kind: Service  # 资源类型，这里是 Service
 metadata:
-  name: consul
-  namespace: default
+  name: consul  # Service 的名称
+  namespace: default  # 部署在 default 命名空间
 spec:
-  type: NodePort
+  type: NodePort  # 服务类型：NodePort，允许外部访问
   selector:
-    app: consul
+    app: consul  # 选择标签为 app: consul 的 Pod
   ports:
-  - port: 8500
-    targetPort: 8500
-    name: http
-    nodePort: 30500
-  - port: 8600
-    targetPort: 8600
-    name: dns
-    protocol: UDP
-    nodePort: 30600
+  - port: 8500  # 服务端口
+    targetPort: 8500  # 容器端口
+    name: http  # 端口名称
+    nodePort: 30500  # 节点端口，外部访问地址：http://localhost:30500
+  - port: 8600  # 服务端口
+    targetPort: 8600  # 容器端口
+    name: dns  # 端口名称
+    protocol: UDP  # 协议：UDP
+    nodePort: 30600  # 节点端口
+
+# 说明：
+# 1. 该 Service 为 Consul 服务创建网络访问配置。
+# 2. 使用 NodePort 类型，允许从集群外部访问 Consul。
+# 3. 暴露两个端口：8500（HTTP，用于 UI 和 API）和 8600（DNS，使用 UDP 协议）。
+# 4. 通过节点端口 30500 可以访问 Consul UI：http://localhost:30500
+# 5. 该 Service 将流量路由到标签为 app: consul 的 Pod。
