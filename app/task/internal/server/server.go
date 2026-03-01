@@ -13,11 +13,10 @@ import (
 
 	ts "cyi-app/pkg/kratos/server/transporter"
 
-	aqhelper "cyi-app/pkg/util/asynq_helper"
+	mid "cyi-app/pkg/kratos/server/middleware"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"go.opentelemetry.io/otel/trace"
-	mid "cyi-app/pkg/kratos/server/middleware"
 )
 
 // ProviderSet is server providers.
@@ -74,12 +73,16 @@ func NewDiscovery(conf *conf.Registry) registry.Discovery {
 	return dis
 }
 
-func NewTaskServer(r redis.UniversalClient, log log.Logger) *asynq.Server {
-	server := aqhelper.NewServer(r, 10, log)
-	return server.Server
+func NewTaskServer(r redis.UniversalClient, logger log.Logger) *asynq.Server {
+	// server := aqhelper.NewServer(r, 10, log)
+	server := asynq.NewServerFromRedisClient(r, asynq.Config{
+		Concurrency: 10,
+		Logger:      log.NewHelper(logger),
+	})
+	return server
 }
 
-func NewServerMux(log log.Logger) *ts.TaskServer {
+func NewServerMux(logger log.Logger) *ts.TaskServer {
 	mux := asynq.NewServeMux()
 	// 后期加个中间件
 	// mux.Use()
