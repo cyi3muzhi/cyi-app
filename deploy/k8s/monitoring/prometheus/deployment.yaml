@@ -18,6 +18,25 @@ spec:
         image: prom/prometheus:v2.43.0  # 使用的容器镜像
         ports:
         - containerPort: 9090  # 容器暴露的端口 9090
+        resources:  # 资源限制
+          requests:
+            cpu: "500m"  # 请求 500m CPU
+            memory: "1Gi"  # 请求 1Gi 内存
+          limits:
+            cpu: "1"  # 限制 1 CPU
+            memory: "2Gi"  # 限制 2Gi 内存
+        livenessProbe:  # 存活探针
+          httpGet:
+            path: /-/healthy
+            port: 9090
+          initialDelaySeconds: 60  # 初始延迟 60 秒
+          periodSeconds: 10  # 检查周期 10 秒
+        readinessProbe:  # 就绪探针
+          httpGet:
+            path: /-/ready
+            port: 9090
+          initialDelaySeconds: 30  # 初始延迟 30 秒
+          periodSeconds: 5  # 检查周期 5 秒
         volumeMounts:  # 卷挂载
         - name: prometheus-config  # 卷名称
           mountPath: /etc/prometheus/prometheus.yml  # 挂载到容器内的路径
@@ -90,3 +109,16 @@ data:
 # 3. Service 以 NodePort 方式暴露 prometheus 服务到节点端口 30900。
 # 4. ConfigMap 存储 prometheus 的配置，包括抓取间隔和服务发现规则。
 # 5. 容器使用 prom/prometheus:v2.43.0 镜像，挂载配置文件和数据卷。
+# 6. 配置了资源限制，确保容器不会过度消耗集群资源。
+# 7. 配置了健康检查，提高服务的可用性。
+
+# 生产环境说明：
+# 1. 生产环境应使用固定版本的 Prometheus 镜像，避免自动拉取最新版本
+# 2. 生产环境应使用外部存储系统（如 EBS、GCE PD 等）作为持久卷
+# 3. 建议使用 Prometheus Operator 管理 Prometheus 集群
+# 4. 生产环境应配置适当的存储和保留策略，避免数据量过大
+# 5. 生产环境应调整抓取间隔和配置，根据实际监控需求进行优化
+# 6. 考虑使用 Prometheus 联邦集群，提高监控系统的可扩展性
+# 7. 生产环境应监控 Prometheus 自身的健康状态和性能指标
+# 8. 根据实际负载调整资源限制
+# 9. 生产环境应配置网络策略，限制对 Prometheus 服务的访问

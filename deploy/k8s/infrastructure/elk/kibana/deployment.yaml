@@ -28,6 +28,25 @@ spec:
           value: elastic  # 用户名
         - name: ELASTICSEARCH_PASSWORD  # Elasticsearch 密码
           value: changeme  # 密码
+        resources:  # 资源限制
+          requests:
+            cpu: "500m"  # 请求 500m CPU
+            memory: "1Gi"  # 请求 1Gi 内存
+          limits:
+            cpu: "1"  # 限制 1 CPU
+            memory: "2Gi"  # 限制 2Gi 内存
+        livenessProbe:  # 存活探针
+          httpGet:
+            path: /api/status
+            port: 5601
+          initialDelaySeconds: 60  # 初始延迟 60 秒
+          periodSeconds: 10  # 检查周期 10 秒
+        readinessProbe:  # 就绪探针
+          httpGet:
+            path: /api/status
+            port: 5601
+          initialDelaySeconds: 30  # 初始延迟 30 秒
+          periodSeconds: 5  # 检查周期 5 秒
 
 ---
 
@@ -53,3 +72,15 @@ spec:
 # 4. 配置 Elasticsearch 地址、用户名和密码，用于连接 Elasticsearch 集群。
 # 5. 该 Service 为 Kibana 服务创建网络访问配置，使用 NodePort 类型，允许外部访问。
 # 6. 通过节点端口 30201 可以访问 Kibana UI：http://localhost:30201
+# 7. 配置了资源限制，确保容器不会过度消耗集群资源。
+# 8. 配置了健康检查，提高服务的可用性。
+
+# 生产环境说明：
+# 1. 生产环境应使用 Kubernetes Secret 存储 Elasticsearch 用户名和密码
+# 2. 生产环境应配置 TLS 加密，保护 Kibana UI 访问
+# 3. 建议使用 Ingress 控制器暴露 Kibana 服务，提供更灵活的路由配置和访问控制
+# 4. 生产环境应配置访问控制，限制对 Kibana UI 的访问
+# 5. 考虑使用 Kibana 的空间功能，为不同团队或用户组创建隔离的视图
+# 6. 生产环境应监控 Kibana 的健康状态和性能指标
+# 7. 根据实际使用情况调整资源限制
+# 8. 生产环境应定期备份 Kibana 配置和仪表盘

@@ -29,6 +29,29 @@ spec:
             configMapKeyRef:
               name: cyi-app-config  # 配置映射名称
               key: MYSQL_DATABASE  # 配置键
+        resources:  # 资源限制
+          requests:
+            cpu: "500m"  # 请求 500m CPU
+            memory: "1Gi"  # 请求 1Gi 内存
+          limits:
+            cpu: "1"  # 限制 1 CPU
+            memory: "2Gi"  # 限制 2Gi 内存
+        livenessProbe:  # 存活探针
+          exec:
+            command:
+            - sh
+            - -c
+            - exec mysqladmin ping -uroot -p"${MYSQL_ROOT_PASSWORD}"
+          initialDelaySeconds: 60  # 初始延迟 60 秒
+          periodSeconds: 10  # 检查周期 10 秒
+        readinessProbe:  # 就绪探针
+          exec:
+            command:
+            - sh
+            - -c
+            - exec mysqladmin ping -uroot -p"${MYSQL_ROOT_PASSWORD}"
+          initialDelaySeconds: 30  # 初始延迟 30 秒
+          periodSeconds: 5  # 检查周期 5 秒
         args:  # 启动参数
         - --character-set-server=utf8mb4  # 字符集
         - --collation-server=utf8mb4_unicode_ci  # 排序规则
@@ -48,3 +71,16 @@ spec:
 # 5. 配置 MySQL 使用 utf8mb4 字符集和 utf8mb4_unicode_ci 排序规则。
 # 6. 使用持久卷存储 MySQL 数据，确保数据持久化。
 # 7. 该服务为应用提供持久化数据存储功能。
+# 8. 配置了资源限制，确保容器不会过度消耗集群资源。
+# 9. 配置了健康检查，提高服务的可用性。
+
+# 生产环境说明：
+# 1. 生产环境应使用固定版本的 MySQL 镜像，避免自动拉取最新版本
+# 2. 生产环境应使用外部存储系统（如 EBS、GCE PD 等）作为持久卷
+# 3. 建议使用 MySQL 集群或主从复制，提高可用性和数据冗余
+# 4. 生产环境应配置适当的备份策略，定期备份数据库
+# 5. 生产环境应调整 MySQL 配置参数，根据实际负载进行优化
+# 6. 考虑使用数据库连接池，提高数据库访问性能
+# 7. 生产环境应监控 MySQL 的健康状态和性能指标
+# 8. 根据实际负载调整资源限制
+# 9. 生产环境应配置网络策略，限制对 MySQL 服务的访问

@@ -28,6 +28,25 @@ spec:
           value: "badger"  # 使用 Badger 存储
         - name: BADGER_DIR  # Badger 存储目录
           value: "/data/badger"  # 目录路径
+        resources:  # 资源限制
+          requests:
+            cpu: "200m"  # 请求 200m CPU
+            memory: "512Mi"  # 请求 512Mi 内存
+          limits:
+            cpu: "1"  # 限制 1 CPU
+            memory: "1Gi"  # 限制 1Gi 内存
+        livenessProbe:  # 存活探针
+          httpGet:
+            path: /
+            port: 16686
+          initialDelaySeconds: 30  # 初始延迟 30 秒
+          periodSeconds: 10  # 检查周期 10 秒
+        readinessProbe:  # 就绪探针
+          httpGet:
+            path: /
+            port: 16686
+          initialDelaySeconds: 15  # 初始延迟 15 秒
+          periodSeconds: 5  # 检查周期 5 秒
         volumeMounts:  # 卷挂载
         - name: jaeger-data  # 数据卷
           mountPath: /data  # 挂载到容器内的数据目录
@@ -44,3 +63,15 @@ spec:
 # 5. 使用 Badger 作为跨度存储，存储在 /data/badger 目录。
 # 6. 使用持久卷存储 Jaeger 数据，确保数据持久化。
 # 7. 该服务用于追踪分布式系统中的请求流程，便于故障排查和性能分析。
+# 8. 配置了资源限制，确保容器不会过度消耗集群资源。
+# 9. 配置了健康检查，提高服务的可用性。
+
+# 生产环境说明：
+# 1. 生产环境应使用更可靠的存储后端，如 Cassandra 或 Elasticsearch
+# 2. 生产环境应部署多个 Jaeger 实例，提高可用性
+# 3. 建议使用外部存储系统（如 EBS、GCE PD 等）作为持久卷
+# 4. 生产环境应配置适当的采样策略，平衡追踪数据量和系统性能
+# 5. 考虑使用 Jaeger 的集群模式，分离收集器、查询服务和存储
+# 6. 生产环境应监控 Jaeger 的健康状态和性能指标
+# 7. 根据实际负载调整资源限制和副本数
+# 8. 生产环境应配置访问控制，限制对 Jaeger UI 的访问

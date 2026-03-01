@@ -33,6 +33,31 @@ spec:
           value: -Xms1g -Xmx1g  # 内存配置：最小 1GB，最大 1GB
         - name: ELASTIC_PASSWORD  # 弹性搜索密码
           value: changeme  # 密码值
+        resources:  # 资源限制
+          requests:
+            cpu: "1"  # 请求 1 CPU
+            memory: "2Gi"  # 请求 2Gi 内存
+          limits:
+            cpu: "2"  # 限制 2 CPU
+            memory: "4Gi"  # 限制 4Gi 内存
+        livenessProbe:  # 存活探针
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+            httpHeaders:
+            - name: Authorization
+              value: Basic ZWxhc3RpYzpjaGFuZ2VtZQ==  # 基本认证，用户名：elastic，密码：changeme
+          initialDelaySeconds: 60  # 初始延迟 60 秒
+          periodSeconds: 10  # 检查周期 10 秒
+        readinessProbe:  # 就绪探针
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+            httpHeaders:
+            - name: Authorization
+              value: Basic ZWxhc3RpYzpjaGFuZ2VtZQ==  # 基本认证，用户名：elastic，密码：changeme
+          initialDelaySeconds: 30  # 初始延迟 30 秒
+          periodSeconds: 5  # 检查周期 5 秒
         volumeMounts:  # 卷挂载
         - name: elasticsearch-data  # 数据卷
           mountPath: /usr/share/elasticsearch/data  # 挂载到容器内的数据目录
@@ -69,3 +94,16 @@ spec:
 # 5. 使用持久卷存储 Elasticsearch 数据，确保数据持久化。
 # 6. 该 Service 为 Elasticsearch 服务创建网络访问配置，使用 NodePort 类型，允许外部访问。
 # 7. 通过节点端口 30200 可以访问 Elasticsearch API：http://localhost:30200
+# 8. 配置了资源限制，确保容器不会过度消耗集群资源。
+# 9. 配置了健康检查，提高服务的可用性。
+
+# 生产环境说明：
+# 1. 生产环境应部署 Elasticsearch 集群（至少 3 个节点），确保高可用性和数据冗余
+# 2. 生产环境应使用外部存储系统（如 EBS、GCE PD 等）作为持久卷
+# 3. 建议使用 Kubernetes Secret 存储 Elasticsearch 密码
+# 4. 生产环境应配置 TLS 加密，保护 API 访问
+# 5. 生产环境应调整 JVM 内存配置，根据实际数据量和查询负载进行优化
+# 6. 考虑使用索引生命周期管理（ILM），自动管理索引的创建、滚动和删除
+# 7. 生产环境应配置适当的备份策略，定期备份 Elasticsearch 数据
+# 8. 生产环境应监控 Elasticsearch 集群的健康状态和性能指标
+# 9. 根据实际负载调整资源限制和副本数

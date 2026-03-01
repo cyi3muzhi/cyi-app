@@ -23,6 +23,25 @@ spec:
         env:
         - name: CONSUL_UI  # Consul UI 启用配置
           value: "true"  # 启用 Consul UI
+        resources:  # 资源限制
+          requests:
+            cpu: "200m"  # 请求 200m CPU
+            memory: "512Mi"  # 请求 512Mi 内存
+          limits:
+            cpu: "1"  # 限制 1 CPU
+            memory: "1Gi"  # 限制 1Gi 内存
+        livenessProbe:  # 存活探针
+          httpGet:
+            path: /v1/status/leader
+            port: 8500
+          initialDelaySeconds: 30  # 初始延迟 30 秒
+          periodSeconds: 10  # 检查周期 10 秒
+        readinessProbe:  # 就绪探针
+          httpGet:
+            path: /v1/status/leader
+            port: 8500
+          initialDelaySeconds: 5  # 初始延迟 5 秒
+          periodSeconds: 5  # 检查周期 5 秒
         command:  # 启动命令
         - consul
         - agent
@@ -52,3 +71,14 @@ spec:
 # 3. 容器暴露端口 8500（HTTP）、8600（DNS）和 8300（服务器间通信）。
 # 4. 启用了 Consul UI，并配置了数据和配置目录。
 # 5. 使用持久卷存储 Consul 数据和配置，确保数据持久化。
+# 6. 配置了资源限制，确保容器不会过度消耗集群资源。
+# 7. 配置了健康检查，提高服务的可用性。
+
+# 生产环境说明：
+# 1. 生产环境应部署多个 Consul 服务器节点（至少 3 个），确保高可用性
+# 2. 生产环境应配置 TLS 加密，保护服务间通信
+# 3. 建议使用外部存储系统（如 EBS、GCE PD 等）作为持久卷
+# 4. 生产环境应配置适当的备份策略，定期备份 Consul 数据
+# 5. 考虑使用 Consul 的 ACL 功能，限制服务注册和查询权限
+# 6. 生产环境应监控 Consul 集群的健康状态
+# 7. 根据实际负载调整资源限制和副本数

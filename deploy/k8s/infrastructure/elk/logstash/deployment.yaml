@@ -25,6 +25,25 @@ spec:
         env:
         - name: LS_JAVA_OPTS  # Logstash JAVA 选项
           value: -Xms512m -Xmx512m  # 内存配置：最小 512MB，最大 512MB
+        resources:  # 资源限制
+          requests:
+            cpu: "500m"  # 请求 500m CPU
+            memory: "1Gi"  # 请求 1Gi 内存
+          limits:
+            cpu: "1"  # 限制 1 CPU
+            memory: "2Gi"  # 限制 2Gi 内存
+        livenessProbe:  # 存活探针
+          httpGet:
+            path: /
+            port: 9600
+          initialDelaySeconds: 60  # 初始延迟 60 秒
+          periodSeconds: 10  # 检查周期 10 秒
+        readinessProbe:  # 就绪探针
+          httpGet:
+            path: /
+            port: 9600
+          initialDelaySeconds: 30  # 初始延迟 30 秒
+          periodSeconds: 5  # 检查周期 5 秒
         volumeMounts:  # 卷挂载
         - name: logstash-config  # 配置卷
           mountPath: /usr/share/logstash/pipeline/logstash.conf  # 挂载到容器内的配置文件
@@ -61,3 +80,14 @@ spec:
 # 5. 挂载配置文件 logstash.conf，用于定义日志处理管道。
 # 6. 该 Service 为 Logstash 服务创建网络访问配置，使用 NodePort 类型，允许外部访问。
 # 7. 暴露两个端口：5044（Beats 输入）和 9600（API）。
+# 8. 配置了资源限制，确保容器不会过度消耗集群资源。
+# 9. 配置了健康检查，提高服务的可用性。
+
+# 生产环境说明：
+# 1. 生产环境应根据日志处理量调整 JAVA 内存配置和资源限制
+# 2. 生产环境应部署多个 Logstash 实例，提高处理能力和可用性
+# 3. 建议使用 Kubernetes Secret 存储敏感配置
+# 4. 生产环境应监控 Logstash 的健康状态和性能指标
+# 5. 考虑使用 Logstash 的队列功能，提高处理稳定性
+# 6. 生产环境应优化 Logstash 管道配置，提高处理效率
+# 7. 根据实际负载调整资源限制和副本数

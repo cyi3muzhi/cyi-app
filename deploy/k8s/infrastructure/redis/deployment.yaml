@@ -24,6 +24,31 @@ spec:
             secretKeyRef:
               name: cyi-app-secret  # 密钥名称
               key: REDIS_PASSWORD  # 密钥键
+        resources:  # 资源限制
+          requests:
+            cpu: "200m"  # 请求 200m CPU
+            memory: "512Mi"  # 请求 512Mi 内存
+          limits:
+            cpu: "500m"  # 限制 500m CPU
+            memory: "1Gi"  # 限制 1Gi 内存
+        livenessProbe:  # 存活探针
+          exec:
+            command:
+            - redis-cli
+            - -a
+            - $(REDIS_PASSWORD)
+            - ping
+          initialDelaySeconds: 30  # 初始延迟 30 秒
+          periodSeconds: 10  # 检查周期 10 秒
+        readinessProbe:  # 就绪探针
+          exec:
+            command:
+            - redis-cli
+            - -a
+            - $(REDIS_PASSWORD)
+            - ping
+          initialDelaySeconds: 10  # 初始延迟 10 秒
+          periodSeconds: 5  # 检查周期 5 秒
         command:  # 启动命令
         - redis-server
         - --requirepass
@@ -46,3 +71,16 @@ spec:
 # 5. 配置 Redis 启用密码认证和 AOF 持久化。
 # 6. 使用持久卷存储 Redis 数据，确保数据持久化。
 # 7. 该服务为应用提供缓存功能，提高性能。
+# 8. 配置了资源限制，确保容器不会过度消耗集群资源。
+# 9. 配置了健康检查，提高服务的可用性。
+
+# 生产环境说明：
+# 1. 生产环境应使用固定版本的 Redis 镜像，避免自动拉取最新版本
+# 2. 生产环境应使用外部存储系统（如 EBS、GCE PD 等）作为持久卷
+# 3. 建议使用 Redis 集群或主从复制，提高可用性和数据冗余
+# 4. 生产环境应配置适当的备份策略，定期备份 Redis 数据
+# 5. 生产环境应调整 Redis 配置参数，根据实际负载进行优化
+# 6. 考虑使用 Redis Sentinel 进行高可用部署
+# 7. 生产环境应监控 Redis 的健康状态和性能指标
+# 8. 根据实际负载调整资源限制
+# 9. 生产环境应配置网络策略，限制对 Redis 服务的访问

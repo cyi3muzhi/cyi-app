@@ -23,6 +23,25 @@ spec:
           value: "admin"  # 用户名值
         - name: GF_SECURITY_ADMIN_PASSWORD  # Grafana 管理员密码
           value: "muzhi0228"  # 密码值
+        resources:  # 资源限制
+          requests:
+            cpu: "200m"  # 请求 200m CPU
+            memory: "512Mi"  # 请求 512Mi 内存
+          limits:
+            cpu: "500m"  # 限制 500m CPU
+            memory: "1Gi"  # 限制 1Gi 内存
+        livenessProbe:  # 存活探针
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 60  # 初始延迟 60 秒
+          periodSeconds: 10  # 检查周期 10 秒
+        readinessProbe:  # 就绪探针
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30  # 初始延迟 30 秒
+          periodSeconds: 5  # 检查周期 5 秒
         volumeMounts:  # 卷挂载
         - name: grafana-data  # 数据卷
           mountPath: /var/lib/grafana  # 挂载到容器内的数据目录
@@ -55,3 +74,16 @@ spec:
 # 5. 使用持久卷存储 Grafana 数据，确保配置和仪表板持久化。
 # 6. 该 Service 为 Grafana 服务创建网络访问配置，使用 NodePort 类型，允许外部访问。
 # 7. 通过节点端口 30300 可以访问 Grafana UI：http://localhost:30300
+# 8. 配置了资源限制，确保容器不会过度消耗集群资源。
+# 9. 配置了健康检查，提高服务的可用性。
+
+# 生产环境说明：
+# 1. 生产环境应使用 Kubernetes Secret 存储 Grafana 管理员密码
+# 2. 生产环境应配置 TLS 加密，保护 Grafana UI 访问
+# 3. 建议使用 Ingress 控制器暴露 Grafana 服务，提供更灵活的路由配置和访问控制
+# 4. 生产环境应配置访问控制，限制对 Grafana UI 的访问
+# 5. 考虑使用 Grafana 的组织和团队功能，为不同用户组创建隔离的视图
+# 6. 生产环境应定期备份 Grafana 配置和仪表板
+# 7. 生产环境应监控 Grafana 的健康状态和性能指标
+# 8. 根据实际使用情况调整资源限制
+# 9. 生产环境应配置网络策略，限制对 Grafana 服务的访问
