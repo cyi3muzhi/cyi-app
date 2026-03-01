@@ -122,6 +122,7 @@ k8s-up:
 k8s-down:
 	kubectl delete deployment --all
 	kubectl delete service --all
+	kubectl delete daemonset --all
 
 .PHONY: k8s-clean
 # clean kubernetes resources 清理 Kubernetes 资源
@@ -131,6 +132,7 @@ k8s-clean:
 	kubectl delete pvc --all
 	kubectl delete configmap --all
 	kubectl delete secret --all
+	kubectl delete daemonset --all
 
 # show env 显示环境变量
 env:

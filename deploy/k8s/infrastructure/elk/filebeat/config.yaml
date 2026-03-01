@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+  namespace: default
+data:
+  filebeat.yml: |
+    # 容器日志文件输入
+    filebeat.inputs:
+      # 所有服务日志
+      - type: log
+        enabled: true
+        paths:
+          - /app/logs/*/*.log
+        encoding: utf-8
+        multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+        multiline.negate: true
+        multiline.match: after
+        processors:
+          - dissect:
+              tokenizer: '%{log_dir}/%{filename}'
+              field: 'log.file.path'
+              target_prefix: 'parsed'
+          - rename:
+              fields:
+                parsed.filename: 'log_filename'
+          - add_fields:
+              fields:
+                service: app
+                environment: ${ENVIRONMENT:development}
+              target: ''
+        fields_under_root: true
+
+    # 输出配置
+    output.logstash:
+      hosts: ["logstash:5044"]
+      ssl.enabled: false
+
+    # 日志配置
+    logging.level: info
+    logging.to_files: false

@@ -29,33 +29,15 @@ spec:
           subPath: filebeat.yml
         - name: filebeat-data
           mountPath: /usr/share/filebeat/data
-        - name: interface-logs
-          mountPath: /app/logs/interface
-        - name: user-logs
-          mountPath: /app/logs/user
-        - name: task-logs
-          mountPath: /app/logs/task
-        - name: job-logs
-          mountPath: /app/logs/job
+        - name: logs
+          mountPath: /app/logs
       volumes:
       - name: filebeat-config
         configMap:
           name: filebeat-config
       - name: filebeat-data
         emptyDir: {}
-      - name: interface-logs
+      - name: logs
         hostPath:
-          path: /mnt/e/me/cyi-app/app/cin/interface/cmd/interface/logs
-          type: DirectoryOrCreate
-      - name: user-logs
-        hostPath:
-          path: /mnt/e/me/cyi-app/app/service/user/cmd/user/logs
-          type: DirectoryOrCreate
-      - name: task-logs
-        hostPath:
-          path: /mnt/e/me/cyi-app/app/task/cmd/task/logs
-          type: DirectoryOrCreate
-      - name: job-logs
-        hostPath:
-          path: /mnt/e/me/cyi-app/app/job/cmd/job/logs
+          path: /mnt/e/me/cyi-app/deploy/logs
           type: DirectoryOrCreate
