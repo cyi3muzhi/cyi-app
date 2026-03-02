@@ -24,6 +24,13 @@ spec:
         env:
         - name: ENVIRONMENT  # 环境变量
           value: development  # 环境值
+        resources:  # 资源限制
+          requests:
+            cpu: "50m"  # 请求 50m CPU
+            memory: "100Mi"  # 请求 100Mi 内存
+          limits:
+            cpu: "100m"  # 限制 100m CPU
+            memory: "200Mi"  # 限制 200Mi 内存
         volumeMounts:  # 卷挂载
         - name: filebeat-config  # 配置卷
           mountPath: /usr/share/filebeat/filebeat.yml  # 挂载到容器内的配置文件

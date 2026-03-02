@@ -25,11 +25,11 @@ spec:
           value: "true"  # 启用 Consul UI
         resources:  # 资源限制
           requests:
-            cpu: "200m"  # 请求 200m CPU
-            memory: "512Mi"  # 请求 512Mi 内存
+            cpu: "50m"  # 请求 50m CPU
+            memory: "100Mi"  # 请求 100Mi 内存
           limits:
-            cpu: "1"  # 限制 1 CPU
-            memory: "1Gi"  # 限制 1Gi 内存
+            cpu: "200m"  # 限制 200m CPU
+            memory: "128Mi"  # 限制 128Mi 内存
         livenessProbe:  # 存活探针
           httpGet:
             path: /v1/status/leader

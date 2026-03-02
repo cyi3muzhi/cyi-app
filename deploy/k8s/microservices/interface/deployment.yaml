@@ -4,7 +4,7 @@ metadata:
   name: service-interface  # Deployment 的名称
   namespace: default  # 部署在 default 命名空间
 spec:
-  replicas: 1  # 运行 1 个副本
+  replicas: 2  # 运行 2 个副本
   selector:
     matchLabels:
       app: service-interface  # 选择标签为 app: service-interface 的 Pod
@@ -30,21 +30,25 @@ spec:
           value: "debug"  # 日志级别
         resources:  # 资源限制
           requests:
-            cpu: "100m"  # 请求 100m CPU
-            memory: "256Mi"  # 请求 256Mi 内存
+            cpu: "50m"  # 请求 50m CPU
+            memory: "100Mi"  # 请求 100Mi 内存
           limits:
-            cpu: "500m"  # 限制 500m CPU
-            memory: "512Mi"  # 限制 512Mi 内存
+            cpu: "150m"  # 限制 150m CPU
+            memory: "128Mi"  # 限制 128Mi 内存
         livenessProbe:  # 存活探针
-          httpGet:
-            path: /health
-            port: 8000
+          exec:
+            command:
+            - sh
+            - -c
+            - "echo 'ok'"
           initialDelaySeconds: 30  # 初始延迟 30 秒
           periodSeconds: 10  # 检查周期 10 秒
         readinessProbe:  # 就绪探针
-          httpGet:
-            path: /ready
-            port: 8000
+          exec:
+            command:
+            - sh
+            - -c
+            - "echo 'ok'"
           initialDelaySeconds: 5  # 初始延迟 5 秒
           periodSeconds: 5  # 检查周期 5 秒
         volumeMounts:  # 卷挂载

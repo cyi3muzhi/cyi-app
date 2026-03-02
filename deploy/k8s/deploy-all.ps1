@@ -3,14 +3,14 @@ echo "Deploying infrastructure..."
 kubectl apply -f infrastructure/consul/
 kubectl apply -f infrastructure/redis/
 kubectl apply -f infrastructure/mysql/
-kubectl apply -f infrastructure/jaeger/
+# kubectl apply -f infrastructure/jaeger/
 
 # Deploy ELK stack
-echo "Deploying ELK stack..."
-kubectl apply -f infrastructure/elk/elasticsearch/
-kubectl apply -f infrastructure/elk/logstash/
-kubectl apply -f infrastructure/elk/kibana/
-kubectl apply -f infrastructure/elk/filebeat/
+# echo "Deploying ELK stack..."
+# kubectl apply -f infrastructure/elk/elasticsearch/
+# kubectl apply -f infrastructure/elk/logstash/
+# kubectl apply -f infrastructure/elk/kibana/
+# kubectl apply -f infrastructure/elk/filebeat/
 
 # Deploy microservices
 echo "Deploying microservices..."

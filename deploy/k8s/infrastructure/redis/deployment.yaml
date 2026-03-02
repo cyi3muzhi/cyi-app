@@ -26,11 +26,11 @@ spec:
               key: REDIS_PASSWORD  # 密钥键
         resources:  # 资源限制
           requests:
-            cpu: "200m"  # 请求 200m CPU
-            memory: "512Mi"  # 请求 512Mi 内存
+            cpu: "50m"  # 请求 50m CPU
+            memory: "80Mi"  # 请求 80Mi 内存
           limits:
-            cpu: "500m"  # 限制 500m CPU
-            memory: "1Gi"  # 限制 1Gi 内存
+            cpu: "150m"  # 限制 150m CPU
+            memory: "128Mi"  # 限制 128Mi 内存
         livenessProbe:  # 存活探针
           exec:
             command:

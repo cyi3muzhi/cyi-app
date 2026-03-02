@@ -30,16 +30,16 @@ spec:
         - name: discovery.type  # 发现类型
           value: single-node  # 单节点模式
         - name: ES_JAVA_OPTS  # JAVA 选项
-          value: -Xms1g -Xmx1g  # 内存配置：最小 1GB，最大 1GB
+          value: -Xms128m -Xmx256m  # 内存配置：最小 128MB，最大 256MB
         - name: ELASTIC_PASSWORD  # 弹性搜索密码
           value: changeme  # 密码值
         resources:  # 资源限制
           requests:
-            cpu: "1"  # 请求 1 CPU
-            memory: "2Gi"  # 请求 2Gi 内存
+            cpu: "150m"  # 请求 150m CPU
+            memory: "256Mi"  # 请求 256Mi 内存
           limits:
-            cpu: "2"  # 限制 2 CPU
-            memory: "4Gi"  # 限制 4Gi 内存
+            cpu: "300m"  # 限制 300m CPU
+            memory: "512Mi"  # 限制 512Mi 内存
         livenessProbe:  # 存活探针
           httpGet:
             path: /_cluster/health

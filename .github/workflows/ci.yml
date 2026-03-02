@@ -1,0 +1,143 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, test, develop ]
+  pull_request:
+    branches: [ main, test, develop ]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      interface: ${{ steps.filter.outputs.interface }}
+      user: ${{ steps.filter.outputs.user }}
+      job: ${{ steps.filter.outputs.job }}
+      task: ${{ steps.filter.outputs.task }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Detect changes
+      uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters:
+          interface:
+            - 'app/cin/interface/**'
+            - 'api/cin/interface/**'
+          user:
+            - 'app/service/user/**'
+            - 'api/service/user/**'
+          job:
+            - 'app/job/**'
+            - 'api/job/**'
+          task:
+            - 'app/task/**'
+            - 'api/task/**'
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.25.0'
+
+    - name: Install dependencies
+      run: go mod tidy
+
+    - name: Run tests
+      run: go test ./...
+
+    - name: Build applications
+      run: |
+        # Use Makefile to build all services
+        make build
+
+  docker-build:
+    needs: [build, detect-changes]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test' || github.ref == 'refs/heads/develop')
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push interface service
+      if: needs.detect-changes.outputs.interface == 'true'
+      run: |
+        cd app/cin/interface
+        make docker
+
+    - name: Build and push user service
+      if: needs.detect-changes.outputs.user == 'true'
+      run: |
+        cd app/service/user
+        make docker
+
+    - name: Build and push job service
+      if: needs.detect-changes.outputs.job == 'true'
+      run: |
+        cd app/job
+        make docker
+
+    - name: Build and push task service
+      if: needs.detect-changes.outputs.task == 'true'
+      run: |
+        cd app/task
+        make docker
+
+  deploy:
+    needs: [docker-build, detect-changes]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test' || github.ref == 'refs/heads/develop')
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v4
+      with:
+        version: 'latest'
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+
+    - name: Update Kubernetes deployments
+      run: |
+        # Update interface deployment
+        if [ "${{ needs.detect-changes.outputs.interface }}" == "true" ]; then
+          sed -i 's|go-kratos/cin-interface:0.1.0|${{ secrets.DOCKER_USERNAME }}/cyi-interface:${{ github.sha }}|g' deploy/k8s/microservices/interface/deployment.yaml
+        fi
+        
+        # Update user deployment
+        if [ "${{ needs.detect-changes.outputs.user }}" == "true" ]; then
+          sed -i 's|go-kratos/service-user:0.1.0|${{ secrets.DOCKER_USERNAME }}/cyi-user:${{ github.sha }}|g' deploy/k8s/microservices/user/deployment.yaml
+        fi
+        
+        # Update job deployment
+        if [ "${{ needs.detect-changes.outputs.job }}" == "true" ]; then
+          sed -i 's|go-kratos/job:0.1.0|${{ secrets.DOCKER_USERNAME }}/cyi-job:${{ github.sha }}|g' deploy/k8s/microservices/job/deployment.yaml
+        fi
+        
+        # Update task deployment
+        if [ "${{ needs.detect-changes.outputs.task }}" == "true" ]; then
+          sed -i 's|go-kratos/task:0.1.0|${{ secrets.DOCKER_USERNAME }}/cyi-task:${{ github.sha }}|g' deploy/k8s/microservices/task/deployment.yaml
+        fi
+        
+        # Apply changes - exclude ELK and Jaeger services
+        kubectl apply -f deploy/k8s/config/
+        kubectl apply -f deploy/k8s/infrastructure/consul/
+        kubectl apply -f deploy/k8s/infrastructure/mysql/
+        kubectl apply -f deploy/k8s/infrastructure/redis/
+        kubectl apply -f deploy/k8s/microservices/
+        kubectl apply -f deploy/k8s/monitoring/
