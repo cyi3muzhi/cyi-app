@@ -10,30 +10,21 @@ jobs:
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
-      interface: ${{ steps.filter.outputs.interface }}
-      user: ${{ steps.filter.outputs.user }}
-      job: ${{ steps.filter.outputs.job }}
-      task: ${{ steps.filter.outputs.task }}
+      interface: ${{ steps.detect.outputs.interface }}
+      user: ${{ steps.detect.outputs.user }}
+      job: ${{ steps.detect.outputs.job }}
+      task: ${{ steps.detect.outputs.task }}
     steps:
     - uses: actions/checkout@v4
 
     - name: Detect changes
-      uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters:
-          interface:
-            - 'app/cin/interface/**'
-            - 'api/cin/interface/**'
-          user:
-            - 'app/service/user/**'
-            - 'api/service/user/**'
-          job:
-            - 'app/job/**'
-            - 'api/job/**'
-          task:
-            - 'app/task/**'
-            - 'api/task/**'
+      id: detect
+      run: |
+        # Check if any files changed in each service directory
+        echo "interface=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E 'app/cin/interface|api/cin/interface' | wc -l | xargs test 0 -ne && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+        echo "user=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E 'app/service/user|api/service/user' | wc -l | xargs test 0 -ne && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+        echo "job=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E 'app/job|api/job' | wc -l | xargs test 0 -ne && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+        echo "task=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E 'app/task|api/task' | wc -l | xargs test 0 -ne && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
 
   build:
     runs-on: ubuntu-latest
