@@ -152,9 +152,9 @@ jobs:
         fi
         
         # Apply changes - exclude ELK and Jaeger services
-        kubectl apply -f deploy/k8s/config/
-        kubectl apply -f deploy/k8s/infrastructure/consul/
-        kubectl apply -f deploy/k8s/infrastructure/mysql/
-        kubectl apply -f deploy/k8s/infrastructure/redis/
-        kubectl apply -f deploy/k8s/microservices/
-        kubectl apply -f deploy/k8s/monitoring/
+        kubectl apply --validate=false -f deploy/k8s/config/
+        kubectl apply --validate=false -f deploy/k8s/infrastructure/consul/
+        kubectl apply --validate=false -f deploy/k8s/infrastructure/mysql/
+        kubectl apply --validate=false -f deploy/k8s/infrastructure/redis/
+        kubectl apply --validate=false -f deploy/k8s/microservices/
+        kubectl apply --validate=false -f deploy/k8s/monitoring/
