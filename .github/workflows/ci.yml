@@ -23,21 +23,17 @@ jobs:
       with:
         filters:
           interface:
-            paths:
-              - 'app/cin/interface/**'
-              - 'api/cin/interface/**'
+            - 'app/cin/interface/**'
+            - 'api/cin/interface/**'
           user:
-            paths:
-              - 'app/service/user/**'
-              - 'api/service/user/**'
+            - 'app/service/user/**'
+            - 'api/service/user/**'
           job:
-            paths:
-              - 'app/job/**'
-              - 'api/job/**'
+            - 'app/job/**'
+            - 'api/job/**'
           task:
-            paths:
-              - 'app/task/**'
-              - 'api/task/**'
+            - 'app/task/**'
+            - 'api/task/**'
 
   build:
     runs-on: ubuntu-latest
