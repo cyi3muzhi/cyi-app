@@ -102,15 +102,30 @@ jobs:
     - name: Configure kubectl
       run: |
         mkdir -p ~/.kube
+        # Check if KUBE_CONFIG is set
         if [ -z "${{ secrets.KUBE_CONFIG }}" ]; then
           echo "Error: KUBE_CONFIG secret is not set"
+          echo "Please follow these steps to set up KUBE_CONFIG:"
+          echo "1. Install k3s on your server: curl -sfL https://get.k3s.io | sh -"
+          echo "2. Get kubeconfig: cat /etc/rancher/k3s/k3s.yaml"
+          echo "3. Encode to base64: cat /etc/rancher/k3s/k3s.yaml | base64 -w 0"
+          echo "4. Add as GitHub Secret: KUBE_CONFIG"
           exit 1
         fi
-        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+        
+        # Validate base64 content
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config 2>&1
+        if [ $? -ne 0 ]; then
+          echo "Error: Invalid base64 encoding in KUBE_CONFIG"
+          echo "Please ensure you copied the complete base64 string without any spaces or newlines"
+          exit 1
+        fi
+        
         if [ ! -s ~/.kube/config ]; then
-          echo "Error: Failed to decode KUBE_CONFIG"
+          echo "Error: Decoded KUBE_CONFIG is empty"
           exit 1
         fi
+        
         echo "Kubeconfig configured successfully"
         ls -la ~/.kube/config
 
