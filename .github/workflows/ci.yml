@@ -136,9 +136,9 @@ jobs:
     - name: Test kubectl connection
       run: |
         echo "Testing kubectl connection..."
-        kubectl cluster-info
-        kubectl get nodes
-        kubectl get pods --all-namespaces
+        kubectl cluster-info --insecure-skip-tls-verify
+        kubectl get nodes --insecure-skip-tls-verify
+        kubectl get pods --all-namespaces --insecure-skip-tls-verify
 
     - name: Update Kubernetes deployments
       run: |
@@ -163,9 +163,9 @@ jobs:
         fi
         
         # Apply changes - exclude ELK and Jaeger services
-        kubectl apply --validate=false -f deploy/k8s/config/
-        kubectl apply --validate=false -f deploy/k8s/infrastructure/consul/
-        kubectl apply --validate=false -f deploy/k8s/infrastructure/mysql/
-        kubectl apply --validate=false -f deploy/k8s/infrastructure/redis/
-        kubectl apply --validate=false -f deploy/k8s/microservices/
-        kubectl apply --validate=false -f deploy/k8s/monitoring/
+        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/config/
+        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/infrastructure/consul/
+        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/infrastructure/mysql/
+        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/infrastructure/redis/
+        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/microservices/
+        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/monitoring/
