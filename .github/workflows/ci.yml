@@ -102,7 +102,17 @@ jobs:
     - name: Configure kubectl
       run: |
         mkdir -p ~/.kube
+        if [ -z "${{ secrets.KUBE_CONFIG }}" ]; then
+          echo "Error: KUBE_CONFIG secret is not set"
+          exit 1
+        fi
         echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+        if [ ! -s ~/.kube/config ]; then
+          echo "Error: Failed to decode KUBE_CONFIG"
+          exit 1
+        fi
+        echo "Kubeconfig configured successfully"
+        ls -la ~/.kube/config
 
     - name: Update Kubernetes deployments
       run: |
