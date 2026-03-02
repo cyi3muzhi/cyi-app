@@ -167,5 +167,9 @@ jobs:
         kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/infrastructure/consul/
         kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/infrastructure/mysql/
         kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/infrastructure/redis/
-        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/microservices/
-        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/monitoring/
+        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/microservices/interface/
+        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/microservices/user/
+        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/microservices/job/
+        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/microservices/task/
+        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/monitoring/grafana/
+        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/monitoring/prometheus/
