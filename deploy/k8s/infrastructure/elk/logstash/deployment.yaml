@@ -24,14 +24,14 @@ spec:
         - containerPort: 9600  # API 端口
         env:
         - name: LS_JAVA_OPTS  # Logstash JAVA 选项
-          value: -Xms64m -Xmx128m  # 内存配置：最小 64MB，最大 128MB
+          value: -Xms256m -Xmx512m  # 内存配置：最小 256MB，最大 512MB
         resources:  # 资源限制
           requests:
-            cpu: "50m"  # 请求 50m CPU
-            memory: "150Mi"  # 请求 150Mi 内存
+            cpu: "100m"  # 请求 100m CPU
+            memory: "300Mi"  # 请求 300Mi 内存
           limits:
-            cpu: "150m"  # 限制 150m CPU
-            memory: "300Mi"  # 限制 300Mi 内存
+            cpu: "300m"  # 限制 300m CPU
+            memory: "768Mi"  # 限制 768Mi 内存
         livenessProbe:  # 存活探针
           httpGet:
             path: /

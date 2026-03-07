@@ -1,4 +1,3 @@
-# 获取 GOPATH
 GOPATH:=$(shell go env GOPATH)
 
 # 获取版本号（跨平台兼容）
@@ -20,23 +19,33 @@ APP_MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 PROJECT_ROOT := $(dir $(APP_MAKEFILE_PATH))
 # 移除末尾的斜杠
 PROJECT_ROOT := $(patsubst %/,%,$(PROJECT_ROOT))
+UNIX_PROJECT_ROOT=$(subst \,/,$(PROJECT_ROOT))
 
-# 获取内部 proto 文件（跨平台兼容）
-ifeq ($(OS),Windows_NT)
-    # Windows PowerShell 语法
-    INTERNAL_PROTO_FILES=$(shell powershell -Command "Get-ChildItem -Recurse -Path internal -Filter '*.proto' | ForEach-Object { $_.FullName }")
-else
-    # macOS/Linux bash 语法
-    INTERNAL_PROTO_FILES=$(shell find internal -name *.proto)
+# 计算从当前目录到项目根目录的相对路径
+# 基于 APP_RELATIVE_PATH 计算
+# 对于 E:/me/cyi-app/app/blades，APP_RELATIVE_PATH=blades，需要 ../../
+# 对于 E:/me/cyi-app/app/service/user，APP_RELATIVE_PATH=service/user，需要 ../../../
+# 规则：APP_RELATIVE_PATH 中的每个目录对应一个 ../，再加上一个额外的 ../ 从 app 到根目录
+# 替换 APP_RELATIVE_PATH 中的 / 为 ../
+RELATIVE_PATH_TMP=$(subst /,../,$(APP_RELATIVE_PATH))
+# 直接指定相对路径格式
+RELATIVE_PATH_TO_ROOT=../../
+# 检查 APP_RELATIVE_PATH 是否包含 /，如果包含则使用 ../../../
+ifneq ($(findstring /,$(APP_RELATIVE_PATH)),)
+    RELATIVE_PATH_TO_ROOT=../../../
 endif
+
 
 # 获取 API proto 文件（跨平台兼容）
 ifeq ($(OS),Windows_NT)
-    # Windows PowerShell 语法
-    API_PROTO_FILES=$(shell powershell -Command "cd ../../../api/$(APP_RELATIVE_PATH); Get-ChildItem -Recurse -Path . -Filter '*.proto' | ForEach-Object { $_.FullName }")
+    # Windows cmd 语法
+Git_Bash=$(subst \,/,$(subst cmd\,bin\bash.exe,$(dir $(shell where git)))) 
+API_PROTO_FILES=$(shell $(Git_Bash) -c "find ${RELATIVE_PATH_TO_ROOT}api/${APP_RELATIVE_PATH} -name *.proto")  
+   	INTERNAL_PROTO_FILES=$(shell $(Git_Bash) -c "find internal -name *.proto")  
 else
     # macOS/Linux bash 语法
-    API_PROTO_FILES=$(shell cd ../../../api/$(APP_RELATIVE_PATH) && find . -name *.proto)
+   API_PROTO_FILES=$(shell find ${UNIX_PROJECT_ROOT}/api/${APP_RELATIVE_PATH} -name *.proto)  
+   	INTERNAL_PROTO_FILES=$(shell find internal -name *.proto)  
 endif
 
 # 获取 Kratos 版本（跨平台兼容）
@@ -48,6 +57,13 @@ else
     KRATOS_VERSION=$(shell go mod graph | grep go-kratos/kratos/v2 | head -n 1 | awk -F '@' '{print $$2}')
 endif
 
+.PHONY: config
+# generate internal proto 生成 internal 目录下的 proto 文件
+config:
+	protoc --proto_path=./internal \
+	       --proto_path=./third_party \
+   	       --go_out=paths=source_relative:./internal \
+	       $(INTERNAL_PROTO_FILES)
 
 # 设置 Kratos 路径
 KRATOS=$(GOPATH)/pkg/mod/github.com/go-kratos/kratos/v2@$(KRATOS_VERSION)
@@ -95,14 +111,13 @@ DOCKER_IMAGE=go-kratos/$(DOCKER_IMAGE_NAME):0.1.0
 #            --go-errors_out=paths=source_relative:. \
 #            $(API_PROTO_FILES)
 
-# .PHONY: swagger
-# # generate swagger
-# swagger:
-# 	cd ../../../api/$(APP_RELATIVE_PATH) && protoc --proto_path=. \
-# 	        --proto_path=../../../third_party \
-# 	        --openapiv2_out . \
-# 	        --openapiv2_opt logtostderr=true \
-#            $(API_PROTO_FILES)
+.PHONY: swagger
+# generate swagger
+swagger:
+	 protoc --proto_path=${RELATIVE_PATH_TO_ROOT}api \
+	       --proto_path=${RELATIVE_PATH_TO_ROOT}third_party \
+	       --openapi_out=fq_schema_naming=true,default_response=false:. \
+           $(API_PROTO_FILES)
 
 # .PHONY: proto
 # # generate internal proto struct
@@ -165,6 +180,9 @@ env:
 	@echo DOCKER_IMAGE=$(DOCKER_IMAGE)
 	@echo PROJECT_ROOT=$(PROJECT_ROOT)
 	@echo APP_MAKEFILE_PATH=$(APP_MAKEFILE_PATH)
+	@echo API_PROTO_FILES=$(API_PROTO_FILES)
+	@echo RELATIVE_PATH_TO_ROOT=$(RELATIVE_PATH_TO_ROOT)
+
 
 # show help
 help:

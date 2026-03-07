@@ -1,0 +1,41 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: Blades API
+    version: 0.0.1
+paths:
+    /blades/v1/chat:
+        post:
+            tags:
+                - Blades
+            description: chat 聊天
+            operationId: Blades_Chat
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.blades.v1.ChatRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.blades.v1.ChatReply'
+components:
+    schemas:
+        api.blades.v1.ChatReply:
+            type: object
+            properties:
+                message:
+                    type: string
+        api.blades.v1.ChatRequest:
+            type: object
+            properties:
+                message:
+                    type: string
+tags:
+    - name: Blades

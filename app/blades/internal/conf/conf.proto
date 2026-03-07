@@ -1,0 +1,94 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "cyi-app/app/blades/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+  Auth auth = 3;
+  Trace trace = 4;
+  Log log = 5;
+  Blades blades = 6;
+}
+
+message Server {
+  message HTTP {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  HTTP http = 1;
+  GRPC grpc = 2;
+}
+
+message Data {
+  message Database {
+    string driver = 1;
+    string source = 2;
+  }
+  message Redis {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration read_timeout = 3;
+    google.protobuf.Duration write_timeout = 4;
+    string password = 5;
+  }
+  Database database = 1;
+  Redis redis = 2;
+  OSS oss = 3;
+}
+
+message Registry {
+    message Consul {
+        string address = 1;        // 服务器地址，支持多个地址逗号分隔
+        string scheme = 2;         // http 或 https
+        string token = 3;          // ACL 令牌
+        string username = 4;       // 基本认证用户名
+        string password = 5;       // 基本认证密码
+        bool enable_health_check = 8; // 是否启用健康检查
+        int32 check_interval = 9;  // 健康检查间隔(秒)
+    }
+    Consul consul = 1;
+}
+
+message Auth {
+    string api_key = 1;
+    repeated string white_list = 2; // 白名单
+}
+
+message Trace {
+    string endpoint = 1;
+}
+
+// 日志配置
+message Log {
+    string level = 1; // 日志级别
+    bool enable_console = 2; // 是否启用控制台输出
+    bool enable_file = 3; // 是否启用文件输出
+    string log_dir = 4; // 日志目录
+    string time_format = 5; // 时间格式
+    bool enable_color = 6; // 是否启用颜色
+}
+
+// OSS 配置
+message OSS {
+    string endpoint = 1;
+    string access_key = 2;
+    string secret_key = 3;
+}
+
+// Blades 配置
+message Blades {
+    string api_key = 1; // DeepSeek API 密钥
+    string model = 2; // 模型名称，默认 deepseek-chat
+    int32 max_tokens = 3; // 最大令牌数
+    float temperature = 4; // 温度参数
+}

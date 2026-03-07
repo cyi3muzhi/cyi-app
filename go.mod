@@ -8,11 +8,13 @@ require (
 	github.com/coder/websocket v1.8.14
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/fatih/structs v1.1.0
+	github.com/go-kratos/blades v0.4.0
 	github.com/go-kratos/kratos/contrib/config/consul/v2 v2.0.0-20250912104010-25b6c0fb9f38
 	github.com/go-kratos/kratos/contrib/middleware/validate/v2 v2.0.0-20260105075216-c7a58ff59f80
 	github.com/go-kratos/kratos/contrib/registry/consul/v2 v2.0.0-20250912104010-25b6c0fb9f38
 	github.com/go-kratos/kratos/v2 v2.9.2
 	github.com/golang-jwt/jwt/v5 v5.3.0
+	github.com/golang/protobuf v1.5.4
 	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.7.0
 	github.com/gorilla/handlers v1.5.2
@@ -63,6 +65,7 @@ require (
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/go-kratos/aegis v0.2.0 // indirect
+	github.com/go-kratos/kit v0.0.0-20251121083925-65298ad2aa44 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
@@ -70,6 +73,7 @@ require (
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/google/cel-go v0.25.0 // indirect
+	github.com/google/jsonschema-go v0.3.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect

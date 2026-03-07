@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package api.blades.v1;
+
+option go_package = "cyi-app/api/blades/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.blades.v1";
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+service Blades {
+    // chat 聊天
+    rpc Chat (ChatRequest) returns (ChatReply){
+        option (google.api.http) = {
+            post: "/blades/v1/chat"
+            body: "*"
+        };
+    };
+}
+
+message ChatRequest {
+    string message = 1 [(validate.rules).string = {min_len: 1, max_len: 200}];
+}
+
+message ChatReply {
+    string message = 1;
+}

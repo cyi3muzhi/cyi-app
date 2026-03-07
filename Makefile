@@ -3,8 +3,7 @@ GOPATH:=$(shell go env GOPATH)  # 获取 GOPATH 环境变量
 VERSION=$(shell git describe --tags --always) # 获取当前 Git 仓库的版本标签
 SERVICE_CMD_DIRS := $(wildcard app/*/*/cmd/* app/*/cmd/*) # 查找所有服务的 cmd 目录
 SERVICE_NAMES := $(foreach dir,$(SERVICE_CMD_DIRS),$(notdir $(dir))) # 从 cmd 目录中提取服务名称
-$(foreach service,$(SERVICE_NAMES),$(eval wire-$(service):; cd $(filter %/cmd/$(service),$(SERVICE_CMD_DIRS)) && wire)) # 为每个服务生成 wire 代码
-$(foreach service,$(SERVICE_NAMES),$(eval docker-build-$(service):; cd $(patsubst %/cmd/$(service),%,$(filter %/cmd/$(service),$(SERVICE_CMD_DIRS))) && make docker)) # 为每个服务生成 docker-build 目标
+
 APP_RELATIVE_PATH=$(notdir $(patsubst %/,%,$(dir $(CURDIR))))/$(notdir $(CURDIR))
 ifeq ($(GOHOSTOS), windows)
 	#the `find.exe` is different from `find` in bash/shell.
@@ -91,7 +90,7 @@ all:
 service:
 	@powershell -Command "$$goals = '$(MAKECMDGOALS)'.Split(' '); $$args = $$goals | Where-Object { $$_ -ne 'service' }; if ($$args.Count -eq 0) { echo 'Error: Service name is required. Usage: make service <service-name> [options]'; echo 'Options: --description=<description> --version=<version> --author=<author> --features=<features>'; exit 1; } cd tools/service-gen; go run main.go $$args"
 
-
+$(foreach service,$(SERVICE_NAMES),$(eval wire-$(service):; cd $(filter %/cmd/$(service),$(SERVICE_CMD_DIRS)) && wire)) # 为每个服务生成 wire 代码
 .PHONY: wire
 # generate wire code 生成 wire 代码
 wire:
@@ -107,6 +106,7 @@ docker-up:
 docker-down:
 	cd deploy/docker-compose && docker-compose -p cyi-app down
 
+$(foreach service,$(SERVICE_NAMES),$(eval docker-build-$(service):; cd $(patsubst %/cmd/$(service),%,$(filter %/cmd/$(service),$(SERVICE_CMD_DIRS))) && make docker)) # 为每个服务生成 docker-build 目标
 .PHONY: docker-build
 # build docker image 构建 docker 镜像
 docker-build:

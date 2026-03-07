@@ -105,6 +105,10 @@ github.com/go-kit/kit v0.9.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2
 github.com/go-kit/log v0.1.0/go.mod h1:zbhenjAZHb184qTLMA9ZjW7ThYL0H2mk7Q6pNt4vbaY=
 github.com/go-kratos/aegis v0.2.0 h1:dObzCDWn3XVjUkgxyBp6ZeWtx/do0DPZ7LY3yNSJLUQ=
 github.com/go-kratos/aegis v0.2.0/go.mod h1:v0R2m73WgEEYB3XYu6aE2WcMwsZkJ/Rzuf5eVccm7bI=
+github.com/go-kratos/blades v0.4.0 h1:Lp5DYgzQnqK1+ZjNdDj8YU2ur5AdKflZjm57NwgqB/M=
+github.com/go-kratos/blades v0.4.0/go.mod h1:ZCPoQ0qJ+YoRviQx3kWZQdltil10D6jVONgrptZA8a4=
+github.com/go-kratos/kit v0.0.0-20251121083925-65298ad2aa44 h1:T2JdBeiSLO+WUmMW4WF32SmS7TtUYGshDlL0+iFoUJg=
+github.com/go-kratos/kit v0.0.0-20251121083925-65298ad2aa44/go.mod h1:TrUs5NEMicK0I4hOGNMp0JQmjF1kWyuKuiueOszGp+o=
 github.com/go-kratos/kratos/contrib/config/consul/v2 v2.0.0-20250912104010-25b6c0fb9f38 h1:wM/JWTpZ/T+uu5suzuv0tpuvrW/uFtWvIzyCoNMkMtU=
 github.com/go-kratos/kratos/contrib/config/consul/v2 v2.0.0-20250912104010-25b6c0fb9f38/go.mod h1:OXJp44HnC730Nc/4E5NYmf+OFHlCBwwLD2Y3kB5bQcM=
 github.com/go-kratos/kratos/contrib/middleware/validate/v2 v2.0.0-20260105075216-c7a58ff59f80 h1:m0/ESMFdJgyl95FXY3gE08pyZBDYt4fvKrmz3vzz5V4=
@@ -183,6 +187,8 @@ github.com/google/go-cmp v0.5.9/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeN
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
 github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
+github.com/google/jsonschema-go v0.3.0 h1:6AH2TxVNtk3IlvkkhjrtbUc4S8AvO0Xii0DxIygDg+Q=
+github.com/google/jsonschema-go v0.3.0/go.mod h1:r5quNTdLOYEz95Ru18zA0ydNbBuYoo9tgaYcxEYhJVE=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
 github.com/google/uuid v1.2.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=

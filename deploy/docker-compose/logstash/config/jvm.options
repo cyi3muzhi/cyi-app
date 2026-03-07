@@ -1,0 +1,71 @@
+## JVM configuration
+
+################################################################
+## IMPORTANT: JVM heap size
+################################################################
+##
+## You should always set the min and max JVM heap size to the same value.
+## For example, to set the heap to 4 GB, set:
+##
+## -Xms4g
+## -Xmx4g
+##
+## See https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html
+## for more information
+##
+################################################################
+
+# Xms represents the initial size of total heap space
+# Xmx represents the maximum size of total heap space
+
+-Xms512m
+-Xmx512m
+
+################################################################
+## Expert settings
+################################################################
+##
+## All settings below this section are considered expert settings.
+## Don't tamper with them unless you understand what you are doing
+##
+################################################################
+
+## GC configuration
+# -XX:+UseConcMarkSweepGC  # 已废弃，使用 G1GC 代替
+-XX:+UseG1GC
+-XX:MaxGCPauseMillis=200
+
+## DNS cache policy
+# cache ttl in seconds for positive DNS lookups noting that this overrides the
+# JDK's default behavior of caching forever.
+# Set to -1 to cache forever.
+-Dsun.net.inetaddr.ttl=60
+
+## JVM temporary directory
+-Djava.io.tmpdir=${LS_TMPDIR}
+
+## heap dumps
+# generate a heap dump when an allocation from the Java heap fails
+# heap dumps are created in the working directory of the JVM
+-XX:+HeapDumpOnOutOfMemoryError
+
+## GC logging
+#-XX:+PrintGCDetails
+#-XX:+PrintGCDateStamps
+#-XX:+PrintTenuringDistribution
+#-XX:+PrintGCApplicationStoppedTime
+#-Xloggc:${LS_HOME}/logs/gc.log
+
+## JMX
+#-Dcom.sun.management.jmxremote
+#-Dcom.sun.management.jmxremote.port=9999
+#-Dcom.sun.management.jmxremote.ssl=false
+#-Dcom.sun.management.jmxremote.authenticate=false
+
+## Locale
+# Set the locale language and encoding
+#-Duser.language=en
+#-Duser.country=US
+#-Duser.timezone=UTC
+# Set the locale language and encoding for the JVM
+-Dfile.encoding=UTF-8

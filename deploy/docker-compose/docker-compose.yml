@@ -180,6 +180,7 @@ services:
     volumes:
       - logstash_config:/usr/share/logstash/config
       - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logstash/config/jvm.options:/usr/share/logstash/config/jvm.options:ro
     ports:
       - "${LOGSTASH_BEATS_PORT}:5044"  # Filebeat 输入端口
       - "${LOGSTASH_API_PORT}:9600"  # Logstash API 端口
