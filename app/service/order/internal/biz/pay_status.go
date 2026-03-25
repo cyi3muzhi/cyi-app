@@ -1,0 +1,52 @@
+package biz
+
+import (
+	"context"
+	"errors"
+	v1 "cyi-app/api/service/order/v1"
+	"fmt"
+)
+
+// PayStatus 已支付状态
+type PayStatus struct {
+	order OrderInterface
+	repo OrderRepo
+}
+
+func NewPayStatus(order OrderInterface, repo OrderRepo) *PayStatus {
+	return &PayStatus{order: order, repo: repo}
+}
+
+func (s *PayStatus) Pay(ctx context.Context, in *Order) error {
+	return errors.New("订单已支付，无需重复支付")
+}
+
+func (s *PayStatus) Ship(ctx context.Context) error {
+	fmt.Println("订单发货成功")
+	s.order.SetStatus(v1.OrderStatus_Ship, s.repo)
+	return nil
+}
+
+func (s *PayStatus) Receive(ctx context.Context) error {
+	return errors.New("订单未发货，无法收货")
+}
+
+func (s *PayStatus) Complete(ctx context.Context) error {
+	return errors.New("订单未完成流程，无法标记完成")
+}
+
+func (s *PayStatus) Cancel(ctx context.Context) error {
+	fmt.Println("订单取消成功")
+	s.order.SetStatus(v1.OrderStatus_Cancel, s.repo)
+	return nil
+}
+
+func (s *PayStatus) Refunding(ctx context.Context) error {
+	fmt.Println("订单开始退款")
+	s.order.SetStatus(v1.OrderStatus_Refunding, s.repo)
+	return nil
+}
+
+func (s *PayStatus) Refunded(ctx context.Context) error {
+	return errors.New("订单未开始退款，无法标记已退款")
+}

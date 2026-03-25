@@ -22,8 +22,8 @@ spec:
         env:  # 环境变量配置
         - name: CONSUL_ADDR
           value: "consul:8500"  # Consul 服务地址
-        - name: CONSUL_PATH
-          value: "/develop/cyi-app/cin/interface"  # Consul 配置路径
+        - name: CONSUL_PATHS
+          value: "/develop/common,/develop/cyi-app/cin/interface"  # Consul 配置路径
         - name: SERVICE_ENV
           value: "dev"  # 服务环境
         - name: LOG_LEVEL

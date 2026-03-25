@@ -7,8 +7,8 @@ kubectl apply -f infrastructure/jaeger/
 
 # Deploy ELK stack
 # echo "Deploying ELK stack..."
-kubectl apply -f infrastructure/elk/elasticsearch/
 kubectl apply -f infrastructure/elk/logstash/
+kubectl apply -f infrastructure/elk/elasticsearch/
 kubectl apply -f infrastructure/elk/kibana/
 kubectl apply -f infrastructure/elk/filebeat/
 

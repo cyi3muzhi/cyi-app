@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	consulConfig "github.com/go-kratos/kratos/contrib/config/consul/v2"
 	consul "github.com/go-kratos/kratos/contrib/registry/consul/v2"
@@ -14,6 +15,7 @@ import (
 type ConsulConfigOptions struct {
 	Address string
 	Path    string
+	Paths   []string // 多配置路径
 }
 
 // 获取consul配置
@@ -24,9 +26,12 @@ func NewConsulConfig(opts *ConsulConfigOptions) (config.Config, error) {
 		address = os.Getenv("CONSUL_ADDR")
 	}
 
-	path := opts.Path
-	if path == "" {
-		path = os.Getenv("CONSUL_PATH")
+	paths := opts.Paths
+	if paths == nil {
+		paths = strings.Split(os.Getenv("CONSUL_PATHS"), ",")
+		for i,path := range paths{
+			paths[i] = strings.TrimSpace(path)
+		}
 	}
 
 	client, err := api.NewClient(&api.Config{
@@ -35,15 +40,17 @@ func NewConsulConfig(opts *ConsulConfigOptions) (config.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	source, err := consulConfig.New(client, consulConfig.WithPath(path))
-	if err != nil {
-		return nil, err
+	sources := make([]config.Source, 0)
+	for _, path := range paths {
+		source, err := consulConfig.New(client, consulConfig.WithPath(path))
+		if err != nil {
+			return nil, err
+		}
+		sources = append(sources, source)
 	}
 
-	// 添加监控和热重载支持
 	c := config.New(
-		config.WithSource(source),
+		config.WithSource(sources...),
 	)
 
 	return c, nil

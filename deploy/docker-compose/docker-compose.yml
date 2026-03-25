@@ -56,6 +56,7 @@ services:
       - "8300:8300"  # 服务器RPC端口
     environment:
       - CONSUL_UI=true  # 启用Web UI
+      - "CONSUL_LOCAL_CONFIG={\"server_rejoin_age_max\": \"8760h\"}"
     command: >
       consul agent -server -bootstrap-expect=1 -ui -client=0.0.0.0 -bind=0.0.0.0
       -data-dir=/consul/data -config-dir=/consul/config
@@ -180,7 +181,6 @@ services:
     volumes:
       - logstash_config:/usr/share/logstash/config
       - ./logstash/pipeline:/usr/share/logstash/pipeline
-      - ./logstash/config/jvm.options:/usr/share/logstash/config/jvm.options:ro
     ports:
       - "${LOGSTASH_BEATS_PORT}:5044"  # Filebeat 输入端口
       - "${LOGSTASH_API_PORT}:9600"  # Logstash API 端口
@@ -241,7 +241,7 @@ services:
       - ../logs/interface-service:/app/logs
     environment:
       - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
-      - CONSUL_PATH=/develop/cyi-app/cin/interface
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/cin/interface
       - SERVICE_ENV=dev
     depends_on:
       - consul
@@ -262,7 +262,7 @@ services:
       - ../logs/task-service:/app/logs
     environment:
       - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
-      - CONSUL_PATH=/develop/cyi-app/task
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/task
       - SERVICE_ENV=dev
     depends_on:
       - consul
@@ -283,7 +283,7 @@ services:
       - ../logs/job-service:/app/logs
     environment:
       - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
-      - CONSUL_PATH=/develop/cyi-app/job
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/job
       - SERVICE_ENV=dev
     depends_on:
       - consul
@@ -304,7 +304,29 @@ services:
       - ../logs/user-service:/app/logs
     environment:
       - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
-      - CONSUL_PATH=/develop/cyi-app/service/user
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/service/user
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - mysql
+      - redis
+    networks:
+      - cyi-network
+
+     # Blade 服务 - 技术微服务
+  service-blades:
+    # 使用本地生成的镜像
+    image: go-kratos/blades:0.1.0
+    container_name: service-blades
+    restart: always
+    ports:
+      - "9101:9000"  # gRPC 端口
+    volumes:
+      - ../logs/blades-service:/app/logs
+    environment:
+      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/blades 
       - SERVICE_ENV=dev
     depends_on:
       - consul

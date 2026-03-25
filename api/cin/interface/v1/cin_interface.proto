@@ -46,6 +46,43 @@ service CinInterface {
 			body: "*"
 		};
 	};
+
+	// 创建订单
+	rpc CreateOrder (CreateOrderRequest) returns (CreateOrderReply){
+		option (google.api.http) = {
+			post: "/order/v1/create"
+			body: "*"
+		};
+	};
+
+	// 支付订单
+	rpc PayOrder (PayOrderRequest) returns (PayOrderReply){
+		option (google.api.http) = {
+			post: "/order/v1/pay"
+			body: "*"
+		};
+	};
+}
+
+message CreateOrderRequest {
+	// 用户ID
+	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+	// 商品ID
+	int64 product_id = 2 [(validate.rules).int64 = {gt: 0}];
+	// 购买数量
+	int32 count = 3 [(validate.rules).int32 = {gt: 0}];
+}
+message CreateOrderReply {
+	// 订单ID
+	int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message PayOrderRequest {
+	// 订单ID
+	int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+message PayOrderReply {
+	bool success = 1;
 }
 
 message LoginRequest {

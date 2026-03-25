@@ -728,7 +728,7 @@ spec:
         env:
         - name: CONSUL_ADDR  # Consul 地址
           value: "consul:8500"
-        - name: CONSUL_PATH  # Consul 路径
+        - nameCONSUL_PATHS  # Consul 路径
           value: "/develop/cyi-app/cin/interface"
         - name: SERVICE_ENV  # 服务环境
           value: "dev"
@@ -795,7 +795,7 @@ spec:
         env:
         - name: CONSUL_ADDR  # Consul 地址
           value: "consul:8500"
-        - name: CONSUL_PATH  # Consul 路径
+        - nameCONSUL_PATHS  # Consul 路径
           value: "/develop/cyi-app/cin/job"
         - name: SERVICE_ENV  # 服务环境
           value: "dev"
@@ -856,7 +856,7 @@ spec:
         env:
         - name: CONSUL_ADDR  # Consul 地址
           value: "consul:8500"
-        - name: CONSUL_PATH  # Consul 路径
+        - nameCONSUL_PATHS  # Consul 路径
           value: "/develop/cyi-app/cin/task"
         - name: SERVICE_ENV  # 服务环境
           value: "dev"
@@ -917,7 +917,7 @@ spec:
         env:
         - name: CONSUL_ADDR  # Consul 地址
           value: "consul:8500"
-        - name: CONSUL_PATH  # Consul 路径
+        - nameCONSUL_PATHS  # Consul 路径
           value: "/develop/cyi-app/cin/user"
         - name: SERVICE_ENV  # 服务环境
           value: "dev"

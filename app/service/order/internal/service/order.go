@@ -31,7 +31,9 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *v1.CreateOrderReque
 	if err != nil {
 		return nil, err
 	}
-	return &v1.CreateOrderReply{}, nil
+	return &v1.CreateOrderReply{
+		OrderId: in.ID,
+	}, nil
 }
 
 func (s *OrderService) UpdateOrder(ctx context.Context, req *v1.UpdateOrderRequest) (*v1.UpdateOrderReply, error) {
@@ -54,4 +56,15 @@ func (s *OrderService) GetOrder(ctx context.Context, req *v1.GetOrderRequest) (*
 
 func (s *OrderService) ListOrder(ctx context.Context, req *v1.ListOrderRequest) (*v1.ListOrderReply, error) {
 	return &v1.ListOrderReply{}, nil
+}
+
+func (s *OrderService) PayOrder(ctx context.Context, req *v1.PayOrderRequest) (*v1.PayOrderReply, error) {
+	in := &biz.Order{
+		ID: req.OrderId,
+	}
+	err := s.uc.Pay(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.PayOrderReply{}, nil
 }

@@ -24,8 +24,8 @@ spec:
             configMapKeyRef:
               name: cyi-app-config  # 配置映射名称
               key: CONSUL_ADDR  # 配置键
-        - name: CONSUL_PATH  # Consul 路径
-          value: "/develop/cyi-app/task"  # 路径值
+        - name: CONSUL_PATHS  # Consul 路径
+          value: "/develop/common,/develop/cyi-app/task"  # 路径值
         - name: SERVICE_ENV  # 服务环境
           valueFrom:
             configMapKeyRef:

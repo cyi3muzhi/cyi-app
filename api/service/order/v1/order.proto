@@ -12,11 +12,19 @@ service Order {
 	rpc DeleteOrder (DeleteOrderRequest) returns (DeleteOrderReply);
 	rpc GetOrder (GetOrderRequest) returns (GetOrderReply);
 	rpc ListOrder (ListOrderRequest) returns (ListOrderReply);
+	// 支付订单
+	rpc PayOrder (PayOrderRequest) returns (PayOrderReply);
 }
 
-message CreateOrderRequest {}
+message CreateOrderRequest {
+	int64 user_id = 1;
+	int64 product_id = 2;
+	int32 count = 3;
+}
 
-message CreateOrderReply {}
+message CreateOrderReply {
+	int64 order_id = 1;
+}
 
 message UpdateOrderRequest {}
 
@@ -33,3 +41,24 @@ message GetOrderReply {}
 message ListOrderRequest {}
 
 message ListOrderReply {}
+
+
+message PayOrderRequest {
+	int64 order_id = 1;
+}
+
+message PayOrderReply {}
+
+enum OrderStatus {
+    OrderStatusUnspecified = 0;  // 未指定
+    WaitPay = 1;                 // 待支付
+    Pay = 2;                     // 已支付
+    WaitShip = 3;                // 待发货
+    Ship = 4;                    // 已发货
+    WaitReceive = 5;             // 待收货
+    Complete = 6;                // 已完成
+    Cancel = 7;                  // 已取消
+    Refunding = 8;               // 退款中
+    Refunded = 9;                // 已退款
+}
+

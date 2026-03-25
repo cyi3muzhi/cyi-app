@@ -4,5 +4,13 @@ import "github.com/google/wire"
 
 // ProviderSet is biz providers.
 var ProviderSet = wire.NewSet(
-        NewOrderUseCase,
+	NewOrderUseCase,
+	NewOrderStatusHandler,
+	NewWaitPayStatus,
+	NewShipStatus,
+	NewCancelStatus,
+	NewRefundedStatus,
+	NewCompleteStatus,
+	NewPayStatus,
+	NewRefundingStatus,
 )
