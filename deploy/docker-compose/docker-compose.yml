@@ -321,7 +321,8 @@ services:
     container_name: service-blades
     restart: always
     ports:
-      - "9101:9000"  # gRPC 端口
+        - "${BLADES_HTTP_PORT}:8000"  # HTTP 端口
+        - "${BLADES_GRPC_PORT}:9000"  # gRPC 端口
     volumes:
       - ../logs/blades-service:/app/logs
     environment:
