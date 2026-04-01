@@ -10,11 +10,13 @@ import (
 
 	ts "cyi-app/pkg/kratos/server/transporter"
 
+	orderRpc "cyi-app/api/service/order/v1"
+	mid "cyi-app/pkg/kratos/server/middleware"
+
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/otel/trace"
-	mid "cyi-app/pkg/kratos/server/middleware"
 )
 
 func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) userRpc.UserClient {
@@ -34,6 +36,25 @@ func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Au
 		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.USER_SERVICE, err))
 	}
 	return userRpc.NewUserClient(conn)
+}
+
+func NewOrderServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) orderRpc.OrderClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.ORDER_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			ServiceKey:     auth.ServiceKey[grpc.ORDER_SERVICE],
+			Meter:          metric,
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.ORDER_SERVICE, err))
+	}
+	return orderRpc.NewOrderClient(conn)
 }
 
 // 创建asynq客户端

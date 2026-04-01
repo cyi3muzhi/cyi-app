@@ -26,12 +26,10 @@ const (
 
 type CreateOrderRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 用户ID
-	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	// 商品ID
-	ProductId int64 `protobuf:"varint,2,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	ProductId int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
 	// 购买数量
-	Count         int32 `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
+	Count         int32 `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -64,13 +62,6 @@ func (x *CreateOrderRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CreateOrderRequest.ProtoReflect.Descriptor instead.
 func (*CreateOrderRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *CreateOrderRequest) GetUserId() int64 {
-	if x != nil {
-		return x.UserId
-	}
-	return 0
 }
 
 func (x *CreateOrderRequest) GetProductId() int64 {
@@ -681,12 +672,11 @@ var File_api_cin_interface_v1_cin_interface_proto protoreflect.FileDescriptor
 
 const file_api_cin_interface_v1_cin_interface_proto_rawDesc = "" +
 	"\n" +
-	"(api/cin/interface/v1/cin_interface.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"}\n" +
-	"\x12CreateOrderRequest\x12 \n" +
-	"\auser_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x12&\n" +
+	"(api/cin/interface/v1/cin_interface.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"[\n" +
+	"\x12CreateOrderRequest\x12&\n" +
 	"\n" +
-	"product_id\x18\x02 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\tproductId\x12\x1d\n" +
-	"\x05count\x18\x03 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x05count\"6\n" +
+	"product_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\tproductId\x12\x1d\n" +
+	"\x05count\x18\x02 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x05count\"6\n" +
 	"\x10CreateOrderReply\x12\"\n" +
 	"\border_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aorderId\"5\n" +
 	"\x0fPayOrderRequest\x12\"\n" +

@@ -33,24 +33,71 @@ type OrderStatus interface {
 func NewOrderStatusHandler(order OrderInterface, repo OrderRepo) OrderStatus {
 	switch order.GetStatus() {
 	case v1.OrderStatus_WaitPay:
-		return &WaitPayStatus{order: order}
+		return NewWaitPayStatus(order, repo)
 	case v1.OrderStatus_Pay:
-		return &PayStatus{order: order}
+		return NewPayStatus(order, repo)
 	case v1.OrderStatus_WaitShip:
-		return &PayStatus{order: order} // 待发货状态使用已支付状态的处理逻辑
+		return NewPayStatus(order, repo) // 待发货状态使用已支付状态的处理逻辑
 	case v1.OrderStatus_Ship:
-		return &ShipStatus{order: order}
+		return NewShipStatus(order, repo)
 	case v1.OrderStatus_WaitReceive:
-		return &ShipStatus{order: order} // 待收货状态使用已发货状态的处理逻辑
+		return NewShipStatus(order, repo) // 待收货状态使用已发货状态的处理逻辑
 	case v1.OrderStatus_Complete:
-		return &CompleteStatus{order: order}
+		return NewCompleteStatus(order, repo)
 	case v1.OrderStatus_Cancel:
-		return &CancelStatus{order: order}
+		return NewCancelStatus(order, repo)
 	case v1.OrderStatus_Refunding:
-		return &RefundingStatus{order: order}
+		return NewRefundingStatus(order, repo)
 	case v1.OrderStatus_Refunded:
-		return &RefundedStatus{order: order}
+		return NewRefundedStatus(order, repo)
 	default:
-		return &WaitPayStatus{order: order}
+		return NewWaitPayStatus(order, repo)
 	}
+}
+
+
+// GetStatus 获取订单状态
+func (o *Order) GetStatus() v1.OrderStatus {
+	return o.Status
+}
+
+// SetStatus 设置状态并更新状态处理器
+func (o *Order) SetStatus(newStatus v1.OrderStatus, repo OrderRepo) {
+	o.Status = newStatus
+	o.statusHandler = NewOrderStatusHandler(o, repo)
+}
+
+// 支付
+func (o *Order) Pay(ctx context.Context, in *Order) error {
+	return o.statusHandler.Pay(ctx, in)
+}
+
+// 发货
+func (o *Order) Ship(ctx context.Context) error {
+	return o.statusHandler.Ship(ctx)
+}
+
+// 收货
+func (o *Order) Receive(ctx context.Context) error {
+	return o.statusHandler.Receive(ctx)
+}
+
+// 完成
+func (o *Order) Complete(ctx context.Context) error {
+	return o.statusHandler.Complete(ctx)
+}
+
+// 取消
+func (o *Order) Cancel(ctx context.Context) error {
+	return o.statusHandler.Cancel(ctx)
+}
+
+// 退款中
+func (o *Order) Refunding(ctx context.Context) error {
+	return o.statusHandler.Refunding(ctx)
+}
+
+// 已退款
+func (o *Order) Refunded(ctx context.Context) error {
+	return o.statusHandler.Refunded(ctx)
 }

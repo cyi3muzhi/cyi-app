@@ -21,6 +21,7 @@ type CinInterface struct {
 	log  *log.Helper
 	uc   *biz.UserUseCase
 	ac   *biz.AuthUseCase
+	oc   *biz.OrderUseCase
 	auth *conf.Auth
 
 	// 连接管理
@@ -29,11 +30,12 @@ type CinInterface struct {
 	mu              sync.RWMutex
 }
 
-func NewCinInterface(uc *biz.UserUseCase, ac *biz.AuthUseCase, logger log.Logger, auth *conf.Auth) *CinInterface {
+func NewCinInterface(uc *biz.UserUseCase, ac *biz.AuthUseCase, oc *biz.OrderUseCase, logger log.Logger, auth *conf.Auth) *CinInterface {
 	return &CinInterface{
 		log:  log.NewHelper(logger),
 		uc:   uc,
 		ac:   ac,
+		oc:   oc,
 		auth: auth,
 
 		// 初始化连接管理

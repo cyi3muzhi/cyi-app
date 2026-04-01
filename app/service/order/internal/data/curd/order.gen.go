@@ -28,6 +28,10 @@ func newOrder(db *gorm.DB) order {
 	_order.CreateTime = field.NewInt64(tableName, "create_time")
 	_order.UpdateTime = field.NewInt64(tableName, "update_time")
 	_order.IsDel = field.NewUint(tableName, "is_del")
+	_order.UserID = field.NewInt64(tableName, "user_id")
+	_order.ProductID = field.NewInt64(tableName, "product_id")
+	_order.Count_ = field.NewInt32(tableName, "count")
+	_order.Status = field.NewInt32(tableName, "status")
 
 	_order.fillFieldMap()
 
@@ -42,6 +46,10 @@ type order struct {
 	CreateTime field.Int64
 	UpdateTime field.Int64
 	IsDel      field.Uint
+	UserID     field.Int64
+	ProductID  field.Int64
+	Count_     field.Int32
+	Status     field.Int32
 
 	fieldMap map[string]field.Expr
 }
@@ -62,6 +70,10 @@ func (o *order) updateTableName(table string) *order {
 	o.CreateTime = field.NewInt64(table, "create_time")
 	o.UpdateTime = field.NewInt64(table, "update_time")
 	o.IsDel = field.NewUint(table, "is_del")
+	o.UserID = field.NewInt64(table, "user_id")
+	o.ProductID = field.NewInt64(table, "product_id")
+	o.Count_ = field.NewInt32(table, "count")
+	o.Status = field.NewInt32(table, "status")
 
 	o.fillFieldMap()
 
@@ -78,11 +90,15 @@ func (o *order) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (o *order) fillFieldMap() {
-	o.fieldMap = make(map[string]field.Expr, 4)
+	o.fieldMap = make(map[string]field.Expr, 8)
 	o.fieldMap["id"] = o.ID
 	o.fieldMap["create_time"] = o.CreateTime
 	o.fieldMap["update_time"] = o.UpdateTime
 	o.fieldMap["is_del"] = o.IsDel
+	o.fieldMap["user_id"] = o.UserID
+	o.fieldMap["product_id"] = o.ProductID
+	o.fieldMap["count"] = o.Count_
+	o.fieldMap["status"] = o.Status
 }
 
 func (o order) clone(db *gorm.DB) order {

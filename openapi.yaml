@@ -174,9 +174,6 @@ components:
         api.cin.interface.v1.CreateOrderRequest:
             type: object
             properties:
-                userId:
-                    type: string
-                    description: 用户ID
                 productId:
                     type: string
                     description: 商品ID

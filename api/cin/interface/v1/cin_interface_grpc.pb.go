@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.2
-// source: cin/interface/v1/cin_interface.proto
+// source: api/cin/interface/v1/cin_interface.proto
 
 package v1
 
@@ -25,6 +25,8 @@ const (
 	CinInterface_GetUserInfo_FullMethodName    = "/api.cin.interface.v1.CinInterface/GetUserInfo"
 	CinInterface_UserInfo_FullMethodName       = "/api.cin.interface.v1.CinInterface/UserInfo"
 	CinInterface_UpdateUserInfo_FullMethodName = "/api.cin.interface.v1.CinInterface/UpdateUserInfo"
+	CinInterface_CreateOrder_FullMethodName    = "/api.cin.interface.v1.CinInterface/CreateOrder"
+	CinInterface_PayOrder_FullMethodName       = "/api.cin.interface.v1.CinInterface/PayOrder"
 )
 
 // CinInterfaceClient is the client API for CinInterface service.
@@ -41,6 +43,10 @@ type CinInterfaceClient interface {
 	UserInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserInfoReply, error)
 	// 更新用户信息
 	UpdateUserInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*UpdateUserInfoReply, error)
+	// 创建订单
+	CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderReply, error)
+	// 支付订单
+	PayOrder(ctx context.Context, in *PayOrderRequest, opts ...grpc.CallOption) (*PayOrderReply, error)
 }
 
 type cinInterfaceClient struct {
@@ -101,6 +107,26 @@ func (c *cinInterfaceClient) UpdateUserInfo(ctx context.Context, in *UpdateUserI
 	return out, nil
 }
 
+func (c *cinInterfaceClient) CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateOrderReply)
+	err := c.cc.Invoke(ctx, CinInterface_CreateOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cinInterfaceClient) PayOrder(ctx context.Context, in *PayOrderRequest, opts ...grpc.CallOption) (*PayOrderReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PayOrderReply)
+	err := c.cc.Invoke(ctx, CinInterface_PayOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CinInterfaceServer is the server API for CinInterface service.
 // All implementations must embed UnimplementedCinInterfaceServer
 // for forward compatibility.
@@ -115,6 +141,10 @@ type CinInterfaceServer interface {
 	UserInfo(context.Context, *emptypb.Empty) (*UserInfoReply, error)
 	// 更新用户信息
 	UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoReply, error)
+	// 创建订单
+	CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderReply, error)
+	// 支付订单
+	PayOrder(context.Context, *PayOrderRequest) (*PayOrderReply, error)
 	mustEmbedUnimplementedCinInterfaceServer()
 }
 
@@ -139,6 +169,12 @@ func (UnimplementedCinInterfaceServer) UserInfo(context.Context, *emptypb.Empty)
 }
 func (UnimplementedCinInterfaceServer) UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserInfo not implemented")
+}
+func (UnimplementedCinInterfaceServer) CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateOrder not implemented")
+}
+func (UnimplementedCinInterfaceServer) PayOrder(context.Context, *PayOrderRequest) (*PayOrderReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PayOrder not implemented")
 }
 func (UnimplementedCinInterfaceServer) mustEmbedUnimplementedCinInterfaceServer() {}
 func (UnimplementedCinInterfaceServer) testEmbeddedByValue()                      {}
@@ -251,6 +287,42 @@ func _CinInterface_UpdateUserInfo_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CinInterface_CreateOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CinInterfaceServer).CreateOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CinInterface_CreateOrder_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CinInterfaceServer).CreateOrder(ctx, req.(*CreateOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CinInterface_PayOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PayOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CinInterfaceServer).PayOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CinInterface_PayOrder_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CinInterfaceServer).PayOrder(ctx, req.(*PayOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CinInterface_ServiceDesc is the grpc.ServiceDesc for CinInterface service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -278,7 +350,15 @@ var CinInterface_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "UpdateUserInfo",
 			Handler:    _CinInterface_UpdateUserInfo_Handler,
 		},
+		{
+			MethodName: "CreateOrder",
+			Handler:    _CinInterface_CreateOrder_Handler,
+		},
+		{
+			MethodName: "PayOrder",
+			Handler:    _CinInterface_PayOrder_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "cin/interface/v1/cin_interface.proto",
+	Metadata: "api/cin/interface/v1/cin_interface.proto",
 }

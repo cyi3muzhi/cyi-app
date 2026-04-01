@@ -7,27 +7,58 @@ import (
 
 	"cyi-app/app/service/order/internal/conf"
 
-	consulConfig "cyi-app/pkg/kratos/config"
 	cgrpc "cyi-app/pkg/kratos/client"
+	consulConfig "cyi-app/pkg/kratos/config"
 
 	tr "cyi-app/pkg/kratos/tracing"
 
 	logutil "cyi-app/pkg/kratos/log"
 
+	mid "cyi-app/pkg/kratos/server/middleware"
+
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware/metrics"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/exporters/prometheus"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	_ "go.uber.org/automaxprocs"
 )
 
 var (
-	Name string = fmt.Sprintf("%s.%s", os.Getenv("SERVICE_ENV"), cgrpc.ORDER_SERVICE)
+	Name    string = fmt.Sprintf("%s.%s", os.Getenv("SERVICE_ENV"), cgrpc.ORDER_SERVICE)
 	Version string = cgrpc.ORDER_VERSION
-	id = strings.ReplaceAll(strings.ToLower(uuid.NewString()), "-", "")
+	id             = strings.ReplaceAll(strings.ToLower(uuid.NewString()), "-", "")
+	meteric *mid.Meter
 )
+
+func init() {
+
+	exporter, err := prometheus.New()
+	if err != nil {
+		panic(err)
+	}
+
+	provider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(exporter))
+	meter := provider.Meter(Name)
+
+	_metricRequests, err := metrics.DefaultRequestsCounter(meter, metrics.DefaultServerRequestsCounterName)
+	if err != nil {
+		panic(err)
+	}
+
+	_metricSeconds, err := metrics.DefaultSecondsHistogram(meter, metrics.DefaultServerSecondsHistogramName)
+	if err != nil {
+		panic(err)
+	}
+	meteric = &mid.Meter{
+		Requests: _metricRequests,
+		Seconds:  _metricSeconds,
+	}
+}
 
 func newApp(logger log.Logger, gs *grpc.Server, reg registry.Registrar) *kratos.App {
 	return kratos.New(
@@ -88,7 +119,7 @@ func main() {
 	// 创建TracerProvider
 	tp := tr.NewTracerProvider(Name, bc.Trace.Endpoint)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, &cb, logger, tp)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, &cb, logger, tp, meteric)
 	if err != nil {
 		panic(err)
 	}

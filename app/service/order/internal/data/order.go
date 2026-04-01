@@ -7,6 +7,7 @@ import (
 	mod "cyi-app/app/service/order/internal/data/models"
 	"cyi-app/pkg/util/convert"
 	"errors"
+	"fmt"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
@@ -24,7 +25,9 @@ func NewOrderRepo(data *Data, logger log.Logger) biz.OrderRepo {
 
 func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
 	order := &mod.Order{}
+	fmt.Println("CreateOrder", in)
 	convert.Convert(in, order)
+	fmt.Println("CreateOrder Convert:", order)
 	if err := curd.Order.WithContext(ctx).Create(order); err != nil {
 		return err
 	}
@@ -33,14 +36,16 @@ func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
 }
 
 func (r *orderRepo) UpdateOrder(ctx context.Context, in *biz.Order) error {
+	fmt.Println("UpdateOrder", in)
 	order := &mod.Order{}
 	convert.Convert(in, order)
-	if line, err := curd.Order.WithContext(ctx).Where(curd.Order.ID.Eq(in.ID)).Updates(order); err != nil && line.RowsAffected == 0 {
+	fmt.Println("UpdateOrder Convert:", order)
+	if line, err := curd.Order.Debug().WithContext(ctx).Where(curd.Order.ID.Eq(in.ID)).Updates(order); err != nil && line.RowsAffected == 0 {
 		if line.RowsAffected == 0 {
 			return errors.New("order not found")
 		}
 		return err
-	} 
+	}
 	return nil
 }
 

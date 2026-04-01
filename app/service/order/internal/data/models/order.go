@@ -5,7 +5,7 @@ import (
 )
 
 type Order struct {
-	*gorm.Model
+	gorm.Model
 	// 用户ID
 	UserID int64 `json:"user_id"`
 	// 商品ID

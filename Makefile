@@ -6,9 +6,7 @@ GOHOSTOS:=$(shell go env GOHOSTOS) # 判断当前系统是否为 Windows
 GOPATH:=$(shell go env GOPATH)    # 获取 GOPATH 环境变量
 VERSION=$(shell git describe --tags --always 2>/dev/null || echo "dev") # 获取当前 Git 仓库的版本标签
 
-# 服务发现
-SERVICE_CMD_DIRS := $(wildcard app/*/*/cmd/* app/*/cmd/*) # 查找所有服务的 cmd 目录
-SERVICE_NAMES := $(foreach dir,$(SERVICE_CMD_DIRS),$(notdir $(dir))) # 从 cmd 目录中提取服务名称
+
 
 # 应用相对路径
 APP_RELATIVE_PATH=$(notdir $(patsubst %/,%,$(dir $(CURDIR))))/$(notdir $(CURDIR))
@@ -18,6 +16,29 @@ APP_RELATIVE_PATH=$(notdir $(patsubst %/,%,$(dir $(CURDIR))))/$(notdir $(CURDIR)
 # 这样可以确保路径格式正确，避免 PowerShell 命令执行错误
 INTERNAL_PROTO_FILES=
 API_PROTO_FILES=api/blades/v1/blades.proto api/cin/admin/user/user.proto api/cin/interface/v1/cin_interface.proto api/cin/interface/v1/cin_interface_error.proto api/job/v1/job.proto api/service/order/v1/order.proto api/service/product/v1/product.proto api/service/user/v1/user.proto api/service/user/v1/user_error.proto api/task/v1/task.proto
+
+# 服务发现
+SERVICE_CMD_DIRS := $(wildcard app/*/*/cmd/* app/*/cmd/*) # 查找所有服务的 cmd 目录
+SERVICE_NAMES := $(foreach dir,$(SERVICE_CMD_DIRS),$(notdir $(dir))) # 从 cmd 目录中提取服务名称
+
+# 为每个服务生成 wire 代码
+ifeq ($(OS),Windows_NT)
+    # Windows PowerShell 语法
+    $(foreach service,$(SERVICE_NAMES),$(eval .PHONY: wire-$(service)))
+    $(foreach service,$(SERVICE_NAMES),$(eval wire-$(service):; cd $(subst /,\,$(filter %/cmd/$(service),$(SERVICE_CMD_DIRS))); wire))
+else
+    # bash 语法
+    $(foreach service,$(SERVICE_NAMES),$(eval .PHONY: wire-$(service)))
+    $(foreach service,$(SERVICE_NAMES),$(eval wire-$(service):; cd $(filter %/cmd/$(service),$(SERVICE_CMD_DIRS)) && wire)
+endif
+
+.PHONY: debug-wire
+# 调试 wire 命令
+debug-wire:
+	@echo "SERVICE_NAMES=$(SERVICE_NAMES)"
+	@echo "SERVICE_CMD_DIRS=$(SERVICE_CMD_DIRS)"
+	@echo "OS=$(OS)"
+	@echo "Current directory: $(CURDIR)"
 
 # 目标定义
 
@@ -91,8 +112,7 @@ all:
 service:
 	@powershell -Command "$$goals = '$(MAKECMDGOALS)'.Split(' '); $$args = $$goals | Where-Object { $$_ -ne 'service' }; if ($$args.Count -eq 0) { echo 'Error: Service name is required. Usage: make service <service-name> [options]'; echo 'Options: --description=<description> --version=<version> --author=<author> --features=<features>'; exit 1; } cd tools/service-gen; go run main.go $$args"
 
-# 为每个服务生成 wire 代码
-$(foreach service,$(SERVICE_NAMES),$(eval wire-$(service):; cd $(filter %/cmd/$(service),$(SERVICE_CMD_DIRS)) && wire))
+
 
 .PHONY: wire
 # 生成 wire 代码
@@ -174,6 +194,8 @@ debug:
 	@echo 'GOHOSTOS=$(GOHOSTOS)'
 	@echo 'API_PROTO_FILES=$(API_PROTO_FILES)'
 	@echo 'INTERNAL_PROTO_FILES=$(INTERNAL_PROTO_FILES)'
+	@echo 'SERVICE_NAMES=$(SERVICE_NAMES)'
+	@echo 'SERVICE_CMD_DIRS=$(SERVICE_CMD_DIRS)'
 
 .DEFAULT_GOAL := help
 
