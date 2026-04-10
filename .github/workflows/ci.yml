@@ -162,11 +162,8 @@ jobs:
           sed -i 's|go-kratos/task:0.1.0|${{ secrets.DOCKER_USERNAME }}/cyi-task:${{ github.sha }}|g' deploy/k8s/microservices/task/deployment.yaml
         fi
         
-        # Apply changes - exclude ELK and Jaeger services
-        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/config/
-        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/infrastructure/consul/
-        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/infrastructure/mysql/
-        kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/infrastructure/redis/
+        # Apply changes - only deploy microservices and monitoring
+        # Infrastructure services (consul, mysql, redis) should be deployed manually once
         kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/microservices/interface/
         kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/microservices/user/
         kubectl apply --insecure-skip-tls-verify --validate=false -f deploy/k8s/microservices/job/

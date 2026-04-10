@@ -1,0 +1,113 @@
+services:
+  # Interface 服务 - 业务微服务
+  service-interface:
+    # 使用本地生成的镜像
+    image: go-kratos/cin-interface:0.1.0
+    container_name: service-cin-interface
+    restart: always
+    ports:
+      - "${INTERFACE_HTTP_PORT}:8000"  # HTTP 端口
+      - "${INTERFACE_GRPC_PORT}:9000"  # gRPC 端口
+    volumes:
+      - ../logs/interface-service:/app/logs
+    environment:
+      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/cin/interface
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - redis
+      - jaeger
+    networks:
+      - cyi-network
+
+  # task 任务服务
+  service-task:
+    # 使用本地生成的镜像
+    image: go-kratos/task:0.1.0
+    container_name: service-task
+    restart: always
+    ports:
+      - "${TASK_PORT}:8000"  # gRPC 端口
+    volumes:
+      - ../logs/task-service:/app/logs
+    environment:
+      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/task
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - redis
+    networks:
+      - cyi-network
+
+  # job 任务服务
+  service-job:
+    # 使用本地生成的镜像
+    image: go-kratos/job:0.1.0
+    container_name: service-job
+    restart: always
+    ports:
+      - "${JOB_PORT}:8000"  # HTTP 端口
+    volumes:
+      - ../logs/job-service:/app/logs
+    environment:
+      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/job
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - redis
+    networks:
+      - cyi-network
+
+  # User 服务 - 技术微服务
+  service-user:
+    # 使用本地生成的镜像
+    image: go-kratos/service-user:0.1.0
+    container_name: service-user
+    restart: always
+    ports:
+      - "${USER_GRPC_PORT}:9000"  # gRPC 端口
+    volumes:
+      - ../logs/user-service:/app/logs
+    environment:
+      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/service/user
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - mysql
+      - redis
+    networks:
+      - cyi-network
+
+  # Blade 服务 - 技术微服务
+  service-blades:
+    # 使用本地生成的镜像
+    image: go-kratos/blades:0.1.0
+    container_name: service-blades
+    restart: always
+    ports:
+      - "${BLADES_HTTP_PORT}:8000"  # HTTP 端口
+      - "${BLADES_GRPC_PORT}:9000"  # gRPC 端口
+    volumes:
+      - ../logs/blades-service:/app/logs
+    environment:
+      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/blades
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - mysql
+      - redis
+    networks:
+      - cyi-network
+
+networks:
+  cyi-network:
+    driver: bridge

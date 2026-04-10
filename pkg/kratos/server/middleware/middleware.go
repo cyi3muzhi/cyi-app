@@ -50,7 +50,8 @@ func Middlewares(tp trace.TracerProvider, middlewareType MiddlewareType, opts ..
 		middlewareList = append(middlewareList,
 			recovery.Recovery(),
 			tracing.Server(
-				tracing.WithTracerProvider(tp)),
+				tracing.WithTracerProvider(tp),
+			),
 		)
 		if options.logger != nil {
 			middlewareList = append(middlewareList, logging.Server(options.logger))

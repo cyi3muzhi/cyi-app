@@ -120,14 +120,32 @@ wire:
 	$(foreach service,$(SERVICE_NAMES),wire-$(service))
 
 .PHONY: docker-up
-# 运行 docker 容器
-docker-up:
-	cd deploy/docker-compose && docker-compose -p cyi-app up -d
+# 运行所有 docker 容器（先启动基础设施，再启动应用）
+docker-up: docker-up-infra docker-up-app
+
+.PHONY: docker-up-infra
+# 运行基础设施 docker 容器
+docker-up-infra:
+	cd deploy/docker-compose && docker-compose -f docker-compose.infra.yml -p cyi-app up -d
+
+.PHONY: docker-up-app
+# 运行应用 docker 容器
+docker-up-app:
+	cd deploy/docker-compose && docker-compose -f docker-compose.app.yml -p cyi-app up -d
 
 .PHONY: docker-down
-# 停止 docker 容器
-docker-down:
-	cd deploy/docker-compose && docker-compose -p cyi-app down
+# 停止所有 docker 容器
+docker-down: docker-down-app docker-down-infra
+
+.PHONY: docker-down-infra
+# 停止基础设施 docker 容器
+docker-down-infra:
+	cd deploy/docker-compose && docker-compose -f docker-compose.infra.yml -p cyi-app down
+
+.PHONY: docker-down-app
+# 停止应用 docker 容器
+docker-down-app:
+	cd deploy/docker-compose && docker-compose -f docker-compose.app.yml -p cyi-app down
 
 # 为每个服务生成 docker-build 目标
 $(foreach service,$(SERVICE_NAMES),$(eval docker-build-$(service):; cd $(patsubst %/cmd/$(service),%,$(filter %/cmd/$(service),$(SERVICE_CMD_DIRS))) && make docker))
