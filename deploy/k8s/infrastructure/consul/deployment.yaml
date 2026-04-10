@@ -59,11 +59,9 @@ spec:
           mountPath: /consul/config  # 挂载到容器内的配置目录
       volumes:  # 卷配置
       - name: consul-data  # 数据卷名称
-        persistentVolumeClaim:
-          claimName: consul-data  # 数据持久卷声明名称
+        emptyDir: {}
       - name: consul-config  # 配置卷名称
-        persistentVolumeClaim:
-          claimName: consul-config  # 配置持久卷声明名称
+        emptyDir: {}
 
 # 说明：
 # 1. 该 Deployment 管理一个名为 consul 的容器，用于提供服务发现和配置管理功能。
