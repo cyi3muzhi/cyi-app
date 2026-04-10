@@ -2,7 +2,7 @@ apiVersion: v1  # Kubernetes API 版本，使用 v1 版本的 PersistentVolumeCl
 kind: PersistentVolumeClaim  # 资源类型，这里是 PersistentVolumeClaim
 metadata:
   name: redis-data  # 持久卷声明的名称，用于存储 Redis 数据
-  namespace: default  # 部署在 default 命名空间
+  namespace: infrastructure  # 部署在 infrastructure 命名空间
 spec:
   accessModes:
     - ReadWriteOnce  # 访问模式：单节点读写
