@@ -60,6 +60,10 @@ jobs:
         kubectl get nodes --insecure-skip-tls-verify
         kubectl get pods --all-namespaces --insecure-skip-tls-verify
 
+    - name: Create infrastructure namespace
+      run: |
+        kubectl create namespace infrastructure --insecure-skip-tls-verify || true
+
     - name: Deploy infrastructure services
       run: |
         # Deploy infrastructure services
