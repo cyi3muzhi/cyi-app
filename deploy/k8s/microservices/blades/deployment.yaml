@@ -4,7 +4,7 @@ metadata:
   name: service-blades  # Deployment 的名称
   namespace: default  # 部署在 default 命名空间
 spec:
-  replicas: 2  # 运行 2 个副本
+  replicas: 1  # 运行 1 个副本
   selector:
     matchLabels:
       app: service-blades  # 选择标签为 app: service-blades 的 Pod
