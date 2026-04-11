@@ -60,7 +60,8 @@ spec:
           mountPath: /var/lib/mysql  # 挂载到容器内的数据目录
       volumes:  # 卷配置
       - name: mysql-data  # 数据卷名称
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: mysql-data
 
 # 说明：
 # 1. 该 Deployment 管理一个名为 mysql 的容器，用于提供数据库服务。

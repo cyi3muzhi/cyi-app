@@ -60,7 +60,8 @@ spec:
           mountPath: /data  # 挂载到容器内的数据目录
       volumes:  # 卷配置
       - name: redis-data  # 数据卷名称
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: redis-data
 
 # 说明：
 # 1. 该 Deployment 管理一个名为 redis 的容器，用于提供缓存服务。
