@@ -29,7 +29,7 @@ ifeq ($(OS),Windows_NT)
 else
     # bash 语法
     $(foreach service,$(SERVICE_NAMES),$(eval .PHONY: wire-$(service)))
-    $(foreach service,$(SERVICE_NAMES),$(eval wire-$(service):; cd $(filter %/cmd/$(service),$(SERVICE_CMD_DIRS)) && wire)
+    $(foreach service,$(SERVICE_NAMES),$(eval wire-$(service):; cd $(filter %/cmd/$(service),$(SERVICE_CMD_DIRS)) && wire))
 endif
 
 .PHONY: debug-wire
