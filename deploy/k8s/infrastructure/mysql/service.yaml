@@ -4,15 +4,18 @@ metadata:
   name: mysql  # Service 的名称
   namespace: infrastructure  # 部署在 infrastructure 命名空间
 spec:
+  type: NodePort  # 服务类型：NodePort，允许外部访问
   selector:
     app: mysql  # 选择标签为 app: mysql 的 Pod
   ports:
   - port: 3306  # 服务端口
     targetPort: 3306  # 容器端口
+    nodePort: 30306  # 节点端口，外部访问地址：http://localhost:30306
 
 # 说明：
 # 1. 该 Service 为 MySQL 服务创建网络访问配置。
-# 2. 使用默认的 ClusterIP 类型，只允许集群内部访问。
+# 2. 使用 NodePort 类型，允许从集群外部访问 MySQL。
 # 3. 暴露端口 3306，用于数据库连接。
-# 4. 该 Service 将流量路由到标签为 app: mysql 的 Pod。
-# 5. 集群内部的其他服务可以通过 mysql:3306 访问数据库。
+# 4. 通过节点端口 30306 可以从外部访问数据库：http://localhost:30306
+# 5. 该 Service 将流量路由到标签为 app: mysql 的 Pod。
+# 6. 集群内部的其他服务可以通过 mysql:3306 访问数据库。
