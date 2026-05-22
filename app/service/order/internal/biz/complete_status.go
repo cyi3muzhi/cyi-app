@@ -4,17 +4,19 @@ import (
 	"context"
 	"errors"
 	v1 "cyi-app/api/service/order/v1"
-	"fmt"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 // CompleteStatus 已完成状态
 type CompleteStatus struct {
 	order OrderInterface
-	repo OrderRepo
+	repo  OrderRepo
+	log   *log.Helper
 }
 
-func NewCompleteStatus(order OrderInterface, repo OrderRepo) *CompleteStatus {
-	return &CompleteStatus{order: order, repo: repo}
+func NewCompleteStatus(order OrderInterface, repo OrderRepo, logger log.Logger) *CompleteStatus {
+	return &CompleteStatus{order: order, repo: repo, log: log.NewHelper(logger)}
 }
 
 func (s *CompleteStatus) Pay(ctx context.Context, in *Order) error {
@@ -38,8 +40,9 @@ func (s *CompleteStatus) Cancel(ctx context.Context) error {
 }
 
 func (s *CompleteStatus) Refunding(ctx context.Context) error {
-	fmt.Println("订单开始退款")
-	s.order.SetStatus(v1.OrderStatus_Refunding, s.repo)
+	orderID := s.order.(*Order).ID
+	s.log.WithContext(ctx).Warnf("订单开始退款, orderID: %d", orderID)
+	s.order.SetStatus(v1.OrderStatus_Refunding, s.repo, s.log.Logger())
 	return nil
 }
 

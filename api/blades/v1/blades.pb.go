@@ -11,7 +11,6 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	_ "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -116,7 +115,7 @@ var File_api_blades_v1_blades_proto protoreflect.FileDescriptor
 
 const file_api_blades_v1_blades_proto_rawDesc = "" +
 	"\n" +
-	"\x1aapi/blades/v1/blades.proto\x12\rapi.blades.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"3\n" +
+	"\x1aapi/blades/v1/blades.proto\x12\rapi.blades.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"3\n" +
 	"\vChatRequest\x12$\n" +
 	"\amessage\x18\x01 \x01(\tB\n" +
 	"\xfaB\ar\x05\x10\x01\x18\xc8\x01R\amessage\"%\n" +

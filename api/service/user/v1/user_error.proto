@@ -24,4 +24,8 @@ enum UserServiceErrorReason {
 	PASSWORD_ENCRYPTION_FAILED = 6 [(errors.code) = 500];
 	// 创建用户失败
 	CREATE_USER_FAILED = 7 [(errors.code) = 500];
+		// 用户已注册
+	USER_ALREADY_REGISTERED = 8 [(errors.code) = 409];
+	// 用户注册失败
+	USER_REGISTER_FAILED = 9 [(errors.code) = 400];
 }

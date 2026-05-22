@@ -29,6 +29,8 @@ const (
 	User_GetUserByUsername_FullMethodName = "/api.service.user.v1.User/GetUserByUsername"
 	User_VerifyPassword_FullMethodName    = "/api.service.user.v1.User/VerifyPassword"
 	User_UserCount_FullMethodName         = "/api.service.user.v1.User/UserCount"
+	User_Register_FullMethodName          = "/api.service.user.v1.User/Register"
+	User_Login_FullMethodName             = "/api.service.user.v1.User/Login"
 )
 
 // UserClient is the client API for User service.
@@ -47,6 +49,10 @@ type UserClient interface {
 	VerifyPassword(ctx context.Context, in *VerifyPasswordRequest, opts ...grpc.CallOption) (*VerifyPasswordReply, error)
 	// 统计用户数量
 	UserCount(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserCountReply, error)
+	// 注册用户
+	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterReply, error)
+	// 登录用户
+	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error)
 }
 
 type userClient struct {
@@ -147,6 +153,26 @@ func (c *userClient) UserCount(ctx context.Context, in *emptypb.Empty, opts ...g
 	return out, nil
 }
 
+func (c *userClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RegisterReply)
+	err := c.cc.Invoke(ctx, User_Register_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LoginReply)
+	err := c.cc.Invoke(ctx, User_Login_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility.
@@ -163,6 +189,10 @@ type UserServer interface {
 	VerifyPassword(context.Context, *VerifyPasswordRequest) (*VerifyPasswordReply, error)
 	// 统计用户数量
 	UserCount(context.Context, *emptypb.Empty) (*UserCountReply, error)
+	// 注册用户
+	Register(context.Context, *RegisterRequest) (*RegisterReply, error)
+	// 登录用户
+	Login(context.Context, *LoginRequest) (*LoginReply, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -199,6 +229,12 @@ func (UnimplementedUserServer) VerifyPassword(context.Context, *VerifyPasswordRe
 }
 func (UnimplementedUserServer) UserCount(context.Context, *emptypb.Empty) (*UserCountReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UserCount not implemented")
+}
+func (UnimplementedUserServer) Register(context.Context, *RegisterRequest) (*RegisterReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+}
+func (UnimplementedUserServer) Login(context.Context, *LoginRequest) (*LoginReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 func (UnimplementedUserServer) testEmbeddedByValue()              {}
@@ -383,6 +419,42 @@ func _User_UserCount_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).Register(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_Register_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).Register(ctx, req.(*RegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_Login_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).Login(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -425,6 +497,14 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UserCount",
 			Handler:    _User_UserCount_Handler,
+		},
+		{
+			MethodName: "Register",
+			Handler:    _User_Register_Handler,
+		},
+		{
+			MethodName: "Login",
+			Handler:    _User_Login_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

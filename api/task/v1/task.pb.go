@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.9
 // 	protoc        v5.27.2
-// source: task/v1/task.proto
+// source: api/task/v1/task.proto
 
 package v1
 
@@ -49,11 +49,11 @@ func (x TaskName) String() string {
 }
 
 func (TaskName) Descriptor() protoreflect.EnumDescriptor {
-	return file_task_v1_task_proto_enumTypes[0].Descriptor()
+	return file_api_task_v1_task_proto_enumTypes[0].Descriptor()
 }
 
 func (TaskName) Type() protoreflect.EnumType {
-	return &file_task_v1_task_proto_enumTypes[0]
+	return &file_api_task_v1_task_proto_enumTypes[0]
 }
 
 func (x TaskName) Number() protoreflect.EnumNumber {
@@ -62,7 +62,7 @@ func (x TaskName) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use TaskName.Descriptor instead.
 func (TaskName) EnumDescriptor() ([]byte, []int) {
-	return file_task_v1_task_proto_rawDescGZIP(), []int{0}
+	return file_api_task_v1_task_proto_rawDescGZIP(), []int{0}
 }
 
 type CreateUserTask struct {
@@ -75,7 +75,7 @@ type CreateUserTask struct {
 
 func (x *CreateUserTask) Reset() {
 	*x = CreateUserTask{}
-	mi := &file_task_v1_task_proto_msgTypes[0]
+	mi := &file_api_task_v1_task_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -87,7 +87,7 @@ func (x *CreateUserTask) String() string {
 func (*CreateUserTask) ProtoMessage() {}
 
 func (x *CreateUserTask) ProtoReflect() protoreflect.Message {
-	mi := &file_task_v1_task_proto_msgTypes[0]
+	mi := &file_api_task_v1_task_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -100,7 +100,7 @@ func (x *CreateUserTask) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateUserTask.ProtoReflect.Descriptor instead.
 func (*CreateUserTask) Descriptor() ([]byte, []int) {
-	return file_task_v1_task_proto_rawDescGZIP(), []int{0}
+	return file_api_task_v1_task_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *CreateUserTask) GetUsername() string {
@@ -117,11 +117,11 @@ func (x *CreateUserTask) GetPassword() string {
 	return ""
 }
 
-var File_task_v1_task_proto protoreflect.FileDescriptor
+var File_api_task_v1_task_proto protoreflect.FileDescriptor
 
-const file_task_v1_task_proto_rawDesc = "" +
+const file_api_task_v1_task_proto_rawDesc = "" +
 	"\n" +
-	"\x12task/v1/task.proto\x12\vapi.task.v1\"H\n" +
+	"\x16api/task/v1/task.proto\x12\vapi.task.v1\"H\n" +
 	"\x0eCreateUserTask\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword*\x1b\n" +
@@ -130,24 +130,24 @@ const file_task_v1_task_proto_rawDesc = "" +
 	"\vapi.task.v1P\x01Z\x16cyi-app/api/task/v1;v1b\x06proto3"
 
 var (
-	file_task_v1_task_proto_rawDescOnce sync.Once
-	file_task_v1_task_proto_rawDescData []byte
+	file_api_task_v1_task_proto_rawDescOnce sync.Once
+	file_api_task_v1_task_proto_rawDescData []byte
 )
 
-func file_task_v1_task_proto_rawDescGZIP() []byte {
-	file_task_v1_task_proto_rawDescOnce.Do(func() {
-		file_task_v1_task_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_task_v1_task_proto_rawDesc), len(file_task_v1_task_proto_rawDesc)))
+func file_api_task_v1_task_proto_rawDescGZIP() []byte {
+	file_api_task_v1_task_proto_rawDescOnce.Do(func() {
+		file_api_task_v1_task_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_task_v1_task_proto_rawDesc), len(file_api_task_v1_task_proto_rawDesc)))
 	})
-	return file_task_v1_task_proto_rawDescData
+	return file_api_task_v1_task_proto_rawDescData
 }
 
-var file_task_v1_task_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_task_v1_task_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_task_v1_task_proto_goTypes = []any{
+var file_api_task_v1_task_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_api_task_v1_task_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_api_task_v1_task_proto_goTypes = []any{
 	(TaskName)(0),          // 0: api.task.v1.TaskName
 	(*CreateUserTask)(nil), // 1: api.task.v1.CreateUserTask
 }
-var file_task_v1_task_proto_depIdxs = []int32{
+var file_api_task_v1_task_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -155,27 +155,27 @@ var file_task_v1_task_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_task_v1_task_proto_init() }
-func file_task_v1_task_proto_init() {
-	if File_task_v1_task_proto != nil {
+func init() { file_api_task_v1_task_proto_init() }
+func file_api_task_v1_task_proto_init() {
+	if File_api_task_v1_task_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_task_v1_task_proto_rawDesc), len(file_task_v1_task_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_task_v1_task_proto_rawDesc), len(file_api_task_v1_task_proto_rawDesc)),
 			NumEnums:      1,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_task_v1_task_proto_goTypes,
-		DependencyIndexes: file_task_v1_task_proto_depIdxs,
-		EnumInfos:         file_task_v1_task_proto_enumTypes,
-		MessageInfos:      file_task_v1_task_proto_msgTypes,
+		GoTypes:           file_api_task_v1_task_proto_goTypes,
+		DependencyIndexes: file_api_task_v1_task_proto_depIdxs,
+		EnumInfos:         file_api_task_v1_task_proto_enumTypes,
+		MessageInfos:      file_api_task_v1_task_proto_msgTypes,
 	}.Build()
-	File_task_v1_task_proto = out.File
-	file_task_v1_task_proto_goTypes = nil
-	file_task_v1_task_proto_depIdxs = nil
+	File_api_task_v1_task_proto = out.File
+	file_api_task_v1_task_proto_goTypes = nil
+	file_api_task_v1_task_proto_depIdxs = nil
 }

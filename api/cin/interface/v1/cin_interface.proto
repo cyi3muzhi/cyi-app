@@ -30,13 +30,13 @@ service CinInterface {
 	// 获取用户信息
 	rpc GetUserInfo (GetUserInfoRequest) returns (GetUserInfoReply){
 		option (google.api.http) = {
-			get: "/user/v1/get/{id}"
+			get: "/user/v1/{id}"
 		};
 	};
 	// 获取个人信息
-	rpc UserInfo (google.protobuf.Empty) returns (UserInfoReply){
+	rpc GetMyInfo (google.protobuf.Empty) returns (GetMyInfoReply){
 		option (google.api.http) = {
-			get: "/user/v1/info"
+			get: "/user/v1/my_info"
 		};
 	};
 	// 更新用户信息
@@ -82,7 +82,6 @@ message PayOrderRequest {
 message PayOrderReply {
 	bool success = 1;
 }
-
 message LoginRequest {
 	// 用户名或手机号 可以为空
 	string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
@@ -122,7 +121,7 @@ message GetUserInfoReply {
 	string name = 2;
 }
 
-message UserInfoReply{
+message GetMyInfoReply{
 	// 用户ID
 	int64 id = 1;
 	// 用户账号

@@ -507,7 +507,7 @@ func (x *GetUserInfoReply) GetName() string {
 	return ""
 }
 
-type UserInfoReply struct {
+type GetMyInfoReply struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 用户ID
 	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -517,20 +517,20 @@ type UserInfoReply struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UserInfoReply) Reset() {
-	*x = UserInfoReply{}
+func (x *GetMyInfoReply) Reset() {
+	*x = GetMyInfoReply{}
 	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UserInfoReply) String() string {
+func (x *GetMyInfoReply) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UserInfoReply) ProtoMessage() {}
+func (*GetMyInfoReply) ProtoMessage() {}
 
-func (x *UserInfoReply) ProtoReflect() protoreflect.Message {
+func (x *GetMyInfoReply) ProtoReflect() protoreflect.Message {
 	mi := &file_api_cin_interface_v1_cin_interface_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -542,19 +542,19 @@ func (x *UserInfoReply) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UserInfoReply.ProtoReflect.Descriptor instead.
-func (*UserInfoReply) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetMyInfoReply.ProtoReflect.Descriptor instead.
+func (*GetMyInfoReply) Descriptor() ([]byte, []int) {
 	return file_api_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *UserInfoReply) GetId() int64 {
+func (x *GetMyInfoReply) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
 	return 0
 }
 
-func (x *UserInfoReply) GetUsername() string {
+func (x *GetMyInfoReply) GetUsername() string {
 	if x != nil {
 		return x.Username
 	}
@@ -698,8 +698,8 @@ const file_api_cin_interface_v1_cin_interface_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"6\n" +
 	"\x10GetUserInfoReply\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\";\n" +
-	"\rUserInfoReply\x12\x0e\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"<\n" +
+	"\x0eGetMyInfoReply\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\"x\n" +
 	"\x15UpdateUserInfoRequest\x12\x0e\n" +
@@ -707,12 +707,12 @@ const file_api_cin_interface_v1_cin_interface_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tB\x19\xfaB\x16r\x14\x10\x02\x18\x182\x0e^[\\w\\p{Han}]+$R\x04name\x12 \n" +
 	"\x06avatar\x18\x03 \x01(\tB\b\xfaB\x05r\x03\x88\x01\x01R\x06avatar\"/\n" +
 	"\x13UpdateUserInfoReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xbd\x06\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xbe\x06\n" +
 	"\fCinInterface\x12h\n" +
 	"\x05Login\x12\".api.cin.interface.v1.LoginRequest\x1a .api.cin.interface.v1.LoginReply\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/user/v1/login\x12p\n" +
-	"\bRegister\x12!.api.cin.interface.v1.RegisterReq\x1a#.api.cin.interface.v1.RegisterReply\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/user/v1/register\x12z\n" +
-	"\vGetUserInfo\x12(.api.cin.interface.v1.GetUserInfoRequest\x1a&.api.cin.interface.v1.GetUserInfoReply\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/user/v1/get/{id}\x12^\n" +
-	"\bUserInfo\x12\x16.google.protobuf.Empty\x1a#.api.cin.interface.v1.UserInfoReply\"\x15\x82\xd3\xe4\x93\x02\x0f\x12\r/user/v1/info\x12\x84\x01\n" +
+	"\bRegister\x12!.api.cin.interface.v1.RegisterReq\x1a#.api.cin.interface.v1.RegisterReply\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/user/v1/register\x12v\n" +
+	"\vGetUserInfo\x12(.api.cin.interface.v1.GetUserInfoRequest\x1a&.api.cin.interface.v1.GetUserInfoReply\"\x15\x82\xd3\xe4\x93\x02\x0f\x12\r/user/v1/{id}\x12c\n" +
+	"\tGetMyInfo\x12\x16.google.protobuf.Empty\x1a$.api.cin.interface.v1.GetMyInfoReply\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/user/v1/my_info\x12\x84\x01\n" +
 	"\x0eUpdateUserInfo\x12+.api.cin.interface.v1.UpdateUserInfoRequest\x1a).api.cin.interface.v1.UpdateUserInfoReply\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\x1a\x0f/user/v1/update\x12|\n" +
 	"\vCreateOrder\x12(.api.cin.interface.v1.CreateOrderRequest\x1a&.api.cin.interface.v1.CreateOrderReply\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/order/v1/create\x12p\n" +
 	"\bPayOrder\x12%.api.cin.interface.v1.PayOrderRequest\x1a#.api.cin.interface.v1.PayOrderReply\"\x18\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/order/v1/payB9\n" +
@@ -742,7 +742,7 @@ var file_api_cin_interface_v1_cin_interface_proto_goTypes = []any{
 	(*RegisterReply)(nil),         // 7: api.cin.interface.v1.RegisterReply
 	(*GetUserInfoRequest)(nil),    // 8: api.cin.interface.v1.GetUserInfoRequest
 	(*GetUserInfoReply)(nil),      // 9: api.cin.interface.v1.GetUserInfoReply
-	(*UserInfoReply)(nil),         // 10: api.cin.interface.v1.UserInfoReply
+	(*GetMyInfoReply)(nil),        // 10: api.cin.interface.v1.GetMyInfoReply
 	(*UpdateUserInfoRequest)(nil), // 11: api.cin.interface.v1.UpdateUserInfoRequest
 	(*UpdateUserInfoReply)(nil),   // 12: api.cin.interface.v1.UpdateUserInfoReply
 	(*emptypb.Empty)(nil),         // 13: google.protobuf.Empty
@@ -751,14 +751,14 @@ var file_api_cin_interface_v1_cin_interface_proto_depIdxs = []int32{
 	4,  // 0: api.cin.interface.v1.CinInterface.Login:input_type -> api.cin.interface.v1.LoginRequest
 	6,  // 1: api.cin.interface.v1.CinInterface.Register:input_type -> api.cin.interface.v1.RegisterReq
 	8,  // 2: api.cin.interface.v1.CinInterface.GetUserInfo:input_type -> api.cin.interface.v1.GetUserInfoRequest
-	13, // 3: api.cin.interface.v1.CinInterface.UserInfo:input_type -> google.protobuf.Empty
+	13, // 3: api.cin.interface.v1.CinInterface.GetMyInfo:input_type -> google.protobuf.Empty
 	11, // 4: api.cin.interface.v1.CinInterface.UpdateUserInfo:input_type -> api.cin.interface.v1.UpdateUserInfoRequest
 	0,  // 5: api.cin.interface.v1.CinInterface.CreateOrder:input_type -> api.cin.interface.v1.CreateOrderRequest
 	2,  // 6: api.cin.interface.v1.CinInterface.PayOrder:input_type -> api.cin.interface.v1.PayOrderRequest
 	5,  // 7: api.cin.interface.v1.CinInterface.Login:output_type -> api.cin.interface.v1.LoginReply
 	7,  // 8: api.cin.interface.v1.CinInterface.Register:output_type -> api.cin.interface.v1.RegisterReply
 	9,  // 9: api.cin.interface.v1.CinInterface.GetUserInfo:output_type -> api.cin.interface.v1.GetUserInfoReply
-	10, // 10: api.cin.interface.v1.CinInterface.UserInfo:output_type -> api.cin.interface.v1.UserInfoReply
+	10, // 10: api.cin.interface.v1.CinInterface.GetMyInfo:output_type -> api.cin.interface.v1.GetMyInfoReply
 	12, // 11: api.cin.interface.v1.CinInterface.UpdateUserInfo:output_type -> api.cin.interface.v1.UpdateUserInfoReply
 	1,  // 12: api.cin.interface.v1.CinInterface.CreateOrder:output_type -> api.cin.interface.v1.CreateOrderReply
 	3,  // 13: api.cin.interface.v1.CinInterface.PayOrder:output_type -> api.cin.interface.v1.PayOrderReply

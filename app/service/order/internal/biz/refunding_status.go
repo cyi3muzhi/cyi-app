@@ -4,17 +4,19 @@ import (
 	"context"
 	v1 "cyi-app/api/service/order/v1"
 	"errors"
-	"fmt"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 // RefundingStatus 退款中状态
 type RefundingStatus struct {
 	order OrderInterface
-	repo OrderRepo
+	repo  OrderRepo
+	log   *log.Helper
 }
 
-func NewRefundingStatus(order OrderInterface, repo OrderRepo) *RefundingStatus {
-	return &RefundingStatus{order: order, repo: repo}
+func NewRefundingStatus(order OrderInterface, repo OrderRepo, logger log.Logger) *RefundingStatus {
+	return &RefundingStatus{order: order, repo: repo, log: log.NewHelper(logger)}
 }
 
 func (s *RefundingStatus) Pay(ctx context.Context, in *Order) error {
@@ -42,7 +44,8 @@ func (s *RefundingStatus) Refunding(ctx context.Context) error {
 }
 
 func (s *RefundingStatus) Refunded(ctx context.Context) error {
-	fmt.Println("订单退款成功")
-	s.order.SetStatus(v1.OrderStatus_Refunded, s.repo)
+	orderID := s.order.(*Order).ID
+	s.log.WithContext(ctx).Infof("订单退款成功, orderID: %d", orderID)
+	s.order.SetStatus(v1.OrderStatus_Refunded, s.repo, s.log.Logger())
 	return nil
 }

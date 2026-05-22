@@ -11,6 +11,9 @@ const (
 	ORDER_SERVICE = "order.service"
 	TASK = "task"
 	JOB = "job"
+	RMQ_SERVICE = "rmq.service"
+
+
 
 	BLADES_SERVICE = "blades.service"
 )
@@ -25,4 +28,5 @@ const (
 	TASK_VERSION = "v1"
 	JOB_VERSION = "v1"
 	BLADES_VERSION = "v1"
+	RMQ_VERSION = "v1"
 )

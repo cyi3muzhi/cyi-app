@@ -5,6 +5,8 @@ import (
 
 	v1 "cyi-app/api/service/user/v1"
 	"cyi-app/app/service/user/internal/pkg/encryption"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 type User struct {
@@ -26,10 +28,11 @@ type UserRepo interface {
 
 type UserUseCase struct {
 	repo UserRepo
+	log  *log.Helper
 }
 
-func NewUserUseCase(repo UserRepo) *UserUseCase {
-	return &UserUseCase{repo: repo}
+func NewUserUseCase(repo UserRepo, logger log.Logger) *UserUseCase {
+	return &UserUseCase{repo: repo, log: log.NewHelper(logger)}
 }
 
 func (uc *UserUseCase) CreateUser(ctx context.Context, u *User) (*User, error) {
@@ -59,8 +62,8 @@ func (uc *UserUseCase) GetUserByUsername(ctx context.Context, in *v1.GetUserByUs
 }
 
 // 校验密码
-func (uc *UserUseCase)VerifyPassword(ctx context.Context, u *User)error{
-	return uc.repo.VerifyPassword(ctx,u)
+func (uc *UserUseCase) VerifyPassword(ctx context.Context, u *User) error {
+	return uc.repo.VerifyPassword(ctx, u)
 }
 
 // 更新用户信息

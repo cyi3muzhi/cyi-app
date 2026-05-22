@@ -146,3 +146,29 @@ func (s *UserService) UserCount(ctx context.Context, _ *emptypb.Empty) (*pb.User
 	}
 	return &pb.UserCountReply{Count: count}, nil
 }
+
+// 注册用户
+func (s *UserService) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterReply, error) {
+	u := &biz.User{}
+	if err := convert.Convert(req, u); err != nil {
+		return nil, err
+	}
+	if err := s.uc.Register(ctx, u); err != nil {
+		return nil, err
+	}
+	return &pb.RegisterReply{
+		Success: true,
+	}, nil
+}
+
+func (s *UserService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginReply, error) {
+	u := &biz.User{}
+	if err := convert.Convert(req, u); err != nil {
+		return nil, err
+	}
+	reply, err := s.uc.Login(ctx, u, req.ApiKey)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}

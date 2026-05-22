@@ -3,11 +3,13 @@ package biz
 import (
 	"context"
 	v1 "cyi-app/api/service/order/v1"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 // Order 订单接口
 type OrderInterface interface {
-	SetStatus(status v1.OrderStatus, repo OrderRepo)
+	SetStatus(status v1.OrderStatus, repo OrderRepo, logger log.Logger)
 	GetStatus() v1.OrderStatus
 }
 
@@ -30,28 +32,28 @@ type OrderStatus interface {
 }
 
 // NewOrderStatusHandler 创建订单状态处理器
-func NewOrderStatusHandler(order OrderInterface, repo OrderRepo) OrderStatus {
+func NewOrderStatusHandler(order OrderInterface, repo OrderRepo, logger log.Logger) OrderStatus {
 	switch order.GetStatus() {
 	case v1.OrderStatus_WaitPay:
-		return NewWaitPayStatus(order, repo)
+		return NewWaitPayStatus(order, repo, logger)
 	case v1.OrderStatus_Pay:
-		return NewPayStatus(order, repo)
+		return NewPayStatus(order, repo, logger)
 	case v1.OrderStatus_WaitShip:
-		return NewPayStatus(order, repo) // 待发货状态使用已支付状态的处理逻辑
+		return NewPayStatus(order, repo, logger) // 待发货状态使用已支付状态的处理逻辑
 	case v1.OrderStatus_Ship:
-		return NewShipStatus(order, repo)
+		return NewShipStatus(order, repo, logger)
 	case v1.OrderStatus_WaitReceive:
-		return NewShipStatus(order, repo) // 待收货状态使用已发货状态的处理逻辑
+		return NewShipStatus(order, repo, logger) // 待收货状态使用已发货状态的处理逻辑
 	case v1.OrderStatus_Complete:
-		return NewCompleteStatus(order, repo)
+		return NewCompleteStatus(order, repo, logger)
 	case v1.OrderStatus_Cancel:
-		return NewCancelStatus(order, repo)
+		return NewCancelStatus(order, repo, logger)
 	case v1.OrderStatus_Refunding:
-		return NewRefundingStatus(order, repo)
+		return NewRefundingStatus(order, repo, logger)
 	case v1.OrderStatus_Refunded:
-		return NewRefundedStatus(order, repo)
+		return NewRefundedStatus(order, repo, logger)
 	default:
-		return NewWaitPayStatus(order, repo)
+		return NewWaitPayStatus(order, repo, logger)
 	}
 }
 
@@ -62,9 +64,9 @@ func (o *Order) GetStatus() v1.OrderStatus {
 }
 
 // SetStatus 设置状态并更新状态处理器
-func (o *Order) SetStatus(newStatus v1.OrderStatus, repo OrderRepo) {
+func (o *Order) SetStatus(newStatus v1.OrderStatus, repo OrderRepo, logger log.Logger) {
 	o.Status = newStatus
-	o.statusHandler = NewOrderStatusHandler(o, repo)
+	o.statusHandler = NewOrderStatusHandler(o, repo, logger)
 }
 
 // 支付

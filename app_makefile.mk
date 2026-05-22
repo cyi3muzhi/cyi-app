@@ -87,6 +87,15 @@ api:
 	       --openapi_out=fq_schema_naming=true,default_response=false:. \
 	       $(API_PROTO_FILES)
 
+.PHONY: errors
+# 生成 errors 目录下的 proto 文件
+errors:
+	protoc --proto_path=${RELATIVE_PATH_TO_ROOT}api \
+	       --proto_path=${RELATIVE_PATH_TO_ROOT}third_party \
+	       --go_out=paths=source_relative:${RELATIVE_PATH_TO_ROOT}api \
+	       --go-errors_out=paths=source_relative:${RELATIVE_PATH_TO_ROOT}api \
+	       $(API_PROTO_FILES)
+
 .PHONY: build
 # 构建应用
 build:

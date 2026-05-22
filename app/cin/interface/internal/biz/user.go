@@ -23,6 +23,11 @@ type UserRepo interface {
 	// 校验密码是否正确
 	VerifyPassword(ctx context.Context, user *User, password string) error
 	// 获取用户信息
+
+	// 注册用户
+	Register(ctx context.Context, req *v1.RegisterReq) error
+	// 登录用户
+	Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginReply, error)
 }
 
 type UserUseCase struct {
@@ -59,4 +64,13 @@ func (u *UserUseCase) UpdateUserInfo(ctx context.Context, user *User) error {
 		return v1.ErrorUserUpdateFailed("user update failed")
 	}
 	return nil
+}
+
+// 注册用户
+func (u *UserUseCase) Register(ctx context.Context, req *v1.RegisterReq) error {
+	return u.repo.Register(ctx, req)
+}
+
+func (u *UserUseCase) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginReply, error) {
+	return u.repo.Login(ctx, req)
 }

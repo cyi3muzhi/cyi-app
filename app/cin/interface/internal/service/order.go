@@ -35,16 +35,6 @@ func (s *CinInterface) CreateOrder(ctx context.Context, req *v1.CreateOrderReque
 }
 
 func (s *CinInterface) PayOrder(ctx context.Context, req *v1.PayOrderRequest) (*v1.PayOrderReply, error) {
-	// 获取上下文的用户id
-	// userID, err := service.GetUserID(ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// 查找订单是否存在
-	// order, err := s.oc.GetOrder(ctx, req.OrderID)
-	// if err != nil {
-	// 	return nil, err
-	// }
 	// 支付订单
 	err := s.oc.PayOrder(ctx, req.OrderId)
 	if err != nil {

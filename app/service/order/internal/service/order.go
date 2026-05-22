@@ -62,7 +62,12 @@ func (s *OrderService) PayOrder(ctx context.Context, req *v1.PayOrderRequest) (*
 	in := &biz.Order{
 		ID: req.OrderId,
 	}
-	err := s.uc.Pay(ctx, in)
+	// 校验订单
+	err := s.uc.VerifyOrder(ctx, in.ID)
+	if err != nil {
+		return nil, err
+	}
+	err = s.uc.Pay(ctx, in)
 	if err != nil {
 		return nil, err
 	}

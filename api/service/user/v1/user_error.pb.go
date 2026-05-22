@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.9
 // 	protoc        v5.27.2
-// source: service/user/v1/user_error.proto
+// source: api/service/user/v1/user_error.proto
 
 package v1
 
@@ -39,6 +39,10 @@ const (
 	UserServiceErrorReason_PASSWORD_ENCRYPTION_FAILED UserServiceErrorReason = 6
 	// 创建用户失败
 	UserServiceErrorReason_CREATE_USER_FAILED UserServiceErrorReason = 7
+	// 用户已注册
+	UserServiceErrorReason_USER_ALREADY_REGISTERED UserServiceErrorReason = 8
+	// 用户注册失败
+	UserServiceErrorReason_USER_REGISTER_FAILED UserServiceErrorReason = 9
 )
 
 // Enum value maps for UserServiceErrorReason.
@@ -52,6 +56,8 @@ var (
 		5: "PASSWORD_ERROR",
 		6: "PASSWORD_ENCRYPTION_FAILED",
 		7: "CREATE_USER_FAILED",
+		8: "USER_ALREADY_REGISTERED",
+		9: "USER_REGISTER_FAILED",
 	}
 	UserServiceErrorReason_value = map[string]int32{
 		"USER_NOT_FOUND":             0,
@@ -62,6 +68,8 @@ var (
 		"PASSWORD_ERROR":             5,
 		"PASSWORD_ENCRYPTION_FAILED": 6,
 		"CREATE_USER_FAILED":         7,
+		"USER_ALREADY_REGISTERED":    8,
+		"USER_REGISTER_FAILED":       9,
 	}
 )
 
@@ -76,11 +84,11 @@ func (x UserServiceErrorReason) String() string {
 }
 
 func (UserServiceErrorReason) Descriptor() protoreflect.EnumDescriptor {
-	return file_service_user_v1_user_error_proto_enumTypes[0].Descriptor()
+	return file_api_service_user_v1_user_error_proto_enumTypes[0].Descriptor()
 }
 
 func (UserServiceErrorReason) Type() protoreflect.EnumType {
-	return &file_service_user_v1_user_error_proto_enumTypes[0]
+	return &file_api_service_user_v1_user_error_proto_enumTypes[0]
 }
 
 func (x UserServiceErrorReason) Number() protoreflect.EnumNumber {
@@ -89,14 +97,14 @@ func (x UserServiceErrorReason) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use UserServiceErrorReason.Descriptor instead.
 func (UserServiceErrorReason) EnumDescriptor() ([]byte, []int) {
-	return file_service_user_v1_user_error_proto_rawDescGZIP(), []int{0}
+	return file_api_service_user_v1_user_error_proto_rawDescGZIP(), []int{0}
 }
 
-var File_service_user_v1_user_error_proto protoreflect.FileDescriptor
+var File_api_service_user_v1_user_error_proto protoreflect.FileDescriptor
 
-const file_service_user_v1_user_error_proto_rawDesc = "" +
+const file_api_service_user_v1_user_error_proto_rawDesc = "" +
 	"\n" +
-	" service/user/v1/user_error.proto\x12\x13api.service.user.v1\x1a\x13errors/errors.proto*\x90\x02\n" +
+	"$api/service/user/v1/user_error.proto\x12\x13api.service.user.v1\x1a\x13errors/errors.proto*\xd3\x02\n" +
 	"\x16UserServiceErrorReason\x12\x18\n" +
 	"\x0eUSER_NOT_FOUND\x10\x00\x1a\x04\xa8E\xf4\x03\x12\x19\n" +
 	"\x0fCONTENT_MISSING\x10\x01\x1a\x04\xa8E\xf4\x03\x12\x1c\n" +
@@ -105,25 +113,27 @@ const file_service_user_v1_user_error_proto_rawDesc = "" +
 	"\x17USERNAME_OR_PHONE_EMPTY\x10\x04\x1a\x04\xa8E\xf4\x03\x12\x18\n" +
 	"\x0ePASSWORD_ERROR\x10\x05\x1a\x04\xa8E\xf4\x03\x12$\n" +
 	"\x1aPASSWORD_ENCRYPTION_FAILED\x10\x06\x1a\x04\xa8E\xf4\x03\x12\x1c\n" +
-	"\x12CREATE_USER_FAILED\x10\a\x1a\x04\xa8E\xf4\x03\x1a\x04\xa0E\xf4\x03B Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
+	"\x12CREATE_USER_FAILED\x10\a\x1a\x04\xa8E\xf4\x03\x12!\n" +
+	"\x17USER_ALREADY_REGISTERED\x10\b\x1a\x04\xa8E\x99\x03\x12\x1e\n" +
+	"\x14USER_REGISTER_FAILED\x10\t\x1a\x04\xa8E\x90\x03\x1a\x04\xa0E\xf4\x03B Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
 
 var (
-	file_service_user_v1_user_error_proto_rawDescOnce sync.Once
-	file_service_user_v1_user_error_proto_rawDescData []byte
+	file_api_service_user_v1_user_error_proto_rawDescOnce sync.Once
+	file_api_service_user_v1_user_error_proto_rawDescData []byte
 )
 
-func file_service_user_v1_user_error_proto_rawDescGZIP() []byte {
-	file_service_user_v1_user_error_proto_rawDescOnce.Do(func() {
-		file_service_user_v1_user_error_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_service_user_v1_user_error_proto_rawDesc), len(file_service_user_v1_user_error_proto_rawDesc)))
+func file_api_service_user_v1_user_error_proto_rawDescGZIP() []byte {
+	file_api_service_user_v1_user_error_proto_rawDescOnce.Do(func() {
+		file_api_service_user_v1_user_error_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_service_user_v1_user_error_proto_rawDesc), len(file_api_service_user_v1_user_error_proto_rawDesc)))
 	})
-	return file_service_user_v1_user_error_proto_rawDescData
+	return file_api_service_user_v1_user_error_proto_rawDescData
 }
 
-var file_service_user_v1_user_error_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_service_user_v1_user_error_proto_goTypes = []any{
+var file_api_service_user_v1_user_error_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_api_service_user_v1_user_error_proto_goTypes = []any{
 	(UserServiceErrorReason)(0), // 0: api.service.user.v1.UserServiceErrorReason
 }
-var file_service_user_v1_user_error_proto_depIdxs = []int32{
+var file_api_service_user_v1_user_error_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -131,26 +141,26 @@ var file_service_user_v1_user_error_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_service_user_v1_user_error_proto_init() }
-func file_service_user_v1_user_error_proto_init() {
-	if File_service_user_v1_user_error_proto != nil {
+func init() { file_api_service_user_v1_user_error_proto_init() }
+func file_api_service_user_v1_user_error_proto_init() {
+	if File_api_service_user_v1_user_error_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_service_user_v1_user_error_proto_rawDesc), len(file_service_user_v1_user_error_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_service_user_v1_user_error_proto_rawDesc), len(file_api_service_user_v1_user_error_proto_rawDesc)),
 			NumEnums:      1,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_service_user_v1_user_error_proto_goTypes,
-		DependencyIndexes: file_service_user_v1_user_error_proto_depIdxs,
-		EnumInfos:         file_service_user_v1_user_error_proto_enumTypes,
+		GoTypes:           file_api_service_user_v1_user_error_proto_goTypes,
+		DependencyIndexes: file_api_service_user_v1_user_error_proto_depIdxs,
+		EnumInfos:         file_api_service_user_v1_user_error_proto_enumTypes,
 	}.Build()
-	File_service_user_v1_user_error_proto = out.File
-	file_service_user_v1_user_error_proto_goTypes = nil
-	file_service_user_v1_user_error_proto_depIdxs = nil
+	File_api_service_user_v1_user_error_proto = out.File
+	file_api_service_user_v1_user_error_proto_goTypes = nil
+	file_api_service_user_v1_user_error_proto_depIdxs = nil
 }

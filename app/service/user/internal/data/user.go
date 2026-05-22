@@ -102,8 +102,6 @@ func (r *userRepo) FindByUsername(ctx context.Context, username string) (*biz.Us
 }
 
 func (r *userRepo) VerifyPassword(ctx context.Context, u *biz.User) error {
-
-	// 查询用户密码
 	target, err := curd.User.WithContext(ctx).QueryWith(mod.User{
 		Username: u.Username,
 	})
@@ -111,11 +109,12 @@ func (r *userRepo) VerifyPassword(ctx context.Context, u *biz.User) error {
 		return err
 	}
 	ok := encryption.CheckPassword(u.Password, target.Password)
-	if ok {
+	if !ok {
 		r.log.Warnf("Password verification failed for user %s", u.Username)
-		return nil
+		return errors.New("password not match")
 	}
-	return errors.New("密码不匹配")
+	r.log.Infof("Password verified successfully for user %s", u.Username)
+	return nil
 }
 
 // getUser 通用获取用户函数
@@ -159,7 +158,7 @@ func (r *userRepo) getUser(ctx context.Context, cacheKey string, query *mod.User
 func (r *userRepo) UpdateUser(ctx context.Context, u *biz.User) error {
 	user := &mod.User{}
 	convert.Convert(u, user)
-	info, err := curd.User.WithContext(ctx).Updates(user); 
+	info, err := curd.User.WithContext(ctx).Updates(user)
 	if err != nil {
 		return err
 	}

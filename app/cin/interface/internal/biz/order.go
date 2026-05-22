@@ -2,6 +2,7 @@ package biz
 
 import (
 	"context"
+	v1 "cyi-app/api/cin/interface/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -11,11 +12,13 @@ type Order struct {
 	UserID    int64 `json:"user_id"`
 	ProductID int64 `json:"product_id"`
 	Count     int32 `json:"count"`
+	Status    int32 `json:"status"`
 }
 
 type OrderRepo interface {
 	CreateOrder(ctx context.Context, order *Order) error
 	PayOrder(ctx context.Context, orderID int64) error
+	GetOrder(ctx context.Context, orderID int64) (*Order, error)
 }
 
 type OrderUseCase struct {
@@ -35,9 +38,16 @@ func (u *OrderUseCase) CreateOrder(ctx context.Context, order *Order) error {
 }
 
 func (u *OrderUseCase) PayOrder(ctx context.Context, orderID int64) error {
+	if orderID == 0 {
+		return v1.ErrorOrderIdNotExist("order id not exist")
+	}
 	// 支付订单
 	if err := u.repo.PayOrder(ctx, orderID); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (u *OrderUseCase) GetOrder(ctx context.Context, orderID int64) (order *Order, err error) {
+	return u.repo.GetOrder(ctx, orderID)
 }

@@ -1162,22 +1162,22 @@ var _ interface {
 	ErrorName() string
 } = GetUserInfoReplyValidationError{}
 
-// Validate checks the field values on UserInfoReply with the rules defined in
+// Validate checks the field values on GetMyInfoReply with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
-func (m *UserInfoReply) Validate() error {
+func (m *GetMyInfoReply) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on UserInfoReply with the rules defined
+// ValidateAll checks the field values on GetMyInfoReply with the rules defined
 // in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in UserInfoReplyMultiError, or
-// nil if none found.
-func (m *UserInfoReply) ValidateAll() error {
+// result is a list of violation errors wrapped in GetMyInfoReplyMultiError,
+// or nil if none found.
+func (m *GetMyInfoReply) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *UserInfoReply) validate(all bool) error {
+func (m *GetMyInfoReply) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -1189,19 +1189,19 @@ func (m *UserInfoReply) validate(all bool) error {
 	// no validation rules for Username
 
 	if len(errors) > 0 {
-		return UserInfoReplyMultiError(errors)
+		return GetMyInfoReplyMultiError(errors)
 	}
 
 	return nil
 }
 
-// UserInfoReplyMultiError is an error wrapping multiple validation errors
-// returned by UserInfoReply.ValidateAll() if the designated constraints
+// GetMyInfoReplyMultiError is an error wrapping multiple validation errors
+// returned by GetMyInfoReply.ValidateAll() if the designated constraints
 // aren't met.
-type UserInfoReplyMultiError []error
+type GetMyInfoReplyMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m UserInfoReplyMultiError) Error() string {
+func (m GetMyInfoReplyMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -1210,11 +1210,11 @@ func (m UserInfoReplyMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m UserInfoReplyMultiError) AllErrors() []error { return m }
+func (m GetMyInfoReplyMultiError) AllErrors() []error { return m }
 
-// UserInfoReplyValidationError is the validation error returned by
-// UserInfoReply.Validate if the designated constraints aren't met.
-type UserInfoReplyValidationError struct {
+// GetMyInfoReplyValidationError is the validation error returned by
+// GetMyInfoReply.Validate if the designated constraints aren't met.
+type GetMyInfoReplyValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -1222,22 +1222,22 @@ type UserInfoReplyValidationError struct {
 }
 
 // Field function returns field value.
-func (e UserInfoReplyValidationError) Field() string { return e.field }
+func (e GetMyInfoReplyValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e UserInfoReplyValidationError) Reason() string { return e.reason }
+func (e GetMyInfoReplyValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e UserInfoReplyValidationError) Cause() error { return e.cause }
+func (e GetMyInfoReplyValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e UserInfoReplyValidationError) Key() bool { return e.key }
+func (e GetMyInfoReplyValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e UserInfoReplyValidationError) ErrorName() string { return "UserInfoReplyValidationError" }
+func (e GetMyInfoReplyValidationError) ErrorName() string { return "GetMyInfoReplyValidationError" }
 
 // Error satisfies the builtin error interface
-func (e UserInfoReplyValidationError) Error() string {
+func (e GetMyInfoReplyValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -1249,14 +1249,14 @@ func (e UserInfoReplyValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sUserInfoReply.%s: %s%s",
+		"invalid %sGetMyInfoReply.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = UserInfoReplyValidationError{}
+var _ error = GetMyInfoReplyValidationError{}
 
 var _ interface {
 	Field() string
@@ -1264,7 +1264,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = UserInfoReplyValidationError{}
+} = GetMyInfoReplyValidationError{}
 
 // Validate checks the field values on UpdateUserInfoRequest with the rules
 // defined in the proto definition for this message. If any rules are

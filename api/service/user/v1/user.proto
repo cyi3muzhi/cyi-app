@@ -7,7 +7,7 @@ option java_multiple_files = true;
 option java_package = "api.service.user.v1";
 
 import "google/protobuf/empty.proto";
-
+import "validate/validate.proto";
 service User {
 	rpc CreateUser (CreateUserRequest) returns (CreateUserReply);
 	rpc UpdateUser (UpdateUserRequest) returns (UpdateUserReply);
@@ -21,6 +21,10 @@ service User {
 	rpc VerifyPassword (VerifyPasswordRequest) returns (VerifyPasswordReply);
 	// 统计用户数量
 	rpc UserCount (google.protobuf.Empty) returns (UserCountReply);
+	// 注册用户
+	rpc Register (RegisterRequest) returns (RegisterReply);
+	// 登录用户
+	rpc Login (LoginRequest) returns (LoginReply);
 }
 
 message CreateUserRequest {
@@ -107,4 +111,26 @@ message VerifyPasswordReply {
 
 message UserCountReply {
     int64 count = 1;
+}
+
+message RegisterRequest {
+    // 用户名验证
+    string username = 1;
+    // 密码长度验证
+    string password = 2;
+}
+message RegisterReply {
+    bool success = 1;
+}
+
+message LoginRequest {
+	// 用户名或手机号 可以为空
+	string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
+	// string phone = 2 [(validate.rules).string = {pattern: "^1[3-9]\\d{9}$"}];
+	string password = 3 [(validate.rules).string = {min_len: 6, max_len: 20}];
+	// API Key
+	string api_key = 4;
+}
+message LoginReply {
+	string token = 1;
 }

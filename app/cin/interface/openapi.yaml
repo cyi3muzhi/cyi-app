@@ -44,39 +44,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.PayOrderReply'
-    /user/v1/get/{id}:
-        get:
-            tags:
-                - CinInterface
-            description: 获取用户信息
-            operationId: CinInterface_GetUserInfo
-            parameters:
-                - name: id
-                  in: path
-                  description: 用户ID
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/api.cin.interface.v1.GetUserInfoReply'
-    /user/v1/info:
-        get:
-            tags:
-                - CinInterface
-            description: 获取个人信息
-            operationId: CinInterface_UserInfo
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/api.cin.interface.v1.UserInfoReply'
     /user/v1/login:
         post:
             tags:
@@ -96,6 +63,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.LoginReply'
+    /user/v1/my_info:
+        get:
+            tags:
+                - CinInterface
+            description: 获取个人信息
+            operationId: CinInterface_GetMyInfo
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.GetMyInfoReply'
     /user/v1/register:
         post:
             tags:
@@ -134,6 +114,26 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.UpdateUserInfoReply'
+    /user/v1/{id}:
+        get:
+            tags:
+                - CinInterface
+            description: 获取用户信息
+            operationId: CinInterface_GetUserInfo
+            parameters:
+                - name: id
+                  in: path
+                  description: 用户ID
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.GetUserInfoReply'
 components:
     schemas:
         api.cin.interface.v1.CreateOrderReply:
@@ -145,9 +145,6 @@ components:
         api.cin.interface.v1.CreateOrderRequest:
             type: object
             properties:
-                userId:
-                    type: string
-                    description: 用户ID
                 productId:
                     type: string
                     description: 商品ID
@@ -155,6 +152,15 @@ components:
                     type: integer
                     description: 购买数量
                     format: int32
+        api.cin.interface.v1.GetMyInfoReply:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 用户ID
+                username:
+                    type: string
+                    description: 用户账号
         api.cin.interface.v1.GetUserInfoReply:
             type: object
             properties:
@@ -220,14 +226,5 @@ components:
                 avatar:
                     type: string
                     description: 头像URL
-        api.cin.interface.v1.UserInfoReply:
-            type: object
-            properties:
-                id:
-                    type: string
-                    description: 用户ID
-                username:
-                    type: string
-                    description: 用户账号
 tags:
     - name: CinInterface

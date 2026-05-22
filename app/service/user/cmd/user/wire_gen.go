@@ -40,7 +40,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 		return nil, nil, err
 	}
 	userRepo := data.NewUserRepo(dataData, logger)
-	userUseCase := biz.NewUserUseCase(userRepo)
+	userUseCase := biz.NewUserUseCase(userRepo, logger)
 	userService := service.NewUserService(userUseCase, logger)
 	server2 := server.NewServer(grpcServer, userService)
 	registrar := server.NewRegistrar(registry)

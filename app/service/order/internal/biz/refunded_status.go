@@ -3,16 +3,19 @@ package biz
 import (
 	"context"
 	"errors"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 // RefundedStatus 已退款状态
 type RefundedStatus struct {
 	order OrderInterface
 	repo  OrderRepo
+	log   *log.Helper
 }
 
-func NewRefundedStatus(order OrderInterface, repo OrderRepo) *RefundedStatus {
-	return &RefundedStatus{order: order, repo: repo}
+func NewRefundedStatus(order OrderInterface, repo OrderRepo, logger log.Logger) *RefundedStatus {
+	return &RefundedStatus{order: order, repo: repo, log: log.NewHelper(logger)}
 }
 
 func (s *RefundedStatus) Pay(ctx context.Context, in *Order) error {

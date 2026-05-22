@@ -118,3 +118,31 @@ func IsCreateUserFailed(err error) bool {
 func ErrorCreateUserFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(500, UserServiceErrorReason_CREATE_USER_FAILED.String(), fmt.Sprintf(format, args...))
 }
+
+// 用户已注册
+func IsUserAlreadyRegistered(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == UserServiceErrorReason_USER_ALREADY_REGISTERED.String() && e.Code == 409
+}
+
+// 用户已注册
+func ErrorUserAlreadyRegistered(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, UserServiceErrorReason_USER_ALREADY_REGISTERED.String(), fmt.Sprintf(format, args...))
+}
+
+// 用户注册失败
+func IsUserRegisterFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == UserServiceErrorReason_USER_REGISTER_FAILED.String() && e.Code == 400
+}
+
+// 用户注册失败
+func ErrorUserRegisterFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, UserServiceErrorReason_USER_REGISTER_FAILED.String(), fmt.Sprintf(format, args...))
+}

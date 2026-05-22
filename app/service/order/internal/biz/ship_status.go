@@ -4,17 +4,19 @@ import (
 	"context"
 	"errors"
 	v1 "cyi-app/api/service/order/v1"
-	"fmt"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 // ShipStatus 已发货状态
 type ShipStatus struct {
 	order OrderInterface
-	repo OrderRepo
+	repo  OrderRepo
+	log   *log.Helper
 }
 
-func NewShipStatus(order OrderInterface, repo OrderRepo) *ShipStatus {
-	return &ShipStatus{order: order, repo: repo}
+func NewShipStatus(order OrderInterface, repo OrderRepo, logger log.Logger) *ShipStatus {
+	return &ShipStatus{order: order, repo: repo, log: log.NewHelper(logger)}
 }
 
 
@@ -28,8 +30,9 @@ func (s *ShipStatus) Ship(ctx context.Context) error {
 }
 
 func (s *ShipStatus) Receive(ctx context.Context) error {
-	fmt.Println("订单收货成功")
-	s.order.SetStatus(v1.OrderStatus_Complete, s.repo)
+	orderID := s.order.(*Order).ID
+	s.log.WithContext(ctx).Infof("订单收货成功, orderID: %d", orderID)
+	s.order.SetStatus(v1.OrderStatus_Complete, s.repo, s.log.Logger())
 	return nil
 }
 
@@ -42,8 +45,9 @@ func (s *ShipStatus) Cancel(ctx context.Context) error {
 }
 
 func (s *ShipStatus) Refunding(ctx context.Context) error {
-	fmt.Println("订单开始退款")
-	s.order.SetStatus(v1.OrderStatus_Refunding, s.repo)
+	orderID := s.order.(*Order).ID
+	s.log.WithContext(ctx).Warnf("订单开始退款, orderID: %d", orderID)
+	s.order.SetStatus(v1.OrderStatus_Refunding, s.repo, s.log.Logger())
 	return nil
 }
 

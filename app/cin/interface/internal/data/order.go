@@ -46,3 +46,19 @@ func (r *orderRepo) PayOrder(ctx context.Context, orderID int64) error {
 	}
 	return nil
 }
+
+func (r *orderRepo) GetOrder(ctx context.Context, orderID int64) (*biz.Order, error) {
+	order, err := r.data.oc.GetOrder(ctx, &orderV1.GetOrderRequest{
+		OrderId: orderID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &biz.Order{
+		ID:        order.OrderId,
+		UserID:    order.UserId,
+		ProductID: order.ProductId,
+		Count:     order.Count,
+		Status:    order.Status,
+	}, nil
+}

@@ -2,19 +2,21 @@ package biz
 
 import (
 	"context"
-	"errors"
 	v1 "cyi-app/api/service/order/v1"
-	"fmt"
+	"errors"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 // PayStatus 已支付状态
 type PayStatus struct {
 	order OrderInterface
-	repo OrderRepo
+	repo  OrderRepo
+	log   *log.Helper
 }
 
-func NewPayStatus(order OrderInterface, repo OrderRepo) *PayStatus {
-	return &PayStatus{order: order, repo: repo}
+func NewPayStatus(order OrderInterface, repo OrderRepo, logger log.Logger) *PayStatus {
+	return &PayStatus{order: order, repo: repo, log: log.NewHelper(logger)}
 }
 
 func (s *PayStatus) Pay(ctx context.Context, in *Order) error {
@@ -22,8 +24,9 @@ func (s *PayStatus) Pay(ctx context.Context, in *Order) error {
 }
 
 func (s *PayStatus) Ship(ctx context.Context) error {
-	fmt.Println("订单发货成功")
-	s.order.SetStatus(v1.OrderStatus_Ship, s.repo)
+	orderID := s.order.(*Order).ID
+	s.log.WithContext(ctx).Infof("订单发货成功, orderID: %d", orderID)
+	s.order.SetStatus(v1.OrderStatus_Ship, s.repo, s.log.Logger())
 	return nil
 }
 
@@ -36,14 +39,16 @@ func (s *PayStatus) Complete(ctx context.Context) error {
 }
 
 func (s *PayStatus) Cancel(ctx context.Context) error {
-	fmt.Println("订单取消成功")
-	s.order.SetStatus(v1.OrderStatus_Cancel, s.repo)
+	orderID := s.order.(*Order).ID
+	s.log.WithContext(ctx).Warnf("订单取消成功, orderID: %d", orderID)
+	s.order.SetStatus(v1.OrderStatus_Cancel, s.repo, s.log.Logger())
 	return nil
 }
 
 func (s *PayStatus) Refunding(ctx context.Context) error {
-	fmt.Println("订单开始退款")
-	s.order.SetStatus(v1.OrderStatus_Refunding, s.repo)
+	orderID := s.order.(*Order).ID
+	s.log.WithContext(ctx).Warnf("订单开始退款, orderID: %d", orderID)
+	s.order.SetStatus(v1.OrderStatus_Refunding, s.repo, s.log.Logger())
 	return nil
 }
 

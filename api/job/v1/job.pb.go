@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.9
 // 	protoc        v5.27.2
-// source: job/v1/job.proto
+// source: api/job/v1/job.proto
 
 package v1
 
@@ -49,11 +49,11 @@ func (x JobName) String() string {
 }
 
 func (JobName) Descriptor() protoreflect.EnumDescriptor {
-	return file_job_v1_job_proto_enumTypes[0].Descriptor()
+	return file_api_job_v1_job_proto_enumTypes[0].Descriptor()
 }
 
 func (JobName) Type() protoreflect.EnumType {
-	return &file_job_v1_job_proto_enumTypes[0]
+	return &file_api_job_v1_job_proto_enumTypes[0]
 }
 
 func (x JobName) Number() protoreflect.EnumNumber {
@@ -62,14 +62,14 @@ func (x JobName) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use JobName.Descriptor instead.
 func (JobName) EnumDescriptor() ([]byte, []int) {
-	return file_job_v1_job_proto_rawDescGZIP(), []int{0}
+	return file_api_job_v1_job_proto_rawDescGZIP(), []int{0}
 }
 
-var File_job_v1_job_proto protoreflect.FileDescriptor
+var File_api_job_v1_job_proto protoreflect.FileDescriptor
 
-const file_job_v1_job_proto_rawDesc = "" +
+const file_api_job_v1_job_proto_rawDesc = "" +
 	"\n" +
-	"\x10job/v1/job.proto\x12\n" +
+	"\x14api/job/v1/job.proto\x12\n" +
 	"api.job.v1*\x19\n" +
 	"\aJobName\x12\x0e\n" +
 	"\n" +
@@ -78,22 +78,22 @@ const file_job_v1_job_proto_rawDesc = "" +
 	"api.job.v1P\x01Z\x15cyi-app/api/job/v1;v1b\x06proto3"
 
 var (
-	file_job_v1_job_proto_rawDescOnce sync.Once
-	file_job_v1_job_proto_rawDescData []byte
+	file_api_job_v1_job_proto_rawDescOnce sync.Once
+	file_api_job_v1_job_proto_rawDescData []byte
 )
 
-func file_job_v1_job_proto_rawDescGZIP() []byte {
-	file_job_v1_job_proto_rawDescOnce.Do(func() {
-		file_job_v1_job_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_job_v1_job_proto_rawDesc), len(file_job_v1_job_proto_rawDesc)))
+func file_api_job_v1_job_proto_rawDescGZIP() []byte {
+	file_api_job_v1_job_proto_rawDescOnce.Do(func() {
+		file_api_job_v1_job_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_job_v1_job_proto_rawDesc), len(file_api_job_v1_job_proto_rawDesc)))
 	})
-	return file_job_v1_job_proto_rawDescData
+	return file_api_job_v1_job_proto_rawDescData
 }
 
-var file_job_v1_job_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_job_v1_job_proto_goTypes = []any{
+var file_api_job_v1_job_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_api_job_v1_job_proto_goTypes = []any{
 	(JobName)(0), // 0: api.job.v1.JobName
 }
-var file_job_v1_job_proto_depIdxs = []int32{
+var file_api_job_v1_job_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -101,26 +101,26 @@ var file_job_v1_job_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_job_v1_job_proto_init() }
-func file_job_v1_job_proto_init() {
-	if File_job_v1_job_proto != nil {
+func init() { file_api_job_v1_job_proto_init() }
+func file_api_job_v1_job_proto_init() {
+	if File_api_job_v1_job_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_job_v1_job_proto_rawDesc), len(file_job_v1_job_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_job_v1_job_proto_rawDesc), len(file_api_job_v1_job_proto_rawDesc)),
 			NumEnums:      1,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_job_v1_job_proto_goTypes,
-		DependencyIndexes: file_job_v1_job_proto_depIdxs,
-		EnumInfos:         file_job_v1_job_proto_enumTypes,
+		GoTypes:           file_api_job_v1_job_proto_goTypes,
+		DependencyIndexes: file_api_job_v1_job_proto_depIdxs,
+		EnumInfos:         file_api_job_v1_job_proto_enumTypes,
 	}.Build()
-	File_job_v1_job_proto = out.File
-	file_job_v1_job_proto_goTypes = nil
-	file_job_v1_job_proto_depIdxs = nil
+	File_api_job_v1_job_proto = out.File
+	file_api_job_v1_job_proto_goTypes = nil
+	file_api_job_v1_job_proto_depIdxs = nil
 }

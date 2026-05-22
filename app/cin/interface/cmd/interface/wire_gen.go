@@ -38,12 +38,11 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	if err != nil {
 		return nil, nil, err
 	}
-	userRepo := data.NewUserRepo(dataData, logger)
+	userRepo := data.NewUserRepo(dataData, auth, logger)
 	userUseCase := biz.NewUserUseCase(userRepo, logger)
-	authUseCase := biz.NewAuthUseCase(userRepo, auth, logger)
 	orderRepo := data.NewOrderRepo(dataData, logger)
 	orderUseCase := biz.NewOrderUseCase(orderRepo, logger)
-	cinInterface := service.NewCinInterface(userUseCase, authUseCase, orderUseCase, logger, auth)
+	cinInterface := service.NewCinInterface(userUseCase, orderUseCase, logger, auth)
 	server2 := server.NewGRPCServer(grpcServer, cinInterface)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	server3 := server.NewHTTPServer(httpServer, cinInterface)

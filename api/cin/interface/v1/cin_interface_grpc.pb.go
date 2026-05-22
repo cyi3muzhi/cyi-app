@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.2
-// source: api/cin/interface/v1/cin_interface.proto
+// source: cin/interface/v1/cin_interface.proto
 
 package v1
 
@@ -23,7 +23,7 @@ const (
 	CinInterface_Login_FullMethodName          = "/api.cin.interface.v1.CinInterface/Login"
 	CinInterface_Register_FullMethodName       = "/api.cin.interface.v1.CinInterface/Register"
 	CinInterface_GetUserInfo_FullMethodName    = "/api.cin.interface.v1.CinInterface/GetUserInfo"
-	CinInterface_UserInfo_FullMethodName       = "/api.cin.interface.v1.CinInterface/UserInfo"
+	CinInterface_GetMyInfo_FullMethodName      = "/api.cin.interface.v1.CinInterface/GetMyInfo"
 	CinInterface_UpdateUserInfo_FullMethodName = "/api.cin.interface.v1.CinInterface/UpdateUserInfo"
 	CinInterface_CreateOrder_FullMethodName    = "/api.cin.interface.v1.CinInterface/CreateOrder"
 	CinInterface_PayOrder_FullMethodName       = "/api.cin.interface.v1.CinInterface/PayOrder"
@@ -40,7 +40,7 @@ type CinInterfaceClient interface {
 	// 获取用户信息
 	GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoReply, error)
 	// 获取个人信息
-	UserInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserInfoReply, error)
+	GetMyInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetMyInfoReply, error)
 	// 更新用户信息
 	UpdateUserInfo(ctx context.Context, in *UpdateUserInfoRequest, opts ...grpc.CallOption) (*UpdateUserInfoReply, error)
 	// 创建订单
@@ -87,10 +87,10 @@ func (c *cinInterfaceClient) GetUserInfo(ctx context.Context, in *GetUserInfoReq
 	return out, nil
 }
 
-func (c *cinInterfaceClient) UserInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserInfoReply, error) {
+func (c *cinInterfaceClient) GetMyInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetMyInfoReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UserInfoReply)
-	err := c.cc.Invoke(ctx, CinInterface_UserInfo_FullMethodName, in, out, cOpts...)
+	out := new(GetMyInfoReply)
+	err := c.cc.Invoke(ctx, CinInterface_GetMyInfo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ type CinInterfaceServer interface {
 	// 获取用户信息
 	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoReply, error)
 	// 获取个人信息
-	UserInfo(context.Context, *emptypb.Empty) (*UserInfoReply, error)
+	GetMyInfo(context.Context, *emptypb.Empty) (*GetMyInfoReply, error)
 	// 更新用户信息
 	UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoReply, error)
 	// 创建订单
@@ -164,8 +164,8 @@ func (UnimplementedCinInterfaceServer) Register(context.Context, *RegisterReq) (
 func (UnimplementedCinInterfaceServer) GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
 }
-func (UnimplementedCinInterfaceServer) UserInfo(context.Context, *emptypb.Empty) (*UserInfoReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UserInfo not implemented")
+func (UnimplementedCinInterfaceServer) GetMyInfo(context.Context, *emptypb.Empty) (*GetMyInfoReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMyInfo not implemented")
 }
 func (UnimplementedCinInterfaceServer) UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserInfo not implemented")
@@ -251,20 +251,20 @@ func _CinInterface_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CinInterface_UserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _CinInterface_GetMyInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CinInterfaceServer).UserInfo(ctx, in)
+		return srv.(CinInterfaceServer).GetMyInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: CinInterface_UserInfo_FullMethodName,
+		FullMethod: CinInterface_GetMyInfo_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CinInterfaceServer).UserInfo(ctx, req.(*emptypb.Empty))
+		return srv.(CinInterfaceServer).GetMyInfo(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -343,8 +343,8 @@ var CinInterface_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CinInterface_GetUserInfo_Handler,
 		},
 		{
-			MethodName: "UserInfo",
-			Handler:    _CinInterface_UserInfo_Handler,
+			MethodName: "GetMyInfo",
+			Handler:    _CinInterface_GetMyInfo_Handler,
 		},
 		{
 			MethodName: "UpdateUserInfo",
@@ -360,5 +360,5 @@ var CinInterface_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/cin/interface/v1/cin_interface.proto",
+	Metadata: "cin/interface/v1/cin_interface.proto",
 }

@@ -3,16 +3,19 @@ package biz
 import (
 	"context"
 	"errors"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 // CancelStatus 已取消状态
 type CancelStatus struct {
 	order OrderInterface
-	repo OrderRepo
+	repo  OrderRepo
+	log   *log.Helper
 }
 
-func NewCancelStatus(order OrderInterface, repo OrderRepo) *CancelStatus {
-	return &CancelStatus{order: order, repo: repo}
+func NewCancelStatus(order OrderInterface, repo OrderRepo, logger log.Logger) *CancelStatus {
+	return &CancelStatus{order: order, repo: repo, log: log.NewHelper(logger)}
 }
 
 func (s *CancelStatus) Pay(ctx context.Context, in *Order) error {

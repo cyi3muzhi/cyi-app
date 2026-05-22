@@ -40,6 +40,9 @@ volumes:
   # Grafana数据卷
   grafana_data:
     driver: local
+  # RabbitMQ数据卷
+  rabbitmq_data:
+    driver: local
 
 services:
   # Consul服务 - 用于服务发现和配置管理
@@ -82,6 +85,28 @@ services:
       - --maxmemory ${REDIS_MAXMEMORY:-1gb}
       - --maxmemory-policy ${REDIS_MAXMEMORY_POLICY:-allkeys-lru}
       - --appendonly yes  # 启用AOF持久化
+    networks:
+      - cyi-network
+
+  # RabbitMQ服务 - 用于消息队列
+  rabbitmq:
+    image: rabbitmq:4.3.0-management
+    container_name: rabbitmq
+    restart: always
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "${RABBITMQ_PORT}:5672"      # AMQP协议端口（应用连接）
+      - "${RABBITMQ_MANAGEMENT_PORT}:15672"  # Web管理界面端口
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-admin}      # 默认用户名
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-admin}  # 默认密码
+      - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_VHOST:-/}        # 默认虚拟主机
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - cyi-network
 

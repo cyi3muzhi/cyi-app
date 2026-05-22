@@ -3,11 +3,13 @@ package data
 import (
 	"context"
 	"cyi-app/app/cin/interface/internal/biz"
+	"cyi-app/app/cin/interface/internal/conf"
 	"fmt"
 	"time"
 
 	"golang.org/x/sync/singleflight"
 
+	v1 "cyi-app/api/cin/interface/v1"
 	usV1 "cyi-app/api/service/user/v1"
 
 	cr "cyi-app/pkg/util/redis"
@@ -23,13 +25,15 @@ type userRepo struct {
 	log  *log.Helper
 	data *Data
 	sg   *singleflight.Group
+	key  string
 }
 
-func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
+func NewUserRepo(data *Data, authKey *conf.Auth, logger log.Logger) biz.UserRepo {
 	return &userRepo{
 		log:  log.NewHelper(logger),
 		data: data,
 		sg:   &singleflight.Group{},
+		key:  authKey.ApiKey,
 	}
 }
 
@@ -158,4 +162,29 @@ func (r *userRepo) GetUser(ctx context.Context, id int64) (*biz.User, error) {
 		return nil, err
 	}
 	return result.(*biz.User), nil
+}
+
+func (r *userRepo) Register(ctx context.Context, req *v1.RegisterReq) error {
+	_, err := r.data.uc.Register(ctx, &usV1.RegisterRequest{
+		Username: req.Username,
+		Password: req.Password,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *userRepo) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginReply, error) {
+	reply, err := r.data.uc.Login(ctx, &usV1.LoginRequest{
+		Username: req.Username,
+		Password: req.Password,
+		ApiKey:   r.key,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &v1.LoginReply{
+		Token: reply.Token,
+	}, nil
 }

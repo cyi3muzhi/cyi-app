@@ -23,34 +23,6 @@ func ErrorUserNotExist(format string, args ...interface{}) *errors.Error {
 	return errors.New(404, CinInterfaceErrorReason_USER_NOT_EXIST.String(), fmt.Sprintf(format, args...))
 }
 
-// 用户已注册
-func IsUserAlreadyRegistered(err error) bool {
-	if err == nil {
-		return false
-	}
-	e := errors.FromError(err)
-	return e.Reason == CinInterfaceErrorReason_USER_ALREADY_REGISTERED.String() && e.Code == 409
-}
-
-// 用户已注册
-func ErrorUserAlreadyRegistered(format string, args ...interface{}) *errors.Error {
-	return errors.New(409, CinInterfaceErrorReason_USER_ALREADY_REGISTERED.String(), fmt.Sprintf(format, args...))
-}
-
-// 用户注册失败
-func IsUserRegisterFailed(err error) bool {
-	if err == nil {
-		return false
-	}
-	e := errors.FromError(err)
-	return e.Reason == CinInterfaceErrorReason_USER_REGISTER_FAILED.String() && e.Code == 400
-}
-
-// 用户注册失败
-func ErrorUserRegisterFailed(format string, args ...interface{}) *errors.Error {
-	return errors.New(400, CinInterfaceErrorReason_USER_REGISTER_FAILED.String(), fmt.Sprintf(format, args...))
-}
-
 // 用户不存在
 func IsUserNotFound(err error) bool {
 	if err == nil {
@@ -91,4 +63,18 @@ func IsUserUpdateFailed(err error) bool {
 // 修改用户信息失败
 func ErrorUserUpdateFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(400, CinInterfaceErrorReason_USER_UPDATE_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+// 订单不存在
+func IsOrderIdNotExist(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == CinInterfaceErrorReason_ORDER_ID_NOT_EXIST.String() && e.Code == 404
+}
+
+// 订单不存在
+func ErrorOrderIdNotExist(format string, args ...interface{}) *errors.Error {
+	return errors.New(404, CinInterfaceErrorReason_ORDER_ID_NOT_EXIST.String(), fmt.Sprintf(format, args...))
 }
