@@ -1,0 +1,46 @@
+# TiDB 配置示例
+# 将此文件复制为各服务的 config.yaml 即可使用 TiDB
+
+server:
+  http:
+    addr: 0.0.0.0:8000
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9000
+    timeout: 1s
+data:
+  database:
+    driver: mysql  # TiDB 兼容 MySQL 协议，所以 driver 还是 mysql
+    # TiDB 连接配置
+    # 注意：
+    # 1. 端口改为 4000（TiDB 默认端口）
+    # 2. 主机改为 tidb（Docker Compose 中的服务名）或 127.0.0.1
+    # 3. 默认用户 root，密码为空
+    source: root:@tcp(tidb:4000)/cin_test?parseTime=True&loc=Local&charset=utf8mb4
+  redis:
+    addr: redis:6379
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+    password: redis0411
+  oss:
+    endpoint: rustfs:9001
+    access_key: kZu5gGheApNDUWdEP0qX
+    secret_key: Wi69cUtLTem13xhYDQVPpCdIzXZ7BbOkwKfEun2v
+
+trace:
+  endpoint: jaeger:4318
+
+log:
+  level: info
+  enable_console: true
+  enable_file: false
+  log_dir: logs
+  time_format: "2006-01-02 15:04:05"
+  enable_color: true
+
+# TiDB 特定配置说明
+# 1. GORM 配置通常不需要修改
+# 2. TiDB 支持的事务隔离级别：REPEATABLE-READ（默认）、READ-COMMITTED
+# 3. 如需优化性能，可以考虑调整以下参数：
+#    - 添加 &tls=false（如果不需要 TLS）
+#    - 添加 &sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE'

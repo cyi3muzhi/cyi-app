@@ -3,7 +3,6 @@ package biz
 import (
 	"context"
 	v1 "cyi-app/api/service/order/v1"
-	"errors"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -20,27 +19,39 @@ func NewRefundingStatus(order OrderInterface, repo OrderRepo, logger log.Logger)
 }
 
 func (s *RefundingStatus) Pay(ctx context.Context, in *Order) error {
-	return errors.New("订单退款中，无法支付")
+	return NewOrderError(ErrOrderAlreadyRefunding, map[string]interface{}{
+		"orderID": in.ID,
+	})
 }
 
 func (s *RefundingStatus) Ship(ctx context.Context) error {
-	return errors.New("订单退款中，无法发货")
+	return NewOrderError(ErrOrderAlreadyRefunding, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *RefundingStatus) Receive(ctx context.Context) error {
-	return errors.New("订单退款中，无法收货")
+	return NewOrderError(ErrOrderAlreadyRefunding, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *RefundingStatus) Complete(ctx context.Context) error {
-	return errors.New("订单退款中，无法标记完成")
+	return NewOrderError(ErrOrderAlreadyRefunding, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *RefundingStatus) Cancel(ctx context.Context) error {
-	return errors.New("订单退款中，无法取消")
+	return NewOrderError(ErrOrderAlreadyRefunding, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *RefundingStatus) Refunding(ctx context.Context) error {
-	return errors.New("订单已在退款中，无需重复操作")
+	return NewOrderError(ErrOrderAlreadyRefunding, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *RefundingStatus) Refunded(ctx context.Context) error {

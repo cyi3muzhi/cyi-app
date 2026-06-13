@@ -3,7 +3,6 @@ package biz
 import (
 	"context"
 	v1 "cyi-app/api/service/order/v1"
-	"errors"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -31,15 +30,23 @@ func (s *WaitPayStatus) Pay(ctx context.Context, in *Order) error {
 }
 
 func (s *WaitPayStatus) Ship(ctx context.Context) error {
-	return errors.New("订单未支付，无法发货")
+	return NewOrderError(ErrOrderNotPaid, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *WaitPayStatus) Receive(ctx context.Context) error {
-	return errors.New("订单未发货，无法收货")
+	return NewOrderError(ErrOrderNotShipped, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *WaitPayStatus) Complete(ctx context.Context) error {
-	return errors.New("订单未完成流程，无法标记完成")
+	return NewOrderError(ErrOrderInvalidState, map[string]interface{}{
+		"orderID":       s.order.(*Order).ID,
+		"currentStatus": "wait_pay",
+		"targetStatus":  "complete",
+	})
 }
 
 func (s *WaitPayStatus) Cancel(ctx context.Context) error {
@@ -50,9 +57,13 @@ func (s *WaitPayStatus) Cancel(ctx context.Context) error {
 }
 
 func (s *WaitPayStatus) Refunding(ctx context.Context) error {
-	return errors.New("订单未支付，无法退款")
+	return NewOrderError(ErrOrderNotPaid, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *WaitPayStatus) Refunded(ctx context.Context) error {
-	return errors.New("订单未退款，无法标记已退款")
+	return NewOrderError(ErrOrderAlreadyRefunded, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }

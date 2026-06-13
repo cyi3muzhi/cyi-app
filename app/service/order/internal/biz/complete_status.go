@@ -2,7 +2,6 @@ package biz
 
 import (
 	"context"
-	"errors"
 	v1 "cyi-app/api/service/order/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -20,23 +19,33 @@ func NewCompleteStatus(order OrderInterface, repo OrderRepo, logger log.Logger) 
 }
 
 func (s *CompleteStatus) Pay(ctx context.Context, in *Order) error {
-	return errors.New("订单已完成，无需支付")
+	return NewOrderError(ErrOrderAlreadyCompleted, map[string]interface{}{
+		"orderID": in.ID,
+	})
 }
 
 func (s *CompleteStatus) Ship(ctx context.Context) error {
-	return errors.New("订单已完成，无需发货")
+	return NewOrderError(ErrOrderAlreadyCompleted, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *CompleteStatus) Receive(ctx context.Context) error {
-	return errors.New("订单已完成，无需收货")
+	return NewOrderError(ErrOrderAlreadyCompleted, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *CompleteStatus) Complete(ctx context.Context) error {
-	return errors.New("订单已完成，无需重复标记")
+	return NewOrderError(ErrOrderAlreadyCompleted, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *CompleteStatus) Cancel(ctx context.Context) error {
-	return errors.New("订单已完成，无法取消")
+	return NewOrderError(ErrOrderAlreadyCompleted, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *CompleteStatus) Refunding(ctx context.Context) error {
@@ -47,5 +56,7 @@ func (s *CompleteStatus) Refunding(ctx context.Context) error {
 }
 
 func (s *CompleteStatus) Refunded(ctx context.Context) error {
-	return errors.New("订单未开始退款，无法标记已退款")
+	return NewOrderError(ErrOrderAlreadyRefunding, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }

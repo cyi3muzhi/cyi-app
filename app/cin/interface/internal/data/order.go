@@ -3,6 +3,9 @@ package data
 import (
 	"context"
 	"cyi-app/app/cin/interface/internal/biz"
+	cr "cyi-app/pkg/util/redis"
+	"fmt"
+	"time"
 
 	"golang.org/x/sync/singleflight"
 
@@ -48,17 +51,38 @@ func (r *orderRepo) PayOrder(ctx context.Context, orderID int64) error {
 }
 
 func (r *orderRepo) GetOrder(ctx context.Context, orderID int64) (*biz.Order, error) {
-	order, err := r.data.oc.GetOrder(ctx, &orderV1.GetOrderRequest{
-		OrderId: orderID,
+	result, err, _ := r.sg.Do(fmt.Sprintf("get_order_%d", orderID), func() (interface{}, error) {
+		lockKey := fmt.Sprintf("lock:order:id:%d", orderID)
+		lock := cr.AcquireDistributedLock(ctx, r.data.rc, lockKey, 10*time.Second)
+		if !lock {
+			r.log.Errorf("Failed to acquire distributed lock for order %d", orderID)
+			return nil, fmt.Errorf("failed to acquire distributed lock for order %d", orderID)
+		}
+		defer func() {
+			if err := cr.ReleaseDistributedLock(ctx, r.data.rc, lockKey); err != nil {
+				r.log.Errorf("Failed to release distributed lock for order %d: %v", orderID, err)
+			}
+		}()
+
+		order, err := r.data.oc.GetOrder(ctx, &orderV1.GetOrderRequest{
+			OrderId: orderID,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return &biz.Order{
+			ID:        order.OrderId,
+			UserID:    order.UserId,
+			ProductID: order.ProductId,
+			Count:     order.Count,
+			Status:    order.Status,
+		}, nil
 	})
+
 	if err != nil {
 		return nil, err
 	}
-	return &biz.Order{
-		ID:        order.OrderId,
-		UserID:    order.UserId,
-		ProductID: order.ProductId,
-		Count:     order.Count,
-		Status:    order.Status,
-	}, nil
+
+	return result.(*biz.Order), nil
 }

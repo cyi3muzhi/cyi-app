@@ -2,7 +2,6 @@ package biz
 
 import (
 	"context"
-	"errors"
 	v1 "cyi-app/api/service/order/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -19,14 +18,16 @@ func NewShipStatus(order OrderInterface, repo OrderRepo, logger log.Logger) *Shi
 	return &ShipStatus{order: order, repo: repo, log: log.NewHelper(logger)}
 }
 
-
-
 func (s *ShipStatus) Pay(ctx context.Context, in *Order) error {
-	return errors.New("订单已支付，无需重复支付")
+	return NewOrderError(ErrOrderAlreadyPaid, map[string]interface{}{
+		"orderID": in.ID,
+	})
 }
 
 func (s *ShipStatus) Ship(ctx context.Context) error {
-	return errors.New("订单已发货，无需重复发货")
+	return NewOrderError(ErrOrderAlreadyShipped, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *ShipStatus) Receive(ctx context.Context) error {
@@ -37,11 +38,17 @@ func (s *ShipStatus) Receive(ctx context.Context) error {
 }
 
 func (s *ShipStatus) Complete(ctx context.Context) error {
-	return errors.New("订单未收货，无法标记完成")
+	return NewOrderError(ErrOrderInvalidState, map[string]interface{}{
+		"orderID":       s.order.(*Order).ID,
+		"currentStatus": "ship",
+		"targetStatus":  "complete",
+	})
 }
 
 func (s *ShipStatus) Cancel(ctx context.Context) error {
-	return errors.New("订单已发货，无法取消")
+	return NewOrderError(ErrOrderAlreadyShipped, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }
 
 func (s *ShipStatus) Refunding(ctx context.Context) error {
@@ -52,5 +59,7 @@ func (s *ShipStatus) Refunding(ctx context.Context) error {
 }
 
 func (s *ShipStatus) Refunded(ctx context.Context) error {
-	return errors.New("订单未开始退款，无法标记已退款")
+	return NewOrderError(ErrOrderAlreadyRefunding, map[string]interface{}{
+		"orderID": s.order.(*Order).ID,
+	})
 }

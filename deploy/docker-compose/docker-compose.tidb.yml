@@ -1,0 +1,103 @@
+# TiDB 分布式数据库 Docker Compose 配置
+# 
+# 启动方式：
+#   docker-compose -f docker-compose.tidb.yml up -d
+# 
+# 连接信息：
+#   MySQL客户端: mysql -h 127.0.0.1 -P 4000 -u root
+#   PD Dashboard: http://localhost:2379/dashboard
+#   TiDB Status: http://localhost:10080
+
+services:
+  pd:
+    image: pingcap/pd:v7.5.0
+    container_name: tidb-pd
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    volumes:
+      - pd_data:/data
+    command:
+      - --name=pd0
+      - --data-dir=/data
+      - --client-urls=http://0.0.0.0:2379
+      - --peer-urls=http://0.0.0.0:2380
+      - --advertise-client-urls=http://pd:2379
+      - --advertise-peer-urls=http://pd:2380
+      - --initial-cluster=pd0=http://pd:2380
+      - --log-level=info
+    networks:
+      - cyi-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2379/pd/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  tikv:
+    image: pingcap/tikv:v7.5.0
+    container_name: tidb-tikv
+    depends_on:
+      pd:
+        condition: service_healthy
+    ports:
+      - "20160:20160"
+    volumes:
+      - tikv_data:/data
+    command:
+      - --addr=0.0.0.0:20160
+      - --advertise-addr=tikv:20160
+      - --data-dir=/data
+      - --pd=pd:2379
+      - --log-level=info
+    networks:
+      - cyi-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:20160/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  tidb:
+    image: pingcap/tidb:v7.5.0
+    container_name: tidb-server
+    depends_on:
+      tikv:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+      - "10080:10080"
+    volumes:
+      - tidb_data:/data
+    command:
+      - --store=tikv
+      - --path=pd:2379
+      - --host=0.0.0.0
+      - --port=4000
+      - --status=10080
+      - --log-level=info
+    networks:
+      - cyi-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "-h", "localhost", "-P", "4000", "-u", "root", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  pd_data:
+    driver: local
+  tikv_data:
+    driver: local
+  tidb_data:
+    driver: local
+
+networks:
+  cyi-network:
+    driver: bridge
+
+# 注意：
+# 1. 如果无法拉取镜像，请检查网络代理设置
+# 2. 首次启动可能需要较长时间（5-10分钟）
+# 3. 建议配置 Docker 使用国内镜像加速
+# 4. 生产环境建议使用 TiUP 或 KubeSphere 部署

@@ -64,7 +64,7 @@ APP_NAME=$(notdir $(APP_RELATIVE_PATH))
 DOCKER_IMAGE_NAME=$(subst /,-,$(APP_RELATIVE_PATH))
 
 # 生成 Docker 镜像名称
-DOCKER_IMAGE=go-kratos/$(DOCKER_IMAGE_NAME):0.1.0
+DOCKER_IMAGE=cyi3muz/$(DOCKER_IMAGE_NAME):0.1.0
 
 # 目标定义
 
