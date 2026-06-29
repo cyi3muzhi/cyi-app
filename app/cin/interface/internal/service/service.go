@@ -18,17 +18,17 @@ type CinInterface struct {
 	v1.UnimplementedCinInterfaceServer
 	log  *log.Helper
 	uc   *biz.UserUseCase
-	// ac   *biz.AuthUseCase
 	oc   *biz.OrderUseCase
+	pc   *biz.ProductUseCase
 	auth *conf.Auth
 }
 
-func NewCinInterface(uc *biz.UserUseCase, oc *biz.OrderUseCase, logger log.Logger, auth *conf.Auth) *CinInterface {
+func NewCinInterface(uc *biz.UserUseCase, oc *biz.OrderUseCase, pc *biz.ProductUseCase, logger log.Logger, auth *conf.Auth) *CinInterface {
 	return &CinInterface{
 		log:  log.NewHelper(logger),
 		uc:   uc,
-		// ac:   ac,
 		oc:   oc,
+		pc:   pc,
 		auth: auth,
 	}
 }

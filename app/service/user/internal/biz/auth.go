@@ -2,6 +2,7 @@ package biz
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	v1 "cyi-app/api/service/user/v1"
@@ -17,6 +18,7 @@ func (uc *UserUseCase) Register(ctx context.Context, u *User) error {
 	// 业务逻辑
 	// 查看用户是否存在
 	user, err := uc.repo.FindByUsername(ctx, u.Username)
+	fmt.Println("user:", user)
 	if err == nil && user != nil && user.ID != 0 {
 		uc.log.Infof("User already exists: %v", user)
 		// 用户已存在
@@ -25,13 +27,14 @@ func (uc *UserUseCase) Register(ctx context.Context, u *User) error {
 
 	// 检查是否是其他错误（非用户不存在错误）
 	if err != nil && !v1.IsUserNotFound(err) {
+		fmt.Printf("Register err: %v, isUserNotFound: %v\n", err, v1.IsUserNotFound(err))
 		// 记录错误日志
 		uc.log.Errorf("Failed to check user existence: %v", err)
 		return v1.ErrorUserRegisterFailed("check user existence failed")
 	}
 
 	// 添加用户
-	_, err = uc.repo.CreateUser(ctx, u)
+	_, err = uc.CreateUser(ctx, u)
 	if err != nil {
 		uc.log.Errorf("Failed to add user: %v", err)
 		return v1.ErrorUserRegisterFailed("add user failed")
@@ -50,7 +53,7 @@ func (uc *UserUseCase) Login(ctx context.Context, in *User, apiKey string) (*v1.
 		return nil, v1.ErrorUserNotFound("user not found")
 	}
 
-	err = uc.repo.VerifyPassword(ctx, user)
+	err = uc.repo.VerifyPassword(ctx, in)
 	if err != nil {
 		// 密码错误
 		uc.log.Errorf("Password error: %v", err)

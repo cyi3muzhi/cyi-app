@@ -36,9 +36,11 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 		return nil, nil, err
 	}
 	productRepo := data.NewProductRepo(dataData, logger)
-	productUseCase := biz.NewProductUseCase(productRepo)
+	stockRepo := data.NewStockRepo(dataData, logger)
+	productUseCase := biz.NewProductUseCase(productRepo, stockRepo)
+	stockUseCase := biz.NewStockUseCase(stockRepo)
 	productService := service.NewProductService(productUseCase, logger)
-	stockService := service.NewStockService(productUseCase, logger)
+	stockService := service.NewStockService(stockUseCase, logger)
 	server2 := server.NewServer(grpcServer, productService, stockService)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, server2, registrar)

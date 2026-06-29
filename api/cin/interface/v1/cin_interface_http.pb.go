@@ -21,6 +21,7 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 const OperationCinInterfaceCreateOrder = "/api.cin.interface.v1.CinInterface/CreateOrder"
+const OperationCinInterfaceCreateProduct = "/api.cin.interface.v1.CinInterface/CreateProduct"
 const OperationCinInterfaceGetMyInfo = "/api.cin.interface.v1.CinInterface/GetMyInfo"
 const OperationCinInterfaceGetUserInfo = "/api.cin.interface.v1.CinInterface/GetUserInfo"
 const OperationCinInterfaceLogin = "/api.cin.interface.v1.CinInterface/Login"
@@ -31,6 +32,8 @@ const OperationCinInterfaceUpdateUserInfo = "/api.cin.interface.v1.CinInterface/
 type CinInterfaceHTTPServer interface {
 	// CreateOrder 创建订单
 	CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderReply, error)
+	// CreateProduct 创建商品
+	CreateProduct(context.Context, *CreateProductRequest) (*CreateProductReply, error)
 	// GetMyInfo 获取个人信息
 	GetMyInfo(context.Context, *emptypb.Empty) (*GetMyInfoReply, error)
 	// GetUserInfo 获取用户信息
@@ -54,6 +57,7 @@ func RegisterCinInterfaceHTTPServer(s *http.Server, srv CinInterfaceHTTPServer) 
 	r.PUT("/user/v1/update", _CinInterface_UpdateUserInfo0_HTTP_Handler(srv))
 	r.POST("/order/v1/create", _CinInterface_CreateOrder0_HTTP_Handler(srv))
 	r.POST("/order/v1/pay", _CinInterface_PayOrder0_HTTP_Handler(srv))
+	r.POST("/product/v1/create", _CinInterface_CreateProduct0_HTTP_Handler(srv))
 }
 
 func _CinInterface_Login0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx http.Context) error {
@@ -207,9 +211,33 @@ func _CinInterface_PayOrder0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx h
 	}
 }
 
+func _CinInterface_CreateProduct0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CreateProductRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationCinInterfaceCreateProduct)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CreateProduct(ctx, req.(*CreateProductRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CreateProductReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type CinInterfaceHTTPClient interface {
 	// CreateOrder 创建订单
 	CreateOrder(ctx context.Context, req *CreateOrderRequest, opts ...http.CallOption) (rsp *CreateOrderReply, err error)
+	// CreateProduct 创建商品
+	CreateProduct(ctx context.Context, req *CreateProductRequest, opts ...http.CallOption) (rsp *CreateProductReply, err error)
 	// GetMyInfo 获取个人信息
 	GetMyInfo(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *GetMyInfoReply, err error)
 	// GetUserInfo 获取用户信息
@@ -238,6 +266,20 @@ func (c *CinInterfaceHTTPClientImpl) CreateOrder(ctx context.Context, in *Create
 	pattern := "/order/v1/create"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationCinInterfaceCreateOrder))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// CreateProduct 创建商品
+func (c *CinInterfaceHTTPClientImpl) CreateProduct(ctx context.Context, in *CreateProductRequest, opts ...http.CallOption) (*CreateProductReply, error) {
+	var out CreateProductReply
+	pattern := "/product/v1/create"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationCinInterfaceCreateProduct))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

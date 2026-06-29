@@ -3,9 +3,11 @@ package data
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
+	v1 "cyi-app/api/cin/interface/v1"
 	"cyi-app/app/service/user/internal/biz"
 	"cyi-app/app/service/user/internal/data/curd"
 	mod "cyi-app/app/service/user/internal/data/models"
@@ -16,6 +18,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 var userCacheKeyByUsername = func(username string) string {
@@ -122,6 +125,7 @@ func (r *userRepo) getUser(ctx context.Context, cacheKey string, query *mod.User
 	// 1. 尝试从缓存获取
 	var target *mod.User
 	err := cr.GetRedis(ctx, r.cache, cacheKey, &target)
+	fmt.Println("target:", target)
 	if err == nil && target != nil {
 		return &biz.User{
 			ID:       target.ID,
@@ -135,10 +139,13 @@ func (r *userRepo) getUser(ctx context.Context, cacheKey string, query *mod.User
 	// 2. 缓存未命中，从数据库查询
 	user, err := s.WithContext(ctx).QueryWith(*query)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, v1.ErrorUserNotFound("user not found")
+		}
 		return nil, err
 	}
 	if user == nil || user.ID == 0 {
-		return nil, errors.New("user not found")
+		return nil, v1.ErrorUserNotFound("user not found")
 	}
 
 	// 3. 更新缓存
@@ -163,7 +170,7 @@ func (r *userRepo) UpdateUser(ctx context.Context, u *biz.User) error {
 		return err
 	}
 	if info.RowsAffected == 0 {
-		return errors.New("user not found")
+		return v1.ErrorUserNotFound("user not found")
 	}
 
 	// cache

@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"cyi-app/app/service/product/internal/biz"
+	"cyi-app/app/service/product/internal/data/curd"
 	mod "cyi-app/app/service/product/internal/data/models"
 	"cyi-app/pkg/util/convert"
 
@@ -21,13 +22,17 @@ func NewStockRepo(data *Data, logger log.Logger) biz.StockRepo {
 }
 
 func (r *stockRepo) CreateStock(ctx context.Context, in *biz.Stock) error {
-	Stock := &mod.Stock{}
-	convert.Convert(in, Stock)
+	stock := &mod.Stock{}
+	convert.Convert(in, stock)
+	if err := curd.Stock.WithContext(ctx).Create(stock); err != nil {
+		return err
+	}
+	in.ID = stock.ID
 	return nil
 }
 
 func (r *stockRepo) UpdateStock(ctx context.Context, in *biz.Stock) error {
-	Stock := &mod.Stock{}
-	convert.Convert(in, Stock)
+	stock := &mod.Stock{}
+	convert.Convert(in, stock)
 	return nil
 }

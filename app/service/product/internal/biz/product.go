@@ -18,15 +18,22 @@ type Product struct {
 }
 
 type ProductUseCase struct {
-	repo ProductRepo
+	repo      ProductRepo
+	stockRepo StockRepo
 }
 
-func NewProductUseCase(repo ProductRepo) *ProductUseCase {
-	return &ProductUseCase{repo: repo}
+func NewProductUseCase(repo ProductRepo, stockRepo StockRepo) *ProductUseCase {
+	return &ProductUseCase{repo: repo, stockRepo: stockRepo}
 }
 
 func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error {
-	return uc.repo.CreateProduct(ctx, in)
+	if err := uc.repo.CreateProduct(ctx, in); err != nil {
+		return err
+	}
+	// 创建商品后初始化库存
+	return uc.stockRepo.CreateStock(ctx, &Stock{
+		ProductID: in.ID,
+	})
 }
 
 func (uc *ProductUseCase) UpdateProduct(ctx context.Context, in *Product) error {

@@ -32,9 +32,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	discovery := server.NewDiscovery(registry)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	universalClient := data.NewRedisClient(confData, logger)
 	client := data.NewAsynqClient(universalClient)
-	dataData, cleanup, err := data.NewData(confData, userClient, orderClient, universalClient, logger, client)
+	dataData, cleanup, err := data.NewData(confData, userClient, orderClient, productClient, universalClient, logger, client)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -42,7 +43,9 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	userUseCase := biz.NewUserUseCase(userRepo, logger)
 	orderRepo := data.NewOrderRepo(dataData, logger)
 	orderUseCase := biz.NewOrderUseCase(orderRepo, logger)
-	cinInterface := service.NewCinInterface(userUseCase, orderUseCase, logger, auth)
+	productRepo := data.NewProductRepo(dataData, logger)
+	productUseCase := biz.NewProductUseCase(productRepo, logger)
+	cinInterface := service.NewCinInterface(userUseCase, orderUseCase, productUseCase, logger, auth)
 	server2 := server.NewGRPCServer(grpcServer, cinInterface)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	server3 := server.NewHTTPServer(httpServer, cinInterface)
