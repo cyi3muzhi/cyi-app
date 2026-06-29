@@ -9,61 +9,45 @@ import (
 
 // WaitPayStatus 待支付状态
 type WaitPayStatus struct {
-	order OrderInterface
-	repo  OrderRepo
-	log   *log.Helper
+	statusBase
 }
 
 func NewWaitPayStatus(order OrderInterface, repo OrderRepo, logger log.Logger) *WaitPayStatus {
-	return &WaitPayStatus{order: order, repo: repo, log: log.NewHelper(logger)}
-}
-
-func (s *WaitPayStatus) Pay(ctx context.Context, in *Order) error {
-	s.log.WithContext(ctx).Infof("订单支付成功, orderID: %d, userID: %d", in.ID, in.UserID)
-	s.order.SetStatus(v1.OrderStatus_Pay, s.repo, s.log.Logger())
-	in.Status = v1.OrderStatus_Pay
-	if err := s.repo.UpdateOrder(ctx, in); err != nil {
-		s.log.WithContext(ctx).Errorf("订单支付后更新状态失败, orderID: %d, error: %v", in.ID, err)
-		return err
+	return &WaitPayStatus{
+		statusBase: statusBase{
+			order: order,
+			repo:  repo,
+			log:   log.NewHelper(logger),
+		},
 	}
-	return nil
 }
 
-func (s *WaitPayStatus) Ship(ctx context.Context) error {
-	return NewOrderError(ErrOrderNotPaid, map[string]interface{}{
-		"orderID": s.order.(*Order).ID,
-	})
+func (s *WaitPayStatus) Pay(ctx context.Context, order *Order) error {
+	s.log.WithContext(ctx).Infof("订单支付成功, orderID: %d, userID: %d", order.ID, order.UserID)
+	return s.transitionTo(ctx, order, v1.OrderStatus_Pay)
 }
 
-func (s *WaitPayStatus) Receive(ctx context.Context) error {
-	return NewOrderError(ErrOrderNotShipped, map[string]interface{}{
-		"orderID": s.order.(*Order).ID,
-	})
+func (s *WaitPayStatus) Ship(ctx context.Context, order *Order) error {
+	return v1.ErrorOrderStatusInvalid("订单未支付，无法执行该操作, orderID=%d", order.ID)
 }
 
-func (s *WaitPayStatus) Complete(ctx context.Context) error {
-	return NewOrderError(ErrOrderInvalidState, map[string]interface{}{
-		"orderID":       s.order.(*Order).ID,
-		"currentStatus": "wait_pay",
-		"targetStatus":  "complete",
-	})
+func (s *WaitPayStatus) Receive(ctx context.Context, order *Order) error {
+	return v1.ErrorOrderStatusInvalid("订单未发货，无法执行该操作, orderID=%d", order.ID)
 }
 
-func (s *WaitPayStatus) Cancel(ctx context.Context) error {
-	orderID := s.order.(*Order).ID
-	s.log.WithContext(ctx).Warnf("订单取消成功, orderID: %d", orderID)
-	s.order.SetStatus(v1.OrderStatus_Cancel, s.repo, s.log.Logger())
-	return nil
+func (s *WaitPayStatus) Complete(ctx context.Context, order *Order) error {
+	return v1.ErrorOrderStatusInvalid("订单状态无效，无法执行该操作, orderID=%d, currentStatus=wait_pay", order.ID)
 }
 
-func (s *WaitPayStatus) Refunding(ctx context.Context) error {
-	return NewOrderError(ErrOrderNotPaid, map[string]interface{}{
-		"orderID": s.order.(*Order).ID,
-	})
+func (s *WaitPayStatus) Cancel(ctx context.Context, order *Order) error {
+	s.log.WithContext(ctx).Warnf("订单取消成功, orderID: %d", order.ID)
+	return s.transitionTo(ctx, order, v1.OrderStatus_Cancel)
 }
 
-func (s *WaitPayStatus) Refunded(ctx context.Context) error {
-	return NewOrderError(ErrOrderAlreadyRefunded, map[string]interface{}{
-		"orderID": s.order.(*Order).ID,
-	})
+func (s *WaitPayStatus) Refunding(ctx context.Context, order *Order) error {
+	return v1.ErrorOrderStatusInvalid("订单未支付，无法执行该操作, orderID=%d", order.ID)
+}
+
+func (s *WaitPayStatus) Refunded(ctx context.Context, order *Order) error {
+	return v1.ErrorOrderStatusInvalid("订单已退款，无需重复操作, orderID=%d", order.ID)
 }

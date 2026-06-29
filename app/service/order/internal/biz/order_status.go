@@ -13,22 +13,40 @@ type OrderInterface interface {
 	GetStatus() v1.OrderStatus
 }
 
-// OrderStatus 订单状态接口
+// statusBase 状态处理器基础结构，提供统一的状态转换方法
+type statusBase struct {
+	order OrderInterface
+	repo  OrderRepo
+	log   *log.Helper
+}
+
+// transitionTo 统一的状态转换方法，更新内存状态并持久化到数据库
+func (b *statusBase) transitionTo(ctx context.Context, order *Order, newStatus v1.OrderStatus) error {
+	order.Status = newStatus
+	b.order.SetStatus(newStatus, b.repo, b.log.Logger())
+	if err := b.repo.UpdateOrder(ctx, order); err != nil {
+		b.log.WithContext(ctx).Errorf("订单状态更新失败, orderID: %d, newStatus: %v, error: %v", order.ID, newStatus, err)
+		return err
+	}
+	return nil
+}
+
+// OrderStatus 订单状态接口，所有方法统一接收 order 参数，消除类型断言依赖
 type OrderStatus interface {
 	// 支付
-	Pay(ctx context.Context, in *Order) error
+	Pay(ctx context.Context, order *Order) error
 	// 发货
-	Ship(ctx context.Context) error
+	Ship(ctx context.Context, order *Order) error
 	// 收货
-	Receive(ctx context.Context) error
+	Receive(ctx context.Context, order *Order) error
 	// 完成
-	Complete(ctx context.Context) error
+	Complete(ctx context.Context, order *Order) error
 	// 取消
-	Cancel(ctx context.Context) error
+	Cancel(ctx context.Context, order *Order) error
 	// 退款中
-	Refunding(ctx context.Context) error
+	Refunding(ctx context.Context, order *Order) error
 	// 已退款
-	Refunded(ctx context.Context) error
+	Refunded(ctx context.Context, order *Order) error
 }
 
 // NewOrderStatusHandler 创建订单状态处理器
@@ -57,7 +75,6 @@ func NewOrderStatusHandler(order OrderInterface, repo OrderRepo, logger log.Logg
 	}
 }
 
-
 // GetStatus 获取订单状态
 func (o *Order) GetStatus() v1.OrderStatus {
 	return o.Status
@@ -69,37 +86,58 @@ func (o *Order) SetStatus(newStatus v1.OrderStatus, repo OrderRepo, logger log.L
 	o.statusHandler = NewOrderStatusHandler(o, repo, logger)
 }
 
-// 支付
-func (o *Order) Pay(ctx context.Context, in *Order) error {
-	return o.statusHandler.Pay(ctx, in)
+// Pay 支付订单
+func (o *Order) Pay(ctx context.Context) error {
+	if o.statusHandler == nil {
+		return v1.ErrorOrderStatusInvalid("订单状态无效，无法执行该操作, orderID=%d", o.ID)
+	}
+	return o.statusHandler.Pay(ctx, o)
 }
 
-// 发货
+// Ship 发货
 func (o *Order) Ship(ctx context.Context) error {
-	return o.statusHandler.Ship(ctx)
+	if o.statusHandler == nil {
+		return v1.ErrorOrderStatusInvalid("订单状态无效，无法执行该操作, orderID=%d", o.ID)
+	}
+	return o.statusHandler.Ship(ctx, o)
 }
 
-// 收货
+// Receive 收货
 func (o *Order) Receive(ctx context.Context) error {
-	return o.statusHandler.Receive(ctx)
+	if o.statusHandler == nil {
+		return v1.ErrorOrderStatusInvalid("订单状态无效，无法执行该操作, orderID=%d", o.ID)
+	}
+	return o.statusHandler.Receive(ctx, o)
 }
 
-// 完成
+// Complete 完成
 func (o *Order) Complete(ctx context.Context) error {
-	return o.statusHandler.Complete(ctx)
+	if o.statusHandler == nil {
+		return v1.ErrorOrderStatusInvalid("订单状态无效，无法执行该操作, orderID=%d", o.ID)
+	}
+	return o.statusHandler.Complete(ctx, o)
 }
 
-// 取消
+// Cancel 取消
 func (o *Order) Cancel(ctx context.Context) error {
-	return o.statusHandler.Cancel(ctx)
+	if o.statusHandler == nil {
+		return v1.ErrorOrderStatusInvalid("订单状态无效，无法执行该操作, orderID=%d", o.ID)
+	}
+	return o.statusHandler.Cancel(ctx, o)
 }
 
-// 退款中
+// Refunding 退款中
 func (o *Order) Refunding(ctx context.Context) error {
-	return o.statusHandler.Refunding(ctx)
+	if o.statusHandler == nil {
+		return v1.ErrorOrderStatusInvalid("订单状态无效，无法执行该操作, orderID=%d", o.ID)
+	}
+	return o.statusHandler.Refunding(ctx, o)
 }
 
-// 已退款
+// Refunded 已退款
 func (o *Order) Refunded(ctx context.Context) error {
-	return o.statusHandler.Refunded(ctx)
+	if o.statusHandler == nil {
+		return v1.ErrorOrderStatusInvalid("订单状态无效，无法执行该操作, orderID=%d", o.ID)
+	}
+	return o.statusHandler.Refunded(ctx, o)
 }

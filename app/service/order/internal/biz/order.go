@@ -50,8 +50,8 @@ func (uc *OrderUseCase) UpdateOrder(ctx context.Context, in *Order) error {
 	return uc.repo.UpdateOrder(ctx, in)
 }
 
-// GetOrderWithStatus 查询订单并初始化状态处理器
-func (uc *OrderUseCase) GetOrderWithStatus(ctx context.Context, orderID int64) (*Order, error) {
+// getOrderWithStatus 查询订单并初始化状态处理器
+func (uc *OrderUseCase) getOrderWithStatus(ctx context.Context, orderID int64) (*Order, error) {
 	order, err := uc.repo.GetOrder(ctx, orderID)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (uc *OrderUseCase) GetOrderWithStatus(ctx context.Context, orderID int64) (
 
 // GetOrderWithVerify 查询订单并校验权限
 func (uc *OrderUseCase) VerifyOrder(ctx context.Context, orderID int64) error {
-	order, err := uc.GetOrderWithStatus(ctx, orderID)
+	order, err := uc.getOrderWithStatus(ctx, orderID)
 	if err != nil {
 		return err
 	}
@@ -80,9 +80,9 @@ func (uc *OrderUseCase) VerifyOrder(ctx context.Context, orderID int64) error {
 
 // Pay 支付订单
 func (uc *OrderUseCase) Pay(ctx context.Context, in *Order) error {
-	order, err := uc.GetOrderWithStatus(ctx, in.ID)
+	order, err := uc.getOrderWithStatus(ctx, in.ID)
 	if err != nil {
 		return err
 	}
-	return order.Pay(ctx, in)
+	return order.Pay(ctx)
 }
