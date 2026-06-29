@@ -37,10 +37,13 @@ func (s *ProductService) CreateProduct(ctx context.Context, req *v1.CreateProduc
 }
 
 func (s *ProductService) UpdateProduct(ctx context.Context, req *v1.UpdateProductRequest) (*v1.UpdateProductReply, error) {
-	in := &biz.Product{}
-	convert.Convert(req, in)
-	err := s.uc.UpdateProduct(ctx, in)
-	if err != nil {
+	in := &biz.Product{
+		ID:          req.ProductId,
+		Name:        req.Name,
+		Description: req.Description,
+		Price:       req.Price,
+	}
+	if err := s.uc.UpdateProduct(ctx, in); err != nil {
 		return nil, err
 	}
 	return &v1.UpdateProductReply{}, nil
@@ -51,7 +54,17 @@ func (s *ProductService) DeleteProduct(ctx context.Context, req *v1.DeleteProduc
 }
 
 func (s *ProductService) GetProduct(ctx context.Context, req *v1.GetProductRequest) (*v1.GetProductReply, error) {
-	return &v1.GetProductReply{}, nil
+	product, err := s.uc.GetProduct(ctx, req.ProductId)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.GetProductReply{
+		ProductId:   product.ID,
+		Name:        product.Name,
+		Description: product.Description,
+		Price:       product.Price,
+		Status:      product.Status,
+	}, nil
 }
 
 func (s *ProductService) ListProduct(ctx context.Context, req *v1.ListProductRequest) (*v1.ListProductReply, error) {

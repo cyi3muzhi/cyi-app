@@ -57,6 +57,12 @@ func (m *CreateProductRequest) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Name
+
+	// no validation rules for Description
+
+	// no validation rules for Price
+
 	if len(errors) > 0 {
 		return CreateProductRequestMultiError(errors)
 	}
@@ -159,6 +165,8 @@ func (m *CreateProductReply) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for ProductId
+
 	if len(errors) > 0 {
 		return CreateProductReplyMultiError(errors)
 	}
@@ -260,6 +268,14 @@ func (m *UpdateProductRequest) validate(all bool) error {
 	}
 
 	var errors []error
+
+	// no validation rules for ProductId
+
+	// no validation rules for Name
+
+	// no validation rules for Description
+
+	// no validation rules for Price
 
 	if len(errors) > 0 {
 		return UpdateProductRequestMultiError(errors)
@@ -669,6 +685,8 @@ func (m *GetProductRequest) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for ProductId
+
 	if len(errors) > 0 {
 		return GetProductRequestMultiError(errors)
 	}
@@ -770,6 +788,16 @@ func (m *GetProductReply) validate(all bool) error {
 	}
 
 	var errors []error
+
+	// no validation rules for ProductId
+
+	// no validation rules for Name
+
+	// no validation rules for Description
+
+	// no validation rules for Price
+
+	// no validation rules for Status
 
 	if len(errors) > 0 {
 		return GetProductReplyMultiError(errors)

@@ -9,6 +9,7 @@ option java_package = "api.service.product.v1";
 service Stock {
 	rpc CreateStock (CreateStockRequest) returns (CreateStockReply);
 	rpc UpdateStock (UpdateStockRequest) returns (UpdateStockReply);
+	rpc ReserveStock (ReserveStockRequest) returns (ReserveStockReply);
 	rpc DeleteStock (DeleteStockRequest) returns (DeleteStockReply);
 	rpc GetStock (GetStockRequest) returns (GetStockReply);
 	rpc ListStock (ListStockRequest) returns (ListStockReply);
@@ -29,8 +30,28 @@ message UpdateStockReply {
 message DeleteStockRequest {}
 message DeleteStockReply {}
 
-message GetStockRequest {}
-message GetStockReply {}
+message GetStockRequest {
+	int64 product_id = 1;   // 商品ID
+}
+
+message GetStockReply {
+	int64 product_id = 1;   // 商品ID
+	int32 total = 2;        // 总库存
+	int32 available = 3;    // 可用库存
+	int32 reserved = 4;     // 预留库存
+	int32 version = 5;      // 乐观锁版本号
+}
+
+message ReserveStockRequest {
+	int64 product_id = 1;   // 商品ID
+	int32 count = 2;        // 预留数量
+	int32 version = 3;      // 乐观锁版本号
+}
+
+message ReserveStockReply {
+	bool success = 1;
+	int32 new_version = 2;  // 新版本号
+}
 
 message ListStockRequest {}
 message ListStockReply {}

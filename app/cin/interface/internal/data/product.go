@@ -43,3 +43,19 @@ func (r *productRepo) UpdateProduct(ctx context.Context, in *biz.Product) error 
 	})
 	return err
 }
+
+func (r *productRepo) GetProduct(ctx context.Context, productID int64) (*biz.Product, error) {
+	resp, err := r.data.pc.GetProduct(ctx, &productV1.GetProductRequest{
+		ProductId: productID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &biz.Product{
+		ID:          resp.ProductId,
+		Name:        resp.Name,
+		Description: resp.Description,
+		Price:       resp.Price,
+		Status:      resp.Status,
+	}, nil
+}

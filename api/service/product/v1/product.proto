@@ -37,9 +37,17 @@ message DeleteProductRequest {}
 
 message DeleteProductReply {}
 
-message GetProductRequest {}
+message GetProductRequest {
+	int64 product_id = 1;   // 商品ID
+}
 
-message GetProductReply {}
+message GetProductReply {
+	int64 product_id = 1;   // 商品ID
+	string name = 2;        // 商品名称
+	string description = 3;  // 商品描述
+	int64 price = 4;        // 价格（单位：分）
+	int32 status = 5;       // 状态 0-下架 1-上架
+}
 
 message ListProductRequest {}
 

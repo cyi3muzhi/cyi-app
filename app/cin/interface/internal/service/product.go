@@ -25,6 +25,7 @@ func (s *CinInterface) UpdateProduct(ctx context.Context, req *v1.UpdateProductR
 	if err := convert.Convert(req, in); err != nil {
 		return nil, err
 	}
+	in.ID = req.ProductId
 	if err := s.pc.UpdateProduct(ctx, in); err != nil {
 		return nil, err
 	}

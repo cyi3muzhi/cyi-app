@@ -47,8 +47,8 @@ service CinInterface {
 		};
 	};
 
-	// 创建订单
-	rpc CreateOrder (CreateOrderRequest) returns (CreateOrderReply){
+	// 下单
+	rpc PlaceOrder (PlaceOrderRequest) returns (PlaceOrderReply){
 		option (google.api.http) = {
 			post: "/order/v1/create"
 			body: "*"
@@ -89,13 +89,13 @@ service CinInterface {
 
 }
 
-message CreateOrderRequest {
+message PlaceOrderRequest {
 	// 商品ID
 	int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
 	// 购买数量
 	int32 count = 2 [(validate.rules).int32 = {gt: 0}];
 }
-message CreateOrderReply {
+message PlaceOrderReply {
 	// 订单ID
 	int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
 }

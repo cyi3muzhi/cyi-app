@@ -9,10 +9,15 @@ import (
 type Stock struct {
 	ProductID int64
 	Total     int32
+	Available int32
+	Reserved  int32
+	Version   int32
 }
 
 type StockRepo interface {
 	UpdateStock(ctx context.Context, stock *Stock) error
+	ReserveStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
+	GetStock(ctx context.Context, productID int64) (*Stock, error)
 }
 
 type StockUseCase struct {
@@ -29,4 +34,12 @@ func NewStockUseCase(repo StockRepo, logger log.Logger) *StockUseCase {
 
 func (u *StockUseCase) UpdateStock(ctx context.Context, stock *Stock) error {
 	return u.repo.UpdateStock(ctx, stock)
+}
+
+func (u *StockUseCase) ReserveStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
+	return u.repo.ReserveStock(ctx, productID, count, version)
+}
+
+func (u *StockUseCase) GetStock(ctx context.Context, productID int64) (*Stock, error) {
+	return u.repo.GetStock(ctx, productID)
 }

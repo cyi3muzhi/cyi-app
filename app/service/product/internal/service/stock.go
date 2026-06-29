@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	v1 "cyi-app/api/service/product/v1"
 	"cyi-app/app/service/product/internal/biz"
 	"cyi-app/pkg/util/convert"
@@ -39,12 +40,33 @@ func (s *StockService) UpdateStock(ctx context.Context, req *v1.UpdateStockReque
 	}, nil
 }
 
+func (s *StockService) ReserveStock(ctx context.Context, req *v1.ReserveStockRequest) (*v1.ReserveStockReply, error) {
+	newVersion, err := s.uc.ReserveStock(ctx, req.ProductId, req.Count, req.Version)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ReserveStockReply{
+		Success:    true,
+		NewVersion: newVersion,
+	}, nil
+}
+
 func (s *StockService) DeleteStock(ctx context.Context, req *v1.DeleteStockRequest) (*v1.DeleteStockReply, error) {
 	return &v1.DeleteStockReply{}, nil
 }
 
 func (s *StockService) GetStock(ctx context.Context, req *v1.GetStockRequest) (*v1.GetStockReply, error) {
-	return &v1.GetStockReply{}, nil
+	stock, err := s.uc.GetStock(ctx, req.ProductId)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.GetStockReply{
+		ProductId: stock.ProductID,
+		Total:     stock.Total,
+		Available: stock.Available,
+		Reserved:  stock.Reserved,
+		Version:   stock.Version,
+	}, nil
 }
 
 func (s *StockService) ListStock(ctx context.Context, req *v1.ListStockRequest) (*v1.ListStockReply, error) {

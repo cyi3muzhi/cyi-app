@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"errors"
 	"cyi-app/app/service/product/internal/biz"
 	"cyi-app/app/service/product/internal/data/curd"
 	mod "cyi-app/app/service/product/internal/data/models"
@@ -41,4 +42,36 @@ func (r *stockRepo) UpdateStock(ctx context.Context, in *biz.Stock) error {
 			curd.Stock.Available.Value(in.Total),
 		)
 	return err
+}
+
+// ReserveStock 预留库存（乐观锁）
+// 同时更新 available-、reserved+、version++
+// 条件: version 匹配 且 available >= count
+func (r *stockRepo) ReserveStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
+	result, err := curd.Stock.WithContext(ctx).
+		Where(curd.Stock.ProductID.Eq(productID)).
+		Where(curd.Stock.Version.Eq(version)).
+		Where(curd.Stock.Available.Gte(count)).
+		UpdateSimple(
+			curd.Stock.Available.Add(0-count),
+			curd.Stock.Reserved.Add(count),
+			curd.Stock.Version.Add(1),
+		)
+	if err != nil {
+		return 0, err
+	}
+	if result.RowsAffected == 0 {
+		return 0, errors.New("reserve stock failed: insufficient stock or version conflict")
+	}
+	return version + 1, nil
+}
+
+func (r *stockRepo) GetStock(ctx context.Context, productID int64) (*biz.Stock, error) {
+	stock, err := curd.Stock.WithContext(ctx).Where(curd.Stock.ProductID.Eq(productID)).First()
+	if err != nil {
+		return nil, err
+	}
+	out := &biz.Stock{}
+	convert.Convert(stock, out)
+	return out, nil
 }

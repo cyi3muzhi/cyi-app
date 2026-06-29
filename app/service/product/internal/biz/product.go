@@ -7,6 +7,7 @@ import (
 type ProductRepo interface {
 	CreateProduct(ctx context.Context, in *Product) error
 	UpdateProduct(ctx context.Context, in *Product) error
+	GetProduct(ctx context.Context, productID int64) (*Product, error)
 }
 
 type Product struct {
@@ -38,4 +39,8 @@ func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error 
 
 func (uc *ProductUseCase) UpdateProduct(ctx context.Context, in *Product) error {
 	return uc.repo.UpdateProduct(ctx, in)
+}
+
+func (uc *ProductUseCase) GetProduct(ctx context.Context, productID int64) (*Product, error) {
+	return uc.repo.GetProduct(ctx, productID)
 }

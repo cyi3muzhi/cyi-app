@@ -39,3 +39,13 @@ func (r *productRepo) UpdateProduct(ctx context.Context, in *biz.Product) error 
 	}
 	return nil
 }
+
+func (r *productRepo) GetProduct(ctx context.Context, productID int64) (*biz.Product, error) {
+	product, err := curd.Product.WithContext(ctx).Where(curd.Product.ID.Eq(productID)).First()
+	if err != nil {
+		return nil, err
+	}
+	out := &biz.Product{}
+	convert.Convert(product, out)
+	return out, nil
+}
