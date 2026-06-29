@@ -11,6 +11,8 @@ import (
 
 	ts "cyi-app/pkg/kratos/server/transporter"
 
+	mid "cyi-app/pkg/kratos/server/middleware"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -22,6 +24,7 @@ func NewGRPCServerConf(
 	c *conf.Server,
 	tp trace.TracerProvider,
 	logger log.Logger,
+	metric *mid.Meter,
 	ac *conf.Auth) *ts.GrpcServer {
 	srv := grpc.NewServer(ts.NewGrpcServerOpt(
 		&ts.TransporterOpt{
@@ -33,6 +36,7 @@ func NewGRPCServerConf(
 			TracerProvider: tp,
 			Logger:         logger,
 			ApiKey:         ac.ApiKey,
+			Meter:          metric,
 		})...)
 	return &ts.GrpcServer{GrpcServer: srv}
 }

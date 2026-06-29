@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"cyi-app/app/service/product/internal/biz"
+	"cyi-app/app/service/product/internal/data/curd"
 	mod "cyi-app/app/service/product/internal/data/models"
 	"cyi-app/pkg/util/convert"
 
@@ -21,8 +22,12 @@ func NewProductRepo(data *Data, logger log.Logger) biz.ProductRepo {
 }
 
 func (r *productRepo) CreateProduct(ctx context.Context, in *biz.Product) error {
-	Product := &mod.Product{}
-	convert.Convert(in, Product)
+	product := &mod.Product{}
+	convert.Convert(in, product)
+	if err := curd.Product.WithContext(ctx).Create(product); err != nil {
+		return err
+	}
+	in.ID = product.ID
 	return nil
 }
 

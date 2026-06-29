@@ -28,6 +28,10 @@ func newProduct(db *gorm.DB) product {
 	_product.CreateTime = field.NewInt64(tableName, "create_time")
 	_product.UpdateTime = field.NewInt64(tableName, "update_time")
 	_product.IsDel = field.NewUint(tableName, "is_del")
+	_product.Name = field.NewString(tableName, "name")
+	_product.Description = field.NewString(tableName, "description")
+	_product.Price = field.NewInt64(tableName, "price")
+	_product.Status = field.NewInt32(tableName, "status")
 
 	_product.fillFieldMap()
 
@@ -37,11 +41,15 @@ func newProduct(db *gorm.DB) product {
 type product struct {
 	productDo
 
-	ALL        field.Field
-	ID         field.Int64
-	CreateTime field.Int64
-	UpdateTime field.Int64
-	IsDel      field.Uint
+	ALL         field.Field
+	ID          field.Int64
+	CreateTime  field.Int64
+	UpdateTime  field.Int64
+	IsDel       field.Uint
+	Name        field.String
+	Description field.String
+	Price       field.Int64
+	Status      field.Int32
 
 	fieldMap map[string]field.Expr
 }
@@ -62,6 +70,10 @@ func (p *product) updateTableName(table string) *product {
 	p.CreateTime = field.NewInt64(table, "create_time")
 	p.UpdateTime = field.NewInt64(table, "update_time")
 	p.IsDel = field.NewUint(table, "is_del")
+	p.Name = field.NewString(table, "name")
+	p.Description = field.NewString(table, "description")
+	p.Price = field.NewInt64(table, "price")
+	p.Status = field.NewInt32(table, "status")
 
 	p.fillFieldMap()
 
@@ -78,11 +90,15 @@ func (p *product) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (p *product) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 4)
+	p.fieldMap = make(map[string]field.Expr, 8)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["create_time"] = p.CreateTime
 	p.fieldMap["update_time"] = p.UpdateTime
 	p.fieldMap["is_del"] = p.IsDel
+	p.fieldMap["name"] = p.Name
+	p.fieldMap["description"] = p.Description
+	p.fieldMap["price"] = p.Price
+	p.fieldMap["status"] = p.Status
 }
 
 func (p product) clone(db *gorm.DB) product {

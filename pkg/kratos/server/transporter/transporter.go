@@ -88,9 +88,9 @@ func NewHttpServerOpt(httpOpt *TransporterOpt, midOpt *MiddlewareOpt) []http.Ser
 // grpc服务器选项
 func NewGrpcServerOpt(grpcOpt *TransporterOpt, midOpt *MiddlewareOpt) []grpc.ServerOption {
 	mids := []mid.MiddlewareOption{}
-	// if midOpt.TracerProvider == nil {
-	// 	panic("NewGrpcServerOpt TracerProvider is nil")
-	// }
+	if midOpt.TracerProvider == nil {
+		panic("NewGrpcServerOpt TracerProvider is nil")
+	}
 	if midOpt.Logger == nil {
 		panic("NewGrpcServerOpt Logger is nil")
 	}

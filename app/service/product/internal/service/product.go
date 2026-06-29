@@ -31,7 +31,9 @@ func (s *ProductService) CreateProduct(ctx context.Context, req *v1.CreateProduc
 	if err != nil {
 		return nil, err
 	}
-	return &v1.CreateProductReply{}, nil
+	return &v1.CreateProductReply{
+		ProductId: in.ID,
+	}, nil
 }
 
 func (s *ProductService) UpdateProduct(ctx context.Context, req *v1.UpdateProductRequest) (*v1.UpdateProductReply, error) {

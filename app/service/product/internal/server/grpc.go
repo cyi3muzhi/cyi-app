@@ -11,7 +11,8 @@ import (
 )
 
 // NewGRPCServer new a gRPC server.
-func NewServer(s *ts.GrpcServer, productService *service.ProductService) *grpc.Server {
+func NewServer(s *ts.GrpcServer, productService *service.ProductService, stockService *service.StockService) *grpc.Server {
 	v1.RegisterProductServer(s.GrpcServer, productService)
+	v1.RegisterStockServer(s.GrpcServer, stockService)
 	return s.GrpcServer
 }
