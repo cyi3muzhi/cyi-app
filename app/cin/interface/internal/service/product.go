@@ -19,3 +19,16 @@ func (s *CinInterface) CreateProduct(ctx context.Context, req *v1.CreateProductR
 		ProductId: in.ID,
 	}, nil
 }
+
+func (s *CinInterface) UpdateProduct(ctx context.Context, req *v1.UpdateProductRequest) (*v1.UpdateProductReply, error) {
+	in := &biz.Product{}
+	if err := convert.Convert(req, in); err != nil {
+		return nil, err
+	}
+	if err := s.pc.UpdateProduct(ctx, in); err != nil {
+		return nil, err
+	}
+	return &v1.UpdateProductReply{
+		Success: true,
+	}, nil
+}

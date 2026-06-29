@@ -33,3 +33,13 @@ func (r *productRepo) CreateProduct(ctx context.Context, in *biz.Product) error 
 	in.ID = resp.ProductId
 	return nil
 }
+
+func (r *productRepo) UpdateProduct(ctx context.Context, in *biz.Product) error {
+	_, err := r.data.pc.UpdateProduct(ctx, &productV1.UpdateProductRequest{
+		ProductId:   in.ID,
+		Name:        in.Name,
+		Description: in.Description,
+		Price:       in.Price,
+	})
+	return err
+}

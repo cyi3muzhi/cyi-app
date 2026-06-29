@@ -4,6 +4,7 @@ import (
 	"context"
 	v1 "cyi-app/api/service/product/v1"
 	"cyi-app/app/service/product/internal/biz"
+	"cyi-app/pkg/util/convert"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -26,7 +27,16 @@ func (s *StockService) CreateStock(ctx context.Context, req *v1.CreateStockReque
 }
 
 func (s *StockService) UpdateStock(ctx context.Context, req *v1.UpdateStockRequest) (*v1.UpdateStockReply, error) {
-	return &v1.UpdateStockReply{}, nil
+	in := &biz.Stock{}
+	if err := convert.Convert(req, in); err != nil {
+		return nil, err
+	}
+	if err := s.uc.UpdateStock(ctx, in); err != nil {
+		return nil, err
+	}
+	return &v1.UpdateStockReply{
+		Success: true,
+	}, nil
 }
 
 func (s *StockService) DeleteStock(ctx context.Context, req *v1.DeleteStockRequest) (*v1.DeleteStockReply, error) {

@@ -17,8 +17,14 @@ service Stock {
 message CreateStockRequest {}
 message CreateStockReply {}
 
-message UpdateStockRequest {}
-message UpdateStockReply {}
+message UpdateStockRequest {
+	int64 product_id = 1;   // 商品ID
+	int32 total = 2;        // 总库存数量
+}
+
+message UpdateStockReply {
+	bool success = 1;
+}
 
 message DeleteStockRequest {}
 message DeleteStockReply {}

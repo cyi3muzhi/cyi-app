@@ -71,6 +71,22 @@ service CinInterface {
 		};
 	};
 
+	// 更新商品
+	rpc UpdateProduct (UpdateProductRequest) returns (UpdateProductReply){
+		option (google.api.http) = {
+			put: "/product/v1/update"
+			body: "*"
+		};
+	};
+
+	// 设置库存
+	rpc UpdateStock (UpdateStockRequest) returns (UpdateStockReply){
+		option (google.api.http) = {
+			put: "/product/v1/stock/update"
+			body: "*"
+		};
+	};
+
 }
 
 message CreateOrderRequest {
@@ -161,4 +177,28 @@ message CreateProductRequest {
 message CreateProductReply {
 	// 商品ID
 	int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message UpdateProductRequest {
+	// 商品ID
+	int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+	// 商品名称
+	string name = 2 [(validate.rules).string = {min_len: 2, max_len: 64}];
+	// 商品描述
+	string description = 3 [(validate.rules).string = {max_len: 256}];
+	// 价格（单位：分）
+	int64 price = 4 [(validate.rules).int64 = {gte: 0}];
+}
+message UpdateProductReply {
+	bool success = 1;
+}
+
+message UpdateStockRequest {
+	// 商品ID
+	int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+	// 总库存数量
+	int32 total = 2 [(validate.rules).int32 = {gte: 0}];
+}
+message UpdateStockReply {
+	bool success = 1;
 }

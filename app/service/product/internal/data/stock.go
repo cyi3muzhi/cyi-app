@@ -34,5 +34,11 @@ func (r *stockRepo) CreateStock(ctx context.Context, in *biz.Stock) error {
 func (r *stockRepo) UpdateStock(ctx context.Context, in *biz.Stock) error {
 	stock := &mod.Stock{}
 	convert.Convert(in, stock)
-	return nil
+	_, err := curd.Stock.Debug().WithContext(ctx).
+		Where(curd.Stock.ProductID.Eq(in.ProductID)).
+		UpdateSimple(
+			curd.Stock.Total.Value(in.Total),
+			curd.Stock.Available.Value(in.Total),
+		)
+	return err
 }

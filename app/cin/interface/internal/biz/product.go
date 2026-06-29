@@ -15,6 +15,7 @@ type Product struct {
 
 type ProductRepo interface {
 	CreateProduct(ctx context.Context, product *Product) error
+	UpdateProduct(ctx context.Context, product *Product) error
 }
 
 type ProductUseCase struct {
@@ -31,4 +32,8 @@ func NewProductUseCase(repo ProductRepo, logger log.Logger) *ProductUseCase {
 
 func (u *ProductUseCase) CreateProduct(ctx context.Context, product *Product) error {
 	return u.repo.CreateProduct(ctx, product)
+}
+
+func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *Product) error {
+	return u.repo.UpdateProduct(ctx, product)
 }

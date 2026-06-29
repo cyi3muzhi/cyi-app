@@ -20,15 +20,17 @@ type CinInterface struct {
 	uc   *biz.UserUseCase
 	oc   *biz.OrderUseCase
 	pc   *biz.ProductUseCase
+	sc   *biz.StockUseCase
 	auth *conf.Auth
 }
 
-func NewCinInterface(uc *biz.UserUseCase, oc *biz.OrderUseCase, pc *biz.ProductUseCase, logger log.Logger, auth *conf.Auth) *CinInterface {
+func NewCinInterface(uc *biz.UserUseCase, oc *biz.OrderUseCase, pc *biz.ProductUseCase, sc *biz.StockUseCase, logger log.Logger, auth *conf.Auth) *CinInterface {
 	return &CinInterface{
 		log:  log.NewHelper(logger),
 		uc:   uc,
 		oc:   oc,
 		pc:   pc,
+		sc:   sc,
 		auth: auth,
 	}
 }

@@ -27,6 +27,7 @@ const OperationCinInterfaceGetUserInfo = "/api.cin.interface.v1.CinInterface/Get
 const OperationCinInterfaceLogin = "/api.cin.interface.v1.CinInterface/Login"
 const OperationCinInterfacePayOrder = "/api.cin.interface.v1.CinInterface/PayOrder"
 const OperationCinInterfaceRegister = "/api.cin.interface.v1.CinInterface/Register"
+const OperationCinInterfaceUpdateProduct = "/api.cin.interface.v1.CinInterface/UpdateProduct"
 const OperationCinInterfaceUpdateUserInfo = "/api.cin.interface.v1.CinInterface/UpdateUserInfo"
 
 type CinInterfaceHTTPServer interface {
@@ -44,6 +45,8 @@ type CinInterfaceHTTPServer interface {
 	PayOrder(context.Context, *PayOrderRequest) (*PayOrderReply, error)
 	// Register 注册
 	Register(context.Context, *RegisterReq) (*RegisterReply, error)
+	// UpdateProduct 更新商品
+	UpdateProduct(context.Context, *UpdateProductRequest) (*UpdateProductReply, error)
 	// UpdateUserInfo 更新用户信息
 	UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoReply, error)
 }
@@ -58,6 +61,7 @@ func RegisterCinInterfaceHTTPServer(s *http.Server, srv CinInterfaceHTTPServer) 
 	r.POST("/order/v1/create", _CinInterface_CreateOrder0_HTTP_Handler(srv))
 	r.POST("/order/v1/pay", _CinInterface_PayOrder0_HTTP_Handler(srv))
 	r.POST("/product/v1/create", _CinInterface_CreateProduct0_HTTP_Handler(srv))
+	r.PUT("/product/v1/update", _CinInterface_UpdateProduct0_HTTP_Handler(srv))
 }
 
 func _CinInterface_Login0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx http.Context) error {
@@ -233,6 +237,28 @@ func _CinInterface_CreateProduct0_HTTP_Handler(srv CinInterfaceHTTPServer) func(
 	}
 }
 
+func _CinInterface_UpdateProduct0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdateProductRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationCinInterfaceUpdateProduct)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateProduct(ctx, req.(*UpdateProductRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdateProductReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type CinInterfaceHTTPClient interface {
 	// CreateOrder 创建订单
 	CreateOrder(ctx context.Context, req *CreateOrderRequest, opts ...http.CallOption) (rsp *CreateOrderReply, err error)
@@ -248,6 +274,8 @@ type CinInterfaceHTTPClient interface {
 	PayOrder(ctx context.Context, req *PayOrderRequest, opts ...http.CallOption) (rsp *PayOrderReply, err error)
 	// Register 注册
 	Register(ctx context.Context, req *RegisterReq, opts ...http.CallOption) (rsp *RegisterReply, err error)
+	// UpdateProduct 更新商品
+	UpdateProduct(ctx context.Context, req *UpdateProductRequest, opts ...http.CallOption) (rsp *UpdateProductReply, err error)
 	// UpdateUserInfo 更新用户信息
 	UpdateUserInfo(ctx context.Context, req *UpdateUserInfoRequest, opts ...http.CallOption) (rsp *UpdateUserInfoReply, err error)
 }
@@ -352,6 +380,20 @@ func (c *CinInterfaceHTTPClientImpl) Register(ctx context.Context, in *RegisterR
 	opts = append(opts, http.Operation(OperationCinInterfaceRegister))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// UpdateProduct 更新商品
+func (c *CinInterfaceHTTPClientImpl) UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...http.CallOption) (*UpdateProductReply, error) {
+	var out UpdateProductReply
+	pattern := "/product/v1/update"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationCinInterfaceUpdateProduct))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

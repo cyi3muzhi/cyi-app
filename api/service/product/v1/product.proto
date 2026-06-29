@@ -24,7 +24,12 @@ message CreateProductReply {
 	int64 product_id = 1;   // 创建后返回的商品ID
 }
 
-message UpdateProductRequest {}
+message UpdateProductRequest {
+	int64 product_id = 1;   // 商品ID
+	string name = 2;        // 商品名称
+	string description = 3;  // 商品描述
+	int64 price = 4;        // 价格（单位：分）
+}
 
 message UpdateProductReply {}
 

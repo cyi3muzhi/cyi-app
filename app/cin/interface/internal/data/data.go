@@ -9,9 +9,9 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
 
-	userRpc "cyi-app/api/service/user/v1"
 	orderRpc "cyi-app/api/service/order/v1"
 	productRpc "cyi-app/api/service/product/v1"
+	userRpc "cyi-app/api/service/user/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -26,6 +26,8 @@ var ProviderSet = wire.NewSet(
 	NewOrderServiceClient,
 	NewProductRepo,
 	NewProductServiceClient,
+	NewStockRepo,
+	NewStockServiceClient,
 	NewRedisClient,
 	NewAsynqClient,
 )
@@ -35,16 +37,17 @@ type Data struct {
 	uc userRpc.UserClient
 	oc orderRpc.OrderClient
 	pc productRpc.ProductClient
+	sc productRpc.StockClient
 	rc redis.UniversalClient
 	mq *asynq.Client
 }
 
 // NewData .
-func NewData(c *conf.Data, uc userRpc.UserClient, oc orderRpc.OrderClient, pc productRpc.ProductClient, rc redis.UniversalClient, logger log.Logger, mq *asynq.Client) (*Data, func(), error) {
+func NewData(c *conf.Data, uc userRpc.UserClient, oc orderRpc.OrderClient, pc productRpc.ProductClient, sc productRpc.StockClient, rc redis.UniversalClient, logger log.Logger, mq *asynq.Client) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{uc: uc, oc: oc, pc: pc, rc: rc, mq: mq}, cleanup, nil
+	return &Data{uc: uc, oc: oc, pc: pc, sc: sc, rc: rc, mq: mq}, cleanup, nil
 }
 
 // NewRedisClient .

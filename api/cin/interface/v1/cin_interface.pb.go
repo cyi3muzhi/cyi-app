@@ -776,6 +776,168 @@ func (x *CreateProductReply) GetProductId() int64 {
 	return 0
 }
 
+type UpdateProductRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品ID
+	ProductId int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	// 商品名称
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 商品描述
+	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	// 价格（单位：分）
+	Price         int64 `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateProductRequest) Reset() {
+	*x = UpdateProductRequest{}
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateProductRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateProductRequest) ProtoMessage() {}
+
+func (x *UpdateProductRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateProductRequest.ProtoReflect.Descriptor instead.
+func (*UpdateProductRequest) Descriptor() ([]byte, []int) {
+	return file_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *UpdateProductRequest) GetProductId() int64 {
+	if x != nil {
+		return x.ProductId
+	}
+	return 0
+}
+
+func (x *UpdateProductRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateProductRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *UpdateProductRequest) GetPrice() int64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+type UpdateProductReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateProductReply) Reset() {
+	*x = UpdateProductReply{}
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateProductReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateProductReply) ProtoMessage() {}
+
+func (x *UpdateProductReply) ProtoReflect() protoreflect.Message {
+	mi := &file_cin_interface_v1_cin_interface_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateProductReply.ProtoReflect.Descriptor instead.
+func (*UpdateProductReply) Descriptor() ([]byte, []int) {
+	return file_cin_interface_v1_cin_interface_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *UpdateProductReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type UpdateStockRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	// 商品ID
+	ProductId     int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	// 总库存数量
+	Total         int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateStockRequest) Reset()         { *x = UpdateStockRequest{} }
+func (x *UpdateStockRequest) String() string { return "" }
+func (*UpdateStockRequest) ProtoMessage()    {}
+
+func (x *UpdateStockRequest) GetProductId() int64 {
+	if x != nil {
+		return x.ProductId
+	}
+	return 0
+}
+
+func (x *UpdateStockRequest) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type UpdateStockReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateStockReply) Reset()         { *x = UpdateStockReply{} }
+func (x *UpdateStockReply) String() string { return "" }
+func (*UpdateStockReply) ProtoMessage()    {}
+
+func (x *UpdateStockReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_cin_interface_v1_cin_interface_proto protoreflect.FileDescriptor
 
 const file_cin_interface_v1_cin_interface_proto_rawDesc = "" +
@@ -822,7 +984,15 @@ const file_cin_interface_v1_cin_interface_proto_rawDesc = "" +
 	"\x05price\x18\x03 \x01(\x03B\a\xfaB\x04\"\x02(\x00R\x05price\"<\n" +
 	"\x12CreateProductReply\x12&\n" +
 	"\n" +
-	"product_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\tproductId2\xc5\a\n" +
+	"product_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\tproductId\"\xa8\x01\n" +
+	"\x14UpdateProductRequest\x12&\n" +
+	"\n" +
+	"product_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\tproductId\x12\x1d\n" +
+	"\x04name\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x02\x18@R\x04name\x12*\n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xfaB\x05r\x03\x18\x80\x02R\vdescription\x12\x1d\n" +
+	"\x05price\x18\x04 \x01(\x03B\a\xfaB\x04\"\x02(\x00R\x05price\".\n" +
+	"\x12UpdateProductReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xcc\b\n" +
 	"\fCinInterface\x12h\n" +
 	"\x05Login\x12\".api.cin.interface.v1.LoginRequest\x1a .api.cin.interface.v1.LoginReply\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/user/v1/login\x12p\n" +
 	"\bRegister\x12!.api.cin.interface.v1.RegisterReq\x1a#.api.cin.interface.v1.RegisterReply\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/user/v1/register\x12v\n" +
@@ -831,7 +1001,8 @@ const file_cin_interface_v1_cin_interface_proto_rawDesc = "" +
 	"\x0eUpdateUserInfo\x12+.api.cin.interface.v1.UpdateUserInfoRequest\x1a).api.cin.interface.v1.UpdateUserInfoReply\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\x1a\x0f/user/v1/update\x12|\n" +
 	"\vCreateOrder\x12(.api.cin.interface.v1.CreateOrderRequest\x1a&.api.cin.interface.v1.CreateOrderReply\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/order/v1/create\x12p\n" +
 	"\bPayOrder\x12%.api.cin.interface.v1.PayOrderRequest\x1a#.api.cin.interface.v1.PayOrderReply\"\x18\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/order/v1/pay\x12\x84\x01\n" +
-	"\rCreateProduct\x12*.api.cin.interface.v1.CreateProductRequest\x1a(.api.cin.interface.v1.CreateProductReply\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/product/v1/createB9\n" +
+	"\rCreateProduct\x12*.api.cin.interface.v1.CreateProductRequest\x1a(.api.cin.interface.v1.CreateProductReply\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/product/v1/create\x12\x84\x01\n" +
+	"\rUpdateProduct\x12*.api.cin.interface.v1.UpdateProductRequest\x1a(.api.cin.interface.v1.UpdateProductReply\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\x1a\x12/product/v1/updateB9\n" +
 	"\x14api.cin.interface.v1P\x01Z\x1fcyi-app/api/cin/interface/v1;v1b\x06proto3"
 
 var (
@@ -846,7 +1017,7 @@ func file_cin_interface_v1_cin_interface_proto_rawDescGZIP() []byte {
 	return file_cin_interface_v1_cin_interface_proto_rawDescData
 }
 
-var file_cin_interface_v1_cin_interface_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_cin_interface_v1_cin_interface_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_cin_interface_v1_cin_interface_proto_goTypes = []any{
 	(*CreateOrderRequest)(nil),    // 0: api.cin.interface.v1.CreateOrderRequest
 	(*CreateOrderReply)(nil),      // 1: api.cin.interface.v1.CreateOrderReply
@@ -863,27 +1034,31 @@ var file_cin_interface_v1_cin_interface_proto_goTypes = []any{
 	(*UpdateUserInfoReply)(nil),   // 12: api.cin.interface.v1.UpdateUserInfoReply
 	(*CreateProductRequest)(nil),  // 13: api.cin.interface.v1.CreateProductRequest
 	(*CreateProductReply)(nil),    // 14: api.cin.interface.v1.CreateProductReply
-	(*emptypb.Empty)(nil),         // 15: google.protobuf.Empty
+	(*UpdateProductRequest)(nil),  // 15: api.cin.interface.v1.UpdateProductRequest
+	(*UpdateProductReply)(nil),    // 16: api.cin.interface.v1.UpdateProductReply
+	(*emptypb.Empty)(nil),         // 17: google.protobuf.Empty
 }
 var file_cin_interface_v1_cin_interface_proto_depIdxs = []int32{
 	4,  // 0: api.cin.interface.v1.CinInterface.Login:input_type -> api.cin.interface.v1.LoginRequest
 	6,  // 1: api.cin.interface.v1.CinInterface.Register:input_type -> api.cin.interface.v1.RegisterReq
 	8,  // 2: api.cin.interface.v1.CinInterface.GetUserInfo:input_type -> api.cin.interface.v1.GetUserInfoRequest
-	15, // 3: api.cin.interface.v1.CinInterface.GetMyInfo:input_type -> google.protobuf.Empty
+	17, // 3: api.cin.interface.v1.CinInterface.GetMyInfo:input_type -> google.protobuf.Empty
 	11, // 4: api.cin.interface.v1.CinInterface.UpdateUserInfo:input_type -> api.cin.interface.v1.UpdateUserInfoRequest
 	0,  // 5: api.cin.interface.v1.CinInterface.CreateOrder:input_type -> api.cin.interface.v1.CreateOrderRequest
 	2,  // 6: api.cin.interface.v1.CinInterface.PayOrder:input_type -> api.cin.interface.v1.PayOrderRequest
 	13, // 7: api.cin.interface.v1.CinInterface.CreateProduct:input_type -> api.cin.interface.v1.CreateProductRequest
-	5,  // 8: api.cin.interface.v1.CinInterface.Login:output_type -> api.cin.interface.v1.LoginReply
-	7,  // 9: api.cin.interface.v1.CinInterface.Register:output_type -> api.cin.interface.v1.RegisterReply
-	9,  // 10: api.cin.interface.v1.CinInterface.GetUserInfo:output_type -> api.cin.interface.v1.GetUserInfoReply
-	10, // 11: api.cin.interface.v1.CinInterface.GetMyInfo:output_type -> api.cin.interface.v1.GetMyInfoReply
-	12, // 12: api.cin.interface.v1.CinInterface.UpdateUserInfo:output_type -> api.cin.interface.v1.UpdateUserInfoReply
-	1,  // 13: api.cin.interface.v1.CinInterface.CreateOrder:output_type -> api.cin.interface.v1.CreateOrderReply
-	3,  // 14: api.cin.interface.v1.CinInterface.PayOrder:output_type -> api.cin.interface.v1.PayOrderReply
-	14, // 15: api.cin.interface.v1.CinInterface.CreateProduct:output_type -> api.cin.interface.v1.CreateProductReply
-	8,  // [8:16] is the sub-list for method output_type
-	0,  // [0:8] is the sub-list for method input_type
+	15, // 8: api.cin.interface.v1.CinInterface.UpdateProduct:input_type -> api.cin.interface.v1.UpdateProductRequest
+	5,  // 9: api.cin.interface.v1.CinInterface.Login:output_type -> api.cin.interface.v1.LoginReply
+	7,  // 10: api.cin.interface.v1.CinInterface.Register:output_type -> api.cin.interface.v1.RegisterReply
+	9,  // 11: api.cin.interface.v1.CinInterface.GetUserInfo:output_type -> api.cin.interface.v1.GetUserInfoReply
+	10, // 12: api.cin.interface.v1.CinInterface.GetMyInfo:output_type -> api.cin.interface.v1.GetMyInfoReply
+	12, // 13: api.cin.interface.v1.CinInterface.UpdateUserInfo:output_type -> api.cin.interface.v1.UpdateUserInfoReply
+	1,  // 14: api.cin.interface.v1.CinInterface.CreateOrder:output_type -> api.cin.interface.v1.CreateOrderReply
+	3,  // 15: api.cin.interface.v1.CinInterface.PayOrder:output_type -> api.cin.interface.v1.PayOrderReply
+	14, // 16: api.cin.interface.v1.CinInterface.CreateProduct:output_type -> api.cin.interface.v1.CreateProductReply
+	16, // 17: api.cin.interface.v1.CinInterface.UpdateProduct:output_type -> api.cin.interface.v1.UpdateProductReply
+	9,  // [9:18] is the sub-list for method output_type
+	0,  // [0:9] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
@@ -900,7 +1075,7 @@ func file_cin_interface_v1_cin_interface_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cin_interface_v1_cin_interface_proto_rawDesc), len(file_cin_interface_v1_cin_interface_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

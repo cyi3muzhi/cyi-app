@@ -27,9 +27,9 @@ func NewStockUseCase(repo StockRepo) *StockUseCase {
 }
 
 func (uc *StockUseCase) CreateStock(ctx context.Context, in *Stock) error {
-	return nil
+	return uc.repo.CreateStock(ctx, in)
 }
 
 func (uc *StockUseCase) UpdateStock(ctx context.Context, in *Stock) error {
-	return nil
+	return uc.repo.UpdateStock(ctx, in)
 }

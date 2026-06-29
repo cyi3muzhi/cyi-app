@@ -63,6 +63,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.CreateProductReply'
+    /product/v1/update:
+        put:
+            tags:
+                - CinInterface
+            description: 更新商品
+            operationId: CinInterface_UpdateProduct
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.UpdateProductRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.UpdateProductReply'
     /user/v1/login:
         post:
             tags:
@@ -246,6 +265,26 @@ components:
                 password:
                     type: string
                     description: 密码长度验证
+        api.cin.interface.v1.UpdateProductReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.UpdateProductRequest:
+            type: object
+            properties:
+                productId:
+                    type: string
+                    description: 商品ID
+                name:
+                    type: string
+                    description: 商品名称
+                description:
+                    type: string
+                    description: 商品描述
+                price:
+                    type: string
+                    description: 价格（单位：分）
         api.cin.interface.v1.UpdateUserInfoReply:
             type: object
             properties:

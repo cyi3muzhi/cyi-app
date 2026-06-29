@@ -32,7 +32,10 @@ func (r *productRepo) CreateProduct(ctx context.Context, in *biz.Product) error 
 }
 
 func (r *productRepo) UpdateProduct(ctx context.Context, in *biz.Product) error {
-	Product := &mod.Product{}
-	convert.Convert(in, Product)
+	product := &mod.Product{}
+	convert.Convert(in, product)
+	if _, err := curd.Product.Debug().WithContext(ctx).Where(curd.Product.ID.Eq(in.ID)).Updates(product); err != nil {
+		return err
+	}
 	return nil
 }
