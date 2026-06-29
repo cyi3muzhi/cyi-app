@@ -17,7 +17,7 @@ type Order struct {
 
 type OrderRepo interface {
 	CreateOrder(ctx context.Context, order *Order) error
-	PayOrder(ctx context.Context, orderID int64) error
+	PayOrder(ctx context.Context, orderID int64, userID int64) error
 	GetOrder(ctx context.Context, orderID int64) (*Order, error)
 }
 
@@ -37,15 +37,11 @@ func (u *OrderUseCase) CreateOrder(ctx context.Context, order *Order) error {
 	return u.repo.CreateOrder(ctx, order)
 }
 
-func (u *OrderUseCase) PayOrder(ctx context.Context, orderID int64) error {
+func (u *OrderUseCase) PayOrder(ctx context.Context, orderID int64, userID int64) error {
 	if orderID == 0 {
 		return v1.ErrorOrderIdNotExist("order id not exist")
 	}
-	// 支付订单
-	if err := u.repo.PayOrder(ctx, orderID); err != nil {
-		return err
-	}
-	return nil
+	return u.repo.PayOrder(ctx, orderID, userID)
 }
 
 func (u *OrderUseCase) GetOrder(ctx context.Context, orderID int64) (order *Order, err error) {

@@ -41,6 +41,18 @@ func (r *stockRepo) ReserveStock(ctx context.Context, productID int64, count int
 	return resp.NewVersion, nil
 }
 
+func (r *stockRepo) DeductStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
+	resp, err := r.data.sc.DeductStock(ctx, &productV1.DeductStockRequest{
+		ProductId: productID,
+		Count:     count,
+		Version:   version,
+	})
+	if err != nil {
+		return 0, err
+	}
+	return resp.NewVersion, nil
+}
+
 func (r *stockRepo) GetStock(ctx context.Context, productID int64) (*biz.Stock, error) {
 	resp, err := r.data.sc.GetStock(ctx, &productV1.GetStockRequest{
 		ProductId: productID,

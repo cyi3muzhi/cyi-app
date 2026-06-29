@@ -493,6 +493,119 @@ func (x *ReserveStockReply) GetNewVersion() int32 {
 	return 0
 }
 
+// 确认扣减库存（支付后实际扣减总数和预留）
+type DeductStockRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 商品ID
+	Count         int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`                          // 扣减数量
+	Version       int32                  `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeductStockRequest) Reset() {
+	*x = DeductStockRequest{}
+	mi := &file_service_product_v1_stock_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeductStockRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeductStockRequest) ProtoMessage() {}
+
+func (x *DeductStockRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_service_product_v1_stock_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeductStockRequest.ProtoReflect.Descriptor instead.
+func (*DeductStockRequest) Descriptor() ([]byte, []int) {
+	return file_service_product_v1_stock_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *DeductStockRequest) GetProductId() int64 {
+	if x != nil {
+		return x.ProductId
+	}
+	return 0
+}
+
+func (x *DeductStockRequest) GetCount() int32 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
+func (x *DeductStockRequest) GetVersion() int32 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+type DeductStockReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	NewVersion    int32                  `protobuf:"varint,2,opt,name=new_version,json=newVersion,proto3" json:"new_version,omitempty"` // 新版本号
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeductStockReply) Reset() {
+	*x = DeductStockReply{}
+	mi := &file_service_product_v1_stock_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeductStockReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeductStockReply) ProtoMessage() {}
+
+func (x *DeductStockReply) ProtoReflect() protoreflect.Message {
+	mi := &file_service_product_v1_stock_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeductStockReply.ProtoReflect.Descriptor instead.
+func (*DeductStockReply) Descriptor() ([]byte, []int) {
+	return file_service_product_v1_stock_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *DeductStockReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *DeductStockReply) GetNewVersion() int32 {
+	if x != nil {
+		return x.NewVersion
+	}
+	return 0
+}
+
 type ListStockRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -501,7 +614,7 @@ type ListStockRequest struct {
 
 func (x *ListStockRequest) Reset() {
 	*x = ListStockRequest{}
-	mi := &file_service_product_v1_stock_proto_msgTypes[10]
+	mi := &file_service_product_v1_stock_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -513,7 +626,7 @@ func (x *ListStockRequest) String() string {
 func (*ListStockRequest) ProtoMessage() {}
 
 func (x *ListStockRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_service_product_v1_stock_proto_msgTypes[10]
+	mi := &file_service_product_v1_stock_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -526,7 +639,7 @@ func (x *ListStockRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListStockRequest.ProtoReflect.Descriptor instead.
 func (*ListStockRequest) Descriptor() ([]byte, []int) {
-	return file_service_product_v1_stock_proto_rawDescGZIP(), []int{10}
+	return file_service_product_v1_stock_proto_rawDescGZIP(), []int{12}
 }
 
 type ListStockReply struct {
@@ -537,7 +650,7 @@ type ListStockReply struct {
 
 func (x *ListStockReply) Reset() {
 	*x = ListStockReply{}
-	mi := &file_service_product_v1_stock_proto_msgTypes[11]
+	mi := &file_service_product_v1_stock_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -549,7 +662,7 @@ func (x *ListStockReply) String() string {
 func (*ListStockReply) ProtoMessage() {}
 
 func (x *ListStockReply) ProtoReflect() protoreflect.Message {
-	mi := &file_service_product_v1_stock_proto_msgTypes[11]
+	mi := &file_service_product_v1_stock_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -562,7 +675,7 @@ func (x *ListStockReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListStockReply.ProtoReflect.Descriptor instead.
 func (*ListStockReply) Descriptor() ([]byte, []int) {
-	return file_service_product_v1_stock_proto_rawDescGZIP(), []int{11}
+	return file_service_product_v1_stock_proto_rawDescGZIP(), []int{13}
 }
 
 var File_service_product_v1_stock_proto protoreflect.FileDescriptor
@@ -598,13 +711,23 @@ const file_service_product_v1_stock_proto_rawDesc = "" +
 	"\x11ReserveStockReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
 	"\vnew_version\x18\x02 \x01(\x05R\n" +
+	"newVersion\"c\n" +
+	"\x12DeductStockRequest\x12\x1d\n" +
+	"\n" +
+	"product_id\x18\x01 \x01(\x03R\tproductId\x12\x14\n" +
+	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x18\n" +
+	"\aversion\x18\x03 \x01(\x05R\aversion\"M\n" +
+	"\x10DeductStockReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
+	"\vnew_version\x18\x02 \x01(\x05R\n" +
 	"newVersion\"\x12\n" +
 	"\x10ListStockRequest\"\x10\n" +
-	"\x0eListStockReply2\xd9\x04\n" +
+	"\x0eListStockReply2\xbe\x05\n" +
 	"\x05Stock\x12c\n" +
 	"\vCreateStock\x12*.api.service.product.v1.CreateStockRequest\x1a(.api.service.product.v1.CreateStockReply\x12c\n" +
 	"\vUpdateStock\x12*.api.service.product.v1.UpdateStockRequest\x1a(.api.service.product.v1.UpdateStockReply\x12f\n" +
 	"\fReserveStock\x12+.api.service.product.v1.ReserveStockRequest\x1a).api.service.product.v1.ReserveStockReply\x12c\n" +
+	"\vDeductStock\x12*.api.service.product.v1.DeductStockRequest\x1a(.api.service.product.v1.DeductStockReply\x12c\n" +
 	"\vDeleteStock\x12*.api.service.product.v1.DeleteStockRequest\x1a(.api.service.product.v1.DeleteStockReply\x12Z\n" +
 	"\bGetStock\x12'.api.service.product.v1.GetStockRequest\x1a%.api.service.product.v1.GetStockReply\x12]\n" +
 	"\tListStock\x12(.api.service.product.v1.ListStockRequest\x1a&.api.service.product.v1.ListStockReplyB=\n" +
@@ -622,7 +745,7 @@ func file_service_product_v1_stock_proto_rawDescGZIP() []byte {
 	return file_service_product_v1_stock_proto_rawDescData
 }
 
-var file_service_product_v1_stock_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_service_product_v1_stock_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_service_product_v1_stock_proto_goTypes = []any{
 	(*CreateStockRequest)(nil),  // 0: api.service.product.v1.CreateStockRequest
 	(*CreateStockReply)(nil),    // 1: api.service.product.v1.CreateStockReply
@@ -634,24 +757,28 @@ var file_service_product_v1_stock_proto_goTypes = []any{
 	(*GetStockReply)(nil),       // 7: api.service.product.v1.GetStockReply
 	(*ReserveStockRequest)(nil), // 8: api.service.product.v1.ReserveStockRequest
 	(*ReserveStockReply)(nil),   // 9: api.service.product.v1.ReserveStockReply
-	(*ListStockRequest)(nil),    // 10: api.service.product.v1.ListStockRequest
-	(*ListStockReply)(nil),      // 11: api.service.product.v1.ListStockReply
+	(*DeductStockRequest)(nil),  // 10: api.service.product.v1.DeductStockRequest
+	(*DeductStockReply)(nil),    // 11: api.service.product.v1.DeductStockReply
+	(*ListStockRequest)(nil),    // 12: api.service.product.v1.ListStockRequest
+	(*ListStockReply)(nil),      // 13: api.service.product.v1.ListStockReply
 }
 var file_service_product_v1_stock_proto_depIdxs = []int32{
 	0,  // 0: api.service.product.v1.Stock.CreateStock:input_type -> api.service.product.v1.CreateStockRequest
 	2,  // 1: api.service.product.v1.Stock.UpdateStock:input_type -> api.service.product.v1.UpdateStockRequest
 	8,  // 2: api.service.product.v1.Stock.ReserveStock:input_type -> api.service.product.v1.ReserveStockRequest
-	4,  // 3: api.service.product.v1.Stock.DeleteStock:input_type -> api.service.product.v1.DeleteStockRequest
-	6,  // 4: api.service.product.v1.Stock.GetStock:input_type -> api.service.product.v1.GetStockRequest
-	10, // 5: api.service.product.v1.Stock.ListStock:input_type -> api.service.product.v1.ListStockRequest
-	1,  // 6: api.service.product.v1.Stock.CreateStock:output_type -> api.service.product.v1.CreateStockReply
-	3,  // 7: api.service.product.v1.Stock.UpdateStock:output_type -> api.service.product.v1.UpdateStockReply
-	9,  // 8: api.service.product.v1.Stock.ReserveStock:output_type -> api.service.product.v1.ReserveStockReply
-	5,  // 9: api.service.product.v1.Stock.DeleteStock:output_type -> api.service.product.v1.DeleteStockReply
-	7,  // 10: api.service.product.v1.Stock.GetStock:output_type -> api.service.product.v1.GetStockReply
-	11, // 11: api.service.product.v1.Stock.ListStock:output_type -> api.service.product.v1.ListStockReply
-	6,  // [6:12] is the sub-list for method output_type
-	0,  // [0:6] is the sub-list for method input_type
+	10, // 3: api.service.product.v1.Stock.DeductStock:input_type -> api.service.product.v1.DeductStockRequest
+	4,  // 4: api.service.product.v1.Stock.DeleteStock:input_type -> api.service.product.v1.DeleteStockRequest
+	6,  // 5: api.service.product.v1.Stock.GetStock:input_type -> api.service.product.v1.GetStockRequest
+	12, // 6: api.service.product.v1.Stock.ListStock:input_type -> api.service.product.v1.ListStockRequest
+	1,  // 7: api.service.product.v1.Stock.CreateStock:output_type -> api.service.product.v1.CreateStockReply
+	3,  // 8: api.service.product.v1.Stock.UpdateStock:output_type -> api.service.product.v1.UpdateStockReply
+	9,  // 9: api.service.product.v1.Stock.ReserveStock:output_type -> api.service.product.v1.ReserveStockReply
+	11, // 10: api.service.product.v1.Stock.DeductStock:output_type -> api.service.product.v1.DeductStockReply
+	5,  // 11: api.service.product.v1.Stock.DeleteStock:output_type -> api.service.product.v1.DeleteStockReply
+	7,  // 12: api.service.product.v1.Stock.GetStock:output_type -> api.service.product.v1.GetStockReply
+	13, // 13: api.service.product.v1.Stock.ListStock:output_type -> api.service.product.v1.ListStockReply
+	7,  // [7:14] is the sub-list for method output_type
+	0,  // [0:7] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
@@ -668,7 +795,7 @@ func file_service_product_v1_stock_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_service_product_v1_stock_proto_rawDesc), len(file_service_product_v1_stock_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

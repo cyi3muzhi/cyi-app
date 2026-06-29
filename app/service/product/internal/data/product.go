@@ -34,6 +34,7 @@ func (r *productRepo) CreateProduct(ctx context.Context, in *biz.Product) error 
 func (r *productRepo) UpdateProduct(ctx context.Context, in *biz.Product) error {
 	product := &mod.Product{}
 	convert.Convert(in, product)
+	product.ID = in.ID
 	if _, err := curd.Product.Debug().WithContext(ctx).Where(curd.Product.ID.Eq(in.ID)).Updates(product); err != nil {
 		return err
 	}
@@ -47,5 +48,6 @@ func (r *productRepo) GetProduct(ctx context.Context, productID int64) (*biz.Pro
 	}
 	out := &biz.Product{}
 	convert.Convert(product, out)
+	out.ID = product.ID
 	return out, nil
 }

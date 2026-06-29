@@ -10,6 +10,7 @@ service Stock {
 	rpc CreateStock (CreateStockRequest) returns (CreateStockReply);
 	rpc UpdateStock (UpdateStockRequest) returns (UpdateStockReply);
 	rpc ReserveStock (ReserveStockRequest) returns (ReserveStockReply);
+	rpc DeductStock (DeductStockRequest) returns (DeductStockReply);
 	rpc DeleteStock (DeleteStockRequest) returns (DeleteStockReply);
 	rpc GetStock (GetStockRequest) returns (GetStockReply);
 	rpc ListStock (ListStockRequest) returns (ListStockReply);
@@ -49,6 +50,18 @@ message ReserveStockRequest {
 }
 
 message ReserveStockReply {
+	bool success = 1;
+	int32 new_version = 2;  // 新版本号
+}
+
+// 确认扣减库存（支付后实际扣减总数和预留）
+message DeductStockRequest {
+	int64 product_id = 1;   // 商品ID
+	int32 count = 2;        // 扣减数量
+	int32 version = 3;      // 乐观锁版本号
+}
+
+message DeductStockReply {
 	bool success = 1;
 	int32 new_version = 2;  // 新版本号
 }

@@ -3,7 +3,6 @@ package biz
 import (
 	"context"
 	v1 "cyi-app/api/service/order/v1"
-	"cyi-app/pkg/kratos/service"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -50,8 +49,8 @@ func (uc *OrderUseCase) UpdateOrder(ctx context.Context, in *Order) error {
 	return uc.repo.UpdateOrder(ctx, in)
 }
 
-// getOrderWithStatus 查询订单并初始化状态处理器
-func (uc *OrderUseCase) getOrderWithStatus(ctx context.Context, orderID int64) (*Order, error) {
+// GetOrderWithStatus 查询订单并初始化状态处理器
+func (uc *OrderUseCase) GetOrderWithStatus(ctx context.Context, orderID int64) (*Order, error) {
 	order, err := uc.repo.GetOrder(ctx, orderID)
 	if err != nil {
 		return nil, err
@@ -60,27 +59,21 @@ func (uc *OrderUseCase) getOrderWithStatus(ctx context.Context, orderID int64) (
 	return order, nil
 }
 
-// GetOrderWithVerify 查询订单并校验权限
-func (uc *OrderUseCase) VerifyOrder(ctx context.Context, orderID int64) error {
-	order, err := uc.getOrderWithStatus(ctx, orderID)
-	if err != nil {
-		return err
-	}
-
-	userID, err := service.GetUserID(ctx)
+// VerifyOrder 校验订单归属
+func (uc *OrderUseCase) VerifyOrder(ctx context.Context, orderID int64, userID int64) error {
+	order, err := uc.GetOrderWithStatus(ctx, orderID)
 	if err != nil {
 		return err
 	}
 	if order.UserID != userID {
 		return v1.ErrorUserNotOrder("user not order")
 	}
-
 	return nil
 }
 
 // Pay 支付订单
 func (uc *OrderUseCase) Pay(ctx context.Context, in *Order) error {
-	order, err := uc.getOrderWithStatus(ctx, in.ID)
+	order, err := uc.GetOrderWithStatus(ctx, in.ID)
 	if err != nil {
 		return err
 	}

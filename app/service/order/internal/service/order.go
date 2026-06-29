@@ -51,7 +51,17 @@ func (s *OrderService) DeleteOrder(ctx context.Context, req *v1.DeleteOrderReque
 }
 
 func (s *OrderService) GetOrder(ctx context.Context, req *v1.GetOrderRequest) (*v1.GetOrderReply, error) {
-	return &v1.GetOrderReply{}, nil
+	order, err := s.uc.GetOrderWithStatus(ctx, req.OrderId)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.GetOrderReply{
+		OrderId:   order.ID,
+		UserId:    order.UserID,
+		ProductId: order.ProductID,
+		Count:     order.Count,
+		Status:    int32(order.Status),
+	}, nil
 }
 
 func (s *OrderService) ListOrder(ctx context.Context, req *v1.ListOrderRequest) (*v1.ListOrderReply, error) {
@@ -59,13 +69,12 @@ func (s *OrderService) ListOrder(ctx context.Context, req *v1.ListOrderRequest) 
 }
 
 func (s *OrderService) PayOrder(ctx context.Context, req *v1.PayOrderRequest) (*v1.PayOrderReply, error) {
-	in := &biz.Order{
-		ID: req.OrderId,
-	}
-	// 校验订单
-	err := s.uc.VerifyOrder(ctx, in.ID)
+	err := s.uc.VerifyOrder(ctx, req.OrderId, req.UserId)
 	if err != nil {
 		return nil, err
+	}
+	in := &biz.Order{
+		ID: req.OrderId,
 	}
 	err = s.uc.Pay(ctx, in)
 	if err != nil {
