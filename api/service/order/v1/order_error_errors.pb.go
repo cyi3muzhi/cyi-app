@@ -17,12 +17,12 @@ func IsOrderStatusInvalid(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == OrderErrorReason_ORDER_STATUS_INVALID.String() && e.Code == 400
+	return e.Reason == OrderErrorReason_ORDER_STATUS_INVALID.String() && e.Code == 422
 }
 
 // 订单状态无效
 func ErrorOrderStatusInvalid(format string, args ...interface{}) *errors.Error {
-	return errors.New(400, OrderErrorReason_ORDER_STATUS_INVALID.String(), fmt.Sprintf(format, args...))
+	return errors.New(422, OrderErrorReason_ORDER_STATUS_INVALID.String(), fmt.Sprintf(format, args...))
 }
 
 // 用户不是订单创建人
@@ -31,10 +31,10 @@ func IsUserNotOrder(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == OrderErrorReason_USER_NOT_ORDER.String() && e.Code == 403
+	return e.Reason == OrderErrorReason_USER_NOT_ORDER.String() && e.Code == 422
 }
 
 // 用户不是订单创建人
 func ErrorUserNotOrder(format string, args ...interface{}) *errors.Error {
-	return errors.New(403, OrderErrorReason_USER_NOT_ORDER.String(), fmt.Sprintf(format, args...))
+	return errors.New(422, OrderErrorReason_USER_NOT_ORDER.String(), fmt.Sprintf(format, args...))
 }

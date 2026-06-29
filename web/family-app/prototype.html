@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>心家 - 心在一起，家就在身边</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        coral: {
+                            50: '#FFF5F0',
+                            100: '#FFE8DE',
+                            200: '#FFD0C0',
+                            300: '#FFB09A',
+                            400: '#FF8C69',
+                            500: '#FF6B35',
+                            600: '#E85A2B',
+                            700: '#C44822',
+                        },
+                        cream: {
+                            50: '#FFFBF7',
+                            100: '#FFF6ED',
+                            200: '#FFEDD8',
+                        },
+                        warm: {
+                            gray: '#8B8680',
+                            light: '#F5F0EB',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ========== 全局重置与手机模拟器 ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #E8E0D8 0%, #D5CCC2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* 手机外框 */
+        .phone-frame {
+            width: 390px;
+            height: 844px;
+            background: #1a1a1a;
+            border-radius: 50px;
+            padding: 12px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
+            position: relative;
+        }
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #FFF8F5;
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        /* 刘海 */
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 34px;
+            background: #1a1a1a;
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+            z-index: 100;
+        }
+        /* 底部指示条 */
+        .home-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 134px;
+            height: 5px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 3px;
+            z-index: 100;
+        }
+
+        /* ========== 页面切换动画 ========== */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #FFF8F5;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateX(20px);
+            padding-bottom: 90px;
+            scrollbar-width: none;
+        }
+        .page::-webkit-scrollbar { display: none; }
+        .page.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(0);
+            z-index: 10;
+        }
+        .page.slide-out-left {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+        .page.slide-in-right {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        /* ========== 底部 Tab 导航 ========== */
+        .tab-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 84px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 8px;
+            z-index: 50;
+            padding-bottom: 20px;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 4px 16px;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+        .tab-item:active { transform: scale(0.92); }
+        .tab-item i {
+            font-size: 22px;
+            color: #B8B0A8;
+            transition: color 0.2s;
+        }
+        .tab-item span {
+            font-size: 11px;
+            color: #B8B0A8;
+            transition: color 0.2s;
+        }
+        .tab-item.active i, .tab-item.active span { color: #FF6B35; }
+
+        /* ========== 按钮涟漪效果 ========== */
+        .ripple-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .ripple-btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.4) 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            opacity: 0;
+            transition: transform 0.5s, opacity 0.5s;
+        }
+        .ripple-btn:active::after {
+            transform: scale(0, 0);
+            opacity: 0.3;
+            transition: 0s;
+        }
+
+        /* ========== 卡片样式 ========== */
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 2px 16px rgba(255,107,53,0.08);
+            border: 1px solid rgba(255,140,105,0.06);
+        }
+        .card-hover {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card-hover:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 8px rgba(255,107,53,0.06);
+        }
+
+        /* ========== 启动页动画 ========== */
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            14% { transform: scale(1.15); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.15); }
+            70% { transform: scale(1); }
+        }
+        .animate-float { animation: floatUp 0.8s ease-out forwards; }
+        .animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
+        .animate-heart { animation: heartBeat 1.5s ease-in-out infinite; }
+
+        /* ========== 雷达图 ========== */
+        .radar-chart {
+            width: 160px;
+            height: 160px;
+        }
+
+        /* ========== 聊天气泡 ========== */
+        .chat-bubble-left {
+            background: white;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            padding: 10px 14px;
+            max-width: 70%;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        .chat-bubble-right {
+            background: linear-gradient(135deg, #FF8C69, #FF6B35);
+            color: white;
+            border-radius: 18px;
+            border-bottom-right-radius: 4px;
+            padding: 10px 14px;
+            max-width: 70%;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        .chat-bubble-love {
+            background: linear-gradient(135deg, #FF6B9D, #FF8C69);
+            color: white;
+            border-radius: 20px;
+            padding: 12px 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            box-shadow: 0 4px 16px rgba(255,107,157,0.3);
+        }
+
+        /* ========== 底部弹窗 ========== */
+        .bottom-sheet {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            padding: 20px;
+            z-index: 200;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 80%;
+            overflow-y: auto;
+        }
+        .bottom-sheet.show { transform: translateY(0); }
+        .sheet-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 150;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .sheet-overlay.show { opacity: 1; pointer-events: auto; }
+
+        /* ========== Toast 提示 ========== */
+        .toast {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 24px;
+            font-size: 14px;
+            z-index: 300;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ========== 步骤指示器 ========== */
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #E0D8D0;
+            transition: all 0.3s;
+        }
+        .step-dot.active {
+            background: #FF6B35;
+            width: 28px;
+            border-radius: 5px;
+        }
+
+        /* ========== 头像墙滚动 ========== */
+        .avatar-scroll {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding: 4px 4px 12px;
+            scrollbar-width: none;
+        }
+        .avatar-scroll::-webkit-scrollbar { display: none; }
+
+        /* ========== 进度条 ========== */
+        .progress-bar {
+            height: 8px;
+            background: #F0EAE4;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF8C69, #FF6B35);
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+
+        /* ========== FAB 按钮 ========== */
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF8C69, #FF6B35);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(255,107,53,0.35);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .fab:active { transform: scale(0.9); box-shadow: 0 2px 8px rgba(255,107,53,0.25); }
+
+        /* ========== 输入框样式 ========== */
+        .input-field {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid #F0E8E0;
+            border-radius: 14px;
+            font-size: 15px;
+            background: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        .input-field:focus {
+            border-color: #FF8C69;
+            box-shadow: 0 0 0 3px rgba(255,140,105,0.15);
+        }
+
+        /* ========== 未读红点 ========== */
+        .badge-red {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            min-width: 18px;
+            height: 18px;
+            background: #FF3B30;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            border: 2px solid white;
+        }
+
+        /* ========== 下拉刷新指示器 ========== */
+        .pull-indicator {
+            text-align: center;
+            padding: 12px;
+            color: #B8B0A8;
+            font-size: 13px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .pull-indicator.show { opacity: 1; }
+
+        /* ========== 关系标签 ========== */
+        .relation-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            background: linear-gradient(135deg, rgba(255,140,105,0.12), rgba(255,107,53,0.08));
+            color: #E85A2B;
+            font-size: 12px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-screen">
+            <div class="notch"></div>
+            <div class="home-indicator"></div>
+
+            <!-- ==================== 启动页 ==================== -->
+            <div id="page-launch" class="page active" style="background: linear-gradient(160deg, #FF8C69 0%, #FFB09A 40%, #FFD0C0 100%); padding-bottom: 0;">
+                <div class="flex flex-col items-center justify-center h-full text-white px-8">
+                    <div class="animate-float" style="animation-delay: 0.2s;">
+                        <div class="w-24 h-24 bg-white/20 backdrop-blur rounded-3xl flex items-center justify-center mb-8 animate-pulse-slow">
+                            <i class="fas fa-heart text-5xl text-white animate-heart"></i>
+                        </div>
+                    </div>
+                    <h1 class="text-5xl font-bold mb-4 animate-float" style="animation-delay: 0.4s; text-shadow: 0 2px 20px rgba(0,0,0,0.1);">心家</h1>
+                    <p class="text-lg opacity-90 animate-float text-center" style="animation-delay: 0.6s;">心在一起，家就在身边</p>
+                    <div class="mt-16 animate-float" style="animation-delay: 0.8s;">
+                        <div class="w-8 h-8 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 登录页 ==================== -->
+            <div id="page-login" class="page">
+                <div class="flex flex-col items-center justify-center h-full px-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-coral-400 to-coral-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <i class="fas fa-heart text-3xl text-white"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">欢迎回家</h1>
+                    <p class="text-warm-gray text-sm mb-10">登录后开始您的心家之旅</p>
+
+                    <div class="w-full space-y-4 mb-6">
+                        <div>
+                            <label class="text-sm text-gray-600 ml-1 mb-1 block">手机号 / 用户名</label>
+                            <input type="text" class="input-field" placeholder="请输入手机号或用户名" value="张伟">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-600 ml-1 mb-1 block">密码</label>
+                            <input type="password" class="input-field" placeholder="请输入密码" value="123456">
+                        </div>
+                    </div>
+
+                    <button onclick="goToPage('page-home')" class="ripple-btn w-full py-4 bg-gradient-to-r from-coral-400 to-coral-500 text-white rounded-2xl font-semibold text-lg shadow-lg shadow-coral-400/30 mb-4">
+                        登录
+                    </button>
+                    <div class="flex justify-between w-full text-sm">
+                        <a href="#" class="text-coral-500">忘记密码？</a>
+                        <a href="#" onclick="goToPage('page-register')" class="text-coral-500 font-medium">注册账号</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 注册页 ==================== -->
+            <div id="page-register" class="page">
+                <div class="h-full flex flex-col px-6 pt-14">
+                    <div class="flex items-center mb-6">
+                        <button onclick="goToPage('page-login')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100">
+                            <i class="fas fa-chevron-left text-gray-600"></i>
+                        </button>
+                        <h2 class="text-xl font-bold ml-4">创建账号</h2>
+                    </div>
+
+                    <!-- 步骤指示器 -->
+                    <div class="flex items-center justify-center gap-2 mb-8">
+                        <div class="step-dot active" id="step-dot-1"></div>
+                        <div class="step-dot" id="step-dot-2"></div>
+                        <div class="step-dot" id="step-dot-3"></div>
+                        <div class="step-dot" id="step-dot-4"></div>
+                    </div>
+
+                    <!-- 步骤1：基本信息 -->
+                    <div id="reg-step-1" class="flex-1">
+                        <h3 class="text-lg font-semibold mb-6">基本信息</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm text-gray-600 ml-1 mb-1 block">用户名</label>
+                                <input type="text" class="input-field" placeholder="给自己起个名字" value="张伟">
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600 ml-1 mb-1 block">密码</label>
+                                <input type="password" class="input-field" placeholder="设置密码" value="123456">
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="flex-1">
+                                    <label class="text-sm text-gray-600 ml-1 mb-1 block">性别</label>
+                                    <select class="input-field">
+                                        <option>男</option>
+                                        <option>女</option>
+                                    </select>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="text-sm text-gray-600 ml-1 mb-1 block">生日</label>
+                                    <input type="date" class="input-field" value="1988-05-20">
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="nextRegStep(2)" class="ripple-btn w-full py-4 bg-gradient-to-r from-coral-400 to-coral-500 text-white rounded-2xl font-semibold mt-8 shadow-lg">
+                            下一步
+                        </button>
+                    </div>
+
+                    <!-- 步骤2：选择模式 -->
+                    <div id="reg-step-2" class="flex-1 hidden">
+                        <h3 class="text-lg font-semibold mb-6">选择模式</h3>
+                        <div class="space-y-4">
+                            <div onclick="selectRegMode('create')" class="card p-6 cursor-pointer card-hover border-2 border-transparent hover:border-coral-300" id="mode-create">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-14 h-14 bg-coral-100 rounded-2xl flex items-center justify-center">
+                                        <i class="fas fa-home text-2xl text-coral-500"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">创建家庭</h4>
+                                        <p class="text-sm text-warm-gray mt-1">创建一个新的家庭，邀请家人加入</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div onclick="selectRegMode('join')" class="card p-6 cursor-pointer card-hover border-2 border-transparent hover:border-coral-300" id="mode-join">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-14 h-14 bg-coral-100 rounded-2xl flex items-center justify-center">
+                                        <i class="fas fa-user-plus text-2xl text-coral-500"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">加入家庭</h4>
+                                        <p class="text-sm text-warm-gray mt-1">通过邀请码加入已有家庭</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="nextRegStep(3)" class="ripple-btn w-full py-4 bg-gradient-to-r from-coral-400 to-coral-500 text-white rounded-2xl font-semibold mt-8 shadow-lg">
+                            下一步
+                        </button>
+                    </div>
+
+                    <!-- 步骤3：确认关系 -->
+                    <div id="reg-step-3" class="flex-1 hidden">
+                        <h3 class="text-lg font-semibold mb-2">确认关系</h3>
+                        <p class="text-sm text-warm-gray mb-6">请填写您与邀请人的关系</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm text-gray-600 ml-1 mb-1 block">邀请码</label>
+                                <input type="text" class="input-field" placeholder="输入邀请码" value="XJ8848">
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600 ml-1 mb-1 block">与邀请人的关系</label>
+                                <select class="input-field">
+                                    <option>我的父亲</option>
+                                    <option>我的母亲</option>
+                                    <option>我的配偶</option>
+                                    <option>我的儿子</option>
+                                    <option>我的女儿</option>
+                                    <option>我的兄弟姐妹</option>
+                                    <option>其他</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="nextRegStep(4)" class="ripple-btn w-full py-4 bg-gradient-to-r from-coral-400 to-coral-500 text-white rounded-2xl font-semibold mt-8 shadow-lg">
+                            完成注册
+                        </button>
+                    </div>
+
+                    <!-- 步骤4：完成 -->
+                    <div id="reg-step-4" class="flex-1 hidden flex flex-col items-center justify-center">
+                        <div class="w-24 h-24 bg-gradient-to-br from-coral-400 to-coral-500 rounded-full flex items-center justify-center mb-6 animate-pulse-slow">
+                            <i class="fas fa-check text-4xl text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">欢迎来到心家</h3>
+                        <p class="text-warm-gray text-center mb-8">心在一起，家就在身边<br>开始您的温馨家庭之旅吧</p>
+                        <button onclick="goToPage('page-home')" class="ripple-btn w-full py-4 bg-gradient-to-r from-coral-400 to-coral-500 text-white rounded-2xl font-semibold shadow-lg">
+                            进入心家
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 首页 ==================== -->
+            <div id="page-home" class="page">
+                <div class="pull-indicator" id="home-pull"><i class="fas fa-spinner fa-spin mr-2"></i>正在刷新...</div>
+                <!-- 顶部标题栏 -->
+                <div class="sticky top-0 z-30 bg-white/90 backdrop-blur-lg px-5 pt-12 pb-3 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-heart text-coral-500 text-xl"></i>
+                        <span class="text-xl font-bold text-gray-800">心家</span>
+                    </div>
+                    <button class="relative w-10 h-10 flex items-center justify-center rounded-full bg-gray-50">
+                        <i class="far fa-bell text-gray-600 text-lg"></i>
+                        <span class="badge-red">3</span>
+                    </button>
+                </div>
+
+                <div class="px-5 pb-4">
+                    <!-- 问候语 -->
+                    <div class="mb-6">
+                        <p class="text-warm-gray text-sm">早上好，张伟！</p>
+                        <p class="text-gray-800 text-lg font-medium">今天也是美好的一天~</p>
+                    </div>
+
+                    <!-- 快捷操作区 -->
+                    <div class="grid grid-cols-4 gap-3 mb-6">
+                        <button onclick="goToPage('page-post')" class="flex flex-col items-center gap-2">
+                            <div class="w-14 h-14 bg-gradient-to-br from-coral-100 to-coral-50 rounded-2xl flex items-center justify-center shadow-sm">
+                                <i class="fas fa-camera text-coral-500 text-xl"></i>
+                            </div>
+                            <span class="text-xs text-gray-600">发布动态</span>
+                        </button>
+                        <button class="flex flex-col items-center gap-2">
+                            <div class="w-14 h-14 bg-gradient-to-br from-amber-100 to-amber-50 rounded-2xl flex items-center justify-center shadow-sm">
+                                <i class="fas fa-broom text-amber-500 text-xl"></i>
+                            </div>
+                            <span class="text-xs text-gray-600">记录家务</span>
+                        </button>
+                        <button class="flex flex-col items-center gap-2">
+                            <div class="w-14 h-14 bg-gradient-to-br from-rose-100 to-rose-50 rounded-2xl flex items-center justify-center shadow-sm">
+                                <i class="fas fa-bell text-rose-500 text-xl"></i>
+                            </div>
+                            <span class="text-xs text-gray-600">添加提醒</span>
+                        </button>
+                        <button class="flex flex-col items-center gap-2">
+                            <div class="w-14 h-14 bg-gradient-to-br from-teal-100 to-teal-50 rounded-2xl flex items-center justify-center shadow-sm">
+                                <i class="fas fa-calendar-alt text-teal-500 text-xl"></i>
+                            </div>
+                            <span class="text-xs text-gray-600">家庭活动</span>
+                        </button>
+                    </div>
+
+                    <!-- 今日待办卡片 -->
+                    <div class="card p-5 mb-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-gray-800 flex items-center gap-2">
+                                <i class="fas fa-clipboard-list text-coral-500"></i>
+                                今日待办
+                            </h3>
+                            <span class="text-xs text-coral-500 font-medium">2/4 完成</span>
+                        </div>
+                        <div class="progress-bar mb-4">
+                            <div class="progress-fill" style="width: 50%"></div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-5 h-5 rounded-full border-2 border-coral-400 bg-coral-400 flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
+                                <span class="text-sm text-gray-500 line-through">给阳台的花浇水</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-5 h-5 rounded-full border-2 border-coral-400 bg-coral-400 flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
+                                <span class="text-sm text-gray-500 line-through">陪孩子读绘本</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                                <span class="text-sm text-gray-700">准备周末家庭聚餐</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+                                <span class="text-sm text-gray-700">整理客厅书架</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 家庭动态流 -->
+                    <h3 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-stream text-coral-500"></i>
+                        家庭动态
+                    </h3>
+                    <div class="space-y-4">
+                        <!-- 动态1 -->
+                        <div class="card p-4 card-hover">
+                            <div class="flex items-start gap-3 mb-3">
+                                <img src="https://picsum.photos/seed/wife/100/100" class="w-10 h-10 rounded-full object-cover">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-800">李婷</span>
+                                        <span class="relation-tag">我的妻子</span>
+                                    </div>
+                                    <span class="text-xs text-warm-gray">30分钟前</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 text-sm mb-3">今天做了红烧肉，大家晚上记得早点回来吃饭呀~</p>
+                            <div class="grid grid-cols-2 gap-2 mb-3">
+                                <img src="https://picsum.photos/seed/food1/300/300" class="rounded-xl w-full h-32 object-cover">
+                                <img src="https://picsum.photos/seed/food2/300/300" class="rounded-xl w-full h-32 object-cover">
+                            </div>
+                            <div class="flex items-center gap-4 text-warm-gray text-sm">
+                                <button class="flex items-center gap-1"><i class="far fa-heart"></i> 5</button>
+                                <button class="flex items-center gap-1"><i class="far fa-comment"></i> 2</button>
+                            </div>
+                        </div>
+
+                        <!-- 动态2 -->
+                        <div class="card p-4 card-hover">
+                            <div class="flex items-start gap-3 mb-3">
+                                <img src="https://picsum.photos/seed/son/100/100" class="w-10 h-10 rounded-full object-cover">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-800">张小明</span>
+                                        <span class="relation-tag">我的儿子</span>
+                                    </div>
+                                    <span class="text-xs text-warm-gray">1小时前</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 text-sm mb-3">数学考试得了满分！得到了一枚"学习之星"徽章</p>
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-star text-amber-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800">学习之星</p>
+                                    <p class="text-xs text-warm-gray">连续3次考试优秀</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 text-warm-gray text-sm">
+                                <button class="flex items-center gap-1 text-coral-500"><i class="fas fa-heart"></i> 8</button>
+                                <button class="flex items-center gap-1"><i class="far fa-comment"></i> 3</button>
+                            </div>
+                        </div>
+
+                        <!-- 动态3 -->
+                        <div class="card p-4 card-hover">
+                            <div class="flex items-start gap-3 mb-3">
+                                <img src="https://picsum.photos/seed/dad/100/100" class="w-10 h-10 rounded-full object-cover">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-800">张建国</span>
+                                        <span class="relation-tag">我的父亲</span>
+                                    </div>
+                                    <span class="text-xs text-warm-gray">2小时前</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 text-sm mb-3">今天把花园收拾了一下，种了几株月季</p>
+                            <div class="flex items-center gap-4 text-warm-gray text-sm">
+                                <button class="flex items-center gap-1"><i class="far fa-heart"></i> 4</button>
+                                <button class="flex items-center gap-1"><i class="far fa-comment"></i> 1</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 家人页 ==================== -->
+            <div id="page-family" class="page">
+                <div class="pull-indicator" id="family-pull"><i class="fas fa-spinner fa-spin mr-2"></i>正在刷新...</div>
+                <!-- 顶部 -->
+                <div class="sticky top-0 z-30 bg-white/90 backdrop-blur-lg px-5 pt-12 pb-3">
+                    <div class="flex items-center justify-center gap-2">
+                        <h2 class="text-lg font-bold text-gray-800">温馨小家</h2>
+                        <i class="fas fa-chevron-down text-warm-gray text-sm"></i>
+                    </div>
+                </div>
+
+                <div class="px-5 pb-4">
+                    <!-- 家庭成员头像墙 -->
+                    <div class="mb-6">
+                        <p class="text-sm text-warm-gray mb-3">家庭成员（5人）</p>
+                        <div class="avatar-scroll">
+                            <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="showMemberDetail('张伟')">
+                                <div class="relative">
+                                    <img src="https://picsum.photos/seed/me/100/100" class="w-16 h-16 rounded-full object-cover border-3 border-coral-400">
+                                    <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-coral-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-crown text-white text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-xs text-gray-700 font-medium">我</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="showMemberDetail('李婷')">
+                                <img src="https://picsum.photos/seed/wife/100/100" class="w-16 h-16 rounded-full object-cover border-3 border-white shadow-md">
+                                <span class="text-xs text-gray-700">李婷</span>
+                                <span class="relation-tag text-xs">妻子</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="showMemberDetail('张小明')">
+                                <img src="https://picsum.photos/seed/son/100/100" class="w-16 h-16 rounded-full object-cover border-3 border-white shadow-md">
+                                <span class="text-xs text-gray-700">张小明</span>
+                                <span class="relation-tag text-xs">儿子</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="showMemberDetail('张建国')">
+                                <img src="https://picsum.photos/seed/dad/100/100" class="w-16 h-16 rounded-full object-cover border-3 border-white shadow-md">
+                                <span class="text-xs text-gray-700">张建国</span>
+                                <span class="relation-tag text-xs">父亲</span>
+                            </div>
+                            <div class="flex flex-col items-center gap-1 cursor-pointer" onclick="showMemberDetail('王秀兰')">
+                                <img src="https://picsum.photos/seed/mom/100/100" class="w-16 h-16 rounded-full object-cover border-3 border-white shadow-md">
+                                <span class="text-xs text-gray-700">王秀兰</span>
+                                <span class="relation-tag text-xs">母亲</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 本周家务完成情况 -->
+                    <div class="card p-5 mb-4">
+                        <h3 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-broom text-coral-500"></i>
+                            本周家务完成情况
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700">李婷</span>
+                                    <span class="text-coral-500 font-medium">85%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700">张伟（我）</span>
+                                    <span class="text-coral-500 font-medium">70%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 70%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700">张小明</span>
+                                    <span class="text-coral-500 font-medium">60%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 60%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 最近家庭活动 -->
+                    <div class="card p-5 mb-4">
+                        <h3 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-images text-coral-500"></i>
+                            最近家庭活动
+                        </h3>
+                        <div class="flex gap-3 overflow-x-auto pb-2">
+                            <div class="flex-shrink-0 w-32">
+                                <img src="https://picsum.photos/seed/act1/200/200" class="w-32 h-32 rounded-2xl object-cover mb-2">
+                                <p class="text-sm font-medium text-gray-700">周末野餐</p>
+                                <p class="text-xs text-warm-gray">6月10日</p>
+                            </div>
+                            <div class="flex-shrink-0 w-32">
+                                <img src="https://picsum.photos/seed/act2/200/200" class="w-32 h-32 rounded-2xl object-cover mb-2">
+                                <p class="text-sm font-medium text-gray-700">小明生日</p>
+                                <p class="text-xs text-warm-gray">5月28日</p>
+                            </div>
+                            <div class="flex-shrink-0 w-32">
+                                <img src="https://picsum.photos/seed/act3/200/200" class="w-32 h-32 rounded-2xl object-cover mb-2">
+                                <p class="text-sm font-medium text-gray-700">家庭电影夜</p>
+                                <p class="text-xs text-warm-gray">5月20日</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 家庭目标 -->
+                    <div class="card p-5 mb-4">
+                        <h3 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-bullseye text-coral-500"></i>
+                            家庭目标
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-running text-teal-500"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-800">每周运动3次</p>
+                                    <div class="progress-bar mt-1">
+                                        <div class="progress-fill" style="width: 66%"></div>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-coral-500 font-medium">2/3</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-book text-amber-500"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-800">每月共读一本书</p>
+                                    <div class="progress-bar mt-1">
+                                        <div class="progress-fill" style="width: 40%"></div>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-coral-500 font-medium">40%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAB 邀请按钮 -->
+                <button onclick="goToPage('page-invite')" class="fab absolute bottom-24 right-5 z-40">
+                    <i class="fas fa-user-plus text-xl"></i>
+                </button>
+            </div>
+
+            <!-- ==================== 聊天页 ==================== -->
+            <div id="page-chat" class="page">
+                <div class="sticky top-0 z-30 bg-white/90 backdrop-blur-lg px-5 pt-12 pb-3">
+                    <h2 class="text-lg font-bold text-gray-800 text-center">家人聊天</h2>
+                </div>
+
+                <div class="px-5 pb-4">
+                    <!-- 家庭群聊（置顶） -->
+                    <div class="card p-4 mb-3 card-hover cursor-pointer" onclick="openChatWindow('温馨小家', 'group', 'https://picsum.photos/seed/family/100/100')">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <div class="w-12 h-12 bg-gradient-to-br from-coral-400 to-coral-500 rounded-2xl flex items-center justify-center">
+                                    <i class="fas fa-users text-white text-lg"></i>
+                                </div>
+                                <span class="badge-red">5</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-medium text-gray-800">温馨小家</span>
+                                    <span class="text-xs bg-coral-100 text-coral-600 px-2 py-0.5 rounded-full">置顶</span>
+                                </div>
+                                <p class="text-sm text-warm-gray truncate">李婷：晚上回来吃饭吗？我做了红烧肉~</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-warm-gray">12:30</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 私聊列表 -->
+                    <div class="space-y-1">
+                        <div class="card p-4 card-hover cursor-pointer" onclick="openChatWindow('李婷', 'wife', 'https://picsum.photos/seed/wife/100/100')">
+                            <div class="flex items-center gap-3">
+                                <div class="relative">
+                                    <img src="https://picsum.photos/seed/wife/100/100" class="w-12 h-12 rounded-2xl object-cover">
+                                    <span class="badge-red">2</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-800">李婷</span>
+                                        <span class="relation-tag text-xs">我的妻子</span>
+                                    </div>
+                                    <p class="text-sm text-warm-gray truncate">记得下班买瓶酱油回来~</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs text-warm-gray">11:45</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card p-4 card-hover cursor-pointer" onclick="openChatWindow('张小明', 'son', 'https://picsum.photos/seed/son/100/100')">
+                            <div class="flex items-center gap-3">
+                                <div class="relative">
+                                    <img src="https://picsum.photos/seed/son/100/100" class="w-12 h-12 rounded-2xl object-cover">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-800">张小明</span>
+                                        <span class="relation-tag text-xs">我的儿子</span>
+                                    </div>
+                                    <p class="text-sm text-warm-gray truncate">爸爸，我数学考了100分！</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs text-warm-gray">昨天</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card p-4 card-hover cursor-pointer" onclick="openChatWindow('张建国', 'father', 'https://picsum.photos/seed/dad/100/100')">
+                            <div class="flex items-center gap-3">
+                                <div class="relative">
+                                    <img src="https://picsum.photos/seed/dad/100/100" class="w-12 h-12 rounded-2xl object-cover">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-800">张建国</span>
+                                        <span class="relation-tag text-xs">我的父亲</span>
+                                    </div>
+                                    <p class="text-sm text-warm-gray truncate">花园的月季开花了，你们周末回来看看</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs text-warm-gray">昨天</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card p-4 card-hover cursor-pointer" onclick="openChatWindow('王秀兰', 'mother', 'https://picsum.photos/seed/mom/100/100')">
+                            <div class="flex items-center gap-3">
+                                <div class="relative">
+                                    <img src="https://picsum.photos/seed/mom/100/100" class="w-12 h-12 rounded-2xl object-cover">
+                                    <span class="badge-red">1</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-800">王秀兰</span>
+                                        <span class="relation-tag text-xs">我的母亲</span>
+                                    </div>
+                                    <p class="text-sm text-warm-gray truncate">给小明织了件毛衣，下次来拿</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs text-warm-gray">周一</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 聊天窗口页 ==================== -->
+            <div id="page-chat-window" class="page" style="padding-bottom: 0;">
+                <!-- 顶部 -->
+                <div class="sticky top-0 z-30 bg-white/90 backdrop-blur-lg px-4 pt-12 pb-3 flex items-center gap-3">
+                    <button onclick="goToPage('page-chat')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100">
+                        <i class="fas fa-chevron-left text-gray-600"></i>
+                    </button>
+                    <img id="chat-avatar" src="" class="w-9 h-9 rounded-xl object-cover">
+                    <div class="flex-1">
+                        <h3 id="chat-name" class="font-semibold text-gray-800 text-sm"></h3>
+                        <span id="chat-relation" class="relation-tag text-xs"></span>
+                    </div>
+                </div>
+
+                <!-- 消息区域 -->
+                <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4" id="chat-messages" style="height: calc(100% - 180px);">
+                    <div class="text-center">
+                        <span class="text-xs text-warm-gray bg-gray-100 px-3 py-1 rounded-full">昨天 14:30</span>
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <img src="https://picsum.photos/seed/wife/100/100" class="w-8 h-8 rounded-xl object-cover">
+                        <div class="chat-bubble-left">
+                            晚上回来吃饭吗？
+                        </div>
+                    </div>
+                    <div class="flex items-end gap-2 justify-end">
+                        <div class="chat-bubble-right">
+                            回的，今天准时下班~
+                        </div>
+                        <img src="https://picsum.photos/seed/me/100/100" class="w-8 h-8 rounded-xl object-cover">
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <img src="https://picsum.photos/seed/wife/100/100" class="w-8 h-8 rounded-xl object-cover">
+                        <div class="chat-bubble-left">
+                            那我多做几个菜，小明今天也考了好成绩，庆祝一下
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-xs text-warm-gray bg-gray-100 px-3 py-1 rounded-full">今天 11:45</span>
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <img src="https://picsum.photos/seed/wife/100/100" class="w-8 h-8 rounded-xl object-cover">
+                        <div class="chat-bubble-left">
+                            记得下班买瓶酱油回来~
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 输入框 -->
+                <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 flex items-center gap-3 z-40">
+                    <button class="w-10 h-10 flex items-center justify-center text-warm-gray">
+                        <i class="far fa-smile text-xl"></i>
+                    </button>
+                    <input type="text" id="chat-input" class="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-sm outline-none" placeholder="输入消息...">
+                    <button onclick="sendLoveMessage()" class="w-10 h-10 flex items-center justify-center text-rose-400">
+                        <i class="fas fa-heart text-xl"></i>
+                    </button>
+                    <button onclick="sendMessage()" class="w-10 h-10 bg-gradient-to-r from-coral-400 to-coral-500 rounded-full flex items-center justify-center text-white">
+                        <i class="fas fa-paper-plane text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ==================== 我的页 ==================== -->
+            <div id="page-profile" class="page">
+                <!-- 顶部个人信息区 -->
+                <div class="bg-gradient-to-br from-coral-400 via-coral-400 to-coral-500 px-6 pt-14 pb-8 text-white">
+                    <div class="flex items-center gap-4">
+                        <img src="https://picsum.photos/seed/me/120/120" class="w-20 h-20 rounded-full object-cover border-4 border-white/30">
+                        <div>
+                            <h2 class="text-2xl font-bold">张伟</h2>
+                            <p class="text-white/80 text-sm mt-1">36岁 · 男</p>
+                            <p class="text-white/70 text-xs mt-1">当前家庭：温馨小家</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 统计卡片 -->
+                <div class="px-5 -mt-4">
+                    <div class="card p-5 flex justify-around">
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-coral-500">1</p>
+                            <p class="text-xs text-warm-gray mt-1">家庭数</p>
+                        </div>
+                        <div class="w-px bg-gray-100"></div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-coral-500">4</p>
+                            <p class="text-xs text-warm-gray mt-1">亲属数</p>
+                        </div>
+                        <div class="w-px bg-gray-100"></div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-coral-500">12</p>
+                            <p class="text-xs text-warm-gray mt-1">获得徽章</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 功能列表 -->
+                <div class="px-5 mt-6 space-y-3">
+                    <div class="card p-4 card-hover cursor-pointer flex items-center gap-4">
+                        <div class="w-10 h-10 bg-coral-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-home text-coral-500"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">我的家庭</p>
+                            <p class="text-xs text-warm-gray">温馨小家</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-warm-gray text-sm"></i>
+                    </div>
+
+                    <div class="card p-4 card-hover cursor-pointer flex items-center gap-4">
+                        <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-link text-amber-500"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">家庭关联管理</p>
+                            <p class="text-xs text-warm-gray">管理家庭成员关系</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-warm-gray text-sm"></i>
+                    </div>
+
+                    <div class="card p-4 card-hover cursor-pointer flex items-center gap-4">
+                        <div class="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-user-friends text-teal-500"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">亲友管理</p>
+                            <p class="text-xs text-warm-gray">查看和管理亲友</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-warm-gray text-sm"></i>
+                    </div>
+
+                    <div class="card p-4 card-hover cursor-pointer flex items-center gap-4">
+                        <div class="w-10 h-10 bg-rose-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-edit text-rose-500"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">个人资料编辑</p>
+                            <p class="text-xs text-warm-gray">修改个人信息</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-warm-gray text-sm"></i>
+                    </div>
+
+                    <div class="card p-4 card-hover cursor-pointer flex items-center gap-4">
+                        <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-cog text-gray-500"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">设置</p>
+                            <p class="text-xs text-warm-gray">通知、隐私、账号安全</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-warm-gray text-sm"></i>
+                    </div>
+                </div>
+
+                <div class="px-5 mt-8 mb-8">
+                    <button onclick="goToPage('page-login')" class="w-full py-3.5 border border-gray-200 rounded-2xl text-warm-gray font-medium text-sm">
+                        退出登录
+                    </button>
+                </div>
+            </div>
+
+            <!-- ==================== 发布动态页 ==================== -->
+            <div id="page-post" class="page">
+                <div class="sticky top-0 z-30 bg-white/90 backdrop-blur-lg px-5 pt-12 pb-3 flex items-center justify-between">
+                    <button onclick="goToPage('page-home')" class="text-warm-gray">取消</button>
+                    <h2 class="text-lg font-bold text-gray-800">分享心情</h2>
+                    <button onclick="publishPost()" class="text-coral-500 font-semibold">发布</button>
+                </div>
+
+                <div class="px-5 py-4">
+                    <textarea class="w-full h-40 text-base resize-none outline-none bg-transparent" placeholder="今天发生了什么开心的事？和家人分享吧..."></textarea>
+
+                    <!-- 添加照片 -->
+                    <div class="grid grid-cols-3 gap-3 mb-6">
+                        <div class="aspect-square bg-gray-100 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-300 cursor-pointer">
+                            <i class="fas fa-plus text-gray-400 text-2xl"></i>
+                        </div>
+                    </div>
+
+                    <!-- 可见范围 -->
+                    <div class="card p-4">
+                        <p class="text-sm text-gray-600 mb-3">可见范围</p>
+                        <div class="flex gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="visibility" checked class="w-4 h-4 accent-coral-500">
+                                <span class="text-sm text-gray-700">全家可见</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="visibility" class="w-4 h-4 accent-coral-500">
+                                <span class="text-sm text-gray-700">指定成员</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 邀请成员页 ==================== -->
+            <div id="page-invite" class="page">
+                <div class="sticky top-0 z-30 bg-white/90 backdrop-blur-lg px-5 pt-12 pb-3 flex items-center gap-4">
+                    <button onclick="goToPage('page-family')" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100">
+                        <i class="fas fa-chevron-left text-gray-600"></i>
+                    </button>
+                    <h2 class="text-lg font-bold text-gray-800">邀请家人</h2>
+                </div>
+
+                <div class="px-6 py-8 flex flex-col items-center">
+                    <p class="text-warm-gray text-sm mb-6">让家人输入以下邀请码即可加入家庭</p>
+
+                    <div class="text-center mb-8">
+                        <p class="text-5xl font-bold text-coral-500 tracking-widest mb-2">XJ8848</p>
+                        <p class="text-xs text-warm-gray">邀请码有效期 7 天</p>
+                    </div>
+
+                    <button onclick="copyInviteCode()" class="ripple-btn w-full py-4 bg-gradient-to-r from-coral-400 to-coral-500 text-white rounded-2xl font-semibold mb-4 shadow-lg">
+                        <i class="fas fa-copy mr-2"></i>复制邀请码
+                    </button>
+
+                    <div class="flex gap-3 w-full mb-8">
+                        <button class="flex-1 py-3 bg-green-500 text-white rounded-xl font-medium text-sm">
+                            <i class="fab fa-weixin mr-1"></i>微信分享
+                        </button>
+                        <button class="flex-1 py-3 bg-blue-500 text-white rounded-xl font-medium text-sm">
+                            <i class="fas fa-comment-sms mr-1"></i>短信分享
+                        </button>
+                    </div>
+
+                    <!-- 二维码 -->
+                    <div class="card p-6 flex flex-col items-center">
+                        <div class="w-40 h-40 bg-gray-100 rounded-2xl flex items-center justify-center mb-3">
+                            <div class="text-center">
+                                <i class="fas fa-qrcode text-6xl text-gray-700"></i>
+                                <p class="text-xs text-warm-gray mt-2">模拟二维码</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600">扫码加入家庭</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 底部 Tab 导航 ==================== -->
+            <div class="tab-bar" id="tab-bar">
+                <div class="tab-item active" onclick="switchTab('home')">
+                    <i class="fas fa-home"></i>
+                    <span>首页</span>
+                </div>
+                <div class="tab-item" onclick="switchTab('family')">
+                    <i class="fas fa-heart"></i>
+                    <span>家人</span>
+                </div>
+                <div class="tab-item" onclick="switchTab('chat')">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>聊天</span>
+                </div>
+                <div class="tab-item" onclick="switchTab('profile')">
+                    <i class="fas fa-user"></i>
+                    <span>我的</span>
+                </div>
+            </div>
+
+            <!-- ==================== 成员详情底部弹窗 ==================== -->
+            <div class="sheet-overlay" id="member-sheet-overlay" onclick="hideMemberDetail()"></div>
+            <div class="bottom-sheet" id="member-sheet">
+                <div class="flex justify-center mb-4">
+                    <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
+                </div>
+                <div class="flex flex-col items-center mb-6">
+                    <img id="sheet-avatar" src="" class="w-24 h-24 rounded-full object-cover border-4 border-coral-100 mb-3">
+                    <h3 id="sheet-name" class="text-xl font-bold text-gray-800"></h3>
+                    <span id="sheet-relation" class="relation-tag mt-2"></span>
+                </div>
+
+                <!-- 能力雷达图（用 CSS 模拟） -->
+                <div class="flex justify-center mb-6">
+                    <div class="radar-chart relative">
+                        <svg viewBox="0 0 160 160" class="w-full h-full">
+                            <!-- 背景网格 -->
+                            <polygon points="80,10 147,50 147,110 80,150 13,110 13,50" fill="none" stroke="#F0E8E0" stroke-width="1"/>
+                            <polygon points="80,35 130,62 130,105 80,132 30,105 30,62" fill="none" stroke="#F0E8E0" stroke-width="1"/>
+                            <polygon points="80,55 113,75 113,100 80,120 47,100 47,75" fill="none" stroke="#F0E8E0" stroke-width="1"/>
+                            <!-- 轴线 -->
+                            <line x1="80" y1="10" x2="80" y2="150" stroke="#F0E8E0" stroke-width="1"/>
+                            <line x1="147" y1="50" x2="13" y2="110" stroke="#F0E8E0" stroke-width="1"/>
+                            <line x1="147" y1="110" x2="13" y2="50" stroke="#F0E8E0" stroke-width="1"/>
+                            <!-- 数据区域 -->
+                            <polygon points="80,25 137,55 130,105 80,135 25,100 35,55" fill="rgba(255,140,105,0.2)" stroke="#FF8C69" stroke-width="2"/>
+                        </svg>
+                        <!-- 标签 -->
+                        <span class="absolute top-0 left-1/2 -translate-x-1/2 text-xs text-gray-500">家务</span>
+                        <span class="absolute top-1/4 right-0 text-xs text-gray-500">学习</span>
+                        <span class="absolute bottom-1/4 right-0 text-xs text-gray-500">健康</span>
+                        <span class="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-gray-500">社交</span>
+                        <span class="absolute bottom-1/4 left-0 text-xs text-gray-500">创造</span>
+                        <span class="absolute top-1/4 left-0 text-xs text-gray-500">责任</span>
+                    </div>
+                </div>
+
+                <!-- 徽章 -->
+                <div class="mb-6">
+                    <p class="text-sm font-medium text-gray-700 mb-3">获得的徽章</p>
+                    <div class="flex gap-3">
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mb-1">
+                                <i class="fas fa-star text-amber-500"></i>
+                            </div>
+                            <span class="text-xs text-gray-600">学习之星</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center mb-1">
+                                <i class="fas fa-heart text-rose-500"></i>
+                            </div>
+                            <span class="text-xs text-gray-600">爱心大使</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center mb-1">
+                                <i class="fas fa-running text-teal-500"></i>
+                            </div>
+                            <span class="text-xs text-gray-600">运动达人</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 收到的鼓励 -->
+                <div class="mb-6">
+                    <p class="text-sm font-medium text-gray-700 mb-3">收到的鼓励</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <i class="fas fa-heart text-rose-400 text-xs"></i>
+                            <span>张伟：辛苦了，家里多亏有你！</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <i class="fas fa-heart text-rose-400 text-xs"></i>
+                            <span>张小明：妈妈做的饭最好吃！</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快捷操作 -->
+                <div class="flex gap-3">
+                    <button class="flex-1 py-3 bg-gradient-to-r from-coral-400 to-coral-500 text-white rounded-2xl font-medium">
+                        <i class="fas fa-comment mr-1"></i>发消息
+                    </button>
+                    <button class="flex-1 py-3 bg-coral-50 text-coral-500 rounded-2xl font-medium">
+                        <i class="fas fa-images mr-1"></i>看相册
+                    </button>
+                    <button class="w-12 h-12 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-thumbs-up"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Toast -->
+            <div class="toast" id="toast"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全局状态 ====================
+        let currentTab = 'home';
+        let currentRegStep = 1;
+        let regMode = '';
+
+        // ==================== 页面切换函数 ====================
+        /**
+         * 切换到指定页面
+         * @param {string} pageId - 目标页面ID
+         */
+        function goToPage(pageId) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+            });
+            // 显示目标页面
+            const target = document.getElementById(pageId);
+            if (target) {
+                target.classList.add('active');
+            }
+
+            // 控制 Tab 栏显示/隐藏
+            const tabBar = document.getElementById('tab-bar');
+            const noTabPages = ['page-launch', 'page-login', 'page-register', 'page-chat-window', 'page-post', 'page-invite'];
+            if (noTabPages.includes(pageId)) {
+                tabBar.style.display = 'none';
+            } else {
+                tabBar.style.display = 'flex';
+            }
+
+            // 更新 Tab 高亮
+            if (pageId === 'page-home') setTabActive('home');
+            if (pageId === 'page-family') setTabActive('family');
+            if (pageId === 'page-chat') setTabActive('chat');
+            if (pageId === 'page-profile') setTabActive('profile');
+        }
+
+        /**
+         * 设置底部 Tab 高亮状态
+         * @param {string} tab - Tab 名称
+         */
+        function setTabActive(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const tabMap = { home: 0, family: 1, chat: 2, profile: 3 };
+            const tabs = document.querySelectorAll('.tab-item');
+            if (tabs[tabMap[tab]]) {
+                tabs[tabMap[tab]].classList.add('active');
+            }
+        }
+
+        /**
+         * 点击底部 Tab 切换页面
+         * @param {string} tab - Tab 名称
+         */
+        function switchTab(tab) {
+            const pageMap = { home: 'page-home', family: 'page-family', chat: 'page-chat', profile: 'page-profile' };
+            goToPage(pageMap[tab]);
+        }
+
+        // ==================== 启动页自动跳转 ====================
+        /**
+         * 启动页2秒后自动跳转到登录页
+         */
+        setTimeout(() => {
+            goToPage('page-login');
+        }, 2000);
+
+        // ==================== 注册流程 ====================
+        /**
+         * 进入下一步注册流程
+         * @param {number} step - 目标步骤
+         */
+        function nextRegStep(step) {
+            // 隐藏当前步骤
+            document.getElementById('reg-step-' + currentRegStep).classList.add('hidden');
+            // 显示下一步
+            document.getElementById('reg-step-' + step).classList.remove('hidden');
+            // 更新步骤指示器
+            document.getElementById('step-dot-' + currentRegStep).classList.remove('active');
+            document.getElementById('step-dot-' + step).classList.add('active');
+            currentRegStep = step;
+        }
+
+        /**
+         * 选择注册模式（创建/加入家庭）
+         * @param {string} mode - create 或 join
+         */
+        function selectRegMode(mode) {
+            regMode = mode;
+            document.getElementById('mode-create').classList.remove('border-coral-400');
+            document.getElementById('mode-join').classList.remove('border-coral-400');
+            document.getElementById('mode-' + mode).classList.add('border-coral-400');
+        }
+
+        // ==================== 成员详情弹窗 ====================
+        /**
+         * 显示成员详情底部弹窗
+         * @param {string} name - 成员姓名
+         */
+        function showMemberDetail(name) {
+            const memberData = {
+                '张伟': { relation: '我自己', avatar: 'https://picsum.photos/seed/me/200/200' },
+                '李婷': { relation: '我的妻子', avatar: 'https://picsum.photos/seed/wife/200/200' },
+                '张小明': { relation: '我的儿子', avatar: 'https://picsum.photos/seed/son/200/200' },
+                '张建国': { relation: '我的父亲', avatar: 'https://picsum.photos/seed/dad/200/200' },
+                '王秀兰': { relation: '我的母亲', avatar: 'https://picsum.photos/seed/mom/200/200' }
+            };
+            const data = memberData[name] || { relation: '家人', avatar: 'https://picsum.photos/seed/default/200/200' };
+            document.getElementById('sheet-name').textContent = name;
+            document.getElementById('sheet-relation').textContent = data.relation;
+            document.getElementById('sheet-avatar').src = data.avatar;
+            document.getElementById('member-sheet').classList.add('show');
+            document.getElementById('member-sheet-overlay').classList.add('show');
+        }
+
+        /**
+         * 隐藏成员详情弹窗
+         */
+        function hideMemberDetail() {
+            document.getElementById('member-sheet').classList.remove('show');
+            document.getElementById('member-sheet-overlay').classList.remove('show');
+        }
+
+        // ==================== 聊天功能 ====================
+        /**
+         * 打开聊天窗口
+         * @param {string} name - 聊天对象名称
+         * @param {string} relation - 关系类型
+         * @param {string} avatar - 头像URL
+         */
+        function openChatWindow(name, relation, avatar) {
+            document.getElementById('chat-name').textContent = name;
+            document.getElementById('chat-avatar').src = avatar;
+            const relationMap = {
+                'wife': '我的妻子',
+                'son': '我的儿子',
+                'father': '我的父亲',
+                'mother': '我的母亲',
+                'group': '家庭群聊'
+            };
+            document.getElementById('chat-relation').textContent = relationMap[relation] || '';
+            if (relation === 'group') {
+                document.getElementById('chat-relation').style.display = 'none';
+            } else {
+                document.getElementById('chat-relation').style.display = 'inline-flex';
+            }
+            goToPage('page-chat-window');
+        }
+
+        /**
+         * 发送普通消息
+         */
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const container = document.getElementById('chat-messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'flex items-end gap-2 justify-end';
+            msgDiv.innerHTML = `
+                <div class="chat-bubble-right">${text}</div>
+                <img src="https://picsum.photos/seed/me/100/100" class="w-8 h-8 rounded-xl object-cover">
+            `;
+            container.appendChild(msgDiv);
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+        }
+
+        /**
+         * 发送鼓励爱心消息
+         */
+        function sendLoveMessage() {
+            const container = document.getElementById('chat-messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'flex items-end gap-2 justify-end';
+            msgDiv.innerHTML = `
+                <div class="chat-bubble-love">
+                    <i class="fas fa-heart animate-heart"></i>
+                    <span>给你一个大大的鼓励！</span>
+                </div>
+                <img src="https://picsum.photos/seed/me/100/100" class="w-8 h-8 rounded-xl object-cover">
+            `;
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // 回车发送消息
+        document.getElementById('chat-input')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // ==================== 发布动态 ====================
+        /**
+         * 发布动态
+         */
+        function publishPost() {
+            showToast('动态发布成功！');
+            setTimeout(() => goToPage('page-home'), 800);
+        }
+
+        // ==================== 邀请成员 ====================
+        /**
+         * 复制邀请码到剪贴板
+         */
+        function copyInviteCode() {
+            navigator.clipboard?.writeText('XJ8848');
+            showToast('邀请码已复制！');
+        }
+
+        // ==================== Toast 提示 ====================
+        /**
+         * 显示 Toast 提示
+         * @param {string} message - 提示内容
+         */
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // ==================== 下拉刷新模拟 ====================
+        /**
+         * 为首页和家人页添加下拉刷新效果
+         */
+        (function setupPullRefresh() {
+            ['page-home', 'page-family'].forEach(pageId => {
+                const page = document.getElementById(pageId);
+                if (!page) return;
+                let startY = 0;
+                let isPulling = false;
+
+                page.addEventListener('touchstart', (e) => {
+                    if (page.scrollTop <= 0) {
+                        startY = e.touches[0].clientY;
+                        isPulling = true;
+                    }
+                }, { passive: true });
+
+                page.addEventListener('touchmove', (e) => {
+                    if (!isPulling) return;
+                    const diff = e.touches[0].clientY - startY;
+                    if (diff > 60) {
+                        const indicator = document.getElementById(pageId === 'page-home' ? 'home-pull' : 'family-pull');
+                        if (indicator) indicator.classList.add('show');
+                    }
+                }, { passive: true });
+
+                page.addEventListener('touchend', () => {
+                    if (!isPulling) return;
+                    isPulling = false;
+                    const indicator = document.getElementById(pageId === 'page-home' ? 'home-pull' : 'family-pull');
+                    if (indicator && indicator.classList.contains('show')) {
+                        setTimeout(() => {
+                            indicator.classList.remove('show');
+                            showToast('刷新成功');
+                        }, 1000);
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

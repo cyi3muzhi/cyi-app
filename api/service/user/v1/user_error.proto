@@ -9,23 +9,23 @@ enum UserServiceErrorReason {
 	// 设置缺省错误码
 	option (errors.default_code) = 500;
 
-	USER_NOT_FOUND = 0 [(errors.code) = 500];
+	USER_NOT_FOUND = 0 [(errors.code) = 422];
 
-	CONTENT_MISSING = 1 [(errors.code) = 500];
+	CONTENT_MISSING = 1 [(errors.code) = 422];
 	// 密码不一致
-	PASSWORD_NOT_MATCH = 2 [(errors.code) = 500];
+	PASSWORD_NOT_MATCH = 2 [(errors.code) = 422];
 	// 用户已存在
-	USER_ALREADY_EXIST = 3 [(errors.code) = 500];
+	USER_ALREADY_EXIST = 3 [(errors.code) = 422];
 	// 用户名或手机号不能为空
-	USERNAME_OR_PHONE_EMPTY = 4 [(errors.code) = 500];
+	USERNAME_OR_PHONE_EMPTY = 4 [(errors.code) = 422];
 	// 密码错误
-	PASSWORD_ERROR = 5 [(errors.code) = 500];
+	PASSWORD_ERROR = 5 [(errors.code) = 422];
 	// 密码加密失败
-	PASSWORD_ENCRYPTION_FAILED = 6 [(errors.code) = 500];
+	PASSWORD_ENCRYPTION_FAILED = 6 [(errors.code) = 422];
 	// 创建用户失败
-	CREATE_USER_FAILED = 7 [(errors.code) = 500];
-		// 用户已注册
-	USER_ALREADY_REGISTERED = 8 [(errors.code) = 409];
+	CREATE_USER_FAILED = 7 [(errors.code) = 422];
+	// 用户已注册
+	USER_ALREADY_REGISTERED = 8 [(errors.code) = 422];
 	// 用户注册失败
-	USER_REGISTER_FAILED = 9 [(errors.code) = 400];
+	USER_REGISTER_FAILED = 9 [(errors.code) = 422];
 }

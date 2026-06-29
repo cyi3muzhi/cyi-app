@@ -10,7 +10,7 @@ enum OrderErrorReason {
 	option (errors.default_code) = 500;
 
 	// 订单状态无效
-	ORDER_STATUS_INVALID = 0 [(errors.code) = 400];
+	ORDER_STATUS_INVALID = 0 [(errors.code) = 422];
 	// 用户不是订单创建人
-	USER_NOT_ORDER = 1 [(errors.code) = 403];
+	USER_NOT_ORDER = 1 [(errors.code) = 422];
 }

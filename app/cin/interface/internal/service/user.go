@@ -11,13 +11,10 @@ import (
 	"cyi-app/pkg/util/convert"
 
 	"google.golang.org/protobuf/types/known/emptypb"
+	com "cyi-app/api/common"
 )
 
 func (s *CinInterface) Register(ctx context.Context, req *v1.RegisterReq) (*v1.RegisterReply, error) {
-	// in := &biz.User{}
-	// if err := convert.Convert(req, in); err != nil {
-	// 	return nil, err
-	// }
 	err := s.uc.Register(ctx, req)
 	if err != nil {
 		return nil, err
@@ -29,10 +26,6 @@ func (s *CinInterface) Register(ctx context.Context, req *v1.RegisterReq) (*v1.R
 }
 
 func (s *CinInterface) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginReply, error) {
-	// in := &biz.User{}
-	// if err := convert.Convert(req, in); err != nil {
-	// 	return nil, err
-	// }
 	return s.uc.Login(ctx, req)
 }
 
@@ -41,7 +34,7 @@ func (s *CinInterface) GetMyInfo(ctx context.Context, _ *emptypb.Empty) (*v1.Get
 	// 获取上下文的用户id
 	id, err := service.GetUserID(ctx)
 	if err != nil {
-		return nil, err
+		return nil, com.ErrorUnauthorized("用户未登录")
 	}
 
 	// 获取用户信息

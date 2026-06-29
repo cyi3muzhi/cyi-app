@@ -16,11 +16,11 @@ func IsUserNotFound(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == UserServiceErrorReason_USER_NOT_FOUND.String() && e.Code == 500
+	return e.Reason == UserServiceErrorReason_USER_NOT_FOUND.String() && e.Code == 422
 }
 
 func ErrorUserNotFound(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, UserServiceErrorReason_USER_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+	return errors.New(422, UserServiceErrorReason_USER_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
 
 func IsContentMissing(err error) bool {
@@ -28,11 +28,11 @@ func IsContentMissing(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == UserServiceErrorReason_CONTENT_MISSING.String() && e.Code == 500
+	return e.Reason == UserServiceErrorReason_CONTENT_MISSING.String() && e.Code == 422
 }
 
 func ErrorContentMissing(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, UserServiceErrorReason_CONTENT_MISSING.String(), fmt.Sprintf(format, args...))
+	return errors.New(422, UserServiceErrorReason_CONTENT_MISSING.String(), fmt.Sprintf(format, args...))
 }
 
 // 密码不一致
@@ -41,12 +41,12 @@ func IsPasswordNotMatch(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == UserServiceErrorReason_PASSWORD_NOT_MATCH.String() && e.Code == 500
+	return e.Reason == UserServiceErrorReason_PASSWORD_NOT_MATCH.String() && e.Code == 422
 }
 
 // 密码不一致
 func ErrorPasswordNotMatch(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, UserServiceErrorReason_PASSWORD_NOT_MATCH.String(), fmt.Sprintf(format, args...))
+	return errors.New(422, UserServiceErrorReason_PASSWORD_NOT_MATCH.String(), fmt.Sprintf(format, args...))
 }
 
 // 用户已存在
@@ -55,12 +55,12 @@ func IsUserAlreadyExist(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == UserServiceErrorReason_USER_ALREADY_EXIST.String() && e.Code == 500
+	return e.Reason == UserServiceErrorReason_USER_ALREADY_EXIST.String() && e.Code == 422
 }
 
 // 用户已存在
 func ErrorUserAlreadyExist(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, UserServiceErrorReason_USER_ALREADY_EXIST.String(), fmt.Sprintf(format, args...))
+	return errors.New(422, UserServiceErrorReason_USER_ALREADY_EXIST.String(), fmt.Sprintf(format, args...))
 }
 
 // 用户名或手机号不能为空
@@ -69,12 +69,12 @@ func IsUsernameOrPhoneEmpty(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == UserServiceErrorReason_USERNAME_OR_PHONE_EMPTY.String() && e.Code == 500
+	return e.Reason == UserServiceErrorReason_USERNAME_OR_PHONE_EMPTY.String() && e.Code == 422
 }
 
 // 用户名或手机号不能为空
 func ErrorUsernameOrPhoneEmpty(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, UserServiceErrorReason_USERNAME_OR_PHONE_EMPTY.String(), fmt.Sprintf(format, args...))
+	return errors.New(422, UserServiceErrorReason_USERNAME_OR_PHONE_EMPTY.String(), fmt.Sprintf(format, args...))
 }
 
 // 密码错误
@@ -83,12 +83,12 @@ func IsPasswordError(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == UserServiceErrorReason_PASSWORD_ERROR.String() && e.Code == 500
+	return e.Reason == UserServiceErrorReason_PASSWORD_ERROR.String() && e.Code == 422
 }
 
 // 密码错误
 func ErrorPasswordError(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, UserServiceErrorReason_PASSWORD_ERROR.String(), fmt.Sprintf(format, args...))
+	return errors.New(422, UserServiceErrorReason_PASSWORD_ERROR.String(), fmt.Sprintf(format, args...))
 }
 
 // 密码加密失败
@@ -97,12 +97,12 @@ func IsPasswordEncryptionFailed(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == UserServiceErrorReason_PASSWORD_ENCRYPTION_FAILED.String() && e.Code == 500
+	return e.Reason == UserServiceErrorReason_PASSWORD_ENCRYPTION_FAILED.String() && e.Code == 422
 }
 
 // 密码加密失败
 func ErrorPasswordEncryptionFailed(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, UserServiceErrorReason_PASSWORD_ENCRYPTION_FAILED.String(), fmt.Sprintf(format, args...))
+	return errors.New(422, UserServiceErrorReason_PASSWORD_ENCRYPTION_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
 // 创建用户失败
@@ -111,12 +111,12 @@ func IsCreateUserFailed(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == UserServiceErrorReason_CREATE_USER_FAILED.String() && e.Code == 500
+	return e.Reason == UserServiceErrorReason_CREATE_USER_FAILED.String() && e.Code == 422
 }
 
 // 创建用户失败
 func ErrorCreateUserFailed(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, UserServiceErrorReason_CREATE_USER_FAILED.String(), fmt.Sprintf(format, args...))
+	return errors.New(422, UserServiceErrorReason_CREATE_USER_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
 // 用户已注册
@@ -125,12 +125,12 @@ func IsUserAlreadyRegistered(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == UserServiceErrorReason_USER_ALREADY_REGISTERED.String() && e.Code == 409
+	return e.Reason == UserServiceErrorReason_USER_ALREADY_REGISTERED.String() && e.Code == 422
 }
 
 // 用户已注册
 func ErrorUserAlreadyRegistered(format string, args ...interface{}) *errors.Error {
-	return errors.New(409, UserServiceErrorReason_USER_ALREADY_REGISTERED.String(), fmt.Sprintf(format, args...))
+	return errors.New(422, UserServiceErrorReason_USER_ALREADY_REGISTERED.String(), fmt.Sprintf(format, args...))
 }
 
 // 用户注册失败
@@ -139,10 +139,10 @@ func IsUserRegisterFailed(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == UserServiceErrorReason_USER_REGISTER_FAILED.String() && e.Code == 400
+	return e.Reason == UserServiceErrorReason_USER_REGISTER_FAILED.String() && e.Code == 422
 }
 
 // 用户注册失败
 func ErrorUserRegisterFailed(format string, args ...interface{}) *errors.Error {
-	return errors.New(400, UserServiceErrorReason_USER_REGISTER_FAILED.String(), fmt.Sprintf(format, args...))
+	return errors.New(422, UserServiceErrorReason_USER_REGISTER_FAILED.String(), fmt.Sprintf(format, args...))
 }

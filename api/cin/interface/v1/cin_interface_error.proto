@@ -19,15 +19,15 @@ enum CinInterfaceErrorReason {
 	*/
 	// 设置缺省错误码
 	option (errors.default_code) = 400;
-	USER_NOT_EXIST = 0 [(errors.code) = 404];
+	USER_NOT_EXIST = 0 [(errors.code) = 422];
 	// 用户不存在
-	USER_NOT_FOUND = 3 [(errors.code) = 404];
+	USER_NOT_FOUND = 3 [(errors.code) = 422];
 	// 密码错误
-	PASSWORD_ERROR = 4 [(errors.code) = 400];
+	PASSWORD_ERROR = 4 [(errors.code) = 422];
 	// 修改用户信息失败
-	USER_UPDATE_FAILED = 5 [(errors.code) = 400];
+	USER_UPDATE_FAILED = 5 [(errors.code) = 422];
 
 
 	// 订单不存在
-	ORDER_ID_NOT_EXIST = 6 [(errors.code) = 404];
+	ORDER_ID_NOT_EXIST = 6 [(errors.code) = 422];
 }

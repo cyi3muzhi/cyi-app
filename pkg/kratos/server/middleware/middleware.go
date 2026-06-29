@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"github.com/go-kratos/kratos/contrib/middleware/validate/v2"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/metrics"
@@ -67,7 +66,7 @@ func Middlewares(tp trace.TracerProvider, middlewareType MiddlewareType, opts ..
 			middlewareList = append(middlewareList, AuthServiceMiddleware(options.Auth))
 		}
 		middlewareList = append(middlewareList,
-			validate.ProtoValidate(),
+			Validate(),
 			ratelimit.Server(),
 		)
 	}

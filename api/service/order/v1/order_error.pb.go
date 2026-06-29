@@ -76,8 +76,8 @@ const file_service_order_v1_order_error_proto_rawDesc = "" +
 	"\n" +
 	"\"service/order/v1/order_error.proto\x12\x14api.service.order.v1\x1a\x13errors/errors.proto*R\n" +
 	"\x10OrderErrorReason\x12\x1e\n" +
-	"\x14ORDER_STATUS_INVALID\x10\x00\x1a\x04\xa8E\x90\x03\x12\x18\n" +
-	"\x0eUSER_NOT_ORDER\x10\x01\x1a\x04\xa8E\x93\x03\x1a\x04\xa0E\xf4\x03B!Z\x1fcyi-app/api/service/order/v1;v1b\x06proto3"
+	"\x14ORDER_STATUS_INVALID\x10\x00\x1a\x04\xa8E\xa6\x03\x12\x18\n" +
+	"\x0eUSER_NOT_ORDER\x10\x01\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B!Z\x1fcyi-app/api/service/order/v1;v1b\x06proto3"
 
 var (
 	file_service_order_v1_order_error_proto_rawDescOnce sync.Once
