@@ -19,31 +19,31 @@ func (s *CinInterface) PlaceOrder(ctx context.Context, req *v1.PlaceOrderRequest
 	}
 	in.UserID = userID
 
-	// 1. 查找商品是否存在
+	// 1. 查找商品是否存在且上架
 	product, err := s.pc.GetProduct(ctx, in.ProductID)
 	if err != nil {
 		s.log.Errorf("product not found: %v", err)
-		return nil, v1.ErrorOrderIdNotExist("product not found")
+		return nil, v1.ErrorProductNotAvailable("product not found")
 	}
 	if product.Status != 1 {
-		return nil, v1.ErrorOrderIdNotExist("product is off shelf")
+		return nil, v1.ErrorProductNotAvailable("product is off shelf")
 	}
 
 	// 2. 检查库存是否充足
 	stock, err := s.sc.GetStock(ctx, in.ProductID)
 	if err != nil {
 		s.log.Errorf("stock not found: %v", err)
-		return nil, v1.ErrorOrderIdNotExist("stock not found")
+		return nil, v1.ErrorProductNotAvailable("stock not found")
 	}
 	if stock.Available < in.Count {
-		return nil, v1.ErrorOrderIdNotExist("insufficient stock")
+		return nil, v1.ErrorInsufficientStock("insufficient stock")
 	}
 
 	// 3. 预留库存（乐观锁）
 	_, err = s.sc.ReserveStock(ctx, in.ProductID, in.Count, stock.Version)
 	if err != nil {
 		s.log.Errorf("reserve stock failed: %v", err)
-		return nil, v1.ErrorOrderIdNotExist("reserve stock failed, please retry")
+		return nil, v1.ErrorStockOperationFailed("reserve stock failed, please retry")
 	}
 
 	// 4. 创建订单
@@ -74,21 +74,21 @@ func (s *CinInterface) PayOrder(ctx context.Context, req *v1.PayOrderRequest) (*
 	err = s.oc.PayOrder(ctx, req.OrderId, userID)
 	if err != nil {
 		s.log.Errorf("pay order failed: %v", err)
-		return nil, err
+		return nil, v1.ErrorOrderAlreadyPaid("pay order failed, may already be paid")
 	}
 
 	// 3. 查询库存
 	stock, err := s.sc.GetStock(ctx, order.ProductID)
 	if err != nil {
 		s.log.Errorf("stock not found: %v", err)
-		return nil, v1.ErrorOrderIdNotExist("stock not found")
+		return nil, v1.ErrorProductNotAvailable("stock not found")
 	}
 
 	// 4. 实际扣减库存（Total-、Reserved-、乐观锁）
 	_, err = s.sc.DeductStock(ctx, order.ProductID, order.Count, stock.Version)
 	if err != nil {
 		s.log.Errorf("deduct stock failed, order already paid, need manual fix: %v", err)
-		// 订单已支付成功，库存扣减失败走人工处理，不返回错误
+		return nil, v1.ErrorStockOperationFailed("deduct stock failed, already paid")
 	}
 
 	return &v1.PayOrderReply{

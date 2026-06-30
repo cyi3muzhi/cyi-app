@@ -29,6 +29,8 @@ const (
 	OrderErrorReason_ORDER_STATUS_INVALID OrderErrorReason = 0
 	// 用户不是订单创建人
 	OrderErrorReason_USER_NOT_ORDER OrderErrorReason = 1
+	// 订单不存在
+	OrderErrorReason_ORDER_NOT_FOUND OrderErrorReason = 2
 )
 
 // Enum value maps for OrderErrorReason.
@@ -36,10 +38,12 @@ var (
 	OrderErrorReason_name = map[int32]string{
 		0: "ORDER_STATUS_INVALID",
 		1: "USER_NOT_ORDER",
+		2: "ORDER_NOT_FOUND",
 	}
 	OrderErrorReason_value = map[string]int32{
 		"ORDER_STATUS_INVALID": 0,
 		"USER_NOT_ORDER":       1,
+		"ORDER_NOT_FOUND":      2,
 	}
 )
 
@@ -74,10 +78,11 @@ var File_service_order_v1_order_error_proto protoreflect.FileDescriptor
 
 const file_service_order_v1_order_error_proto_rawDesc = "" +
 	"\n" +
-	"\"service/order/v1/order_error.proto\x12\x14api.service.order.v1\x1a\x13errors/errors.proto*R\n" +
+	"\"service/order/v1/order_error.proto\x12\x14api.service.order.v1\x1a\x13errors/errors.proto*m\n" +
 	"\x10OrderErrorReason\x12\x1e\n" +
 	"\x14ORDER_STATUS_INVALID\x10\x00\x1a\x04\xa8E\xa6\x03\x12\x18\n" +
-	"\x0eUSER_NOT_ORDER\x10\x01\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B!Z\x1fcyi-app/api/service/order/v1;v1b\x06proto3"
+	"\x0eUSER_NOT_ORDER\x10\x01\x1a\x04\xa8E\xa6\x03\x12\x19\n" +
+	"\x0fORDER_NOT_FOUND\x10\x02\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B!Z\x1fcyi-app/api/service/order/v1;v1b\x06proto3"
 
 var (
 	file_service_order_v1_order_error_proto_rawDescOnce sync.Once

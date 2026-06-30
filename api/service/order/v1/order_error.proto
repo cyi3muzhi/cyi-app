@@ -13,4 +13,6 @@ enum OrderErrorReason {
 	ORDER_STATUS_INVALID = 0 [(errors.code) = 422];
 	// 用户不是订单创建人
 	USER_NOT_ORDER = 1 [(errors.code) = 422];
+	// 订单不存在
+	ORDER_NOT_FOUND = 2 [(errors.code) = 422];
 }

@@ -38,3 +38,17 @@ func IsUserNotOrder(err error) bool {
 func ErrorUserNotOrder(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, OrderErrorReason_USER_NOT_ORDER.String(), fmt.Sprintf(format, args...))
 }
+
+// 订单不存在
+func IsOrderNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OrderErrorReason_ORDER_NOT_FOUND.String() && e.Code == 422
+}
+
+// 订单不存在
+func ErrorOrderNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OrderErrorReason_ORDER_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+}

@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.9
 // 	protoc        v5.27.2
-// source: api/cin/interface/v1/cin_interface_error.proto
+// source: cin/interface/v1/cin_interface_error.proto
 
 package v1
 
@@ -34,23 +34,39 @@ const (
 	CinInterfaceErrorReason_USER_UPDATE_FAILED CinInterfaceErrorReason = 5
 	// 订单不存在
 	CinInterfaceErrorReason_ORDER_ID_NOT_EXIST CinInterfaceErrorReason = 6
+	// 商品不存在或已下架
+	CinInterfaceErrorReason_PRODUCT_NOT_AVAILABLE CinInterfaceErrorReason = 7
+	// 库存不足
+	CinInterfaceErrorReason_INSUFFICIENT_STOCK CinInterfaceErrorReason = 8
+	// 库存操作失败（并发）
+	CinInterfaceErrorReason_STOCK_OPERATION_FAILED CinInterfaceErrorReason = 9
+	// 订单已支付（重复支付）
+	CinInterfaceErrorReason_ORDER_ALREADY_PAID CinInterfaceErrorReason = 10
 )
 
 // Enum value maps for CinInterfaceErrorReason.
 var (
 	CinInterfaceErrorReason_name = map[int32]string{
-		0: "USER_NOT_EXIST",
-		3: "USER_NOT_FOUND",
-		4: "PASSWORD_ERROR",
-		5: "USER_UPDATE_FAILED",
-		6: "ORDER_ID_NOT_EXIST",
+		0:  "USER_NOT_EXIST",
+		3:  "USER_NOT_FOUND",
+		4:  "PASSWORD_ERROR",
+		5:  "USER_UPDATE_FAILED",
+		6:  "ORDER_ID_NOT_EXIST",
+		7:  "PRODUCT_NOT_AVAILABLE",
+		8:  "INSUFFICIENT_STOCK",
+		9:  "STOCK_OPERATION_FAILED",
+		10: "ORDER_ALREADY_PAID",
 	}
 	CinInterfaceErrorReason_value = map[string]int32{
-		"USER_NOT_EXIST":     0,
-		"USER_NOT_FOUND":     3,
-		"PASSWORD_ERROR":     4,
-		"USER_UPDATE_FAILED": 5,
-		"ORDER_ID_NOT_EXIST": 6,
+		"USER_NOT_EXIST":         0,
+		"USER_NOT_FOUND":         3,
+		"PASSWORD_ERROR":         4,
+		"USER_UPDATE_FAILED":     5,
+		"ORDER_ID_NOT_EXIST":     6,
+		"PRODUCT_NOT_AVAILABLE":  7,
+		"INSUFFICIENT_STOCK":     8,
+		"STOCK_OPERATION_FAILED": 9,
+		"ORDER_ALREADY_PAID":     10,
 	}
 )
 
@@ -65,11 +81,11 @@ func (x CinInterfaceErrorReason) String() string {
 }
 
 func (CinInterfaceErrorReason) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_cin_interface_v1_cin_interface_error_proto_enumTypes[0].Descriptor()
+	return file_cin_interface_v1_cin_interface_error_proto_enumTypes[0].Descriptor()
 }
 
 func (CinInterfaceErrorReason) Type() protoreflect.EnumType {
-	return &file_api_cin_interface_v1_cin_interface_error_proto_enumTypes[0]
+	return &file_cin_interface_v1_cin_interface_error_proto_enumTypes[0]
 }
 
 func (x CinInterfaceErrorReason) Number() protoreflect.EnumNumber {
@@ -78,39 +94,44 @@ func (x CinInterfaceErrorReason) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CinInterfaceErrorReason.Descriptor instead.
 func (CinInterfaceErrorReason) EnumDescriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_cin_interface_error_proto_rawDescGZIP(), []int{0}
+	return file_cin_interface_v1_cin_interface_error_proto_rawDescGZIP(), []int{0}
 }
 
-var File_api_cin_interface_v1_cin_interface_error_proto protoreflect.FileDescriptor
+var File_cin_interface_v1_cin_interface_error_proto protoreflect.FileDescriptor
 
-const file_api_cin_interface_v1_cin_interface_error_proto_rawDesc = "" +
+const file_cin_interface_v1_cin_interface_error_proto_rawDesc = "" +
 	"\n" +
-	".api/cin/interface/v1/cin_interface_error.proto\x12\x14api.cin.interface.v1\x1a\x13errors/errors.proto*\xa9\x01\n" +
+	"*cin/interface/v1/cin_interface_error.proto\x12\x14api.cin.interface.v1\x1a\x13errors/errors.proto*\xa8\x02\n" +
 	"\x17CinInterfaceErrorReason\x12\x18\n" +
 	"\x0eUSER_NOT_EXIST\x10\x00\x1a\x04\xa8E\xa6\x03\x12\x18\n" +
 	"\x0eUSER_NOT_FOUND\x10\x03\x1a\x04\xa8E\xa6\x03\x12\x18\n" +
 	"\x0ePASSWORD_ERROR\x10\x04\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
 	"\x12USER_UPDATE_FAILED\x10\x05\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
-	"\x12ORDER_ID_NOT_EXIST\x10\x06\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\x90\x03B9\n" +
+	"\x12ORDER_ID_NOT_EXIST\x10\x06\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
+	"\x15PRODUCT_NOT_AVAILABLE\x10\a\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
+	"\x12INSUFFICIENT_STOCK\x10\b\x1a\x04\xa8E\xa6\x03\x12 \n" +
+	"\x16STOCK_OPERATION_FAILED\x10\t\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
+	"\x12ORDER_ALREADY_PAID\x10\n" +
+	"\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\x90\x03B9\n" +
 	"\x14api.cin.interface.v1P\x01Z\x1fcyi-app/api/cin/interface/v1;v1b\x06proto3"
 
 var (
-	file_api_cin_interface_v1_cin_interface_error_proto_rawDescOnce sync.Once
-	file_api_cin_interface_v1_cin_interface_error_proto_rawDescData []byte
+	file_cin_interface_v1_cin_interface_error_proto_rawDescOnce sync.Once
+	file_cin_interface_v1_cin_interface_error_proto_rawDescData []byte
 )
 
-func file_api_cin_interface_v1_cin_interface_error_proto_rawDescGZIP() []byte {
-	file_api_cin_interface_v1_cin_interface_error_proto_rawDescOnce.Do(func() {
-		file_api_cin_interface_v1_cin_interface_error_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_cin_interface_v1_cin_interface_error_proto_rawDesc), len(file_api_cin_interface_v1_cin_interface_error_proto_rawDesc)))
+func file_cin_interface_v1_cin_interface_error_proto_rawDescGZIP() []byte {
+	file_cin_interface_v1_cin_interface_error_proto_rawDescOnce.Do(func() {
+		file_cin_interface_v1_cin_interface_error_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_cin_interface_v1_cin_interface_error_proto_rawDesc), len(file_cin_interface_v1_cin_interface_error_proto_rawDesc)))
 	})
-	return file_api_cin_interface_v1_cin_interface_error_proto_rawDescData
+	return file_cin_interface_v1_cin_interface_error_proto_rawDescData
 }
 
-var file_api_cin_interface_v1_cin_interface_error_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_cin_interface_v1_cin_interface_error_proto_goTypes = []any{
+var file_cin_interface_v1_cin_interface_error_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_cin_interface_v1_cin_interface_error_proto_goTypes = []any{
 	(CinInterfaceErrorReason)(0), // 0: api.cin.interface.v1.CinInterfaceErrorReason
 }
-var file_api_cin_interface_v1_cin_interface_error_proto_depIdxs = []int32{
+var file_cin_interface_v1_cin_interface_error_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -118,26 +139,26 @@ var file_api_cin_interface_v1_cin_interface_error_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_api_cin_interface_v1_cin_interface_error_proto_init() }
-func file_api_cin_interface_v1_cin_interface_error_proto_init() {
-	if File_api_cin_interface_v1_cin_interface_error_proto != nil {
+func init() { file_cin_interface_v1_cin_interface_error_proto_init() }
+func file_cin_interface_v1_cin_interface_error_proto_init() {
+	if File_cin_interface_v1_cin_interface_error_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_interface_v1_cin_interface_error_proto_rawDesc), len(file_api_cin_interface_v1_cin_interface_error_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cin_interface_v1_cin_interface_error_proto_rawDesc), len(file_cin_interface_v1_cin_interface_error_proto_rawDesc)),
 			NumEnums:      1,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_api_cin_interface_v1_cin_interface_error_proto_goTypes,
-		DependencyIndexes: file_api_cin_interface_v1_cin_interface_error_proto_depIdxs,
-		EnumInfos:         file_api_cin_interface_v1_cin_interface_error_proto_enumTypes,
+		GoTypes:           file_cin_interface_v1_cin_interface_error_proto_goTypes,
+		DependencyIndexes: file_cin_interface_v1_cin_interface_error_proto_depIdxs,
+		EnumInfos:         file_cin_interface_v1_cin_interface_error_proto_enumTypes,
 	}.Build()
-	File_api_cin_interface_v1_cin_interface_error_proto = out.File
-	file_api_cin_interface_v1_cin_interface_error_proto_goTypes = nil
-	file_api_cin_interface_v1_cin_interface_error_proto_depIdxs = nil
+	File_cin_interface_v1_cin_interface_error_proto = out.File
+	file_cin_interface_v1_cin_interface_error_proto_goTypes = nil
+	file_cin_interface_v1_cin_interface_error_proto_depIdxs = nil
 }

@@ -2,8 +2,8 @@ package data
 
 import (
 	"context"
-	"errors"
 
+	v1 "cyi-app/api/service/product/v1"
 	"cyi-app/app/service/product/internal/biz"
 	"cyi-app/app/service/product/internal/data/curd"
 	mod "cyi-app/app/service/product/internal/data/models"
@@ -62,7 +62,7 @@ func (r *stockRepo) ReserveStock(ctx context.Context, productID int64, count int
 		return 0, err
 	}
 	if result.RowsAffected == 0 {
-		return 0, errors.New("reserve stock failed: insufficient stock or version conflict")
+		return 0, v1.ErrorInsufficientStock("insufficient stock or version conflict")
 	}
 	return version + 1, nil
 }
@@ -83,7 +83,7 @@ func (r *stockRepo) DeductStock(ctx context.Context, productID int64, count int3
 		return 0, err
 	}
 	if result.RowsAffected == 0 {
-		return 0, errors.New("deduct stock failed: version conflict")
+		return 0, v1.ErrorStockVersionConflict("deduct stock version conflict")
 	}
 	return version + 1, nil
 }

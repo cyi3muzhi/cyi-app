@@ -78,3 +78,59 @@ func IsOrderIdNotExist(err error) bool {
 func ErrorOrderIdNotExist(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, CinInterfaceErrorReason_ORDER_ID_NOT_EXIST.String(), fmt.Sprintf(format, args...))
 }
+
+// 商品不存在或已下架
+func IsProductNotAvailable(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == CinInterfaceErrorReason_PRODUCT_NOT_AVAILABLE.String() && e.Code == 422
+}
+
+// 商品不存在或已下架
+func ErrorProductNotAvailable(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, CinInterfaceErrorReason_PRODUCT_NOT_AVAILABLE.String(), fmt.Sprintf(format, args...))
+}
+
+// 库存不足
+func IsInsufficientStock(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == CinInterfaceErrorReason_INSUFFICIENT_STOCK.String() && e.Code == 422
+}
+
+// 库存不足
+func ErrorInsufficientStock(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, CinInterfaceErrorReason_INSUFFICIENT_STOCK.String(), fmt.Sprintf(format, args...))
+}
+
+// 库存操作失败（并发）
+func IsStockOperationFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == CinInterfaceErrorReason_STOCK_OPERATION_FAILED.String() && e.Code == 422
+}
+
+// 库存操作失败（并发）
+func ErrorStockOperationFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, CinInterfaceErrorReason_STOCK_OPERATION_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+// 订单已支付（重复支付）
+func IsOrderAlreadyPaid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == CinInterfaceErrorReason_ORDER_ALREADY_PAID.String() && e.Code == 422
+}
+
+// 订单已支付（重复支付）
+func ErrorOrderAlreadyPaid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, CinInterfaceErrorReason_ORDER_ALREADY_PAID.String(), fmt.Sprintf(format, args...))
+}

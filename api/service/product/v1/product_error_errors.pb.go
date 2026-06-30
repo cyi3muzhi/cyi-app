@@ -11,6 +11,7 @@ import (
 // is compatible with the kratos package it is being compiled against.
 const _ = errors.SupportPackageIsVersion1
 
+// 商品不存在
 func IsProductNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -19,6 +20,49 @@ func IsProductNotFound(err error) bool {
 	return e.Reason == ProductErrorReason_PRODUCT_NOT_FOUND.String() && e.Code == 422
 }
 
+// 商品不存在
 func ErrorProductNotFound(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, ProductErrorReason_PRODUCT_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+}
+
+// 库存不存在
+func IsStockNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ProductErrorReason_STOCK_NOT_FOUND.String() && e.Code == 422
+}
+
+// 库存不存在
+func ErrorStockNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, ProductErrorReason_STOCK_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+}
+
+// 库存不足
+func IsInsufficientStock(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ProductErrorReason_INSUFFICIENT_STOCK.String() && e.Code == 422
+}
+
+// 库存不足
+func ErrorInsufficientStock(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, ProductErrorReason_INSUFFICIENT_STOCK.String(), fmt.Sprintf(format, args...))
+}
+
+// 库存版本冲突（并发）
+func IsStockVersionConflict(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ProductErrorReason_STOCK_VERSION_CONFLICT.String() && e.Code == 422
+}
+
+// 库存版本冲突（并发）
+func ErrorStockVersionConflict(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, ProductErrorReason_STOCK_VERSION_CONFLICT.String(), fmt.Sprintf(format, args...))
 }

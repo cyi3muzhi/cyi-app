@@ -27,7 +27,14 @@ enum CinInterfaceErrorReason {
 	// 修改用户信息失败
 	USER_UPDATE_FAILED = 5 [(errors.code) = 422];
 
-
 	// 订单不存在
 	ORDER_ID_NOT_EXIST = 6 [(errors.code) = 422];
+	// 商品不存在或已下架
+	PRODUCT_NOT_AVAILABLE = 7 [(errors.code) = 422];
+	// 库存不足
+	INSUFFICIENT_STOCK = 8 [(errors.code) = 422];
+	// 库存操作失败（并发）
+	STOCK_OPERATION_FAILED = 9 [(errors.code) = 422];
+	// 订单已支付（重复支付）
+	ORDER_ALREADY_PAID = 10 [(errors.code) = 422];
 }

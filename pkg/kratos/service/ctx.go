@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	server "cyi-app/pkg/kratos/server/middleware"
 
@@ -14,7 +13,6 @@ import (
 
 func GetUserID(ctx context.Context) (int64, error) {
 	claims, ok := jwt.FromContext(ctx)
-	fmt.Println("claims:", claims)
 	if !ok {
 		return 0, errors.New("claims not found")
 	}
