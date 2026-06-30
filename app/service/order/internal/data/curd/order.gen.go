@@ -29,9 +29,10 @@ func newOrder(db *gorm.DB) order {
 	_order.UpdateTime = field.NewInt64(tableName, "update_time")
 	_order.IsDel = field.NewUint(tableName, "is_del")
 	_order.UserID = field.NewInt64(tableName, "user_id")
-	_order.ProductID = field.NewInt64(tableName, "product_id")
-	_order.Count_ = field.NewInt32(tableName, "count")
+	_order.TotalPrice = field.NewInt64(tableName, "total_price")
 	_order.Status = field.NewInt32(tableName, "status")
+	_order.OrderNo = field.NewString(tableName, "order_no")
+	_order.PayAmount = field.NewInt64(tableName, "pay_amount")
 
 	_order.fillFieldMap()
 
@@ -47,9 +48,10 @@ type order struct {
 	UpdateTime field.Int64
 	IsDel      field.Uint
 	UserID     field.Int64
-	ProductID  field.Int64
-	Count_     field.Int32
+	TotalPrice field.Int64
 	Status     field.Int32
+	OrderNo    field.String
+	PayAmount  field.Int64
 
 	fieldMap map[string]field.Expr
 }
@@ -71,9 +73,10 @@ func (o *order) updateTableName(table string) *order {
 	o.UpdateTime = field.NewInt64(table, "update_time")
 	o.IsDel = field.NewUint(table, "is_del")
 	o.UserID = field.NewInt64(table, "user_id")
-	o.ProductID = field.NewInt64(table, "product_id")
-	o.Count_ = field.NewInt32(table, "count")
+	o.TotalPrice = field.NewInt64(table, "total_price")
 	o.Status = field.NewInt32(table, "status")
+	o.OrderNo = field.NewString(table, "order_no")
+	o.PayAmount = field.NewInt64(table, "pay_amount")
 
 	o.fillFieldMap()
 
@@ -90,15 +93,16 @@ func (o *order) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (o *order) fillFieldMap() {
-	o.fieldMap = make(map[string]field.Expr, 8)
+	o.fieldMap = make(map[string]field.Expr, 9)
 	o.fieldMap["id"] = o.ID
 	o.fieldMap["create_time"] = o.CreateTime
 	o.fieldMap["update_time"] = o.UpdateTime
 	o.fieldMap["is_del"] = o.IsDel
 	o.fieldMap["user_id"] = o.UserID
-	o.fieldMap["product_id"] = o.ProductID
-	o.fieldMap["count"] = o.Count_
+	o.fieldMap["total_price"] = o.TotalPrice
 	o.fieldMap["status"] = o.Status
+	o.fieldMap["order_no"] = o.OrderNo
+	o.fieldMap["pay_amount"] = o.PayAmount
 }
 
 func (o order) clone(db *gorm.DB) order {

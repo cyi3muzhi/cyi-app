@@ -20,6 +20,7 @@ message CreateOrderRequest {
 	int64 user_id = 1;
 	int64 product_id = 2;
 	int32 count = 3;
+	int64 price = 4;         // 单价（单位：分）
 }
 
 message CreateOrderReply {
@@ -41,9 +42,18 @@ message GetOrderRequest {
 message GetOrderReply {
 	int64 order_id = 1;
 	int64 user_id = 2;
-	int64 product_id = 3;
-	int32 count = 4;
-	int32 status = 5;
+	string order_no = 3;
+	int32 status = 4;
+	int64 total_price = 5;   // 订单总金额
+	int64 pay_amount = 6;    // 支付金额
+	repeated OrderItemProto items = 7;
+}
+
+message OrderItemProto {
+	int64 product_id = 1;
+	string product_name = 2;
+	int64 price = 3;         // 单价
+	int32 quantity = 4;      // 数量
 }
 
 message ListOrderRequest {}
@@ -70,4 +80,3 @@ enum OrderStatus {
     Refunding = 8;               // 退款中
     Refunded = 9;                // 已退款
 }
-

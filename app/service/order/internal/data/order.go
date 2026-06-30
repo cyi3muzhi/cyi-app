@@ -23,13 +23,30 @@ func NewOrderRepo(data *Data, logger log.Logger) biz.OrderRepo {
 }
 
 func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
-	order := &mod.Order{}
-	convert.Convert(in, order)
-	if err := curd.Order.WithContext(ctx).Create(order); err != nil {
-		return err
-	}
-	in.ID = order.ID
-	return nil
+	return curd.Q.Transaction(func(tx *curd.Query) error {
+		order := &mod.Order{}
+		if err := convert.Convert(in, order); err != nil {
+			return err
+		}
+		if err := tx.Order.WithContext(ctx).Create(order); err != nil {
+			return errors.New("create order failed")
+		}
+		in.ID = order.ID
+
+		for _, item := range in.Items {
+			oi := &mod.OrderItem{
+				OrderID:     order.ID,
+				ProductID:   item.ProductID,
+				ProductName: item.ProductName,
+				Price:       item.Price,
+				Quantity:    item.Quantity,
+			}
+			if err := tx.OrderItem.WithContext(ctx).Create(oi); err != nil {
+				return errors.New("create order item failed")
+			}
+		}
+		return nil
+	})
 }
 
 func (r *orderRepo) UpdateOrder(ctx context.Context, in *biz.Order) error {
@@ -37,7 +54,7 @@ func (r *orderRepo) UpdateOrder(ctx context.Context, in *biz.Order) error {
 	convert.Convert(in, order)
 	order.ID = in.ID
 	if line, err := curd.Order.Debug().WithContext(ctx).Where(curd.Order.ID.Eq(in.ID)).Updates(order); err != nil {
-		return err
+		return errors.New("update order failed")
 	} else if line.RowsAffected == 0 {
 		return errors.New("order not found")
 	}
@@ -55,5 +72,18 @@ func (r *orderRepo) GetOrder(ctx context.Context, id int64) (*biz.Order, error) 
 	out := &biz.Order{}
 	convert.Convert(order, out)
 	out.ID = order.ID
+
+	items, err := curd.OrderItem.WithContext(ctx).Where(curd.OrderItem.OrderID.Eq(id)).Find()
+	if err != nil {
+		return nil, err
+	}
+	for _, item := range items {
+		out.Items = append(out.Items, &biz.OrderItem{
+			ProductID:   item.ProductID,
+			ProductName: item.ProductName,
+			Price:       item.Price,
+			Quantity:    item.Quantity,
+		})
+	}
 	return out, nil
 }

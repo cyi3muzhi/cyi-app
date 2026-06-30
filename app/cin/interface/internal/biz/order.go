@@ -8,11 +8,12 @@ import (
 )
 
 type Order struct {
-	ID        int64 `json:"id"`
-	UserID    int64 `json:"user_id"`
-	ProductID int64 `json:"product_id"`
-	Count     int32 `json:"count"`
-	Status    int32 `json:"status"`
+	ID        int64  `json:"id"`
+	UserID    int64  `json:"user_id"`
+	ProductID int64  `json:"product_id"`
+	Count     int32  `json:"count"`
+	Price     int64  `json:"price"`
+	Status    int32  `json:"status"`
 }
 
 type OrderRepo interface {

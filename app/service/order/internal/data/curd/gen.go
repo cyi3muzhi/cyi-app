@@ -12,44 +12,65 @@ import (
 )
 
 var (
-	Q     = new(Query)
-	Order *order
+	Q              = new(Query)
+	Order          *order
+	OrderItem      *orderItem
+	OrderLogistics *orderLogistics
+	PaymentLog     *paymentLog
 )
 
 func SetDefault(db *gorm.DB) {
 	*Q = *Use(db)
 	Order = &Q.Order
+	OrderItem = &Q.OrderItem
+	OrderLogistics = &Q.OrderLogistics
+	PaymentLog = &Q.PaymentLog
 }
 
 func Use(db *gorm.DB) *Query {
 	return &Query{
-		db:    db,
-		Order: newOrder(db),
+		db:             db,
+		Order:          newOrder(db),
+		OrderItem:      newOrderItem(db),
+		OrderLogistics: newOrderLogistics(db),
+		PaymentLog:     newPaymentLog(db),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	Order order
+	Order          order
+	OrderItem      orderItem
+	OrderLogistics orderLogistics
+	PaymentLog     paymentLog
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:    db,
-		Order: q.Order.clone(db),
+		db:             db,
+		Order:          q.Order.clone(db),
+		OrderItem:      q.OrderItem.clone(db),
+		OrderLogistics: q.OrderLogistics.clone(db),
+		PaymentLog:     q.PaymentLog.clone(db),
 	}
 }
 
 type queryCtx struct {
-	Order orderDo
+	Order          orderDo
+	OrderItem      orderItemDo
+	OrderLogistics orderLogisticsDo
+	PaymentLog     paymentLogDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		Order: *q.Order.WithContext(ctx),
+		Order:          *q.Order.WithContext(ctx),
+		OrderItem:      *q.OrderItem.WithContext(ctx),
+		OrderLogistics: *q.OrderLogistics.WithContext(ctx),
+		PaymentLog:     *q.PaymentLog.WithContext(ctx),
 	}
 }
 

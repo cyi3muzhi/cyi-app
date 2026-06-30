@@ -27,20 +27,22 @@ func NewOrderService(uc *biz.OrderUseCase, logger log.Logger) *OrderService {
 func (s *OrderService) CreateOrder(ctx context.Context, req *v1.CreateOrderRequest) (*v1.CreateOrderReply, error) {
 	in := &biz.Order{}
 	convert.Convert(req, in)
-	err := s.uc.CreateOrder(ctx, in)
-	if err != nil {
+	in.AddItem(&biz.OrderItem{
+		ProductID: req.ProductId,
+		Price:     req.Price,
+		Quantity:  req.Count,
+	})
+	in.GenerateOrderNo()
+	if err := s.uc.Create(ctx, in); err != nil {
 		return nil, err
 	}
-	return &v1.CreateOrderReply{
-		OrderId: in.ID,
-	}, nil
+	return &v1.CreateOrderReply{OrderId: in.ID}, nil
 }
 
 func (s *OrderService) UpdateOrder(ctx context.Context, req *v1.UpdateOrderRequest) (*v1.UpdateOrderReply, error) {
 	in := &biz.Order{}
 	convert.Convert(req, in)
-	err := s.uc.UpdateOrder(ctx, in)
-	if err != nil {
+	if err := s.uc.Update(ctx, in); err != nil {
 		return nil, err
 	}
 	return &v1.UpdateOrderReply{}, nil
@@ -51,17 +53,27 @@ func (s *OrderService) DeleteOrder(ctx context.Context, req *v1.DeleteOrderReque
 }
 
 func (s *OrderService) GetOrder(ctx context.Context, req *v1.GetOrderRequest) (*v1.GetOrderReply, error) {
-	order, err := s.uc.GetOrderWithStatus(ctx, req.OrderId)
+	order, err := s.uc.Get(ctx, req.OrderId)
 	if err != nil {
 		return nil, err
 	}
-	return &v1.GetOrderReply{
-		OrderId:   order.ID,
-		UserId:    order.UserID,
-		ProductId: order.ProductID,
-		Count:     order.Count,
-		Status:    int32(order.Status),
-	}, nil
+	reply := &v1.GetOrderReply{
+		OrderId:    order.ID,
+		UserId:     order.UserID,
+		OrderNo:    order.OrderNo,
+		Status:     int32(order.Status),
+		TotalPrice: order.TotalPrice,
+		PayAmount:  order.PayAmount,
+	}
+	for _, item := range order.Items {
+		reply.Items = append(reply.Items, &v1.OrderItemProto{
+			ProductId:   item.ProductID,
+			ProductName: item.ProductName,
+			Price:       item.Price,
+			Quantity:    item.Quantity,
+		})
+	}
+	return reply, nil
 }
 
 func (s *OrderService) ListOrder(ctx context.Context, req *v1.ListOrderRequest) (*v1.ListOrderReply, error) {
@@ -69,15 +81,7 @@ func (s *OrderService) ListOrder(ctx context.Context, req *v1.ListOrderRequest) 
 }
 
 func (s *OrderService) PayOrder(ctx context.Context, req *v1.PayOrderRequest) (*v1.PayOrderReply, error) {
-	err := s.uc.VerifyOrder(ctx, req.OrderId, req.UserId)
-	if err != nil {
-		return nil, err
-	}
-	in := &biz.Order{
-		ID: req.OrderId,
-	}
-	err = s.uc.Pay(ctx, in)
-	if err != nil {
+	if err := s.uc.Pay(ctx, req.OrderId, req.UserId); err != nil {
 		return nil, err
 	}
 	return &v1.PayOrderReply{}, nil

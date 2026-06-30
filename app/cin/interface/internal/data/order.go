@@ -33,6 +33,7 @@ func (r *orderRepo) CreateOrder(ctx context.Context, order *biz.Order) error {
 		UserId:    order.UserID,
 		ProductId: order.ProductID,
 		Count:     order.Count,
+		Price:     order.Price,
 	})
 	if err != nil {
 		return err
@@ -76,8 +77,6 @@ func (r *orderRepo) GetOrder(ctx context.Context, orderID int64) (*biz.Order, er
 		return &biz.Order{
 			ID:        order.OrderId,
 			UserID:    order.UserId,
-			ProductID: order.ProductId,
-			Count:     order.Count,
 			Status:    order.Status,
 		}, nil
 	})

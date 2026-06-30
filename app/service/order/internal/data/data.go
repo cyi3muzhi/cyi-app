@@ -10,8 +10,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
-	// "cyi-app/app/service/order/internal/data/curd"
-
 	"cyi-app/app/service/order/internal/data/curd"
 	mod "cyi-app/app/service/order/internal/data/models"
 
@@ -33,13 +31,11 @@ type Data struct {
 }
 
 func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, logger log.Logger) (*Data, func(), error) {
-
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	curd.SetDefault(db)
 	return &Data{
-		cache: cache,
 	}, cleanup, nil
 }
 
@@ -53,7 +49,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-	if err := db.AutoMigrate(&mod.Order{}); err != nil {
+	if err := db.AutoMigrate(&mod.Order{}, &mod.OrderItem{}, &mod.OrderLogistics{}, &mod.PaymentLog{}); err != nil {
 		panic(err)
 	}
 	g := gen.NewGenerator(gen.Config{
@@ -63,9 +59,21 @@ func NewDB(c *conf.Data) *gorm.DB {
 	g.UseDB(db)
 	g.ApplyBasic(
 		&mod.Order{},
+		&mod.OrderItem{},
+		&mod.OrderLogistics{},
+		&mod.PaymentLog{},
 	)
 	g.ApplyInterface(func(mod.IOrder) {},
 		mod.Order{},
+	)
+	g.ApplyInterface(func(mod.IOrderItem) {},
+		mod.OrderItem{},
+	)
+	g.ApplyInterface(func(mod.IOrderLogistics) {},
+		mod.OrderLogistics{},
+	)
+	g.ApplyInterface(func(mod.IPaymentLog) {},
+		mod.PaymentLog{},
 	)
 	g.Execute()
 	return db
