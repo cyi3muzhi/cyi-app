@@ -29,7 +29,7 @@ func NewOrderRepo(data *Data, logger log.Logger) biz.OrderRepo {
 }
 
 func (r *orderRepo) CreateOrder(ctx context.Context, order *biz.Order) error {
-	_, err := r.data.oc.CreateOrder(ctx, &orderV1.CreateOrderRequest{
+	res, err := r.data.oc.CreateOrder(ctx, &orderV1.CreateOrderRequest{
 		UserId:    order.UserID,
 		ProductId: order.ProductID,
 		Count:     order.Count,
@@ -37,7 +37,8 @@ func (r *orderRepo) CreateOrder(ctx context.Context, order *biz.Order) error {
 	if err != nil {
 		return err
 	}
-	return err
+	order.ID = res.OrderId
+	return nil
 }
 
 func (r *orderRepo) PayOrder(ctx context.Context, orderID int64, userID int64) error {

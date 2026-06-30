@@ -69,6 +69,8 @@ api:
 	       --go-http_out=paths=source_relative:./api \
 	       --go-grpc_out=paths=source_relative:./api \
 	       --openapi_out=fq_schema_naming=true,default_response=false:. \
+		   --go-vtproto_out=paths=source_relative:./api \
+    	   --go-vtproto_opt=features=marshal+unmarshal+size \
 	       $(API_PROTO_FILES)
 
 .PHONY: validate

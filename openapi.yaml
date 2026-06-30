@@ -29,13 +29,13 @@ paths:
         post:
             tags:
                 - CinInterface
-            description: 创建订单
-            operationId: CinInterface_CreateOrder
+            description: 下单
+            operationId: CinInterface_PlaceOrder
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/api.cin.interface.v1.CreateOrderRequest'
+                            $ref: '#/components/schemas/api.cin.interface.v1.PlaceOrderRequest'
                 required: true
             responses:
                 "200":
@@ -43,7 +43,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/api.cin.interface.v1.CreateOrderReply'
+                                $ref: '#/components/schemas/api.cin.interface.v1.PlaceOrderReply'
     /order/v1/pay:
         post:
             tags:
@@ -222,22 +222,6 @@ components:
             properties:
                 message:
                     type: string
-        api.cin.interface.v1.CreateOrderReply:
-            type: object
-            properties:
-                orderId:
-                    type: string
-                    description: 订单ID
-        api.cin.interface.v1.CreateOrderRequest:
-            type: object
-            properties:
-                productId:
-                    type: string
-                    description: 商品ID
-                count:
-                    type: integer
-                    description: 购买数量
-                    format: int32
         api.cin.interface.v1.CreateProductReply:
             type: object
             properties:
@@ -299,6 +283,22 @@ components:
                 orderId:
                     type: string
                     description: 订单ID
+        api.cin.interface.v1.PlaceOrderReply:
+            type: object
+            properties:
+                orderId:
+                    type: string
+                    description: 订单ID
+        api.cin.interface.v1.PlaceOrderRequest:
+            type: object
+            properties:
+                productId:
+                    type: string
+                    description: 商品ID
+                count:
+                    type: integer
+                    description: 购买数量
+                    format: int32
         api.cin.interface.v1.RegisterReply:
             type: object
             properties:
