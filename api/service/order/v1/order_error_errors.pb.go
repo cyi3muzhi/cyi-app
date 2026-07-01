@@ -52,3 +52,59 @@ func IsOrderNotFound(err error) bool {
 func ErrorOrderNotFound(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, OrderErrorReason_ORDER_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
+
+// 商品不存在或已下架
+func IsProductNotAvailable(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OrderErrorReason_PRODUCT_NOT_AVAILABLE.String() && e.Code == 422
+}
+
+// 商品不存在或已下架
+func ErrorProductNotAvailable(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OrderErrorReason_PRODUCT_NOT_AVAILABLE.String(), fmt.Sprintf(format, args...))
+}
+
+// 库存不足
+func IsInsufficientStock(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OrderErrorReason_INSUFFICIENT_STOCK.String() && e.Code == 422
+}
+
+// 库存不足
+func ErrorInsufficientStock(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OrderErrorReason_INSUFFICIENT_STOCK.String(), fmt.Sprintf(format, args...))
+}
+
+// 库存操作失败
+func IsStockOperationFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OrderErrorReason_STOCK_OPERATION_FAILED.String() && e.Code == 422
+}
+
+// 库存操作失败
+func ErrorStockOperationFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OrderErrorReason_STOCK_OPERATION_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+// 订单商品为空
+func IsOrderProductEmpty(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OrderErrorReason_ORDER_PRODUCT_EMPTY.String() && e.Code == 422
+}
+
+// 订单商品为空
+func ErrorOrderProductEmpty(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OrderErrorReason_ORDER_PRODUCT_EMPTY.String(), fmt.Sprintf(format, args...))
+}

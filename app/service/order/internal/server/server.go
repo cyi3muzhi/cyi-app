@@ -18,7 +18,7 @@ import (
 )
 
 // ProviderSet is server providers.
-var ProviderSet = wire.NewSet(NewServer, NewRegistrar, NewGRPCServerConf)
+var ProviderSet = wire.NewSet(NewServer, NewRegistrar, NewDiscovery, NewGRPCServerConf)
 
 func NewGRPCServerConf(
 	c *conf.Server,
@@ -41,7 +41,7 @@ func NewGRPCServerConf(
 	return &ts.GrpcServer{GrpcServer: srv}
 }
 
-// 注册服务器
+// NewRegistrar 创建 Consul 服务注册器
 func NewRegistrar(conf *conf.Registry) registry.Registrar {
 	reg, err := consul.NewConsulRegistry(&consul.ConsulRegistryOptions{
 		Address: conf.Consul.Address,
@@ -51,4 +51,16 @@ func NewRegistrar(conf *conf.Registry) registry.Registrar {
 		panic(err)
 	}
 	return reg
+}
+
+// NewDiscovery 创建 Consul 服务发现器
+func NewDiscovery(conf *conf.Registry) registry.Discovery {
+	dis, err := consul.NewConsulRegistry(&consul.ConsulRegistryOptions{
+		Address: conf.Consul.Address,
+		Scheme:  conf.Consul.Scheme,
+	})
+	if err != nil {
+		panic(err)
+	}
+	return dis
 }

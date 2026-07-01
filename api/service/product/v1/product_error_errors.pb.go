@@ -66,3 +66,31 @@ func IsStockVersionConflict(err error) bool {
 func ErrorStockVersionConflict(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, ProductErrorReason_STOCK_VERSION_CONFLICT.String(), fmt.Sprintf(format, args...))
 }
+
+// 创建商品失败
+func IsCreateProductFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ProductErrorReason_CREATE_PRODUCT_FAILED.String() && e.Code == 422
+}
+
+// 创建商品失败
+func ErrorCreateProductFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, ProductErrorReason_CREATE_PRODUCT_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+// 创建库存失败
+func IsCreateStockFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ProductErrorReason_CREATE_STOCK_FAILED.String() && e.Code == 422
+}
+
+// 创建库存失败
+func ErrorCreateStockFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, ProductErrorReason_CREATE_STOCK_FAILED.String(), fmt.Sprintf(format, args...))
+}

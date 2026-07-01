@@ -5,8 +5,9 @@ import (
 	"cyi-app/app/service/order/internal/biz"
 	"cyi-app/app/service/order/internal/data/curd"
 	mod "cyi-app/app/service/order/internal/data/models"
-	"cyi-app/pkg/util/convert"
 	"errors"
+
+	v1 "cyi-app/api/service/order/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
@@ -24,9 +25,12 @@ func NewOrderRepo(data *Data, logger log.Logger) biz.OrderRepo {
 
 func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
 	return curd.Q.Transaction(func(tx *curd.Query) error {
-		order := &mod.Order{}
-		if err := convert.Convert(in, order); err != nil {
-			return err
+		order := &mod.Order{
+			UserID:     in.UserID,
+			OrderNo:    in.OrderNo,
+			TotalPrice: in.TotalPrice.Amount,
+			PayAmount:  in.PayAmount.Amount,
+			Status:     int32(in.Status),
 		}
 		if err := tx.Order.WithContext(ctx).Create(order); err != nil {
 			return errors.New("create order failed")
@@ -50,8 +54,13 @@ func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
 }
 
 func (r *orderRepo) UpdateOrder(ctx context.Context, in *biz.Order) error {
-	order := &mod.Order{}
-	convert.Convert(in, order)
+	order := &mod.Order{
+		UserID:     in.UserID,
+		OrderNo:    in.OrderNo,
+		TotalPrice: in.TotalPrice.Amount,
+		PayAmount:  in.PayAmount.Amount,
+		Status:     int32(in.Status),
+	}
 	order.ID = in.ID
 	if line, err := curd.Order.Debug().WithContext(ctx).Where(curd.Order.ID.Eq(in.ID)).Updates(order); err != nil {
 		return errors.New("update order failed")
@@ -69,9 +78,18 @@ func (r *orderRepo) GetOrder(ctx context.Context, id int64) (*biz.Order, error) 
 	if order == nil || order.ID == 0 {
 		return nil, errors.New("order not found")
 	}
-	out := &biz.Order{}
-	convert.Convert(order, out)
-	out.ID = order.ID
+	out := &biz.Order{
+		ID:      order.ID,
+		UserID:  order.UserID,
+		OrderNo: order.OrderNo,
+		TotalPrice: biz.Money{
+			Amount: order.TotalPrice,
+		},
+		PayAmount: biz.Money{
+			Amount: order.PayAmount,
+		},
+		Status: v1.OrderStatus(order.Status),
+	}
 
 	items, err := curd.OrderItem.WithContext(ctx).Where(curd.OrderItem.OrderID.Eq(id)).Find()
 	if err != nil {

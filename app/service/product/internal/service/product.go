@@ -63,7 +63,7 @@ func (s *ProductService) GetProduct(ctx context.Context, req *v1.GetProductReque
 		Name:        product.Name,
 		Description: product.Description,
 		Price:       product.Price,
-		Status:      product.Status,
+		Status:      product.Status.Value(),
 	}, nil
 }
 

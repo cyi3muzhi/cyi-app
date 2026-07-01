@@ -15,4 +15,12 @@ enum OrderErrorReason {
 	USER_NOT_ORDER = 1 [(errors.code) = 422];
 	// 订单不存在
 	ORDER_NOT_FOUND = 2 [(errors.code) = 422];
+	// 商品不存在或已下架
+	PRODUCT_NOT_AVAILABLE = 3 [(errors.code) = 422];
+	// 库存不足
+	INSUFFICIENT_STOCK = 4 [(errors.code) = 422];
+	// 库存操作失败
+	STOCK_OPERATION_FAILED = 5 [(errors.code) = 422];
+	// 订单商品为空
+	ORDER_PRODUCT_EMPTY = 6 [(errors.code) = 422];
 }

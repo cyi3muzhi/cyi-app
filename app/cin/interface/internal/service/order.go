@@ -19,34 +19,7 @@ func (s *CinInterface) PlaceOrder(ctx context.Context, req *v1.PlaceOrderRequest
 	}
 	in.UserID = userID
 
-	// 1. 查找商品是否存在且上架
-	product, err := s.pc.GetProduct(ctx, in.ProductID)
-	if err != nil {
-		s.log.Errorf("product not found: %v", err)
-		return nil, v1.ErrorProductNotAvailable("product not found")
-	}
-	if product.Status != 1 {
-		return nil, v1.ErrorProductNotAvailable("product is off shelf")
-	}
-
-	// 2. 检查库存是否充足
-	stock, err := s.sc.GetStock(ctx, in.ProductID)
-	if err != nil {
-		s.log.Errorf("stock not found: %v", err)
-		return nil, v1.ErrorProductNotAvailable("stock not found")
-	}
-	if stock.Available < in.Count {
-		return nil, v1.ErrorInsufficientStock("insufficient stock")
-	}
-
-	// 3. 预留库存（乐观锁）
-	_, err = s.sc.ReserveStock(ctx, in.ProductID, in.Count, stock.Version)
-	if err != nil {
-		s.log.Errorf("reserve stock failed: %v", err)
-		return nil, v1.ErrorStockOperationFailed("reserve stock failed, please retry")
-	}
-
-	// 4. 创建订单
+	// 订单服务内部完成：商品校验、库存校验、预留库存、创建订单
 	err = s.oc.CreateOrder(ctx, in)
 	if err != nil {
 		return nil, err
@@ -63,32 +36,10 @@ func (s *CinInterface) PayOrder(ctx context.Context, req *v1.PayOrderRequest) (*
 		return nil, err
 	}
 
-	// 1. 查询订单
-	order, err := s.oc.GetOrder(ctx, req.OrderId)
-	if err != nil {
-		s.log.Errorf("order not found: %v", err)
-		return nil, v1.ErrorOrderIdNotExist("order not found")
-	}
-
-	// 2. 支付订单（状态流转）—— 先做，失败则库存不动
+	// 订单服务内部完成：支付状态流转、扣减库存
 	err = s.oc.PayOrder(ctx, req.OrderId, userID)
 	if err != nil {
-		s.log.Errorf("pay order failed: %v", err)
-		return nil, v1.ErrorOrderAlreadyPaid("pay order failed, may already be paid")
-	}
-
-	// 3. 查询库存
-	stock, err := s.sc.GetStock(ctx, order.ProductID)
-	if err != nil {
-		s.log.Errorf("stock not found: %v", err)
-		return nil, v1.ErrorProductNotAvailable("stock not found")
-	}
-
-	// 4. 实际扣减库存（Total-、Reserved-、乐观锁）
-	_, err = s.sc.DeductStock(ctx, order.ProductID, order.Count, stock.Version)
-	if err != nil {
-		s.log.Errorf("deduct stock failed, order already paid, need manual fix: %v", err)
-		return nil, v1.ErrorStockOperationFailed("deduct stock failed, already paid")
+		return nil, err
 	}
 
 	return &v1.PayOrderReply{

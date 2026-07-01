@@ -31,6 +31,14 @@ const (
 	OrderErrorReason_USER_NOT_ORDER OrderErrorReason = 1
 	// 订单不存在
 	OrderErrorReason_ORDER_NOT_FOUND OrderErrorReason = 2
+	// 商品不存在或已下架
+	OrderErrorReason_PRODUCT_NOT_AVAILABLE OrderErrorReason = 3
+	// 库存不足
+	OrderErrorReason_INSUFFICIENT_STOCK OrderErrorReason = 4
+	// 库存操作失败
+	OrderErrorReason_STOCK_OPERATION_FAILED OrderErrorReason = 5
+	// 订单商品为空
+	OrderErrorReason_ORDER_PRODUCT_EMPTY OrderErrorReason = 6
 )
 
 // Enum value maps for OrderErrorReason.
@@ -39,11 +47,19 @@ var (
 		0: "ORDER_STATUS_INVALID",
 		1: "USER_NOT_ORDER",
 		2: "ORDER_NOT_FOUND",
+		3: "PRODUCT_NOT_AVAILABLE",
+		4: "INSUFFICIENT_STOCK",
+		5: "STOCK_OPERATION_FAILED",
+		6: "ORDER_PRODUCT_EMPTY",
 	}
 	OrderErrorReason_value = map[string]int32{
-		"ORDER_STATUS_INVALID": 0,
-		"USER_NOT_ORDER":       1,
-		"ORDER_NOT_FOUND":      2,
+		"ORDER_STATUS_INVALID":   0,
+		"USER_NOT_ORDER":         1,
+		"ORDER_NOT_FOUND":        2,
+		"PRODUCT_NOT_AVAILABLE":  3,
+		"INSUFFICIENT_STOCK":     4,
+		"STOCK_OPERATION_FAILED": 5,
+		"ORDER_PRODUCT_EMPTY":    6,
 	}
 )
 
@@ -78,11 +94,15 @@ var File_service_order_v1_order_error_proto protoreflect.FileDescriptor
 
 const file_service_order_v1_order_error_proto_rawDesc = "" +
 	"\n" +
-	"\"service/order/v1/order_error.proto\x12\x14api.service.order.v1\x1a\x13errors/errors.proto*m\n" +
+	"\"service/order/v1/order_error.proto\x12\x14api.service.order.v1\x1a\x13errors/errors.proto*\xed\x01\n" +
 	"\x10OrderErrorReason\x12\x1e\n" +
 	"\x14ORDER_STATUS_INVALID\x10\x00\x1a\x04\xa8E\xa6\x03\x12\x18\n" +
 	"\x0eUSER_NOT_ORDER\x10\x01\x1a\x04\xa8E\xa6\x03\x12\x19\n" +
-	"\x0fORDER_NOT_FOUND\x10\x02\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B!Z\x1fcyi-app/api/service/order/v1;v1b\x06proto3"
+	"\x0fORDER_NOT_FOUND\x10\x02\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
+	"\x15PRODUCT_NOT_AVAILABLE\x10\x03\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
+	"\x12INSUFFICIENT_STOCK\x10\x04\x1a\x04\xa8E\xa6\x03\x12 \n" +
+	"\x16STOCK_OPERATION_FAILED\x10\x05\x1a\x04\xa8E\xa6\x03\x12\x1d\n" +
+	"\x13ORDER_PRODUCT_EMPTY\x10\x06\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B!Z\x1fcyi-app/api/service/order/v1;v1b\x06proto3"
 
 var (
 	file_service_order_v1_order_error_proto_rawDescOnce sync.Once

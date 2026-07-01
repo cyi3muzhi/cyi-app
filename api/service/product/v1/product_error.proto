@@ -17,4 +17,8 @@ enum ProductErrorReason {
 	INSUFFICIENT_STOCK = 2 [(errors.code) = 422];
 	// 库存版本冲突（并发）
 	STOCK_VERSION_CONFLICT = 3 [(errors.code) = 422];
+	// 创建商品失败
+	CREATE_PRODUCT_FAILED = 4 [(errors.code) = 422];
+	// 创建库存失败
+	CREATE_STOCK_FAILED = 5 [(errors.code) = 422];
 }
