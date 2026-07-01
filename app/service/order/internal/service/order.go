@@ -28,9 +28,10 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *v1.CreateOrderReque
 	in := &biz.Order{}
 	convert.Convert(req, in)
 	in.AddItem(&biz.OrderItem{
-		ProductID: req.ProductId,
-		Price:     req.Price,
-		Quantity:  req.Count,
+		ProductID:   req.ProductId,
+		Price:       req.Price,
+		Quantity:    req.Count,
+		Currency:    "CNY",
 	})
 	in.GenerateOrderNo()
 	if err := s.uc.Create(ctx, in); err != nil {
@@ -62,8 +63,8 @@ func (s *OrderService) GetOrder(ctx context.Context, req *v1.GetOrderRequest) (*
 		UserId:     order.UserID,
 		OrderNo:    order.OrderNo,
 		Status:     int32(order.Status),
-		TotalPrice: order.TotalPrice,
-		PayAmount:  order.PayAmount,
+		TotalPrice: order.TotalPrice.Amount,
+		PayAmount:  order.PayAmount.Amount,
 	}
 	for _, item := range order.Items {
 		reply.Items = append(reply.Items, &v1.OrderItemProto{
