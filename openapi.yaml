@@ -25,6 +25,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.blades.v1.ChatReply'
+    /order/v1/cart_checkout:
+        post:
+            tags:
+                - CinInterface
+            description: 购物车结算
+            operationId: CinInterface_CartCheckout
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.CartCheckoutRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.CartCheckoutReply'
     /order/v1/create:
         post:
             tags:
@@ -222,6 +241,27 @@ components:
             properties:
                 message:
                     type: string
+        api.cin.interface.v1.CartCheckoutReply:
+            type: object
+            properties:
+                orderId:
+                    type: string
+        api.cin.interface.v1.CartCheckoutRequest:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.CartItem'
+        api.cin.interface.v1.CartItem:
+            type: object
+            properties:
+                productId:
+                    type: string
+                quantity:
+                    type: integer
+                    format: int32
+            description: 购物车商品项
         api.cin.interface.v1.CreateProductReply:
             type: object
             properties:

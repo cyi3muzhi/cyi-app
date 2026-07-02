@@ -7,6 +7,12 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 )
 
+// CartItem 购物车商品项
+type CartItem struct {
+	ProductID int64
+	Quantity  int32
+}
+
 type Order struct {
 	ID        int64  `json:"id"`
 	UserID    int64  `json:"user_id"`
@@ -14,6 +20,7 @@ type Order struct {
 	Count     int32  `json:"count"`
 	Price     int64  `json:"price"`
 	Status    int32  `json:"status"`
+	Items     []*CartItem // 购物车结算：多个商品
 }
 
 type OrderRepo interface {

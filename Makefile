@@ -65,12 +65,15 @@ config:
 api:
 	protoc --proto_path=./ \
 	       --proto_path=./third_party \
-	       --go_out=paths=source_relative:./api \
-	       --go-http_out=paths=source_relative:./api \
-	       --go-grpc_out=paths=source_relative:./api \
+	       --go_out=. \
+	       --go_opt=module=cyi-app \
+	       --go-http_out=. \
+	       --go-http_opt=module=cyi-app \
+	       --go-grpc_out=. \
+	       --go-grpc_opt=module=cyi-app \
 	       --openapi_out=fq_schema_naming=true,default_response=false:. \
-		   --go-vtproto_out=paths=source_relative:./api \
-    	   --go-vtproto_opt=features=marshal+unmarshal+size \
+	       --go-vtproto_out=. \
+	       --go-vtproto_opt=module=cyi-app,features=marshal+unmarshal+size \
 	       $(API_PROTO_FILES)
 
 .PHONY: validate

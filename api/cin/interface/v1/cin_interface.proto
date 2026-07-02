@@ -63,6 +63,14 @@ service CinInterface {
 		};
 	};
 
+	// 购物车结算
+	rpc CartCheckout (CartCheckoutRequest) returns (CartCheckoutReply){
+		option (google.api.http) = {
+			post: "/order/v1/cart_checkout"
+			body: "*"
+		};
+	};
+
 	// 创建商品
 	rpc CreateProduct (CreateProductRequest) returns (CreateProductReply){
 		option (google.api.http) = {
@@ -107,6 +115,20 @@ message PayOrderRequest {
 message PayOrderReply {
 	bool success = 1;
 }
+
+// 购物车商品项
+message CartItem {
+	int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+	int32 quantity = 2 [(validate.rules).int32 = {gt: 0}];
+}
+
+message CartCheckoutRequest {
+	repeated CartItem items = 1 [(validate.rules).repeated = {min_items: 1}];
+}
+message CartCheckoutReply {
+	int64 order_id = 1;
+}
+
 message LoginRequest {
 	// 用户名或手机号 可以为空
 	string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];

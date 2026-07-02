@@ -27,12 +27,25 @@ func NewOrderService(uc *biz.OrderUseCase, logger log.Logger) *OrderService {
 func (s *OrderService) CreateOrder(ctx context.Context, req *v1.CreateOrderRequest) (*v1.CreateOrderReply, error) {
 	in := &biz.Order{}
 	convert.Convert(req, in)
-	in.AddItem(&biz.OrderItem{
-		ProductID:   req.ProductId,
-		Price:       req.Price,
-		Quantity:    req.Count,
-		Currency:    "CNY",
-	})
+	in.UserID = req.UserId
+
+	// 支持两种模式：立即购买（单商品）和购物车结算（多商品）
+	if len(req.Items) > 0 {
+		for _, item := range req.Items {
+			in.AddItem(&biz.OrderItem{
+				ProductID: item.ProductId,
+				Quantity:  item.Quantity,
+				Currency:  "CNY",
+			})
+		}
+	} else {
+		in.AddItem(&biz.OrderItem{
+			ProductID: req.ProductId,
+			Price:     req.Price,
+			Quantity:  req.Count,
+			Currency:  "CNY",
+		})
+	}
 	in.GenerateOrderNo()
 	if err := s.uc.Create(ctx, in); err != nil {
 		return nil, err

@@ -29,12 +29,24 @@ func NewOrderRepo(data *Data, logger log.Logger) biz.OrderRepo {
 }
 
 func (r *orderRepo) CreateOrder(ctx context.Context, order *biz.Order) error {
-	res, err := r.data.oc.CreateOrder(ctx, &orderV1.CreateOrderRequest{
-		UserId:    order.UserID,
-		ProductId: order.ProductID,
-		Count:     order.Count,
-		Price:     order.Price,
-	})
+	req := &orderV1.CreateOrderRequest{
+		UserId: order.UserID,
+	}
+	// 购物车结算：多商品走 items
+	if len(order.Items) > 0 {
+		for _, item := range order.Items {
+			req.Items = append(req.Items, &orderV1.OrderItemProto{
+				ProductId: item.ProductID,
+				Quantity:  item.Quantity,
+			})
+		}
+	} else {
+		// 立即购买：单商品
+		req.ProductId = order.ProductID
+		req.Count = order.Count
+		req.Price = order.Price
+	}
+	res, err := r.data.oc.CreateOrder(ctx, req)
 	if err != nil {
 		return err
 	}

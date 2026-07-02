@@ -31,37 +31,38 @@ func (uc *OrderUseCase) Create(ctx context.Context, in *Order) error {
 		return v1.ErrorOrderProductEmpty("order item is empty")
 	}
 
-	item := in.Items[0]
+	// 循环校验每个商品：查商品、查库存、预留库存
+	for _, item := range in.Items {
+		// 1. 查找商品是否存在且上架
+		product, err := uc.productRe.GetProduct(ctx, item.ProductID)
+		if err != nil {
+			uc.log.Errorf("product not found: %v", err)
+			return v1.ErrorProductNotAvailable("product not found")
+		}
+		if product.Status != 1 {
+			return v1.ErrorProductNotAvailable("product is off shelf")
+		}
 
-	// 1. 查找商品是否存在且上架
-	product, err := uc.productRe.GetProduct(ctx, item.ProductID)
-	if err != nil {
-		uc.log.Errorf("product not found: %v", err)
-		return v1.ErrorProductNotAvailable("product not found")
-	}
-	if product.Status != 1 {
-		return v1.ErrorProductNotAvailable("product is off shelf")
-	}
+		// 从商品服务获取商品名称和价格
+		item.ProductName = product.Name
+		item.Price = product.Price
 
-	// 从商品服务获取商品名称和价格
-	item.ProductName = product.Name
-	item.Price = product.Price
+		// 2. 检查库存是否充足
+		stock, err := uc.stockRe.GetStock(ctx, item.ProductID)
+		if err != nil {
+			uc.log.Errorf("stock not found: %v", err)
+			return v1.ErrorProductNotAvailable("stock not found")
+		}
+		if stock.Available < item.Quantity {
+			return v1.ErrorInsufficientStock("insufficient stock")
+		}
 
-	// 2. 检查库存是否充足
-	stock, err := uc.stockRe.GetStock(ctx, item.ProductID)
-	if err != nil {
-		uc.log.Errorf("stock not found: %v", err)
-		return v1.ErrorProductNotAvailable("stock not found")
-	}
-	if stock.Available < item.Quantity {
-		return v1.ErrorInsufficientStock("insufficient stock")
-	}
-
-	// 3. 预留库存（乐观锁）
-	_, err = uc.stockRe.ReserveStock(ctx, item.ProductID, item.Quantity, stock.Version)
-	if err != nil {
-		uc.log.Errorf("reserve stock failed: %v", err)
-		return v1.ErrorStockOperationFailed("reserve stock failed, please retry")
+		// 3. 预留库存（乐观锁）
+		_, err = uc.stockRe.ReserveStock(ctx, item.ProductID, item.Quantity, stock.Version)
+		if err != nil {
+			uc.log.Errorf("reserve stock failed: %v", err)
+			return v1.ErrorStockOperationFailed("reserve stock failed, please retry")
+		}
 	}
 
 	// 4. 设置状态并创建订单
@@ -103,8 +104,7 @@ func (uc *OrderUseCase) Pay(ctx context.Context, orderID int64, userID int64) er
 	}
 
 	// 2. 实际扣减库存（Total-、Reserved-、乐观锁）
-	if len(order.Items) > 0 {
-		item := order.Items[0]
+	for _, item := range order.Items {
 		stock, err := uc.stockRe.GetStock(ctx, item.ProductID)
 		if err != nil {
 			uc.log.Errorf("stock not found: %v", err)

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.9.0
 // - protoc             v5.27.2
-// source: cin/interface/v1/cin_interface.proto
+// source: api/cin/interface/v1/cin_interface.proto
 
 package v1
 
@@ -20,6 +20,7 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationCinInterfaceCartCheckout = "/api.cin.interface.v1.CinInterface/CartCheckout"
 const OperationCinInterfaceCreateProduct = "/api.cin.interface.v1.CinInterface/CreateProduct"
 const OperationCinInterfaceGetMyInfo = "/api.cin.interface.v1.CinInterface/GetMyInfo"
 const OperationCinInterfaceGetUserInfo = "/api.cin.interface.v1.CinInterface/GetUserInfo"
@@ -32,6 +33,8 @@ const OperationCinInterfaceUpdateStock = "/api.cin.interface.v1.CinInterface/Upd
 const OperationCinInterfaceUpdateUserInfo = "/api.cin.interface.v1.CinInterface/UpdateUserInfo"
 
 type CinInterfaceHTTPServer interface {
+	// CartCheckout 购物车结算
+	CartCheckout(context.Context, *CartCheckoutRequest) (*CartCheckoutReply, error)
 	// CreateProduct 创建商品
 	CreateProduct(context.Context, *CreateProductRequest) (*CreateProductReply, error)
 	// GetMyInfo 获取个人信息
@@ -63,6 +66,7 @@ func RegisterCinInterfaceHTTPServer(s *http.Server, srv CinInterfaceHTTPServer) 
 	r.PUT("/user/v1/update", _CinInterface_UpdateUserInfo0_HTTP_Handler(srv))
 	r.POST("/order/v1/create", _CinInterface_PlaceOrder0_HTTP_Handler(srv))
 	r.POST("/order/v1/pay", _CinInterface_PayOrder0_HTTP_Handler(srv))
+	r.POST("/order/v1/cart_checkout", _CinInterface_CartCheckout0_HTTP_Handler(srv))
 	r.POST("/product/v1/create", _CinInterface_CreateProduct0_HTTP_Handler(srv))
 	r.PUT("/product/v1/update", _CinInterface_UpdateProduct0_HTTP_Handler(srv))
 	r.PUT("/product/v1/stock/update", _CinInterface_UpdateStock0_HTTP_Handler(srv))
@@ -219,6 +223,28 @@ func _CinInterface_PayOrder0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx h
 	}
 }
 
+func _CinInterface_CartCheckout0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CartCheckoutRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationCinInterfaceCartCheckout)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CartCheckout(ctx, req.(*CartCheckoutRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CartCheckoutReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 func _CinInterface_CreateProduct0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in CreateProductRequest
@@ -286,6 +312,8 @@ func _CinInterface_UpdateStock0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ct
 }
 
 type CinInterfaceHTTPClient interface {
+	// CartCheckout 购物车结算
+	CartCheckout(ctx context.Context, req *CartCheckoutRequest, opts ...http.CallOption) (rsp *CartCheckoutReply, err error)
 	// CreateProduct 创建商品
 	CreateProduct(ctx context.Context, req *CreateProductRequest, opts ...http.CallOption) (rsp *CreateProductReply, err error)
 	// GetMyInfo 获取个人信息
@@ -314,6 +342,20 @@ type CinInterfaceHTTPClientImpl struct {
 
 func NewCinInterfaceHTTPClient(client *http.Client) CinInterfaceHTTPClient {
 	return &CinInterfaceHTTPClientImpl{client}
+}
+
+// CartCheckout 购物车结算
+func (c *CinInterfaceHTTPClientImpl) CartCheckout(ctx context.Context, in *CartCheckoutRequest, opts ...http.CallOption) (*CartCheckoutReply, error) {
+	var out CartCheckoutReply
+	pattern := "/order/v1/cart_checkout"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationCinInterfaceCartCheckout))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // CreateProduct 创建商品

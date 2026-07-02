@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.2
-// source: cin/interface/v1/cin_interface.proto
+// source: api/cin/interface/v1/cin_interface.proto
 
 package v1
 
@@ -27,6 +27,7 @@ const (
 	CinInterface_UpdateUserInfo_FullMethodName = "/api.cin.interface.v1.CinInterface/UpdateUserInfo"
 	CinInterface_PlaceOrder_FullMethodName     = "/api.cin.interface.v1.CinInterface/PlaceOrder"
 	CinInterface_PayOrder_FullMethodName       = "/api.cin.interface.v1.CinInterface/PayOrder"
+	CinInterface_CartCheckout_FullMethodName   = "/api.cin.interface.v1.CinInterface/CartCheckout"
 	CinInterface_CreateProduct_FullMethodName  = "/api.cin.interface.v1.CinInterface/CreateProduct"
 	CinInterface_UpdateProduct_FullMethodName  = "/api.cin.interface.v1.CinInterface/UpdateProduct"
 	CinInterface_UpdateStock_FullMethodName    = "/api.cin.interface.v1.CinInterface/UpdateStock"
@@ -50,6 +51,8 @@ type CinInterfaceClient interface {
 	PlaceOrder(ctx context.Context, in *PlaceOrderRequest, opts ...grpc.CallOption) (*PlaceOrderReply, error)
 	// 支付订单
 	PayOrder(ctx context.Context, in *PayOrderRequest, opts ...grpc.CallOption) (*PayOrderReply, error)
+	// 购物车结算
+	CartCheckout(ctx context.Context, in *CartCheckoutRequest, opts ...grpc.CallOption) (*CartCheckoutReply, error)
 	// 创建商品
 	CreateProduct(ctx context.Context, in *CreateProductRequest, opts ...grpc.CallOption) (*CreateProductReply, error)
 	// 更新商品
@@ -136,6 +139,16 @@ func (c *cinInterfaceClient) PayOrder(ctx context.Context, in *PayOrderRequest, 
 	return out, nil
 }
 
+func (c *cinInterfaceClient) CartCheckout(ctx context.Context, in *CartCheckoutRequest, opts ...grpc.CallOption) (*CartCheckoutReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CartCheckoutReply)
+	err := c.cc.Invoke(ctx, CinInterface_CartCheckout_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *cinInterfaceClient) CreateProduct(ctx context.Context, in *CreateProductRequest, opts ...grpc.CallOption) (*CreateProductReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreateProductReply)
@@ -184,6 +197,8 @@ type CinInterfaceServer interface {
 	PlaceOrder(context.Context, *PlaceOrderRequest) (*PlaceOrderReply, error)
 	// 支付订单
 	PayOrder(context.Context, *PayOrderRequest) (*PayOrderReply, error)
+	// 购物车结算
+	CartCheckout(context.Context, *CartCheckoutRequest) (*CartCheckoutReply, error)
 	// 创建商品
 	CreateProduct(context.Context, *CreateProductRequest) (*CreateProductReply, error)
 	// 更新商品
@@ -220,6 +235,9 @@ func (UnimplementedCinInterfaceServer) PlaceOrder(context.Context, *PlaceOrderRe
 }
 func (UnimplementedCinInterfaceServer) PayOrder(context.Context, *PayOrderRequest) (*PayOrderReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PayOrder not implemented")
+}
+func (UnimplementedCinInterfaceServer) CartCheckout(context.Context, *CartCheckoutRequest) (*CartCheckoutReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CartCheckout not implemented")
 }
 func (UnimplementedCinInterfaceServer) CreateProduct(context.Context, *CreateProductRequest) (*CreateProductReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateProduct not implemented")
@@ -377,6 +395,24 @@ func _CinInterface_PayOrder_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CinInterface_CartCheckout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CartCheckoutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CinInterfaceServer).CartCheckout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CinInterface_CartCheckout_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CinInterfaceServer).CartCheckout(ctx, req.(*CartCheckoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CinInterface_CreateProduct_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateProductRequest)
 	if err := dec(in); err != nil {
@@ -467,6 +503,10 @@ var CinInterface_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CinInterface_PayOrder_Handler,
 		},
 		{
+			MethodName: "CartCheckout",
+			Handler:    _CinInterface_CartCheckout_Handler,
+		},
+		{
 			MethodName: "CreateProduct",
 			Handler:    _CinInterface_CreateProduct_Handler,
 		},
@@ -480,5 +520,5 @@ var CinInterface_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "cin/interface/v1/cin_interface.proto",
+	Metadata: "api/cin/interface/v1/cin_interface.proto",
 }
