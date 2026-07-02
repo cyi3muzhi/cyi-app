@@ -48,7 +48,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	productUseCase := biz.NewProductUseCase(productRepo, logger)
 	stockRepo := data.NewStockRepo(dataData, logger)
 	stockUseCase := biz.NewStockUseCase(stockRepo, logger)
-	bladesUseCase := biz.NewBladesUseCase(blades)
+	bladesUseCase := biz.NewBladesUseCase(blades, universalClient)
 	cinInterface := service.NewCinInterface(userUseCase, orderUseCase, productUseCase, stockUseCase, bladesUseCase, logger, auth)
 	server2 := server.NewGRPCServer(grpcServer, cinInterface)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth)

@@ -8,16 +8,17 @@ import (
 	pkgblades "cyi-app/pkg/blades"
 
 	"github.com/go-kratos/blades"
+	"github.com/redis/go-redis/v9"
 )
 
 // BladesUseCase AI 聊天用例
 type BladesUseCase struct {
 	agent blades.Agent
+	rdb   redis.UniversalClient
 }
 
-// NewBladesUseCase 创建 BladesUseCase，从 conf.Blades 读取配置
-// 如果 c 为 nil，则使用默认配置和 DEEPSEEK_API_KEY 环境变量
-func NewBladesUseCase(c *conf.Blades) *BladesUseCase {
+// NewBladesUseCase 创建 BladesUseCase
+func NewBladesUseCase(c *conf.Blades, rdb redis.UniversalClient) *BladesUseCase {
 	cfg := &pkgblades.AgentConfig{}
 	if c != nil {
 		cfg.APIKey = c.GetApiKey()
@@ -31,22 +32,39 @@ func NewBladesUseCase(c *conf.Blades) *BladesUseCase {
 	if err != nil {
 		panic("failed to create blades agent: " + err.Error())
 	}
-	return &BladesUseCase{agent: agent}
+	return &BladesUseCase{agent: agent, rdb: rdb}
 }
 
 // Chat 发送聊天消息（非流式，等待完整响应）
-func (uc *BladesUseCase) Chat(ctx context.Context, message string) (string, error) {
-	return pkgblades.RunAgent(ctx, uc.agent, message)
+func (uc *BladesUseCase) Chat(ctx context.Context, message, sessionID string) (string, error) {
+	history, err := pkgblades.LoadHistory(ctx, uc.rdb, sessionID)
+	if err != nil {
+		return "", err
+	}
+	fullResponse, err := pkgblades.RunAgent(ctx, uc.agent, message, history...)
+	if err != nil {
+		return "", err
+	}
+	pkgblades.SaveHistory(ctx, uc.rdb, sessionID, message, fullResponse)
+	return fullResponse, nil
 }
 
 // ChatStream 流式聊天，通过 chunkCb 逐块返回
-func (uc *BladesUseCase) ChatStream(ctx context.Context, message string, chunkCb func(chunk string)) (string, error) {
+func (uc *BladesUseCase) ChatStream(ctx context.Context, message, sessionID string, chunkCb func(chunk string)) (string, error) {
+	history, err := pkgblades.LoadHistory(ctx, uc.rdb, sessionID)
+	if err != nil {
+		return "", err
+	}
+
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
 	invocation := &blades.Invocation{
 		Message:    blades.UserMessage(message),
 		Streamable: true,
+	}
+	if len(history) > 0 {
+		invocation.History = history
 	}
 
 	stream := uc.agent.Run(ctxWithTimeout, invocation)
@@ -63,5 +81,6 @@ func (uc *BladesUseCase) ChatStream(ctx context.Context, message string, chunkCb
 		}
 	}
 
+	pkgblades.SaveHistory(ctx, uc.rdb, sessionID, message, fullResponse)
 	return fullResponse, nil
 }

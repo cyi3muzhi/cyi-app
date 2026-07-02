@@ -13,7 +13,7 @@ import (
 
 // AiChat AI 聊天（非流式）
 func (s *CinInterface) AiChat(ctx context.Context, req *v1.AiChatRequest) (*v1.AiChatReply, error) {
-	message, err := s.bc.Chat(ctx, req.Message)
+	message, err := s.bc.Chat(ctx, req.Message, req.SessionId)
 	if err != nil {
 		s.log.Errorf("ai chat failed: %v", err)
 		return nil, err
@@ -58,7 +58,7 @@ func (s *CinInterface) ChatSSE(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = s.bc.ChatStream(r.Context(), msg.Message, func(chunk string) {
+	_, err = s.bc.ChatStream(r.Context(), msg.Message, msg.SessionID, func(chunk string) {
 		if chunk == "" {
 			return
 		}
@@ -86,7 +86,8 @@ var upgrader = websocket.Upgrader{
 
 // wsMessage WebSocket 消息结构
 type wsMessage struct {
-	Message string `json:"message"`
+	Message   string `json:"message"`
+	SessionID string `json:"session_id"`
 }
 
 // wsChunk WebSocket 流式块
@@ -122,7 +123,7 @@ func (s *CinInterface) ChatWS(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// 流式发送 AI 响应
-		_, err = s.bc.ChatStream(r.Context(), msg.Message, func(chunk string) {
+		_, err = s.bc.ChatStream(r.Context(), msg.Message, msg.SessionID, func(chunk string) {
 			if chunk == "" {
 				return
 			}

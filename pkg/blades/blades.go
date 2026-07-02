@@ -298,11 +298,14 @@ func CreateAgent(cfg *AgentConfig) (blades.Agent, error) {
 	return agent, nil
 }
 
-func RunAgent(ctx context.Context, agent blades.Agent, prompt string) (string, error) {
+func RunAgent(ctx context.Context, agent blades.Agent, prompt string, history ...*blades.Message) (string, error) {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 	invocation := &blades.Invocation{
 		Message: blades.UserMessage(prompt),
+	}
+	if len(history) > 0 {
+		invocation.History = history
 	}
 	stream := agent.Run(ctxWithTimeout, invocation)
 	var response string

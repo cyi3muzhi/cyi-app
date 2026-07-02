@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.2
-// source: cin/interface/v1/cin_interface.proto
+// source: api/cin/interface/v1/cin_interface.proto
 
 package v1
 
@@ -560,5 +560,5 @@ var CinInterface_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "cin/interface/v1/cin_interface.proto",
+	Metadata: "api/cin/interface/v1/cin_interface.proto",
 }

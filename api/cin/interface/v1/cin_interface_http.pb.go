@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.9.0
 // - protoc             v5.27.2
-// source: cin/interface/v1/cin_interface.proto
+// source: api/cin/interface/v1/cin_interface.proto
 
 package v1
 

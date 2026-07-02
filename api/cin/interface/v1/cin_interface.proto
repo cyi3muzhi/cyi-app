@@ -235,6 +235,7 @@ message UpdateStockReply {
 
 message AiChatRequest {
 	string message = 1 [(validate.rules).string = {min_len: 1, max_len: 500}];
+	string session_id = 2;
 }
 message AiChatReply {
 	string message = 1;
