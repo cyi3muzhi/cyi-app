@@ -14,7 +14,7 @@ func DeepSeekDemo() error {
 	}
 
 	// 创建DeepSeek Agent
-	ag, err := CreateAgent(apiKey)
+	ag, err := CreateAgent(&AgentConfig{APIKey: apiKey})
 	if err != nil {
 		return fmt.Errorf("failed to create deepseek agent: %w", err)
 	}

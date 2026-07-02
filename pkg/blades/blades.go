@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -14,32 +15,28 @@ import (
 	"github.com/go-kratos/blades/tools"
 )
 
-// DeepSeekModel 实现DeepSeek模型
 type DeepSeekModel struct {
-	apiKey string
+	apiKey      string
+	apiEndpoint string
 }
 
-// NewDeepSeekModel 创建DeepSeek模型
-func NewDeepSeekModel(apiKey string) *DeepSeekModel {
+func NewDeepSeekModel(apiKey string, apiEndpoint string) *DeepSeekModel {
+	if apiEndpoint == "" {
+		apiEndpoint = "https://api.deepseek.com/v1"
+	}
 	return &DeepSeekModel{
-		apiKey: apiKey,
+		apiKey:      apiKey,
+		apiEndpoint: apiEndpoint,
 	}
 }
 
-// Name 返回模型名称
 func (m *DeepSeekModel) Name() string {
 	return "deepseek-chat"
 }
 
-// Generate 生成响应（实际调用DeepSeek API）
 func (m *DeepSeekModel) Generate(ctx context.Context, req *blades.ModelRequest) (*blades.ModelResponse, error) {
-	// 构建DeepSeek API请求
-	apiURL := "https://api.deepseek.com/v1/chat/completions"
-
-	// 构建消息
+	apiURL := m.apiEndpoint + "/chat/completions"
 	var messages []map[string]interface{}
-
-	// 添加历史消息
 	for _, msg := range req.Messages {
 		role := string(msg.Role)
 		content := msg.Text()
@@ -48,39 +45,28 @@ func (m *DeepSeekModel) Generate(ctx context.Context, req *blades.ModelRequest) 
 			"content": content,
 		})
 	}
-
-	// 构建请求体
 	requestBody := map[string]interface{}{
 		"model":       "deepseek-chat",
 		"messages":    messages,
 		"temperature": 0.7,
 		"max_tokens":  1000,
 	}
-
-	// 发送HTTP请求
 	jsonData, err := json.Marshal(requestBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
-
 	httpReq, err := http.NewRequestWithContext(ctx, "POST", apiURL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Authorization", "Bearer "+m.apiKey)
-
-	client := &http.Client{
-		Timeout: 30 * time.Second, // 设置30秒超时
-	}
+	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
 	defer resp.Body.Close()
-
-	// 解析响应
 	var apiResp struct {
 		Choices []struct {
 			Message struct {
@@ -89,16 +75,12 @@ func (m *DeepSeekModel) Generate(ctx context.Context, req *blades.ModelRequest) 
 			} `json:"message"`
 		} `json:"choices"`
 	}
-
 	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
-
 	if len(apiResp.Choices) == 0 {
 		return nil, fmt.Errorf("no response from DeepSeek API")
 	}
-
-	// 构建Blades响应
 	return &blades.ModelResponse{
 		Message: &blades.Message{
 			Role:   blades.RoleAssistant,
@@ -108,27 +90,89 @@ func (m *DeepSeekModel) Generate(ctx context.Context, req *blades.ModelRequest) 
 	}, nil
 }
 
-// NewStreaming 创建流式响应
 func (m *DeepSeekModel) NewStreaming(ctx context.Context, req *blades.ModelRequest) blades.Generator[*blades.ModelResponse, error] {
 	return func(yield func(*blades.ModelResponse, error) bool) {
-		// 这里可以实现流式API调用
-		// 现在返回模拟的流式响应
-		yield(&blades.ModelResponse{
-			Message: &blades.Message{
-				Role:   blades.RoleAssistant,
-				Parts:  blades.NewMessageParts("This is a streaming response from DeepSeek"),
-				Status: blades.StatusCompleted,
-			},
-		}, nil)
+		apiURL := m.apiEndpoint + "/chat/completions"
+		var messages []map[string]interface{}
+		for _, msg := range req.Messages {
+			messages = append(messages, map[string]interface{}{
+				"role":    string(msg.Role),
+				"content": msg.Text(),
+			})
+		}
+		requestBody := map[string]interface{}{
+			"model":       "deepseek-chat",
+			"messages":    messages,
+			"temperature": 0.7,
+			"max_tokens":  4096,
+			"stream":      true,
+		}
+		jsonData, err := json.Marshal(requestBody)
+		if err != nil {
+			yield(nil, fmt.Errorf("failed to marshal request: %w", err))
+			return
+		}
+		httpReq, err := http.NewRequestWithContext(ctx, "POST", apiURL, bytes.NewBuffer(jsonData))
+		if err != nil {
+			yield(nil, fmt.Errorf("failed to create request: %w", err))
+			return
+		}
+		httpReq.Header.Set("Content-Type", "application/json")
+		httpReq.Header.Set("Authorization", "Bearer "+m.apiKey)
+		httpReq.Header.Set("Accept", "text/event-stream")
+		client := &http.Client{Timeout: 60 * time.Second}
+		resp, err := client.Do(httpReq)
+		if err != nil {
+			yield(nil, fmt.Errorf("failed to send request: %w", err))
+			return
+		}
+		defer resp.Body.Close()
+		scanner := NewSSEScanner(resp.Body)
+		for scanner.Scan() {
+			data := scanner.Data()
+			if data == nil || string(data) == "[DONE]" {
+				continue
+			}
+			var sseEvent struct {
+				Choices []struct {
+					Delta struct {
+						Content string `json:"content"`
+					} `json:"delta"`
+					FinishReason *string `json:"finish_reason"`
+				} `json:"choices"`
+			}
+			if err := json.Unmarshal(data, &sseEvent); err != nil {
+				continue
+			}
+			if len(sseEvent.Choices) == 0 {
+				continue
+			}
+			content := sseEvent.Choices[0].Delta.Content
+			status := blades.StatusInProgress
+			if sseEvent.Choices[0].FinishReason != nil {
+				status = blades.StatusCompleted
+			}
+			if content == "" && status != blades.StatusCompleted {
+				continue
+			}
+			if !yield(&blades.ModelResponse{
+				Message: &blades.Message{
+					Role:   blades.RoleAssistant,
+					Parts:  blades.NewMessageParts(content),
+					Status: status,
+				},
+			}, nil) {
+				return
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			yield(nil, fmt.Errorf("sse read error: %w", err))
+		}
 	}
 }
 
-// evaluateExpression 计算数学表达式
 func evaluateExpression(expr string) (float64, error) {
-	// 简单的表达式计算实现
 	expr = strings.TrimSpace(expr)
-
-	// 处理简单的加减乘除
 	if strings.Contains(expr, "+") {
 		parts := strings.Split(expr, "+")
 		var sum float64
@@ -183,32 +227,53 @@ func evaluateExpression(expr string) (float64, error) {
 		}
 		return num1, nil
 	}
-
-	// 纯数字
 	return strconv.ParseFloat(expr, 64)
 }
 
-// CalculatorInput 计算器输入
 type CalculatorInput struct {
 	Expression string `json:"expression"`
 }
 
-// CalculatorOutput 计算器输出
 type CalculatorOutput struct {
 	Result string `json:"result"`
 }
 
-// CreateAgent 创建Blades Agent
-func CreateAgent(apiKey string) (blades.Agent, error) {
-	// 创建DeepSeek模型
-	model := NewDeepSeekModel(apiKey)
+type AgentConfig struct {
+	APIKey       string
+	APIEndpoint  string
+	Model        string
+	SystemPrompt string
+	MaxTokens    int32
+	Temperature  float64
+}
 
-	// 创建计算器工具
+func CreateAgent(cfg *AgentConfig) (blades.Agent, error) {
+	if cfg == nil {
+		cfg = &AgentConfig{}
+	}
+	if cfg.APIKey == "" {
+		cfg.APIKey = os.Getenv("DEEPSEEK_API_KEY")
+	}
+	if cfg.APIEndpoint == "" {
+		cfg.APIEndpoint = "https://api.deepseek.com/v1"
+	}
+	if cfg.Model == "" {
+		cfg.Model = "deepseek-chat"
+	}
+	if cfg.SystemPrompt == "" {
+		cfg.SystemPrompt = "You are a helpful assistant. Use the calculator tool for math questions."
+	}
+	if cfg.MaxTokens <= 0 {
+		cfg.MaxTokens = 4096
+	}
+	if cfg.Temperature <= 0 {
+		cfg.Temperature = 0.7
+	}
+	model := NewDeepSeekModel(cfg.APIKey, cfg.APIEndpoint)
 	calculatorTool, err := tools.NewFunc(
 		"calculator",
 		"A calculator tool that evaluates mathematical expressions",
 		func(ctx context.Context, input CalculatorInput) (CalculatorOutput, error) {
-			// 实际计算逻辑
 			result, err := evaluateExpression(input.Expression)
 			if err != nil {
 				return CalculatorOutput{}, fmt.Errorf("failed to evaluate expression: %w", err)
@@ -221,36 +286,25 @@ func CreateAgent(apiKey string) (blades.Agent, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create calculator tool: %w", err)
 	}
-
-	// 创建Agent
 	agent, err := blades.NewAgent(
-		"deepseek-agent",
+		cfg.Model,
 		blades.WithModel(model),
 		blades.WithTools(calculatorTool),
-		blades.WithInstruction("You are a helpful assistant. Use the calculator tool for math questions."),
+		blades.WithInstruction(cfg.SystemPrompt),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create agent: %w", err)
 	}
-
 	return agent, nil
 }
 
-// RunAgent 运行Agent
 func RunAgent(ctx context.Context, agent blades.Agent, prompt string) (string, error) {
-	// 创建带有超时的上下文
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
-
-	// 创建调用
 	invocation := &blades.Invocation{
 		Message: blades.UserMessage(prompt),
 	}
-
-	// 运行Agent
 	stream := agent.Run(ctxWithTimeout, invocation)
-
-	// 收集结果
 	var response string
 	for msg, err := range stream {
 		if err != nil {
@@ -260,6 +314,5 @@ func RunAgent(ctx context.Context, agent blades.Agent, prompt string) (string, e
 			response += msg.Text()
 		}
 	}
-
 	return response, nil
 }

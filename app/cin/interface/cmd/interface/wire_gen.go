@@ -26,7 +26,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, meter *middleware.Meter) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blades *conf.Blades, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, meter *middleware.Meter) (*kratos.App, func(), error) {
 	traceTracerProvider := provideTracerProvider(tracerProvider)
 	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	discovery := server.NewDiscovery(registry)
@@ -48,10 +48,11 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	productUseCase := biz.NewProductUseCase(productRepo, logger)
 	stockRepo := data.NewStockRepo(dataData, logger)
 	stockUseCase := biz.NewStockUseCase(stockRepo, logger)
-	cinInterface := service.NewCinInterface(userUseCase, orderUseCase, productUseCase, stockUseCase, logger, auth)
+	bladesUseCase := biz.NewBladesUseCase(blades)
+	cinInterface := service.NewCinInterface(userUseCase, orderUseCase, productUseCase, stockUseCase, bladesUseCase, logger, auth)
 	server2 := server.NewGRPCServer(grpcServer, cinInterface)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth)
-	server3 := server.NewHTTPServer(httpServer, cinInterface)
+	server3 := server.NewHTTPServer(httpServer, cinInterface, auth)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, server2, server3, registrar)
 	return app, func() {

@@ -66,7 +66,7 @@ func NewHttpServerOpt(httpOpt *TransporterOpt, midOpt *MiddlewareOpt) []http.Ser
 
 	opts := []http.ServerOption{
 		http.Middleware(middlewares...),
-		// http.ResponseEncoder(DefaultResponseEncoder),
+		http.ResponseEncoder(http.DefaultResponseEncoder),
 		http.Filter(handlers.CORS(
 			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
 			handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),

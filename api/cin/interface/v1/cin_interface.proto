@@ -95,6 +95,14 @@ service CinInterface {
 		};
 	};
 
+	// AI 聊天
+	rpc AiChat (AiChatRequest) returns (AiChatReply){
+		option (google.api.http) = {
+			post: "/ai/v1/chat"
+			body: "*"
+		};
+	};
+
 }
 
 message PlaceOrderRequest {
@@ -223,4 +231,11 @@ message UpdateStockRequest {
 }
 message UpdateStockReply {
 	bool success = 1;
+}
+
+message AiChatRequest {
+	string message = 1 [(validate.rules).string = {min_len: 1, max_len: 500}];
+}
+message AiChatReply {
+	string message = 1;
 }

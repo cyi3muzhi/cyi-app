@@ -6,6 +6,25 @@ info:
     title: ""
     version: 0.0.1
 paths:
+    /ai/v1/chat:
+        post:
+            tags:
+                - CinInterface
+            description: AI 聊天
+            operationId: CinInterface_AiChat
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.AiChatRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.AiChatReply'
     /blades/v1/chat:
         post:
             tags:
@@ -237,6 +256,16 @@ components:
                 message:
                     type: string
         api.blades.v1.ChatRequest:
+            type: object
+            properties:
+                message:
+                    type: string
+        api.cin.interface.v1.AiChatReply:
+            type: object
+            properties:
+                message:
+                    type: string
+        api.cin.interface.v1.AiChatRequest:
             type: object
             properties:
                 message:

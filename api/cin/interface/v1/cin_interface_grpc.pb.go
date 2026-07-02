@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.2
-// source: api/cin/interface/v1/cin_interface.proto
+// source: cin/interface/v1/cin_interface.proto
 
 package v1
 
@@ -31,6 +31,7 @@ const (
 	CinInterface_CreateProduct_FullMethodName  = "/api.cin.interface.v1.CinInterface/CreateProduct"
 	CinInterface_UpdateProduct_FullMethodName  = "/api.cin.interface.v1.CinInterface/UpdateProduct"
 	CinInterface_UpdateStock_FullMethodName    = "/api.cin.interface.v1.CinInterface/UpdateStock"
+	CinInterface_AiChat_FullMethodName         = "/api.cin.interface.v1.CinInterface/AiChat"
 )
 
 // CinInterfaceClient is the client API for CinInterface service.
@@ -59,6 +60,8 @@ type CinInterfaceClient interface {
 	UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...grpc.CallOption) (*UpdateProductReply, error)
 	// 设置库存
 	UpdateStock(ctx context.Context, in *UpdateStockRequest, opts ...grpc.CallOption) (*UpdateStockReply, error)
+	// AI 聊天
+	AiChat(ctx context.Context, in *AiChatRequest, opts ...grpc.CallOption) (*AiChatReply, error)
 }
 
 type cinInterfaceClient struct {
@@ -179,6 +182,16 @@ func (c *cinInterfaceClient) UpdateStock(ctx context.Context, in *UpdateStockReq
 	return out, nil
 }
 
+func (c *cinInterfaceClient) AiChat(ctx context.Context, in *AiChatRequest, opts ...grpc.CallOption) (*AiChatReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AiChatReply)
+	err := c.cc.Invoke(ctx, CinInterface_AiChat_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CinInterfaceServer is the server API for CinInterface service.
 // All implementations must embed UnimplementedCinInterfaceServer
 // for forward compatibility.
@@ -205,6 +218,8 @@ type CinInterfaceServer interface {
 	UpdateProduct(context.Context, *UpdateProductRequest) (*UpdateProductReply, error)
 	// 设置库存
 	UpdateStock(context.Context, *UpdateStockRequest) (*UpdateStockReply, error)
+	// AI 聊天
+	AiChat(context.Context, *AiChatRequest) (*AiChatReply, error)
 	mustEmbedUnimplementedCinInterfaceServer()
 }
 
@@ -247,6 +262,9 @@ func (UnimplementedCinInterfaceServer) UpdateProduct(context.Context, *UpdatePro
 }
 func (UnimplementedCinInterfaceServer) UpdateStock(context.Context, *UpdateStockRequest) (*UpdateStockReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateStock not implemented")
+}
+func (UnimplementedCinInterfaceServer) AiChat(context.Context, *AiChatRequest) (*AiChatReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AiChat not implemented")
 }
 func (UnimplementedCinInterfaceServer) mustEmbedUnimplementedCinInterfaceServer() {}
 func (UnimplementedCinInterfaceServer) testEmbeddedByValue()                      {}
@@ -467,6 +485,24 @@ func _CinInterface_UpdateStock_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CinInterface_AiChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AiChatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CinInterfaceServer).AiChat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CinInterface_AiChat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CinInterfaceServer).AiChat(ctx, req.(*AiChatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CinInterface_ServiceDesc is the grpc.ServiceDesc for CinInterface service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -518,7 +554,11 @@ var CinInterface_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "UpdateStock",
 			Handler:    _CinInterface_UpdateStock_Handler,
 		},
+		{
+			MethodName: "AiChat",
+			Handler:    _CinInterface_AiChat_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/cin/interface/v1/cin_interface.proto",
+	Metadata: "cin/interface/v1/cin_interface.proto",
 }

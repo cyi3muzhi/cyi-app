@@ -63,6 +63,42 @@ func (m *CreateOrderRequest) validate(all bool) error {
 
 	// no validation rules for Count
 
+	// no validation rules for Price
+
+	for idx, item := range m.GetItems() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CreateOrderRequestValidationError{
+						field:  fmt.Sprintf("Items[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CreateOrderRequestValidationError{
+						field:  fmt.Sprintf("Items[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CreateOrderRequestValidationError{
+					field:  fmt.Sprintf("Items[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return CreateOrderRequestMultiError(errors)
 	}
@@ -777,11 +813,47 @@ func (m *GetOrderReply) validate(all bool) error {
 
 	// no validation rules for UserId
 
-	// no validation rules for ProductId
-
-	// no validation rules for Count
+	// no validation rules for OrderNo
 
 	// no validation rules for Status
+
+	// no validation rules for TotalPrice
+
+	// no validation rules for PayAmount
+
+	for idx, item := range m.GetItems() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetOrderReplyValidationError{
+						field:  fmt.Sprintf("Items[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetOrderReplyValidationError{
+						field:  fmt.Sprintf("Items[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetOrderReplyValidationError{
+					field:  fmt.Sprintf("Items[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
 
 	if len(errors) > 0 {
 		return GetOrderReplyMultiError(errors)
@@ -860,6 +932,114 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetOrderReplyValidationError{}
+
+// Validate checks the field values on OrderItemProto with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *OrderItemProto) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on OrderItemProto with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in OrderItemProtoMultiError,
+// or nil if none found.
+func (m *OrderItemProto) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *OrderItemProto) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ProductId
+
+	// no validation rules for ProductName
+
+	// no validation rules for Price
+
+	// no validation rules for Quantity
+
+	if len(errors) > 0 {
+		return OrderItemProtoMultiError(errors)
+	}
+
+	return nil
+}
+
+// OrderItemProtoMultiError is an error wrapping multiple validation errors
+// returned by OrderItemProto.ValidateAll() if the designated constraints
+// aren't met.
+type OrderItemProtoMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m OrderItemProtoMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m OrderItemProtoMultiError) AllErrors() []error { return m }
+
+// OrderItemProtoValidationError is the validation error returned by
+// OrderItemProto.Validate if the designated constraints aren't met.
+type OrderItemProtoValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e OrderItemProtoValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e OrderItemProtoValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e OrderItemProtoValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e OrderItemProtoValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e OrderItemProtoValidationError) ErrorName() string { return "OrderItemProtoValidationError" }
+
+// Error satisfies the builtin error interface
+func (e OrderItemProtoValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sOrderItemProto.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = OrderItemProtoValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = OrderItemProtoValidationError{}
 
 // Validate checks the field values on ListOrderRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, the
@@ -1084,6 +1264,8 @@ func (m *PayOrderRequest) validate(all bool) error {
 	var errors []error
 
 	// no validation rules for OrderId
+
+	// no validation rules for UserId
 
 	if len(errors) > 0 {
 		return PayOrderRequestMultiError(errors)

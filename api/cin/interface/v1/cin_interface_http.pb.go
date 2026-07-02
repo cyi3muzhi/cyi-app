@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.9.0
 // - protoc             v5.27.2
-// source: api/cin/interface/v1/cin_interface.proto
+// source: cin/interface/v1/cin_interface.proto
 
 package v1
 
@@ -20,6 +20,7 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationCinInterfaceAiChat = "/api.cin.interface.v1.CinInterface/AiChat"
 const OperationCinInterfaceCartCheckout = "/api.cin.interface.v1.CinInterface/CartCheckout"
 const OperationCinInterfaceCreateProduct = "/api.cin.interface.v1.CinInterface/CreateProduct"
 const OperationCinInterfaceGetMyInfo = "/api.cin.interface.v1.CinInterface/GetMyInfo"
@@ -33,6 +34,8 @@ const OperationCinInterfaceUpdateStock = "/api.cin.interface.v1.CinInterface/Upd
 const OperationCinInterfaceUpdateUserInfo = "/api.cin.interface.v1.CinInterface/UpdateUserInfo"
 
 type CinInterfaceHTTPServer interface {
+	// AiChat AI 聊天
+	AiChat(context.Context, *AiChatRequest) (*AiChatReply, error)
 	// CartCheckout 购物车结算
 	CartCheckout(context.Context, *CartCheckoutRequest) (*CartCheckoutReply, error)
 	// CreateProduct 创建商品
@@ -70,6 +73,7 @@ func RegisterCinInterfaceHTTPServer(s *http.Server, srv CinInterfaceHTTPServer) 
 	r.POST("/product/v1/create", _CinInterface_CreateProduct0_HTTP_Handler(srv))
 	r.PUT("/product/v1/update", _CinInterface_UpdateProduct0_HTTP_Handler(srv))
 	r.PUT("/product/v1/stock/update", _CinInterface_UpdateStock0_HTTP_Handler(srv))
+	r.POST("/ai/v1/chat", _CinInterface_AiChat0_HTTP_Handler(srv))
 }
 
 func _CinInterface_Login0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx http.Context) error {
@@ -311,7 +315,31 @@ func _CinInterface_UpdateStock0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ct
 	}
 }
 
+func _CinInterface_AiChat0_HTTP_Handler(srv CinInterfaceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in AiChatRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationCinInterfaceAiChat)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.AiChat(ctx, req.(*AiChatRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*AiChatReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type CinInterfaceHTTPClient interface {
+	// AiChat AI 聊天
+	AiChat(ctx context.Context, req *AiChatRequest, opts ...http.CallOption) (rsp *AiChatReply, err error)
 	// CartCheckout 购物车结算
 	CartCheckout(ctx context.Context, req *CartCheckoutRequest, opts ...http.CallOption) (rsp *CartCheckoutReply, err error)
 	// CreateProduct 创建商品
@@ -342,6 +370,20 @@ type CinInterfaceHTTPClientImpl struct {
 
 func NewCinInterfaceHTTPClient(client *http.Client) CinInterfaceHTTPClient {
 	return &CinInterfaceHTTPClientImpl{client}
+}
+
+// AiChat AI 聊天
+func (c *CinInterfaceHTTPClientImpl) AiChat(ctx context.Context, in *AiChatRequest, opts ...http.CallOption) (*AiChatReply, error) {
+	var out AiChatReply
+	pattern := "/ai/v1/chat"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationCinInterfaceAiChat))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // CartCheckout 购物车结算

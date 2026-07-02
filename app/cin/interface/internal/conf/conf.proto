@@ -12,6 +12,7 @@ message Bootstrap {
   Trace trace = 4;
   Log log = 5;
   // Transaction transaction = 6;
+  Blades blades = 7;
 }
 
 message Server {
@@ -86,4 +87,14 @@ message Log {
     string log_dir = 4; // 日志目录
     string time_format = 5; // 时间格式
     bool enable_color = 6; // 是否启用颜色
+}
+
+// AI 配置
+message Blades {
+    string api_key = 1;          // API 密钥
+    string model = 2;            // 模型名称，默认 deepseek-chat
+    string api_endpoint = 3;     // API 地址，默认 https://api.deepseek.com/v1
+    string system_prompt = 4;    // 系统提示词
+    int32 max_tokens = 5;        // 最大令牌数，默认 4096
+    double temperature = 6;      // 温度参数，默认 0.7
 }
