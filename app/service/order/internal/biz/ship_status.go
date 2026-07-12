@@ -12,12 +12,11 @@ type ShipStatus struct {
 	statusBase
 }
 
-func NewShipStatus(order OrderInterface, repo OrderRepo, logger log.Logger) *ShipStatus {
+func NewShipStatus(repo OrderRepo, logger log.Logger) *ShipStatus {
 	return &ShipStatus{
 		statusBase: statusBase{
-			order: order,
-			repo:  repo,
-			log:   log.NewHelper(logger),
+			repo: repo,
+			log:  log.NewHelper(logger),
 		},
 	}
 }

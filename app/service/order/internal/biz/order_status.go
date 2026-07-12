@@ -7,27 +7,24 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 )
 
-// Order 订单接口
-type OrderInterface interface {
-	SetStatus(status v1.OrderStatus, repo OrderRepo, logger log.Logger)
-	GetStatus() v1.OrderStatus
-}
-
 // statusBase 状态处理器基础结构，提供统一的状态转换方法
 type statusBase struct {
-	order OrderInterface
-	repo  OrderRepo
-	log   *log.Helper
+	repo OrderRepo
+	log  *log.Helper
 }
 
-// transitionTo 统一的状态转换方法，更新内存状态并持久化到数据库
+// transitionTo 统一的状态转换方法：先写库（失败则回滚内存），再切换状态处理器
 func (b *statusBase) transitionTo(ctx context.Context, order *Order, newStatus v1.OrderStatus) error {
+	oldStatus := order.Status
 	order.Status = newStatus
-	b.order.SetStatus(newStatus, b.repo, b.log.Logger())
+
 	if err := b.repo.UpdateOrder(ctx, order); err != nil {
+		order.Status = oldStatus // DB 失败，回滚内存状态
 		b.log.WithContext(ctx).Errorf("订单状态更新失败, orderID: %d, newStatus: %v, error: %v", order.ID, newStatus, err)
 		return err
 	}
+
+	order.SetStatus(newStatus, b.repo, b.log.Logger()) // DB 成功，切换状态处理器
 	return nil
 }
 
@@ -96,6 +93,18 @@ func getStatusName(status v1.OrderStatus) string {
 	}
 }
 
+// 状态转换矩阵（✓ = 允许转换，✗ = 拒绝操作）：
+//
+//              Pay  Ship  Receive  Complete  Cancel  Refunding  Refunded
+// Unspecified   ✗    ✗      ✗        ✗        ✗       ✗          ✗
+// WaitPay       ✓    ✗      ✗        ✗        ✓       ✗          ✗
+// Pay/WaitShip  ✗    ✓      ✗        ✗        ✓       ✓          ✗
+// Ship/WaitRec  ✗    ✗      ✓        ✗        ✗       ✓          ✗
+// Complete      ✗    ✗      ✗        ✗        ✗       ✓          ✗
+// Cancel        ✗    ✗      ✗        ✗        ✗       ✗          ✗
+// Refunding     ✗    ✗      ✗        ✗        ✗       ✗          ✓
+// Refunded      ✗    ✗      ✗        ✗        ✗       ✗          ✗
+
 // OrderStatus 订单状态接口，所有方法统一接收 order 参数，消除类型断言依赖
 type OrderStatus interface {
 	// 支付
@@ -114,29 +123,29 @@ type OrderStatus interface {
 	Refunded(ctx context.Context, order *Order) error
 }
 
-// NewOrderStatusHandler 创建订单状态处理器
-func NewOrderStatusHandler(order OrderInterface, repo OrderRepo, logger log.Logger) OrderStatus {
-	switch order.GetStatus() {
+// NewOrderStatusHandler 根据状态创建对应的订单状态处理器
+func NewOrderStatusHandler(status v1.OrderStatus, repo OrderRepo, logger log.Logger) OrderStatus {
+	switch status {
 	case v1.OrderStatus_WaitPay:
-		return NewWaitPayStatus(order, repo, logger)
+		return NewWaitPayStatus(repo, logger)
 	case v1.OrderStatus_Pay:
-		return NewPayStatus(order, repo, logger)
+		return NewPayStatus(repo, logger)
 	case v1.OrderStatus_WaitShip:
-		return NewPayStatus(order, repo, logger) // 待发货状态使用已支付状态的处理逻辑
+		return NewPayStatus(repo, logger) // 待发货状态使用已支付状态的处理逻辑
 	case v1.OrderStatus_Ship:
-		return NewShipStatus(order, repo, logger)
+		return NewShipStatus(repo, logger)
 	case v1.OrderStatus_WaitReceive:
-		return NewShipStatus(order, repo, logger) // 待收货状态使用已发货状态的处理逻辑
+		return NewShipStatus(repo, logger) // 待收货状态使用已发货状态的处理逻辑
 	case v1.OrderStatus_Complete:
-		return NewCompleteStatus(order, repo, logger)
+		return NewCompleteStatus(repo, logger)
 	case v1.OrderStatus_Cancel:
-		return NewCancelStatus(order, repo, logger)
+		return NewCancelStatus(repo, logger)
 	case v1.OrderStatus_Refunding:
-		return NewRefundingStatus(order, repo, logger)
+		return NewRefundingStatus(repo, logger)
 	case v1.OrderStatus_Refunded:
-		return NewRefundedStatus(order, repo, logger)
+		return NewRefundedStatus(repo, logger)
 	default:
-		return NewWaitPayStatus(order, repo, logger)
+		return nil
 	}
 }
 
@@ -148,7 +157,7 @@ func (o *Order) GetStatus() v1.OrderStatus {
 // SetStatus 设置状态并更新状态处理器
 func (o *Order) SetStatus(newStatus v1.OrderStatus, repo OrderRepo, logger log.Logger) {
 	o.Status = newStatus
-	o.statusHandler = NewOrderStatusHandler(o, repo, logger)
+	o.statusHandler = NewOrderStatusHandler(newStatus, repo, logger)
 }
 
 // Pay 支付订单

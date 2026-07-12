@@ -12,12 +12,11 @@ type WaitPayStatus struct {
 	statusBase
 }
 
-func NewWaitPayStatus(order OrderInterface, repo OrderRepo, logger log.Logger) *WaitPayStatus {
+func NewWaitPayStatus(repo OrderRepo, logger log.Logger) *WaitPayStatus {
 	return &WaitPayStatus{
 		statusBase: statusBase{
-			order: order,
-			repo:  repo,
-			log:   log.NewHelper(logger),
+			repo: repo,
+			log:  log.NewHelper(logger),
 		},
 	}
 }

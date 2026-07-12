@@ -9,12 +9,11 @@ type CancelStatus struct {
 	statusBase
 }
 
-func NewCancelStatus(order OrderInterface, repo OrderRepo, logger log.Logger) *CancelStatus {
+func NewCancelStatus(repo OrderRepo, logger log.Logger) *CancelStatus {
 	return &CancelStatus{
 		statusBase: statusBase{
-			order: order,
-			repo:  repo,
-			log:   log.NewHelper(logger),
+			repo: repo,
+			log:  log.NewHelper(logger),
 		},
 	}
 }

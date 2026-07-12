@@ -12,12 +12,11 @@ type RefundingStatus struct {
 	statusBase
 }
 
-func NewRefundingStatus(order OrderInterface, repo OrderRepo, logger log.Logger) *RefundingStatus {
+func NewRefundingStatus(repo OrderRepo, logger log.Logger) *RefundingStatus {
 	return &RefundingStatus{
 		statusBase: statusBase{
-			order: order,
-			repo:  repo,
-			log:   log.NewHelper(logger),
+			repo: repo,
+			log:  log.NewHelper(logger),
 		},
 	}
 }
