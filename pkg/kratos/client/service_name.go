@@ -12,6 +12,7 @@ const (
 	TASK = "task"
 	JOB = "job"
 	RMQ_SERVICE = "rmq.service"
+	NATS_SERVICE = "nats.service"
 
 
 
@@ -29,4 +30,5 @@ const (
 	JOB_VERSION = "v1"
 	BLADES_VERSION = "v1"
 	RMQ_VERSION = "v1"
+	NATS_VERSION = "v1"
 )

@@ -1,7 +1,7 @@
-package consumers
+﻿package consumers
 
 import (
-	"cyi-app/app/rmq_consumers/internal/service"
+	"cyi-app/app/rabbit/internal/service"
 	"cyi-app/pkg/rmq"
 
 	"github.com/google/wire"

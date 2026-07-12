@@ -1,8 +1,8 @@
-package service
+﻿package service
 
 import (
 	"context"
-	"cyi-app/app/rmq_consumers/internal/biz"
+	"cyi-app/app/rabbit/internal/biz"
 	"fmt"
 
 	"github.com/go-kratos/kratos/v2/log"

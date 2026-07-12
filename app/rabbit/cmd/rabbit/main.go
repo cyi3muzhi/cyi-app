@@ -1,12 +1,12 @@
-package main
+﻿package main
 
 import (
 	"fmt"
 	"os"
 	"strings"
 
-	"cyi-app/app/rmq_consumers/internal/conf"
-	"cyi-app/app/rmq_consumers/internal/consumers"
+	"cyi-app/app/rabbit/internal/conf"
+	"cyi-app/app/rabbit/internal/consumers"
 
 	cgrpc "cyi-app/pkg/kratos/client"
 	consulConfig "cyi-app/pkg/kratos/config"

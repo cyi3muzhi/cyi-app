@@ -7,13 +7,12 @@
 package main
 
 import (
-	"cyi-app/app/rmq_consumers/internal/biz"
-	"cyi-app/app/rmq_consumers/internal/conf"
-	"cyi-app/app/rmq_consumers/internal/consumers"
-	"cyi-app/app/rmq_consumers/internal/data"
-	"cyi-app/app/rmq_consumers/internal/server"
-	"cyi-app/app/rmq_consumers/internal/service"
-	"cyi-app/pkg/rmq"
+	"cyi-app/app/nats/internal/biz"
+	"cyi-app/app/nats/internal/conf"
+	"cyi-app/app/nats/internal/consumers"
+	"cyi-app/app/nats/internal/data"
+	"cyi-app/app/nats/internal/server"
+	"cyi-app/app/nats/internal/service"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -25,11 +24,10 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger, connection *rmq.Connection) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, nats *conf.Nats, registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
 	registrar := server.NewRegistrar(registry)
-	queueFactory := server.NewQueueFactory(connection)
-	simpleConsumer := consumers.NewSimpleConsumer(queueFactory, logger)
-	topicConsumer := consumers.NewTopicConsumer(queueFactory, logger)
+	conn := server.NewNatsConn(nats)
+	natsConsumer := consumers.NewNatsConsumer(conn, logger)
 	client := data.NewRedisClient(confData, logger)
 	dataData, cleanup, err := data.NewData(confData, client, logger)
 	if err != nil {
@@ -38,7 +36,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	orderRepo := data.NewOrderRepo(dataData)
 	orderUseCase := biz.NewOrderUseCase(orderRepo, logger)
 	orderService := service.NewOrderService(orderUseCase, logger)
-	consumer := consumers.NewConsumer(simpleConsumer, topicConsumer, orderService)
+	consumer := consumers.NewConsumer(natsConsumer, orderService)
 	app := newApp(logger, registrar, consumer)
 	return app, func() {
 		cleanup()

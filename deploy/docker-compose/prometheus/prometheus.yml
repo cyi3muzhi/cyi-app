@@ -44,3 +44,8 @@ scrape_configs:
     static_configs:
       - targets: ['service-task:8000']
     metrics_path: '/metrics'
+
+  # 监控 NATS（通过 NATS Exporter）
+  - job_name: 'nats'
+    static_configs:
+      - targets: ['nats-exporter:7777']

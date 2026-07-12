@@ -1,4 +1,4 @@
-//go:build wireinject
+﻿//go:build wireinject
 // +build wireinject
 
 // The build tag makes sure the stub is not built in the final build.
@@ -6,12 +6,12 @@
 package main
 
 import (
-	"cyi-app/app/rmq_consumers/internal/biz"
-	"cyi-app/app/rmq_consumers/internal/conf"
-	"cyi-app/app/rmq_consumers/internal/consumers"
-	"cyi-app/app/rmq_consumers/internal/data"
-	"cyi-app/app/rmq_consumers/internal/server"
-	"cyi-app/app/rmq_consumers/internal/service"
+	"cyi-app/app/rabbit/internal/biz"
+	"cyi-app/app/rabbit/internal/conf"
+	"cyi-app/app/rabbit/internal/consumers"
+	"cyi-app/app/rabbit/internal/data"
+	"cyi-app/app/rabbit/internal/server"
+	"cyi-app/app/rabbit/internal/service"
 
 	"cyi-app/pkg/rmq"
 

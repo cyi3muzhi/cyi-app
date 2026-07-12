@@ -1,7 +1,7 @@
-package server
+﻿package server
 
 import (
-	"cyi-app/app/rmq_consumers/internal/conf"
+	"cyi-app/app/rabbit/internal/conf"
 	consul "cyi-app/pkg/kratos/config"
 	"cyi-app/pkg/rmq"
 
