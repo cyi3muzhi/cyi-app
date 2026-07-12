@@ -31,6 +31,71 @@ func (b *statusBase) transitionTo(ctx context.Context, order *Order, newStatus v
 	return nil
 }
 
+// 以下是 OrderStatus 接口的默认实现，具体状态处理器可重写允许的操作
+
+// Pay 默认支付处理
+func (b *statusBase) Pay(ctx context.Context, order *Order) error {
+	return b.invalidOperationError(order, "支付")
+}
+
+// Ship 默认发货处理
+func (b *statusBase) Ship(ctx context.Context, order *Order) error {
+	return b.invalidOperationError(order, "发货")
+}
+
+// Receive 默认收货处理
+func (b *statusBase) Receive(ctx context.Context, order *Order) error {
+	return b.invalidOperationError(order, "收货")
+}
+
+// Complete 默认完成处理
+func (b *statusBase) Complete(ctx context.Context, order *Order) error {
+	return b.invalidOperationError(order, "完成")
+}
+
+// Cancel 默认取消处理
+func (b *statusBase) Cancel(ctx context.Context, order *Order) error {
+	return b.invalidOperationError(order, "取消")
+}
+
+// Refunding 默认退款中处理
+func (b *statusBase) Refunding(ctx context.Context, order *Order) error {
+	return b.invalidOperationError(order, "退款")
+}
+
+// Refunded 默认已退款处理
+func (b *statusBase) Refunded(ctx context.Context, order *Order) error {
+	return b.invalidOperationError(order, "退款")
+}
+
+// invalidOperationError 生成统一的无效操作错误消息
+func (b *statusBase) invalidOperationError(order *Order, operation string) error {
+	currentStatus := getStatusName(order.Status)
+	return v1.ErrorOrderStatusInvalid("订单%s，无法执行%s操作, orderID=%d", currentStatus, operation, order.ID)
+}
+
+// getStatusName 获取状态的中文描述
+func getStatusName(status v1.OrderStatus) string {
+	switch status {
+	case v1.OrderStatus_WaitPay:
+		return "未支付"
+	case v1.OrderStatus_Pay, v1.OrderStatus_WaitShip:
+		return "已支付"
+	case v1.OrderStatus_Ship, v1.OrderStatus_WaitReceive:
+		return "已发货"
+	case v1.OrderStatus_Complete:
+		return "已完成"
+	case v1.OrderStatus_Cancel:
+		return "已取消"
+	case v1.OrderStatus_Refunding:
+		return "退款中"
+	case v1.OrderStatus_Refunded:
+		return "已退款"
+	default:
+		return "状态异常"
+	}
+}
+
 // OrderStatus 订单状态接口，所有方法统一接收 order 参数，消除类型断言依赖
 type OrderStatus interface {
 	// 支付

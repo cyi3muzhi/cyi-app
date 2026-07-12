@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSE 流式聊天测试</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 20px; }
+  .container { max-width: 800px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 16px; color: #333; }
+  .config { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .config input { flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+  .config button { padding: 8px 20px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
+  #connectBtn { background: #4f46e5; color: #fff; }
+  #connectBtn:hover { background: #4338ca; }
+  #connectBtn:disabled { background: #9ca3af; cursor: not-allowed; }
+  #clearBtn { background: #e5e7eb; color: #333; }
+  #clearBtn:hover { background: #d1d5db; }
+  .input-area { display: flex; gap: 8px; margin-bottom: 16px; }
+  .input-area input { flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+  .input-area button { padding: 8px 20px; background: #10b981; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
+  .input-area button:hover { background: #059669; }
+  .input-area button:disabled { background: #9ca3af; cursor: not-allowed; }
+  #messages { background: #fff; border-radius: 8px; padding: 16px; min-height: 400px; max-height: 600px; overflow-y: auto; border: 1px solid #e5e7eb; }
+  .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 8px; line-height: 1.6; font-size: 14px; }
+  .msg.user { background: #eef2ff; text-align: right; }
+  .msg.assistant { background: #f9fafb; border: 1px solid #e5e7eb; }
+  .msg.system { background: #fef3c7; font-size: 12px; color: #92400e; text-align: center; }
+  .msg .label { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+  .cursor { display: inline-block; width: 8px; height: 16px; background: #4f46e5; animation: blink 1s step-end infinite; vertical-align: middle; margin-left: 2px; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .status { font-size: 12px; color: #6b7280; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔌 SSE 流式聊天测试</h1>
+
+  <div class="config">
+    <input id="baseUrl" value="http://localhost:18000" placeholder="服务地址">
+    <input id="token" type="password" placeholder="JWT Token（必填）" style="flex:1.5">
+    <input id="sessionId" placeholder="会话 ID（留空自动生成）">
+    <button id="connectBtn" onclick="toggleConnect()">断开</button>
+    <button id="clearBtn" onclick="clearMessages()">清空</button>
+  </div>
+
+  <div class="input-area">
+    <input id="messageInput" placeholder="输入消息..." onkeydown="if(event.key==='Enter')send()">
+    <button id="sendBtn" onclick="send()">发送</button>
+  </div>
+
+  <div class="status" id="status">已连接 ✓</div>
+  <div id="messages"></div>
+</div>
+
+<script>
+let sessionId = localStorage.getItem('sse_session_id') || '';
+if (!sessionId) {
+  sessionId = 'sse_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  localStorage.setItem('sse_session_id', sessionId);
+}
+document.getElementById('sessionId').value = sessionId;
+
+const token = localStorage.getItem('sse_token') || '';
+document.getElementById('token').value = token;
+
+const baseUrlInput = document.getElementById('baseUrl');
+const tokenInput = document.getElementById('token');
+const sessionInput = document.getElementById('sessionId');
+const msgInput = document.getElementById('messageInput');
+const sendBtn = document.getElementById('sendBtn');
+const connectBtn = document.getElementById('connectBtn');
+const messagesDiv = document.getElementById('messages');
+const statusDiv = document.getElementById('status');
+
+let connected = true;
+let sending = false;
+
+function addMessage(role, text) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  if (role === 'user' || role === 'assistant') {
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = role === 'user' ? '🧑 你' : '🤖 AI';
+    div.appendChild(label);
+    const content = document.createElement('div');
+    content.textContent = text;
+    div.appendChild(content);
+  } else {
+    div.textContent = text;
+  }
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  return div;
+}
+
+function showCursor() {
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  div.id = 'cursor-msg';
+  const label = document.createElement('div');
+  label.className = 'label';
+  label.textContent = '🤖 AI';
+  div.appendChild(label);
+  const content = document.createElement('div');
+  content.innerHTML = '<span class="cursor"></span>';
+  div.appendChild(content);
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function updateCursor(text) {
+  const div = document.getElementById('cursor-msg');
+  if (!div) return;
+  const content = div.querySelector('div:last-child');
+  content.innerHTML = text.replace(/\n/g, '<br>') + '<span class="cursor"></span>';
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function removeCursor() {
+  const div = document.getElementById('cursor-msg');
+  if (div) div.remove();
+}
+
+function setStatus(text, isError) {
+  statusDiv.textContent = text;
+  statusDiv.style.color = isError ? '#dc2626' : '#6b7280';
+}
+
+async function send() {
+  const msg = msgInput.value.trim();
+  if (!msg || sending) return;
+
+  const baseUrl = baseUrlInput.value.trim();
+  const token = tokenInput.value.trim();
+  if (!token) {
+    addMessage('system', '❌ 请填写 JWT Token');
+    return;
+  }
+  localStorage.setItem('sse_token', token);
+  sessionId = sessionInput.value.trim() || sessionId;
+  msgInput.value = '';
+
+  sending = true;
+  sendBtn.disabled = true;
+  addMessage('user', msg);
+  showCursor();
+
+  try {
+    const resp = await fetch(baseUrl + '/ai/v1/chat/stream', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token,
+      },
+      body: JSON.stringify({ message: msg, session_id: sessionId }),
+    });
+
+    if (!resp.ok) {
+      removeCursor();
+      addMessage('system', '❌ 请求失败: ' + resp.status + ' ' + resp.statusText);
+      sending = false;
+      sendBtn.disabled = false;
+      return;
+    }
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('event: done')) {
+          removeCursor();
+          addMessage('system', '✅ 完成');
+          continue;
+        }
+        if (line.startsWith('event: error')) continue;
+        if (line.startsWith('event:')) continue;
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.chunk) {
+              updateCursor(parsed.chunk);
+            } else if (parsed.error) {
+              removeCursor();
+              addMessage('system', '❌ ' + parsed.error);
+            }
+          } catch (e) {}
+        }
+      }
+    }
+    removeCursor();
+    addMessage('system', '✅ 完成');
+  } catch (err) {
+    removeCursor();
+    addMessage('system', '❌ 连接失败: ' + err.message);
+  }
+
+  sending = false;
+  sendBtn.disabled = false;
+}
+
+function toggleConnect() {
+  connected = !connected;
+  connectBtn.textContent = connected ? '断开' : '连接';
+  setStatus(connected ? '已连接 ✓' : '已断开 ✗', !connected);
+  sendBtn.disabled = !connected;
+  msgInput.disabled = !connected;
+}
+
+function clearMessages() {
+  messagesDiv.innerHTML = '';
+}
+</script>
+</body>
+</html>
