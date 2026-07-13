@@ -11,6 +11,8 @@ service Stock {
 	rpc UpdateStock (UpdateStockRequest) returns (UpdateStockReply);
 	rpc ReserveStock (ReserveStockRequest) returns (ReserveStockReply);
 	rpc DeductStock (DeductStockRequest) returns (DeductStockReply);
+	rpc ReleaseStock (ReleaseStockRequest) returns (ReleaseStockReply);
+	rpc AddStock (AddStockRequest) returns (AddStockReply);
 	rpc DeleteStock (DeleteStockRequest) returns (DeleteStockReply);
 	rpc GetStock (GetStockRequest) returns (GetStockReply);
 	rpc ListStock (ListStockRequest) returns (ListStockReply);
@@ -62,6 +64,34 @@ message DeductStockRequest {
 }
 
 message DeductStockReply {
+	bool success = 1;
+	int32 new_version = 2;  // 新版本号
+}
+
+// 释放预留库存（取消未支付订单时）
+// reserved- , available+ , version++
+// 条件: version 匹配 且 reserved >= count
+message ReleaseStockRequest {
+	int64 product_id = 1;   // 商品ID
+	int32 count = 2;        // 释放数量
+	int32 version = 3;      // 乐观锁版本号
+}
+
+message ReleaseStockReply {
+	bool success = 1;
+	int32 new_version = 2;  // 新版本号
+}
+
+// 增加库存（退款或取消已支付订单时）
+// total+ , available+ , version++
+// 条件: version 匹配
+message AddStockRequest {
+	int64 product_id = 1;   // 商品ID
+	int32 count = 2;        // 增加数量
+	int32 version = 3;      // 乐观锁版本号
+}
+
+message AddStockReply {
 	bool success = 1;
 	int32 new_version = 2;  // 新版本号
 }

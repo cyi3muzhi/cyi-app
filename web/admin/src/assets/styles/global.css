@@ -1,0 +1,52 @@
+/* ============================================
+   悦选商城管理后台 - 全局样式
+   ============================================ */
+
+@import './variables.css';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: var(--shop-font-sans);
+}
+
+body {
+  font-family: var(--shop-font-sans);
+  background: #f1f5f9;
+  color: var(--shop-foreground);
+  overflow-x: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
+
+/* ---- Transition for fade animation ---- */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* ---- Sidebar dark scrollbar ---- */
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+}
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.25);
+}

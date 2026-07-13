@@ -5,6 +5,7 @@ import (
 	"io"
 	"testing"
 
+	productRpc "cyi-app/api/service/product/v1"
 	v1 "cyi-app/api/service/order/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -24,14 +25,41 @@ func (m *mockOrderRepo) UpdateOrder(ctx context.Context, in *Order) error {
 }
 func (m *mockOrderRepo) GetOrder(_ context.Context, _ int64) (*Order, error) { return nil, nil }
 
+// mockStockRepo 用于状态机测试的 mock 库存仓储
+type mockStockRepo struct{}
+
+func (m *mockStockRepo) GetStock(_ context.Context, _ int64) (*productRpc.GetStockReply, error) {
+	return &productRpc.GetStockReply{
+		Total:     100,
+		Available: 50,
+		Reserved:  50,
+		Version:   1,
+	}, nil
+}
+func (m *mockStockRepo) ReserveStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
+	return 2, nil
+}
+func (m *mockStockRepo) DeductStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
+	return 2, nil
+}
+func (m *mockStockRepo) ReleaseStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
+	return 2, nil
+}
+func (m *mockStockRepo) AddStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
+	return 2, nil
+}
+
 // createTestOrder 创建指定状态的订单并初始化状态处理器
 func createTestOrder(status v1.OrderStatus, repo *mockOrderRepo) *Order {
 	order := &Order{
 		ID:     1,
 		UserID: 100,
 		Status: status,
+		Items: []*OrderItem{
+			{ProductID: 1, Quantity: 1, ProductName: "test", Price: 100},
+		},
 	}
-	order.SetStatus(order.Status, repo, log.NewStdLogger(io.Discard))
+	order.SetStatus(order.Status, repo, &mockStockRepo{}, log.NewStdLogger(io.Discard))
 	return order
 }
 
@@ -440,7 +468,7 @@ func TestOrder_DefaultHandlerRejectsUnknown(t *testing.T) {
 	repo := &mockOrderRepo{}
 	logger := log.NewStdLogger(io.Discard)
 
-	handler := NewOrderStatusHandler(v1.OrderStatus_OrderStatusUnspecified, repo, logger)
+	handler := NewOrderStatusHandler(v1.OrderStatus_OrderStatusUnspecified, repo, &mockStockRepo{}, logger)
 	if handler != nil {
 		t.Error("未知状态应返回 nil handler")
 	}
@@ -472,14 +500,14 @@ func TestOrder_SetStatus(t *testing.T) {
 	logger := log.NewStdLogger(io.Discard)
 
 	order := &Order{ID: 1, Status: v1.OrderStatus_WaitPay}
-	order.SetStatus(order.Status, repo, logger)
+	order.SetStatus(order.Status, repo, &mockStockRepo{}, logger)
 
 	if order.statusHandler == nil {
 		t.Fatal("SetStatus 后 statusHandler 不应为 nil")
 	}
 
 	// 切换为 Cancel
-	order.SetStatus(v1.OrderStatus_Cancel, repo, logger)
+	order.SetStatus(v1.OrderStatus_Cancel, repo, &mockStockRepo{}, logger)
 	assertStatus(t, order.Status, v1.OrderStatus_Cancel)
 	if order.statusHandler == nil {
 		t.Fatal("切换到 Cancel 后 statusHandler 不应为 nil")

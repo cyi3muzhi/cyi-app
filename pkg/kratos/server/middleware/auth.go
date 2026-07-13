@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	v1 "cyi-app/api/cin/interface/v1"
 	"fmt"
 
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -21,8 +20,7 @@ type UserClaims struct {
 func NewWhiteListMatcher(wl []string) selector.MatchFunc {
 	whiteList := make(map[string]struct{})
 	if wl == nil {
-		whiteList[v1.OperationCinInterfaceLogin] = struct{}{}
-		whiteList[v1.OperationCinInterfaceRegister] = struct{}{}
+
 		return func(ctx context.Context, operation string) bool {
 			return false
 		}

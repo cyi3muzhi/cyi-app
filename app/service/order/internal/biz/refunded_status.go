@@ -9,11 +9,12 @@ type RefundedStatus struct {
 	statusBase
 }
 
-func NewRefundedStatus(repo OrderRepo, logger log.Logger) *RefundedStatus {
+func NewRefundedStatus(repo OrderRepo, stockRe StockRepo, logger log.Logger) *RefundedStatus {
 	return &RefundedStatus{
 		statusBase: statusBase{
-			repo: repo,
-			log:  log.NewHelper(logger),
+			repo:    repo,
+			stockRe: stockRe,
+			log:     log.NewHelper(logger),
 		},
 	}
 }

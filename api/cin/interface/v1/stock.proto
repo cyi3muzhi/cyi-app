@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package api.cin.interface.v1;
+
+option go_package = "cyi-app/api/cin/interface/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.cin.interface.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+// 库存服务
+service Stock {
+  // 更新库存
+  rpc UpdateStock (UpdateStockRequest) returns (UpdateStockReply) {
+    option (google.api.http) = {
+      put: "/product/v1/stock/update"
+      body: "*"
+    };
+  }
+}
+
+message UpdateStockRequest {
+  int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 total = 2 [(validate.rules).int32 = {gte: 0}];
+}
+
+message UpdateStockReply {
+  bool success = 1;
+}

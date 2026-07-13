@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+option java_multiple_files = true;
+option java_package = "api.cin.admin.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+// 管理后台 - 用户管理服务
+service AdminUser {
+  // 用户列表
+  rpc ListUser (ListUserRequest) returns (ListUserReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/users"
+    };
+  }
+  // 用户详情
+  rpc GetUser (GetUserRequest) returns (GetUserReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/users/{id}"
+    };
+  }
+  // 创建用户
+  rpc CreateUser (CreateUserRequest) returns (CreateUserReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/users"
+      body: "*"
+    };
+  }
+  // 更新用户
+  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/users/{id}"
+      body: "*"
+    };
+  }
+  // 删除用户
+  rpc DeleteUser (DeleteUserRequest) returns (DeleteUserReply) {
+    option (google.api.http) = {
+      delete: "/admin/v1/users/{id}"
+    };
+  }
+  // 冻结/解冻用户
+  rpc ToggleUserStatus (ToggleUserStatusRequest) returns (ToggleUserStatusReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/users/{id}/toggle_status"
+      body: "*"
+    };
+  }
+  // 获取用户统计数据
+  rpc GetUserStats (GetUserStatsRequest) returns (GetUserStatsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/users/stats"
+    };
+  }
+}
+
+message ListUserRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string keyword = 3;
+  string level = 4;
+  string status = 5;
+}
+
+message ListUserReply {
+  repeated UserItem items = 1;
+  int32 total = 2;
+}
+
+message UserItem {
+  int64 id = 1;
+  string name = 2;
+  string phone = 3;
+  string level = 4;
+  string reg_time = 5;
+  int64 amount = 6;
+  int32 orders = 7;
+  string status = 8;
+}
+
+message GetUserRequest {
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message GetUserReply {
+  UserItem user = 1;
+}
+
+message CreateUserRequest {
+  string name = 1 [(validate.rules).string = {min_len: 1, max_len: 24}];
+  string phone = 2;
+  string password = 3 [(validate.rules).string = {min_len: 6}];
+}
+
+message CreateUserReply {
+  int64 id = 1;
+}
+
+message UpdateUserRequest {
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+  string name = 2;
+  string phone = 3;
+  string level = 4;
+}
+
+message UpdateUserReply {
+  bool success = 1;
+}
+
+message DeleteUserRequest {
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message DeleteUserReply {
+  bool success = 1;
+}
+
+message ToggleUserStatusRequest {
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message ToggleUserStatusReply {
+  bool success = 1;
+  string new_status = 2;
+}
+
+message GetUserStatsRequest {}
+
+message GetUserStatsReply {
+  int64 total_users = 1;
+  int64 today_new = 2;
+  double today_new_growth = 3;
+  int64 active_users = 4;
+  int64 member_users = 5;
+  double member_ratio = 6;
+}

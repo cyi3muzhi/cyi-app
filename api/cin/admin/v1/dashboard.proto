@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+option java_multiple_files = true;
+option java_package = "api.cin.admin.v1";
+
+import "google/api/annotations.proto";
+
+// 仪表盘服务
+service Dashboard {
+  // 获取仪表盘统计数据
+  rpc GetDashboardStats (GetDashboardStatsRequest) returns (GetDashboardStatsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/dashboard/stats"
+    };
+  }
+  // 获取近14日订单趋势
+  rpc GetOrderTrend (GetOrderTrendRequest) returns (GetOrderTrendReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/dashboard/order_trend"
+    };
+  }
+  // 获取营收分类占比
+  rpc GetRevenueCategories (GetRevenueCategoriesRequest) returns (GetRevenueCategoriesReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/dashboard/revenue_categories"
+    };
+  }
+}
+
+message GetDashboardStatsRequest {}
+
+message GetDashboardStatsReply {
+  int64 today_orders = 1;
+  string today_revenue = 2;
+  int64 total_users = 3;
+  int64 total_products = 4;
+  double orders_growth = 5;
+  double revenue_growth = 6;
+  double users_growth = 7;
+  double products_growth = 8;
+}
+
+message GetOrderTrendRequest {}
+
+message GetOrderTrendReply {
+  repeated TrendItem items = 1;
+}
+
+message TrendItem {
+  string date = 1;
+  int32 value = 2;
+}
+
+message GetRevenueCategoriesRequest {}
+
+message GetRevenueCategoriesReply {
+  repeated RevenueCategory categories = 1;
+}
+
+message RevenueCategory {
+  string name = 1;
+  double percentage = 2;
+  string color = 3;
+}

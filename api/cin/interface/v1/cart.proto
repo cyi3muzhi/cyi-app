@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package api.cin.interface.v1;
+
+option go_package = "cyi-app/api/cin/interface/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.cin.interface.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+// 购物车服务
+service Cart {
+  // 加入购物车
+  rpc AddCartItem (AddCartItemRequest) returns (AddCartItemReply) {
+    option (google.api.http) = {
+      post: "/cart/v1/add"
+      body: "*"
+    };
+  }
+  // 获取购物车
+  rpc GetCart (GetCartRequest) returns (GetCartReply) {
+    option (google.api.http) = {
+      get: "/cart/v1/info"
+    };
+  }
+}
+
+message AddCartItemRequest {
+  int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 quantity = 2 [(validate.rules).int32 = {gt: 0}];
+}
+
+message AddCartItemReply {
+  bool success = 1;
+}
+
+message GetCartRequest {}
+
+message GetCartReply {
+  repeated CartProductItem items = 1;
+}
+
+message CartProductItem {
+  int64 product_id = 1;
+  string name = 2;
+  int64 price = 3;
+  int32 quantity = 4;
+  string image = 5;
+}

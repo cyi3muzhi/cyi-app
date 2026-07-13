@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+option java_multiple_files = true;
+option java_package = "api.cin.admin.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+// 管理后台 - 订单管理服务
+service AdminOrder {
+  // 订单列表
+  rpc ListOrder (ListOrderRequest) returns (ListOrderReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/orders"
+    };
+  }
+  // 订单详情
+  rpc GetOrder (GetOrderRequest) returns (GetOrderReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/orders/{order_id}"
+    };
+  }
+  // 发货
+  rpc ShipOrder (ShipOrderRequest) returns (ShipOrderReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/orders/{order_id}/ship"
+      body: "*"
+    };
+  }
+  // 取消订单
+  rpc CancelOrder (CancelOrderRequest) returns (CancelOrderReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/orders/{order_id}/cancel"
+      body: "*"
+    };
+  }
+  // 导出订单
+  rpc ExportOrder (ExportOrderRequest) returns (ExportOrderReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/orders/export"
+    };
+  }
+}
+
+message ListOrderRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string status = 3;
+  string keyword = 4;
+  string date_from = 5;
+  string date_to = 6;
+}
+
+message ListOrderReply {
+  repeated OrderItem items = 1;
+  int32 total = 2;
+}
+
+message OrderItem {
+  int64 id = 1;
+  string order_no = 2;
+  string created_at = 3;
+  string user_name = 4;
+  int64 amount = 5;
+  string payment = 6;
+  string status = 7;
+  string status_text = 8;
+  repeated OrderProduct products = 9;
+}
+
+message OrderProduct {
+  string name = 1;
+  string spec = 2;
+  int32 qty = 3;
+  int64 price = 4;
+}
+
+message GetOrderRequest {
+  int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message GetOrderReply {
+  OrderItem order = 1;
+}
+
+message ShipOrderRequest {
+  int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
+  string logistics_company = 2;
+  string logistics_no = 3;
+}
+
+message ShipOrderReply {
+  bool success = 1;
+}
+
+message CancelOrderRequest {
+  int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
+  string reason = 2;
+}
+
+message CancelOrderReply {
+  bool success = 1;
+}
+
+message ExportOrderRequest {
+  string status = 1;
+  string date_from = 2;
+  string date_to = 3;
+}
+
+message ExportOrderReply {
+  string download_url = 1;
+}

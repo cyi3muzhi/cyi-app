@@ -9,8 +9,9 @@ import (
 
 // statusBase 状态处理器基础结构，提供统一的状态转换方法
 type statusBase struct {
-	repo OrderRepo
-	log  *log.Helper
+	repo    OrderRepo
+	stockRe StockRepo
+	log     *log.Helper
 }
 
 // transitionTo 统一的状态转换方法：先写库（失败则回滚内存），再切换状态处理器
@@ -24,7 +25,43 @@ func (b *statusBase) transitionTo(ctx context.Context, order *Order, newStatus v
 		return err
 	}
 
-	order.SetStatus(newStatus, b.repo, b.log.Logger()) // DB 成功，切换状态处理器
+	order.SetStatus(newStatus, b.repo, b.stockRe, b.log.Logger()) // DB 成功，切换状态处理器
+	return nil
+}
+
+// releaseStockForOrder 释放订单中所有商品的预留库存
+// 适用场景：取消未支付订单（reserved-，available+）
+func (b *statusBase) releaseStockForOrder(ctx context.Context, order *Order) error {
+	for _, item := range order.Items {
+		stock, err := b.stockRe.GetStock(ctx, item.ProductID)
+		if err != nil {
+			b.log.WithContext(ctx).Errorf("获取库存失败, productID: %d, error: %v", item.ProductID, err)
+			return err
+		}
+
+		if _, err := b.stockRe.ReleaseStock(ctx, item.ProductID, item.Quantity, stock.Version); err != nil {
+			b.log.WithContext(ctx).Errorf("释放预留库存失败, productID: %d, error: %v", item.ProductID, err)
+			return err
+		}
+	}
+	return nil
+}
+
+// addStockForOrder 增加订单中所有商品的库存总量
+// 适用场景：取消已支付订单或退款完成（total+，available+）
+func (b *statusBase) addStockForOrder(ctx context.Context, order *Order) error {
+	for _, item := range order.Items {
+		stock, err := b.stockRe.GetStock(ctx, item.ProductID)
+		if err != nil {
+			b.log.WithContext(ctx).Errorf("获取库存失败, productID: %d, error: %v", item.ProductID, err)
+			return err
+		}
+
+		if _, err := b.stockRe.AddStock(ctx, item.ProductID, item.Quantity, stock.Version); err != nil {
+			b.log.WithContext(ctx).Errorf("增加库存失败, productID: %d, error: %v", item.ProductID, err)
+			return err
+		}
+	}
 	return nil
 }
 
@@ -124,26 +161,26 @@ type OrderStatus interface {
 }
 
 // NewOrderStatusHandler 根据状态创建对应的订单状态处理器
-func NewOrderStatusHandler(status v1.OrderStatus, repo OrderRepo, logger log.Logger) OrderStatus {
+func NewOrderStatusHandler(status v1.OrderStatus, repo OrderRepo, stockRe StockRepo, logger log.Logger) OrderStatus {
 	switch status {
 	case v1.OrderStatus_WaitPay:
-		return NewWaitPayStatus(repo, logger)
+		return NewWaitPayStatus(repo, stockRe, logger)
 	case v1.OrderStatus_Pay:
-		return NewPayStatus(repo, logger)
+		return NewPayStatus(repo, stockRe, logger)
 	case v1.OrderStatus_WaitShip:
-		return NewPayStatus(repo, logger) // 待发货状态使用已支付状态的处理逻辑
+		return NewPayStatus(repo, stockRe, logger) // 待发货状态使用已支付状态的处理逻辑
 	case v1.OrderStatus_Ship:
-		return NewShipStatus(repo, logger)
+		return NewShipStatus(repo, stockRe, logger)
 	case v1.OrderStatus_WaitReceive:
-		return NewShipStatus(repo, logger) // 待收货状态使用已发货状态的处理逻辑
+		return NewShipStatus(repo, stockRe, logger) // 待收货状态使用已发货状态的处理逻辑
 	case v1.OrderStatus_Complete:
-		return NewCompleteStatus(repo, logger)
+		return NewCompleteStatus(repo, stockRe, logger)
 	case v1.OrderStatus_Cancel:
-		return NewCancelStatus(repo, logger)
+		return NewCancelStatus(repo, stockRe, logger)
 	case v1.OrderStatus_Refunding:
-		return NewRefundingStatus(repo, logger)
+		return NewRefundingStatus(repo, stockRe, logger)
 	case v1.OrderStatus_Refunded:
-		return NewRefundedStatus(repo, logger)
+		return NewRefundedStatus(repo, stockRe, logger)
 	default:
 		return nil
 	}
@@ -155,9 +192,9 @@ func (o *Order) GetStatus() v1.OrderStatus {
 }
 
 // SetStatus 设置状态并更新状态处理器
-func (o *Order) SetStatus(newStatus v1.OrderStatus, repo OrderRepo, logger log.Logger) {
+func (o *Order) SetStatus(newStatus v1.OrderStatus, repo OrderRepo, stockRe StockRepo, logger log.Logger) {
 	o.Status = newStatus
-	o.statusHandler = NewOrderStatusHandler(newStatus, repo, logger)
+	o.statusHandler = NewOrderStatusHandler(newStatus, repo, stockRe, logger)
 }
 
 // Pay 支付订单

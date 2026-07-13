@@ -15,4 +15,6 @@ type StockRepo interface {
 	GetStock(ctx context.Context, productID int64) (*productRpc.GetStockReply, error)
 	ReserveStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
 	DeductStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
+	ReleaseStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
+	AddStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
 }

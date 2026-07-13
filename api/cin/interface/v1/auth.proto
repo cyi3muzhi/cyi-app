@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package api.cin.interface.v1;
+
+option go_package = "cyi-app/api/cin/interface/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.cin.interface.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+// 用户认证服务
+service Auth {
+  // 登录
+  rpc Login (LoginRequest) returns (LoginReply) {
+    option (google.api.http) = {
+      post: "/user/v1/login"
+      body: "*"
+    };
+  }
+  // 注册
+  rpc Register (RegisterReq) returns (RegisterReply) {
+    option (google.api.http) = {
+      post: "/user/v1/register"
+      body: "*"
+    };
+  }
+}
+
+message LoginRequest {
+  // 用户名或手机号
+  string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
+  // 密码
+  string password = 3 [(validate.rules).string = {min_len: 6, max_len: 20}];
+}
+
+message LoginReply {
+  string token = 1;
+}
+
+message RegisterReq {
+  // 用户名
+  string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
+  // 密码
+  string password = 2 [(validate.rules).string = {min_len: 6, max_len: 20}];
+}
+
+message RegisterReply {
+  bool success = 1;
+}

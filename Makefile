@@ -15,7 +15,7 @@ APP_RELATIVE_PATH=$(notdir $(patsubst %/,%,$(dir $(CURDIR))))/$(notdir $(CURDIR)
 # 直接硬编码 API_PROTO_FILES 和 INTERNAL_PROTO_FILES 的值
 # 这样可以确保路径格式正确，避免 PowerShell 命令执行错误
 INTERNAL_PROTO_FILES=
-API_PROTO_FILES=api/blades/v1/blades.proto api/cin/admin/user/user.proto api/cin/interface/v1/cin_interface.proto api/cin/interface/v1/cin_interface_error.proto api/job/v1/job.proto api/service/order/v1/order.proto api/service/product/v1/product.proto api/service/user/v1/user.proto api/service/user/v1/user_error.proto api/task/v1/task.proto
+API_PROTO_FILES=api/blades/v1/blades.proto api/cin/admin/v1/dashboard.proto api/cin/admin/v1/errors.proto api/cin/admin/v1/order.proto api/cin/admin/v1/product.proto api/cin/admin/v1/settings.proto api/cin/admin/v1/user.proto api/cin/interface/v1/auth.proto api/cin/interface/v1/blades.proto api/cin/interface/v1/cart.proto api/cin/interface/v1/errors.proto api/cin/interface/v1/order.proto api/cin/interface/v1/product.proto api/cin/interface/v1/stock.proto api/cin/interface/v1/user.proto api/job/v1/job.proto api/service/order/v1/order.proto api/service/product/v1/product.proto api/service/user/v1/user.proto api/service/user/v1/user_error.proto api/task/v1/task.proto
 
 # 服务发现
 SERVICE_CMD_DIRS := $(wildcard app/*/*/cmd/* app/*/cmd/*) # 查找所有服务的 cmd 目录

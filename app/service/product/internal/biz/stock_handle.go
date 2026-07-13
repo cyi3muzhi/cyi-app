@@ -7,6 +7,8 @@ type StockRepo interface {
 	UpdateStock(ctx context.Context, in *Stock) error
 	ReserveStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
 	DeductStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
+	ReleaseStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
+	AddStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
 	GetStock(ctx context.Context, productID int64) (*Stock, error)
 }
 
@@ -32,6 +34,14 @@ func (uc *StockUseCase) ReserveStock(ctx context.Context, productID int64, count
 
 func (uc *StockUseCase) DeductStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
 	return uc.repo.DeductStock(ctx, productID, count, version)
+}
+
+func (uc *StockUseCase) ReleaseStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
+	return uc.repo.ReleaseStock(ctx, productID, count, version)
+}
+
+func (uc *StockUseCase) AddStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
+	return uc.repo.AddStock(ctx, productID, count, version)
 }
 
 func (uc *StockUseCase) GetStock(ctx context.Context, productID int64) (*Stock, error) {

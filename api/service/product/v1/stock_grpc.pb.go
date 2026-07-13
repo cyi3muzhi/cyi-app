@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.2
-// source: service/product/v1/stock.proto
+// source: api/service/product/v1/stock.proto
 
 package v1
 
@@ -23,6 +23,8 @@ const (
 	Stock_UpdateStock_FullMethodName  = "/api.service.product.v1.Stock/UpdateStock"
 	Stock_ReserveStock_FullMethodName = "/api.service.product.v1.Stock/ReserveStock"
 	Stock_DeductStock_FullMethodName  = "/api.service.product.v1.Stock/DeductStock"
+	Stock_ReleaseStock_FullMethodName = "/api.service.product.v1.Stock/ReleaseStock"
+	Stock_AddStock_FullMethodName     = "/api.service.product.v1.Stock/AddStock"
 	Stock_DeleteStock_FullMethodName  = "/api.service.product.v1.Stock/DeleteStock"
 	Stock_GetStock_FullMethodName     = "/api.service.product.v1.Stock/GetStock"
 	Stock_ListStock_FullMethodName    = "/api.service.product.v1.Stock/ListStock"
@@ -36,6 +38,8 @@ type StockClient interface {
 	UpdateStock(ctx context.Context, in *UpdateStockRequest, opts ...grpc.CallOption) (*UpdateStockReply, error)
 	ReserveStock(ctx context.Context, in *ReserveStockRequest, opts ...grpc.CallOption) (*ReserveStockReply, error)
 	DeductStock(ctx context.Context, in *DeductStockRequest, opts ...grpc.CallOption) (*DeductStockReply, error)
+	ReleaseStock(ctx context.Context, in *ReleaseStockRequest, opts ...grpc.CallOption) (*ReleaseStockReply, error)
+	AddStock(ctx context.Context, in *AddStockRequest, opts ...grpc.CallOption) (*AddStockReply, error)
 	DeleteStock(ctx context.Context, in *DeleteStockRequest, opts ...grpc.CallOption) (*DeleteStockReply, error)
 	GetStock(ctx context.Context, in *GetStockRequest, opts ...grpc.CallOption) (*GetStockReply, error)
 	ListStock(ctx context.Context, in *ListStockRequest, opts ...grpc.CallOption) (*ListStockReply, error)
@@ -89,6 +93,26 @@ func (c *stockClient) DeductStock(ctx context.Context, in *DeductStockRequest, o
 	return out, nil
 }
 
+func (c *stockClient) ReleaseStock(ctx context.Context, in *ReleaseStockRequest, opts ...grpc.CallOption) (*ReleaseStockReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReleaseStockReply)
+	err := c.cc.Invoke(ctx, Stock_ReleaseStock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stockClient) AddStock(ctx context.Context, in *AddStockRequest, opts ...grpc.CallOption) (*AddStockReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddStockReply)
+	err := c.cc.Invoke(ctx, Stock_AddStock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *stockClient) DeleteStock(ctx context.Context, in *DeleteStockRequest, opts ...grpc.CallOption) (*DeleteStockReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DeleteStockReply)
@@ -127,6 +151,8 @@ type StockServer interface {
 	UpdateStock(context.Context, *UpdateStockRequest) (*UpdateStockReply, error)
 	ReserveStock(context.Context, *ReserveStockRequest) (*ReserveStockReply, error)
 	DeductStock(context.Context, *DeductStockRequest) (*DeductStockReply, error)
+	ReleaseStock(context.Context, *ReleaseStockRequest) (*ReleaseStockReply, error)
+	AddStock(context.Context, *AddStockRequest) (*AddStockReply, error)
 	DeleteStock(context.Context, *DeleteStockRequest) (*DeleteStockReply, error)
 	GetStock(context.Context, *GetStockRequest) (*GetStockReply, error)
 	ListStock(context.Context, *ListStockRequest) (*ListStockReply, error)
@@ -151,6 +177,12 @@ func (UnimplementedStockServer) ReserveStock(context.Context, *ReserveStockReque
 }
 func (UnimplementedStockServer) DeductStock(context.Context, *DeductStockRequest) (*DeductStockReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeductStock not implemented")
+}
+func (UnimplementedStockServer) ReleaseStock(context.Context, *ReleaseStockRequest) (*ReleaseStockReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReleaseStock not implemented")
+}
+func (UnimplementedStockServer) AddStock(context.Context, *AddStockRequest) (*AddStockReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddStock not implemented")
 }
 func (UnimplementedStockServer) DeleteStock(context.Context, *DeleteStockRequest) (*DeleteStockReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteStock not implemented")
@@ -254,6 +286,42 @@ func _Stock_DeductStock_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Stock_ReleaseStock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReleaseStockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StockServer).ReleaseStock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Stock_ReleaseStock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StockServer).ReleaseStock(ctx, req.(*ReleaseStockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Stock_AddStock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddStockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StockServer).AddStock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Stock_AddStock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StockServer).AddStock(ctx, req.(*AddStockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Stock_DeleteStock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteStockRequest)
 	if err := dec(in); err != nil {
@@ -332,6 +400,14 @@ var Stock_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Stock_DeductStock_Handler,
 		},
 		{
+			MethodName: "ReleaseStock",
+			Handler:    _Stock_ReleaseStock_Handler,
+		},
+		{
+			MethodName: "AddStock",
+			Handler:    _Stock_AddStock_Handler,
+		},
+		{
 			MethodName: "DeleteStock",
 			Handler:    _Stock_DeleteStock_Handler,
 		},
@@ -345,5 +421,5 @@ var Stock_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "service/product/v1/stock.proto",
+	Metadata: "api/service/product/v1/stock.proto",
 }

@@ -1,0 +1,65 @@
+/* ============================================
+   悦选商城 - 设计令牌
+   Brand Prefix: shop
+   来自 shopping-mall.design/colors_and_type.css
+   ============================================ */
+
+:root {
+  /* ---- Primary Blue ---- */
+  --shop-primary-h: 217;
+  --shop-primary-s: 91%;
+  --shop-primary-l: 52%;
+  --shop-primary: hsl(var(--shop-primary-h), var(--shop-primary-s), var(--shop-primary-l));
+  --shop-primary-foreground: hsl(0, 0%, 100%);
+  --shop-primary-light: hsl(217, 91%, 60%);
+  --shop-primary-dark: hsl(217, 91%, 42%);
+  --shop-primary-bg: hsl(217, 91%, 96%);
+
+  /* ---- Neutrals ---- */
+  --shop-background: hsl(0, 0%, 100%);
+  --shop-foreground: hsl(220, 14%, 12%);
+  --shop-card: hsl(0, 0%, 100%);
+  --shop-card-foreground: hsl(220, 14%, 12%);
+  --shop-muted: hsl(220, 14%, 96%);
+  --shop-muted-foreground: hsl(220, 8%, 46%);
+  --shop-border: hsl(220, 13%, 91%);
+  --shop-input: hsl(220, 13%, 91%);
+  --shop-ring: hsl(217, 91%, 52%);
+
+  /* ---- Secondary / Accent ---- */
+  --shop-secondary: hsl(220, 14%, 96%);
+  --shop-secondary-foreground: hsl(220, 14%, 12%);
+
+  /* ---- Destructive / Success / Warning ---- */
+  --shop-destructive: hsl(0, 84%, 60%);
+  --shop-success: hsl(142, 71%, 45%);
+  --shop-warning: hsl(38, 92%, 50%);
+
+  /* ---- Radius ---- */
+  --shop-radius-sm: 0.375rem;
+  --shop-radius-md: 0.5rem;
+  --shop-radius-lg: 0.75rem;
+  --shop-radius-xl: 1rem;
+
+  /* ---- Typography ---- */
+  --shop-font-sans: 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+  --shop-font-mono: 'JetBrains Mono', 'Consolas', monospace;
+
+  /* ---- Shadows ---- */
+  --shop-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shop-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shop-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+
+  /* ---- Transitions ---- */
+  --shop-transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---- Element Plus Override Colors ---- */
+  --el-color-primary: var(--shop-primary);
+  --el-color-primary-light-3: var(--shop-primary-light);
+  --el-color-primary-dark-2: var(--shop-primary-dark);
+  --el-color-success: var(--shop-success);
+  --el-color-warning: var(--shop-warning);
+  --el-color-danger: var(--shop-destructive);
+  --el-border-radius-base: var(--shop-radius-md);
+  --el-font-family: var(--shop-font-sans);
+}

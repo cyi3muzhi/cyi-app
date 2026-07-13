@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package api.cin.interface.v1;
+
+option go_package = "cyi-app/api/cin/interface/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.cin.interface.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+// 订单服务
+service Order {
+  // 下单
+  rpc PlaceOrder (PlaceOrderRequest) returns (PlaceOrderReply) {
+    option (google.api.http) = {
+      post: "/order/v1/create"
+      body: "*"
+    };
+  }
+  // 支付订单
+  rpc PayOrder (PayOrderRequest) returns (PayOrderReply) {
+    option (google.api.http) = {
+      post: "/order/v1/pay"
+      body: "*"
+    };
+  }
+  // 购物车结算
+  rpc CartCheckout (CartCheckoutRequest) returns (CartCheckoutReply) {
+    option (google.api.http) = {
+      post: "/order/v1/cart_checkout"
+      body: "*"
+    };
+  }
+  // 订单列表
+  rpc ListOrder (ListOrderRequest) returns (ListOrderReply) {
+    option (google.api.http) = {
+      get: "/order/v1/list"
+    };
+  }
+  // 订单详情
+  rpc GetOrder (GetOrderRequest) returns (GetOrderReply) {
+    option (google.api.http) = {
+      get: "/order/v1/{order_id}"
+    };
+  }
+}
+
+message PlaceOrderRequest {
+  int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 count = 2 [(validate.rules).int32 = {gt: 0}];
+}
+
+message PlaceOrderReply {
+  int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message PayOrderRequest {
+  int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message PayOrderReply {
+  bool success = 1;
+}
+
+message CartCheckoutRequest {
+  repeated CartItem items = 1 [(validate.rules).repeated = {min_items: 1}];
+}
+
+message CartCheckoutReply {
+  int64 order_id = 1;
+}
+
+message CartItem {
+  int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 quantity = 2 [(validate.rules).int32 = {gt: 0}];
+}
+
+message ListOrderRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string status = 3;
+  string keyword = 4;
+}
+
+message ListOrderReply {
+  repeated OrderItem items = 1;
+  int32 total = 2;
+}
+
+message OrderItem {
+  int64 id = 1;
+  string order_no = 2;
+  string created_at = 3;
+  string user_name = 4;
+  int64 amount = 5;
+  string payment = 6;
+  string status = 7;
+  string status_text = 8;
+  repeated OrderProduct products = 9;
+}
+
+message OrderProduct {
+  string name = 1;
+  string spec = 2;
+  int32 qty = 3;
+  int64 price = 4;
+}
+
+message GetOrderRequest {
+  int64 order_id = 1;
+}
+
+message GetOrderReply {
+  OrderItem order = 1;
+}

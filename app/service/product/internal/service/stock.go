@@ -62,6 +62,28 @@ func (s *StockService) DeductStock(ctx context.Context, req *v1.DeductStockReque
 	}, nil
 }
 
+func (s *StockService) ReleaseStock(ctx context.Context, req *v1.ReleaseStockRequest) (*v1.ReleaseStockReply, error) {
+	newVersion, err := s.uc.ReleaseStock(ctx, req.ProductId, req.Count, req.Version)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ReleaseStockReply{
+		Success:    true,
+		NewVersion: newVersion,
+	}, nil
+}
+
+func (s *StockService) AddStock(ctx context.Context, req *v1.AddStockRequest) (*v1.AddStockReply, error) {
+	newVersion, err := s.uc.AddStock(ctx, req.ProductId, req.Count, req.Version)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.AddStockReply{
+		Success:    true,
+		NewVersion: newVersion,
+	}, nil
+}
+
 func (s *StockService) DeleteStock(ctx context.Context, req *v1.DeleteStockRequest) (*v1.DeleteStockReply, error) {
 	return &v1.DeleteStockReply{}, nil
 }

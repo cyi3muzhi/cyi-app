@@ -66,14 +66,14 @@ func (uc *OrderUseCase) Create(ctx context.Context, in *Order) error {
 	}
 
 	// 4. 设置状态并创建订单
-	in.SetStatus(v1.OrderStatus_WaitPay, uc.repo, uc.logger)
+	in.SetStatus(v1.OrderStatus_WaitPay, uc.repo, uc.stockRe, uc.logger)
 	return uc.repo.CreateOrder(ctx, in)
 }
 
 // Update 更新订单
 func (uc *OrderUseCase) Update(ctx context.Context, in *Order) error {
 	if in.statusHandler == nil {
-		in.SetStatus(in.Status, uc.repo, uc.logger)
+		in.SetStatus(in.Status, uc.repo, uc.stockRe, uc.logger)
 	}
 	return uc.repo.UpdateOrder(ctx, in)
 }
@@ -84,7 +84,7 @@ func (uc *OrderUseCase) Get(ctx context.Context, orderID int64) (*Order, error) 
 	if err != nil {
 		return nil, err
 	}
-	order.SetStatus(order.Status, uc.repo, uc.logger)
+	order.SetStatus(order.Status, uc.repo, uc.stockRe, uc.logger)
 	return order, nil
 }
 

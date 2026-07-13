@@ -88,6 +88,49 @@ func (r *stockRepo) DeductStock(ctx context.Context, productID int64, count int3
 	return version + 1, nil
 }
 
+// ReleaseStock 释放预留库存（取消未支付订单时）
+// reserved- , available+ , version++
+// 条件: version 匹配 且 reserved >= count
+func (r *stockRepo) ReleaseStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
+	result, err := curd.Stock.WithContext(ctx).
+		Where(curd.Stock.ProductID.Eq(productID)).
+		Where(curd.Stock.Version.Eq(version)).
+		Where(curd.Stock.Reserved.Gte(count)).
+		UpdateSimple(
+			curd.Stock.Reserved.Add(0-count),
+			curd.Stock.Available.Add(count),
+			curd.Stock.Version.Add(1),
+		)
+	if err != nil {
+		return 0, err
+	}
+	if result.RowsAffected == 0 {
+		return 0, v1.ErrorInsufficientStock("release stock failed: version conflict or insufficient reserved stock")
+	}
+	return version + 1, nil
+}
+
+// AddStock 增加库存（退款或取消已支付订单时）
+// total+ , available+ , version++
+// 条件: version 匹配
+func (r *stockRepo) AddStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
+	result, err := curd.Stock.WithContext(ctx).
+		Where(curd.Stock.ProductID.Eq(productID)).
+		Where(curd.Stock.Version.Eq(version)).
+		UpdateSimple(
+			curd.Stock.Total.Add(count),
+			curd.Stock.Available.Add(count),
+			curd.Stock.Version.Add(1),
+		)
+	if err != nil {
+		return 0, err
+	}
+	if result.RowsAffected == 0 {
+		return 0, v1.ErrorStockVersionConflict("add stock version conflict")
+	}
+	return version + 1, nil
+}
+
 func (r *stockRepo) GetStock(ctx context.Context, productID int64) (*biz.Stock, error) {
 	stock, err := curd.Stock.WithContext(ctx).Where(curd.Stock.ProductID.Eq(productID)).First()
 	if err != nil {

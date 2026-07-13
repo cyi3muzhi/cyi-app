@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+option java_multiple_files = true;
+option java_package = "api.cin.admin.v1";
+
+import "errors/errors.proto";
+
+// 管理后台错误码定义
+enum AdminErrorReason {
+  option (errors.default_code) = 400;
+
+  // 通用 0-99
+  UNAUTHORIZED = 0 [(errors.code) = 401];
+  FORBIDDEN = 1 [(errors.code) = 403];
+  NOT_FOUND = 2 [(errors.code) = 404];
+
+  // 商品模块 100-199
+  PRODUCT_NOT_FOUND = 100 [(errors.code) = 404];
+  PRODUCT_CREATE_FAILED = 101 [(errors.code) = 422];
+  PRODUCT_UPDATE_FAILED = 102 [(errors.code) = 422];
+  PRODUCT_DELETE_FAILED = 103 [(errors.code) = 422];
+
+  // 订单模块 200-299
+  ORDER_NOT_FOUND = 200 [(errors.code) = 404];
+  ORDER_SHIP_FAILED = 201 [(errors.code) = 422];
+  ORDER_CANCEL_FAILED = 202 [(errors.code) = 422];
+
+  // 用户模块 300-399
+  USER_NOT_FOUND_ADMIN = 300 [(errors.code) = 404];
+  USER_CREATE_FAILED = 301 [(errors.code) = 422];
+  USER_UPDATE_FAILED_ADMIN = 302 [(errors.code) = 422];
+  USER_TOGGLE_STATUS_FAILED = 303 [(errors.code) = 422];
+}

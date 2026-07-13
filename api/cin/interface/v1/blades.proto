@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package api.cin.interface.v1;
+
+option go_package = "cyi-app/api/cin/interface/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.cin.interface.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+// AI 智能助手服务
+service Blades {
+  // AI 聊天
+  rpc AiChat (AiChatRequest) returns (AiChatReply) {
+    option (google.api.http) = {
+      post: "/ai/v1/chat"
+      body: "*"
+    };
+  }
+}
+
+message AiChatRequest {
+  string message = 1 [(validate.rules).string = {min_len: 1, max_len: 500}];
+  string session_id = 2;
+}
+
+message AiChatReply {
+  string message = 1;
+}

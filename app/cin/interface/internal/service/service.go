@@ -14,8 +14,16 @@ var ProviderSet = wire.NewSet(
 	NewCinInterface,
 )
 
+// CinInterface 实现了所有前台接口服务
+// 嵌入多个 Unimplemented*Server 以兼容拆分后的 proto service
 type CinInterface struct {
-	v1.UnimplementedCinInterfaceServer
+	v1.UnimplementedAuthServer
+	v1.UnimplementedUserServer
+	v1.UnimplementedProductServer
+	v1.UnimplementedOrderServer
+	v1.UnimplementedCartServer
+	v1.UnimplementedStockServer
+	v1.UnimplementedBladesServer
 	log  *log.Helper
 	uc   *biz.UserUseCase
 	oc   *biz.OrderUseCase

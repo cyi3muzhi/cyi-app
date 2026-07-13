@@ -11,9 +11,15 @@ import (
 	kratosHttp "github.com/go-kratos/kratos/v2/transport/http"
 )
 
-// NewHTTPServer new an HTTP server.
+// NewHTTPServer new an HTTP server. 注册拆分后的多个接口服务
 func NewHTTPServer(s *ts.HttpServer, cinInterface *service.CinInterface, ac *conf.Auth) *kratosHttp.Server {
-	v1.RegisterCinInterfaceHTTPServer(s.HttpServer, cinInterface)
+	v1.RegisterAuthHTTPServer(s.HttpServer, cinInterface)
+	v1.RegisterUserHTTPServer(s.HttpServer, cinInterface)
+	v1.RegisterProductHTTPServer(s.HttpServer, cinInterface)
+	v1.RegisterOrderHTTPServer(s.HttpServer, cinInterface)
+	v1.RegisterCartHTTPServer(s.HttpServer, cinInterface)
+	v1.RegisterStockHTTPServer(s.HttpServer, cinInterface)
+	v1.RegisterBladesHTTPServer(s.HttpServer, cinInterface)
 	registerStreamRoutes(s.HttpServer, cinInterface, ac)
 	return s.HttpServer
 }

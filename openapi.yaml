@@ -6,12 +6,523 @@ info:
     title: ""
     version: 0.0.1
 paths:
+    /admin/v1/dashboard/order_trend:
+        get:
+            tags:
+                - Dashboard
+            description: 获取近14日订单趋势
+            operationId: Dashboard_GetOrderTrend
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetOrderTrendReply'
+    /admin/v1/dashboard/revenue_categories:
+        get:
+            tags:
+                - Dashboard
+            description: 获取营收分类占比
+            operationId: Dashboard_GetRevenueCategories
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetRevenueCategoriesReply'
+    /admin/v1/dashboard/stats:
+        get:
+            tags:
+                - Dashboard
+            description: 获取仪表盘统计数据
+            operationId: Dashboard_GetDashboardStats
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetDashboardStatsReply'
+    /admin/v1/orders:
+        get:
+            tags:
+                - AdminOrder
+            description: 订单列表
+            operationId: AdminOrder_ListOrder
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: status
+                  in: query
+                  schema:
+                    type: string
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+                - name: dateFrom
+                  in: query
+                  schema:
+                    type: string
+                - name: dateTo
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ListOrderReply'
+    /admin/v1/orders/export:
+        get:
+            tags:
+                - AdminOrder
+            description: 导出订单
+            operationId: AdminOrder_ExportOrder
+            parameters:
+                - name: status
+                  in: query
+                  schema:
+                    type: string
+                - name: dateFrom
+                  in: query
+                  schema:
+                    type: string
+                - name: dateTo
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ExportOrderReply'
+    /admin/v1/orders/{orderId}:
+        get:
+            tags:
+                - AdminOrder
+            description: 订单详情
+            operationId: AdminOrder_GetOrder
+            parameters:
+                - name: orderId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetOrderReply'
+    /admin/v1/orders/{orderId}/cancel:
+        post:
+            tags:
+                - AdminOrder
+            description: 取消订单
+            operationId: AdminOrder_CancelOrder
+            parameters:
+                - name: orderId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.CancelOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CancelOrderReply'
+    /admin/v1/orders/{orderId}/ship:
+        post:
+            tags:
+                - AdminOrder
+            description: 发货
+            operationId: AdminOrder_ShipOrder
+            parameters:
+                - name: orderId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.ShipOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ShipOrderReply'
+    /admin/v1/products:
+        get:
+            tags:
+                - AdminProduct
+            description: 商品列表
+            operationId: AdminProduct_ListProduct
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+                - name: category
+                  in: query
+                  schema:
+                    type: string
+                - name: status
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ListProductReply'
+        post:
+            tags:
+                - AdminProduct
+            description: 创建商品
+            operationId: AdminProduct_CreateProduct
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.CreateProductRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CreateProductReply'
+    /admin/v1/products/batch:
+        post:
+            tags:
+                - AdminProduct
+            description: 批量操作（上架/下架/删除）
+            operationId: AdminProduct_BatchOperation
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.BatchOperationRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.BatchOperationReply'
+    /admin/v1/products/{id}:
+        get:
+            tags:
+                - AdminProduct
+            description: 商品详情
+            operationId: AdminProduct_GetProduct
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetProductReply'
+        put:
+            tags:
+                - AdminProduct
+            description: 更新商品
+            operationId: AdminProduct_UpdateProduct
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.UpdateProductRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.UpdateProductReply'
+        delete:
+            tags:
+                - AdminProduct
+            description: 删除商品
+            operationId: AdminProduct_DeleteProduct
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.DeleteProductReply'
+    /admin/v1/settings:
+        get:
+            tags:
+                - Settings
+            description: 获取系统设置
+            operationId: Settings_GetSettings
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetSettingsReply'
+        put:
+            tags:
+                - Settings
+            description: 更新系统设置
+            operationId: Settings_UpdateSettings
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.UpdateSettingsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.UpdateSettingsReply'
+    /admin/v1/settings/change_password:
+        post:
+            tags:
+                - Settings
+            description: 修改密码
+            operationId: Settings_ChangePassword
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.ChangePasswordRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ChangePasswordReply'
+    /admin/v1/users:
+        get:
+            tags:
+                - AdminUser
+            description: 用户列表
+            operationId: AdminUser_ListUser
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+                - name: level
+                  in: query
+                  schema:
+                    type: string
+                - name: status
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ListUserReply'
+        post:
+            tags:
+                - AdminUser
+            description: 创建用户
+            operationId: AdminUser_CreateUser
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.CreateUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CreateUserReply'
+    /admin/v1/users/stats:
+        get:
+            tags:
+                - AdminUser
+            description: 获取用户统计数据
+            operationId: AdminUser_GetUserStats
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetUserStatsReply'
+    /admin/v1/users/{id}:
+        get:
+            tags:
+                - AdminUser
+            description: 用户详情
+            operationId: AdminUser_GetUser
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetUserReply'
+        put:
+            tags:
+                - AdminUser
+            description: 更新用户
+            operationId: AdminUser_UpdateUser
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.UpdateUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.UpdateUserReply'
+        delete:
+            tags:
+                - AdminUser
+            description: 删除用户
+            operationId: AdminUser_DeleteUser
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.DeleteUserReply'
+    /admin/v1/users/{id}/toggle_status:
+        post:
+            tags:
+                - AdminUser
+            description: 冻结/解冻用户
+            operationId: AdminUser_ToggleUserStatus
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.ToggleUserStatusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ToggleUserStatusReply'
     /ai/v1/chat:
         post:
             tags:
-                - CinInterface
+                - Blades
             description: AI 聊天
-            operationId: CinInterface_AiChat
+            operationId: Blades_AiChat
             requestBody:
                 content:
                     application/json:
@@ -44,12 +555,44 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.blades.v1.ChatReply'
+    /cart/v1/add:
+        post:
+            tags:
+                - Cart
+            description: 加入购物车
+            operationId: Cart_AddCartItem
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.AddCartItemRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.AddCartItemReply'
+    /cart/v1/info:
+        get:
+            tags:
+                - Cart
+            description: 获取购物车
+            operationId: Cart_GetCart
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.GetCartReply'
     /order/v1/cart_checkout:
         post:
             tags:
-                - CinInterface
+                - Order
             description: 购物车结算
-            operationId: CinInterface_CartCheckout
+            operationId: Order_CartCheckout
             requestBody:
                 content:
                     application/json:
@@ -66,9 +609,9 @@ paths:
     /order/v1/create:
         post:
             tags:
-                - CinInterface
+                - Order
             description: 下单
-            operationId: CinInterface_PlaceOrder
+            operationId: Order_PlaceOrder
             requestBody:
                 content:
                     application/json:
@@ -82,12 +625,44 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.PlaceOrderReply'
+    /order/v1/list:
+        get:
+            tags:
+                - Order
+            description: 订单列表
+            operationId: Order_ListOrder
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: status
+                  in: query
+                  schema:
+                    type: string
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ListOrderReply'
     /order/v1/pay:
         post:
             tags:
-                - CinInterface
+                - Order
             description: 支付订单
-            operationId: CinInterface_PayOrder
+            operationId: Order_PayOrder
             requestBody:
                 content:
                     application/json:
@@ -101,12 +676,31 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.PayOrderReply'
+    /order/v1/{orderId}:
+        get:
+            tags:
+                - Order
+            description: 订单详情
+            operationId: Order_GetOrder
+            parameters:
+                - name: orderId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.GetOrderReply'
     /product/v1/create:
         post:
             tags:
-                - CinInterface
+                - Product
             description: 创建商品
-            operationId: CinInterface_CreateProduct
+            operationId: Product_CreateProduct
             requestBody:
                 content:
                     application/json:
@@ -120,12 +714,44 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.CreateProductReply'
+    /product/v1/list:
+        get:
+            tags:
+                - Product
+            description: 商品列表
+            operationId: Product_ListProduct
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+                - name: category
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ListProductReply'
     /product/v1/stock/update:
         put:
             tags:
-                - CinInterface
-            description: 设置库存
-            operationId: CinInterface_UpdateStock
+                - Stock
+            description: 更新库存
+            operationId: Stock_UpdateStock
             requestBody:
                 content:
                     application/json:
@@ -142,9 +768,9 @@ paths:
     /product/v1/update:
         put:
             tags:
-                - CinInterface
+                - Product
             description: 更新商品
-            operationId: CinInterface_UpdateProduct
+            operationId: Product_UpdateProduct
             requestBody:
                 content:
                     application/json:
@@ -158,12 +784,31 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.UpdateProductReply'
+    /product/v1/{id}:
+        get:
+            tags:
+                - Product
+            description: 商品详情
+            operationId: Product_GetProduct
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.GetProductReply'
     /user/v1/login:
         post:
             tags:
-                - CinInterface
+                - Auth
             description: 登录
-            operationId: CinInterface_Login
+            operationId: Auth_Login
             requestBody:
                 content:
                     application/json:
@@ -180,9 +825,9 @@ paths:
     /user/v1/my_info:
         get:
             tags:
-                - CinInterface
+                - User
             description: 获取个人信息
-            operationId: CinInterface_GetMyInfo
+            operationId: User_GetMyInfo
             responses:
                 "200":
                     description: OK
@@ -193,9 +838,9 @@ paths:
     /user/v1/register:
         post:
             tags:
-                - CinInterface
+                - Auth
             description: 注册
-            operationId: CinInterface_Register
+            operationId: Auth_Register
             requestBody:
                 content:
                     application/json:
@@ -212,9 +857,9 @@ paths:
     /user/v1/update:
         put:
             tags:
-                - CinInterface
+                - User
             description: 更新用户信息
-            operationId: CinInterface_UpdateUserInfo
+            operationId: User_UpdateUserInfo
             requestBody:
                 content:
                     application/json:
@@ -231,13 +876,12 @@ paths:
     /user/v1/{id}:
         get:
             tags:
-                - CinInterface
+                - User
             description: 获取用户信息
-            operationId: CinInterface_GetUserInfo
+            operationId: User_GetUserInfo
             parameters:
                 - name: id
                   in: path
-                  description: 用户ID
                   required: true
                   schema:
                     type: string
@@ -260,6 +904,421 @@ components:
             properties:
                 message:
                     type: string
+        api.cin.admin.v1.BatchOperationReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                affectedCount:
+                    type: integer
+                    format: int32
+        api.cin.admin.v1.BatchOperationRequest:
+            type: object
+            properties:
+                action:
+                    type: string
+                ids:
+                    type: array
+                    items:
+                        type: string
+        api.cin.admin.v1.CancelOrderReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.CancelOrderRequest:
+            type: object
+            properties:
+                orderId:
+                    type: string
+                reason:
+                    type: string
+        api.cin.admin.v1.ChangePasswordReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.ChangePasswordRequest:
+            type: object
+            properties:
+                oldPassword:
+                    type: string
+                newPassword:
+                    type: string
+                confirmPassword:
+                    type: string
+        api.cin.admin.v1.CreateProductReply:
+            type: object
+            properties:
+                id:
+                    type: string
+        api.cin.admin.v1.CreateProductRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                category:
+                    type: string
+                price:
+                    type: string
+                stock:
+                    type: integer
+                    format: int32
+                description:
+                    type: string
+                image:
+                    type: string
+                sku:
+                    type: string
+        api.cin.admin.v1.CreateUserReply:
+            type: object
+            properties:
+                id:
+                    type: string
+        api.cin.admin.v1.CreateUserRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                phone:
+                    type: string
+                password:
+                    type: string
+        api.cin.admin.v1.DeleteProductReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.DeleteUserReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.ExportOrderReply:
+            type: object
+            properties:
+                downloadUrl:
+                    type: string
+        api.cin.admin.v1.GetDashboardStatsReply:
+            type: object
+            properties:
+                todayOrders:
+                    type: string
+                todayRevenue:
+                    type: string
+                totalUsers:
+                    type: string
+                totalProducts:
+                    type: string
+                ordersGrowth:
+                    type: number
+                    format: double
+                revenueGrowth:
+                    type: number
+                    format: double
+                usersGrowth:
+                    type: number
+                    format: double
+                productsGrowth:
+                    type: number
+                    format: double
+        api.cin.admin.v1.GetOrderReply:
+            type: object
+            properties:
+                order:
+                    $ref: '#/components/schemas/api.cin.admin.v1.OrderItem'
+        api.cin.admin.v1.GetOrderTrendReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.TrendItem'
+        api.cin.admin.v1.GetProductReply:
+            type: object
+            properties:
+                product:
+                    $ref: '#/components/schemas/api.cin.admin.v1.ProductItem'
+        api.cin.admin.v1.GetRevenueCategoriesReply:
+            type: object
+            properties:
+                categories:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.RevenueCategory'
+        api.cin.admin.v1.GetSettingsReply:
+            type: object
+            properties:
+                shopName:
+                    type: string
+                shopDescription:
+                    type: string
+                contactPhone:
+                    type: string
+                contactEmail:
+                    type: string
+                icpRecord:
+                    type: string
+                orderNotification:
+                    type: boolean
+                registerNotification:
+                    type: boolean
+                systemNotification:
+                    type: boolean
+        api.cin.admin.v1.GetUserReply:
+            type: object
+            properties:
+                user:
+                    $ref: '#/components/schemas/api.cin.admin.v1.UserItem'
+        api.cin.admin.v1.GetUserStatsReply:
+            type: object
+            properties:
+                totalUsers:
+                    type: string
+                todayNew:
+                    type: string
+                todayNewGrowth:
+                    type: number
+                    format: double
+                activeUsers:
+                    type: string
+                memberUsers:
+                    type: string
+                memberRatio:
+                    type: number
+                    format: double
+        api.cin.admin.v1.ListOrderReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.OrderItem'
+                total:
+                    type: integer
+                    format: int32
+        api.cin.admin.v1.ListProductReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.ProductItem'
+                total:
+                    type: integer
+                    format: int32
+        api.cin.admin.v1.ListUserReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.UserItem'
+                total:
+                    type: integer
+                    format: int32
+        api.cin.admin.v1.OrderItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                orderNo:
+                    type: string
+                createdAt:
+                    type: string
+                userName:
+                    type: string
+                amount:
+                    type: string
+                payment:
+                    type: string
+                status:
+                    type: string
+                statusText:
+                    type: string
+                products:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.OrderProduct'
+        api.cin.admin.v1.OrderProduct:
+            type: object
+            properties:
+                name:
+                    type: string
+                spec:
+                    type: string
+                qty:
+                    type: integer
+                    format: int32
+                price:
+                    type: string
+        api.cin.admin.v1.ProductItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                category:
+                    type: string
+                price:
+                    type: string
+                stock:
+                    type: integer
+                    format: int32
+                sales:
+                    type: integer
+                    format: int32
+                status:
+                    type: string
+                image:
+                    type: string
+                sku:
+                    type: string
+        api.cin.admin.v1.RevenueCategory:
+            type: object
+            properties:
+                name:
+                    type: string
+                percentage:
+                    type: number
+                    format: double
+                color:
+                    type: string
+        api.cin.admin.v1.ShipOrderReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.ShipOrderRequest:
+            type: object
+            properties:
+                orderId:
+                    type: string
+                logisticsCompany:
+                    type: string
+                logisticsNo:
+                    type: string
+        api.cin.admin.v1.ToggleUserStatusReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                newStatus:
+                    type: string
+        api.cin.admin.v1.ToggleUserStatusRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+        api.cin.admin.v1.TrendItem:
+            type: object
+            properties:
+                date:
+                    type: string
+                value:
+                    type: integer
+                    format: int32
+        api.cin.admin.v1.UpdateProductReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.UpdateProductRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                category:
+                    type: string
+                price:
+                    type: string
+                stock:
+                    type: integer
+                    format: int32
+                description:
+                    type: string
+                image:
+                    type: string
+                sku:
+                    type: string
+                status:
+                    type: string
+        api.cin.admin.v1.UpdateSettingsReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.UpdateSettingsRequest:
+            type: object
+            properties:
+                shopName:
+                    type: string
+                shopDescription:
+                    type: string
+                contactPhone:
+                    type: string
+                contactEmail:
+                    type: string
+                icpRecord:
+                    type: string
+                orderNotification:
+                    type: boolean
+                registerNotification:
+                    type: boolean
+                systemNotification:
+                    type: boolean
+        api.cin.admin.v1.UpdateUserReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.UpdateUserRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                phone:
+                    type: string
+                level:
+                    type: string
+        api.cin.admin.v1.UserItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                phone:
+                    type: string
+                level:
+                    type: string
+                regTime:
+                    type: string
+                amount:
+                    type: string
+                orders:
+                    type: integer
+                    format: int32
+                status:
+                    type: string
+        api.cin.interface.v1.AddCartItemReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.AddCartItemRequest:
+            type: object
+            properties:
+                productId:
+                    type: string
+                quantity:
+                    type: integer
+                    format: int32
         api.cin.interface.v1.AiChatReply:
             type: object
             properties:
@@ -269,6 +1328,8 @@ components:
             type: object
             properties:
                 message:
+                    type: string
+                sessionId:
                     type: string
         api.cin.interface.v1.CartCheckoutReply:
             type: object
@@ -290,43 +1351,85 @@ components:
                 quantity:
                     type: integer
                     format: int32
-            description: 购物车商品项
+        api.cin.interface.v1.CartProductItem:
+            type: object
+            properties:
+                productId:
+                    type: string
+                name:
+                    type: string
+                price:
+                    type: string
+                quantity:
+                    type: integer
+                    format: int32
+                image:
+                    type: string
         api.cin.interface.v1.CreateProductReply:
             type: object
             properties:
                 productId:
                     type: string
-                    description: 商品ID
         api.cin.interface.v1.CreateProductRequest:
             type: object
             properties:
                 name:
                     type: string
-                    description: 商品名称
                 description:
                     type: string
-                    description: 商品描述
                 price:
                     type: string
-                    description: 价格（单位：分）
+        api.cin.interface.v1.GetCartReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.CartProductItem'
         api.cin.interface.v1.GetMyInfoReply:
             type: object
             properties:
                 id:
                     type: string
-                    description: 用户ID
                 username:
                     type: string
-                    description: 用户账号
+        api.cin.interface.v1.GetOrderReply:
+            type: object
+            properties:
+                order:
+                    $ref: '#/components/schemas/api.cin.interface.v1.OrderItem'
+        api.cin.interface.v1.GetProductReply:
+            type: object
+            properties:
+                product:
+                    $ref: '#/components/schemas/api.cin.interface.v1.ProductItem'
         api.cin.interface.v1.GetUserInfoReply:
             type: object
             properties:
                 id:
                     type: string
-                    description: 用户ID
                 name:
                     type: string
-                    description: 姓名
+        api.cin.interface.v1.ListOrderReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.OrderItem'
+                total:
+                    type: integer
+                    format: int32
+        api.cin.interface.v1.ListProductReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.ProductItem'
+                total:
+                    type: integer
+                    format: int32
         api.cin.interface.v1.LoginReply:
             type: object
             properties:
@@ -337,10 +1440,45 @@ components:
             properties:
                 username:
                     type: string
-                    description: 用户名或手机号 可以为空
+                    description: 用户名或手机号
                 password:
                     type: string
-                    description: 'string phone = 2 [(validate.rules).string = {pattern: "^1[3-9]\\d{9}$"}];'
+                    description: 密码
+        api.cin.interface.v1.OrderItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                orderNo:
+                    type: string
+                createdAt:
+                    type: string
+                userName:
+                    type: string
+                amount:
+                    type: string
+                payment:
+                    type: string
+                status:
+                    type: string
+                statusText:
+                    type: string
+                products:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.OrderProduct'
+        api.cin.interface.v1.OrderProduct:
+            type: object
+            properties:
+                name:
+                    type: string
+                spec:
+                    type: string
+                qty:
+                    type: integer
+                    format: int32
+                price:
+                    type: string
         api.cin.interface.v1.PayOrderReply:
             type: object
             properties:
@@ -351,23 +1489,39 @@ components:
             properties:
                 orderId:
                     type: string
-                    description: 订单ID
         api.cin.interface.v1.PlaceOrderReply:
             type: object
             properties:
                 orderId:
                     type: string
-                    description: 订单ID
         api.cin.interface.v1.PlaceOrderRequest:
             type: object
             properties:
                 productId:
                     type: string
-                    description: 商品ID
                 count:
                     type: integer
-                    description: 购买数量
                     format: int32
+        api.cin.interface.v1.ProductItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                price:
+                    type: string
+                stock:
+                    type: integer
+                    format: int32
+                category:
+                    type: string
+                status:
+                    type: string
+                image:
+                    type: string
         api.cin.interface.v1.RegisterReply:
             type: object
             properties:
@@ -378,10 +1532,10 @@ components:
             properties:
                 username:
                     type: string
-                    description: 用户名验证
+                    description: 用户名
                 password:
                     type: string
-                    description: 密码长度验证
+                    description: 密码
         api.cin.interface.v1.UpdateProductReply:
             type: object
             properties:
@@ -392,16 +1546,12 @@ components:
             properties:
                 productId:
                     type: string
-                    description: 商品ID
                 name:
                     type: string
-                    description: 商品名称
                 description:
                     type: string
-                    description: 商品描述
                 price:
                     type: string
-                    description: 价格（单位：分）
         api.cin.interface.v1.UpdateStockReply:
             type: object
             properties:
@@ -412,10 +1562,8 @@ components:
             properties:
                 productId:
                     type: string
-                    description: 商品ID
                 total:
                     type: integer
-                    description: 总库存数量
                     format: int32
         api.cin.interface.v1.UpdateUserInfoReply:
             type: object
@@ -427,13 +1575,33 @@ components:
             properties:
                 id:
                     type: string
-                    description: 用户ID
                 name:
                     type: string
-                    description: 姓名
                 avatar:
                     type: string
-                    description: 头像URL
 tags:
+    - name: AdminOrder
+      description: 管理后台 - 订单管理服务
+    - name: AdminProduct
+      description: 管理后台 - 商品管理服务
+    - name: AdminUser
+      description: 管理后台 - 用户管理服务
+    - name: Auth
+      description: 用户认证服务
     - name: Blades
-    - name: CinInterface
+    - name: Blades
+      description: AI 智能助手服务
+    - name: Cart
+      description: 购物车服务
+    - name: Dashboard
+      description: 仪表盘服务
+    - name: Order
+      description: 订单服务
+    - name: Product
+      description: 商品服务
+    - name: Settings
+      description: 管理后台 - 系统设置服务
+    - name: Stock
+      description: 库存服务
+    - name: User
+      description: 用户信息服务

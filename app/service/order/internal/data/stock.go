@@ -49,3 +49,27 @@ func (r *stockRepo) DeductStock(ctx context.Context, productID int64, count int3
 	}
 	return reply.NewVersion, nil
 }
+
+func (r *stockRepo) ReleaseStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
+	reply, err := r.data.sc.ReleaseStock(ctx, &productRpc.ReleaseStockRequest{
+		ProductId: productID,
+		Count:     count,
+		Version:   version,
+	})
+	if err != nil {
+		return 0, err
+	}
+	return reply.NewVersion, nil
+}
+
+func (r *stockRepo) AddStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
+	reply, err := r.data.sc.AddStock(ctx, &productRpc.AddStockRequest{
+		ProductId: productID,
+		Count:     count,
+		Version:   version,
+	})
+	if err != nil {
+		return 0, err
+	}
+	return reply.NewVersion, nil
+}

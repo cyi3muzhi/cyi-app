@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+option java_multiple_files = true;
+option java_package = "api.cin.admin.v1";
+
+import "google/api/annotations.proto";
+
+// 管理后台 - 系统设置服务
+service Settings {
+  // 获取系统设置
+  rpc GetSettings (GetSettingsRequest) returns (GetSettingsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/settings"
+    };
+  }
+  // 更新系统设置
+  rpc UpdateSettings (UpdateSettingsRequest) returns (UpdateSettingsReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/settings"
+      body: "*"
+    };
+  }
+  // 修改密码
+  rpc ChangePassword (ChangePasswordRequest) returns (ChangePasswordReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/settings/change_password"
+      body: "*"
+    };
+  }
+}
+
+message GetSettingsRequest {}
+
+message GetSettingsReply {
+  string shop_name = 1;
+  string shop_description = 2;
+  string contact_phone = 3;
+  string contact_email = 4;
+  string icp_record = 5;
+  bool order_notification = 6;
+  bool register_notification = 7;
+  bool system_notification = 8;
+}
+
+message UpdateSettingsRequest {
+  string shop_name = 1;
+  string shop_description = 2;
+  string contact_phone = 3;
+  string contact_email = 4;
+  string icp_record = 5;
+  bool order_notification = 6;
+  bool register_notification = 7;
+  bool system_notification = 8;
+}
+
+message UpdateSettingsReply {
+  bool success = 1;
+}
+
+message ChangePasswordRequest {
+  string old_password = 1;
+  string new_password = 2;
+  string confirm_password = 3;
+}
+
+message ChangePasswordReply {
+  bool success = 1;
+}

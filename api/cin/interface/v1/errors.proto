@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package api.cin.interface.v1;
+
+option go_package = "cyi-app/api/cin/interface/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.cin.interface.v1";
+
+import "errors/errors.proto";
+
+// 接口层错误码定义
+enum CinInterfaceErrorReason {
+  option (errors.default_code) = 400;
+
+  // 用户模块 0-99
+  USER_NOT_EXIST = 0 [(errors.code) = 422];
+  USER_NOT_FOUND = 3 [(errors.code) = 422];
+  PASSWORD_ERROR = 4 [(errors.code) = 422];
+  USER_UPDATE_FAILED = 5 [(errors.code) = 422];
+
+  // 订单模块 100-199
+  ORDER_ID_NOT_EXIST = 6 [(errors.code) = 422];
+  ORDER_ALREADY_PAID = 10 [(errors.code) = 422];
+
+  // 商品模块 200-299
+  PRODUCT_NOT_AVAILABLE = 7 [(errors.code) = 422];
+  INSUFFICIENT_STOCK = 8 [(errors.code) = 422];
+  STOCK_OPERATION_FAILED = 9 [(errors.code) = 422];
+}

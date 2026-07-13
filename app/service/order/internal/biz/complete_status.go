@@ -12,11 +12,12 @@ type CompleteStatus struct {
 	statusBase
 }
 
-func NewCompleteStatus(repo OrderRepo, logger log.Logger) *CompleteStatus {
+func NewCompleteStatus(repo OrderRepo, stockRe StockRepo, logger log.Logger) *CompleteStatus {
 	return &CompleteStatus{
 		statusBase: statusBase{
-			repo: repo,
-			log:  log.NewHelper(logger),
+			repo:    repo,
+			stockRe: stockRe,
+			log:     log.NewHelper(logger),
 		},
 	}
 }

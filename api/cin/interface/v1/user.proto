@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package api.cin.interface.v1;
+
+option go_package = "cyi-app/api/cin/interface/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.cin.interface.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+// 用户信息服务
+service User {
+  // 获取个人信息
+  rpc GetMyInfo (google.protobuf.Empty) returns (GetMyInfoReply) {
+    option (google.api.http) = {
+      get: "/user/v1/my_info"
+    };
+  }
+  // 获取用户信息
+  rpc GetUserInfo (GetUserInfoRequest) returns (GetUserInfoReply) {
+    option (google.api.http) = {
+      get: "/user/v1/{id}"
+    };
+  }
+  // 更新用户信息
+  rpc UpdateUserInfo (UpdateUserInfoRequest) returns (UpdateUserInfoReply) {
+    option (google.api.http) = {
+      put: "/user/v1/update"
+      body: "*"
+    };
+  }
+}
+
+message GetUserInfoRequest {
+  int64 id = 1;
+}
+
+message GetUserInfoReply {
+  int64 id = 1;
+  string name = 2;
+}
+
+message GetMyInfoReply {
+  int64 id = 1;
+  string username = 2;
+}
+
+message UpdateUserInfoRequest {
+  int64 id = 1;
+  string name = 2 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
+  string avatar = 3 [(validate.rules).string = {uri: true}];
+}
+
+message UpdateUserInfoReply {
+  bool success = 1;
+}
