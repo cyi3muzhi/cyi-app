@@ -5,6 +5,7 @@ import (
 
 	adminv1 "cyi-app/api/cin/admin/v1"
 	"cyi-app/app/cin/admin/internal/biz"
+	mid "cyi-app/pkg/kratos/server/middleware"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -44,7 +45,15 @@ func (s *AdminService) Login(ctx context.Context, req *adminv1.LoginRequest) (*a
 
 // Logout 管理员登出
 func (s *AdminService) Logout(ctx context.Context, req *adminv1.LogoutRequest) (*adminv1.LogoutReply, error) {
-	if err := s.ac.Logout(ctx, req.Token); err != nil {
+	// 优先从 JWT 上下文取 token，其次从请求体取
+	token, ok := mid.GetTokenFromContext(ctx)
+	if !ok || token == "" {
+		token = req.Token
+	}
+	if token == "" {
+		return nil, adminv1.ErrorUnauthorized("无效的token")
+	}
+	if err := s.ac.Logout(ctx, token); err != nil {
 		s.log.Errorf("登出失败: %v", err)
 		return nil, err
 	}

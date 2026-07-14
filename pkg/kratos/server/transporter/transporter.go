@@ -2,6 +2,7 @@ package transporter
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
-	"github.com/go-kratos/kratos/v2/transport/http"
+	khttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/gorilla/handlers"
 	"github.com/hibiken/asynq"
 	"go.opentelemetry.io/otel/trace"
@@ -44,7 +45,7 @@ type MiddlewareOpt struct {
 }
 
 // http服务器选项
-func NewHttpServerOpt(httpOpt *TransporterOpt, midOpt *MiddlewareOpt) []http.ServerOption {
+func NewHttpServerOpt(httpOpt *TransporterOpt, midOpt *MiddlewareOpt) []khttp.ServerOption {
 	mids := []mid.MiddlewareOption{}
 	if midOpt.TracerProvider == nil {
 		panic("NewHttpServerOpt TracerProvider is nil")
@@ -66,23 +67,24 @@ func NewHttpServerOpt(httpOpt *TransporterOpt, midOpt *MiddlewareOpt) []http.Ser
 	mids = append(mids, mid.WithMetricsMiddleware(midOpt.Meter))
 	middlewares := mid.ServerMiddlewares(midOpt.TracerProvider, mids...)
 
-	opts := []http.ServerOption{
-		http.Middleware(middlewares...),
-		http.ResponseEncoder(http.DefaultResponseEncoder),
-		http.Filter(handlers.CORS(
+	opts := []khttp.ServerOption{
+		khttp.Middleware(middlewares...),
+		khttp.ResponseEncoder(khttp.DefaultResponseEncoder),
+		khttp.RequestDecoder(defaultRequestDecoder),
+		khttp.Filter(handlers.CORS(
 			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
 			handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
 			handlers.AllowedOrigins([]string{"*"}),
 		)),
 	}
 	if httpOpt.Network != "" {
-		opts = append(opts, http.Network(httpOpt.Network))
+		opts = append(opts, khttp.Network(httpOpt.Network))
 	}
 	if httpOpt.Addr != "" {
-		opts = append(opts, http.Address(httpOpt.Addr))
+		opts = append(opts, khttp.Address(httpOpt.Addr))
 	}
 	if httpOpt.Timeout != nil {
-		opts = append(opts, http.Timeout(httpOpt.Timeout.AsDuration()))
+		opts = append(opts, khttp.Timeout(httpOpt.Timeout.AsDuration()))
 	}
 	return opts
 }
@@ -158,7 +160,7 @@ func NewGrpcClientOpt(grpcOpt *TransporterOpt, midOpt *MiddlewareOpt) []grpc.Cli
 }
 
 type HttpServer struct {
-	HttpServer *http.Server
+	HttpServer *khttp.Server
 }
 
 type GrpcServer struct {
@@ -183,6 +185,14 @@ func (s *TaskServer) AsyncHandleFunc(name string, f asynq.HandlerFunc) {
 
 func (s *TaskServer) DelayHandleFunc(name string, f asynq.HandlerFunc) {
 	s.TaskServer.HandleFunc(DelayName(name), f)
+}
+
+// defaultRequestDecoder Kratos HTTP 请求解码器，Content-Type 为空时默认使用 JSON
+func defaultRequestDecoder(r *http.Request, v interface{}) error {
+	if r.Header.Get("Content-Type") == "" {
+		r.Header.Set("Content-Type", "application/json")
+	}
+	return khttp.DefaultRequestDecoder(r, v)
 }
 
 func CronName(name string) string {

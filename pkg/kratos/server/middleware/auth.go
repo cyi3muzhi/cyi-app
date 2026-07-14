@@ -31,6 +31,9 @@ func SetTokenToContext(ctx context.Context, token string) context.Context {
 
 // GetTokenFromContext 从 context 中获取 token
 func GetTokenFromContext(ctx context.Context) (string, bool) {
+	if ctx == nil {
+		return "", false
+	}
 	token, ok := ctx.Value(tokenContextKey{}).(string)
 	return token, ok
 }
@@ -73,15 +76,20 @@ func AuthServiceMiddleware(auth Auth) middleware.Middleware {
 	// JWT 校验 → TokenValidator（黑名单校验） → handler
 	mainMw := func(handler middleware.Handler) middleware.Handler {
 		return jwtMw(func(ctx context.Context, req interface{}) (interface{}, error) {
+			var rawToken string
 			if auth.TokenValidator != nil {
 				tr, ok := transport.FromServerContext(ctx)
 				if !ok {
-					return nil, fmt.Errorf("no transport in context")
-				}
-				authHeader := tr.RequestHeader().Get("Authorization")
-				rawToken := strings.TrimPrefix(authHeader, "Bearer ")
-				if rawToken == authHeader {
-					return nil, fmt.Errorf("invalid authorization header")
+					rawToken, ok = GetTokenFromContext(ctx)
+					if !ok || rawToken == "" {
+						return nil, fmt.Errorf("JWT token is missing")
+					}
+				} else {
+					authHeader := tr.RequestHeader().Get("Authorization")
+					rawToken = strings.TrimPrefix(authHeader, "Bearer ")
+					if rawToken == authHeader {
+						return nil, fmt.Errorf("invalid authorization header")
+					}
 				}
 
 				claims, ok := jwt.FromContext(ctx)
@@ -96,6 +104,7 @@ func AuthServiceMiddleware(auth Auth) middleware.Middleware {
 					return nil, err
 				}
 			}
+			ctx = SetTokenToContext(ctx, rawToken)
 			return handler(ctx, req)
 		})
 	}
