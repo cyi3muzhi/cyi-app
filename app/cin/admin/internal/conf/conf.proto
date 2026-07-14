@@ -37,6 +37,13 @@ message Data {
     string password = 5;
   }
   Redis redis = 2;
+  OSS oss = 3;
+}
+
+message OSS {
+  string endpoint = 1;
+  string access_key = 2;
+  string secret_key = 3;
 }
 
 message Registry {

@@ -22,6 +22,7 @@ const (
 	AdminAuth_Login_FullMethodName        = "/api.cin.admin.v1.AdminAuth/Login"
 	AdminAuth_Logout_FullMethodName       = "/api.cin.admin.v1.AdminAuth/Logout"
 	AdminAuth_GetAdminInfo_FullMethodName = "/api.cin.admin.v1.AdminAuth/GetAdminInfo"
+	AdminAuth_ChangeAvatar_FullMethodName = "/api.cin.admin.v1.AdminAuth/ChangeAvatar"
 )
 
 // AdminAuthClient is the client API for AdminAuth service.
@@ -36,6 +37,8 @@ type AdminAuthClient interface {
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutReply, error)
 	// 获取当前管理员信息
 	GetAdminInfo(ctx context.Context, in *GetAdminInfoRequest, opts ...grpc.CallOption) (*GetAdminInfoReply, error)
+	// 更换头像（上传文件到后端，后端代理传到 OSS）
+	ChangeAvatar(ctx context.Context, in *ChangeAvatarRequest, opts ...grpc.CallOption) (*ChangeAvatarReply, error)
 }
 
 type adminAuthClient struct {
@@ -76,6 +79,16 @@ func (c *adminAuthClient) GetAdminInfo(ctx context.Context, in *GetAdminInfoRequ
 	return out, nil
 }
 
+func (c *adminAuthClient) ChangeAvatar(ctx context.Context, in *ChangeAvatarRequest, opts ...grpc.CallOption) (*ChangeAvatarReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChangeAvatarReply)
+	err := c.cc.Invoke(ctx, AdminAuth_ChangeAvatar_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminAuthServer is the server API for AdminAuth service.
 // All implementations must embed UnimplementedAdminAuthServer
 // for forward compatibility.
@@ -88,6 +101,8 @@ type AdminAuthServer interface {
 	Logout(context.Context, *LogoutRequest) (*LogoutReply, error)
 	// 获取当前管理员信息
 	GetAdminInfo(context.Context, *GetAdminInfoRequest) (*GetAdminInfoReply, error)
+	// 更换头像（上传文件到后端，后端代理传到 OSS）
+	ChangeAvatar(context.Context, *ChangeAvatarRequest) (*ChangeAvatarReply, error)
 	mustEmbedUnimplementedAdminAuthServer()
 }
 
@@ -106,6 +121,9 @@ func (UnimplementedAdminAuthServer) Logout(context.Context, *LogoutRequest) (*Lo
 }
 func (UnimplementedAdminAuthServer) GetAdminInfo(context.Context, *GetAdminInfoRequest) (*GetAdminInfoReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAdminInfo not implemented")
+}
+func (UnimplementedAdminAuthServer) ChangeAvatar(context.Context, *ChangeAvatarRequest) (*ChangeAvatarReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeAvatar not implemented")
 }
 func (UnimplementedAdminAuthServer) mustEmbedUnimplementedAdminAuthServer() {}
 func (UnimplementedAdminAuthServer) testEmbeddedByValue()                   {}
@@ -182,6 +200,24 @@ func _AdminAuth_GetAdminInfo_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminAuth_ChangeAvatar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeAvatarRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminAuthServer).ChangeAvatar(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminAuth_ChangeAvatar_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminAuthServer).ChangeAvatar(ctx, req.(*ChangeAvatarRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminAuth_ServiceDesc is the grpc.ServiceDesc for AdminAuth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -200,6 +236,10 @@ var AdminAuth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAdminInfo",
 			Handler:    _AdminAuth_GetAdminInfo_Handler,
+		},
+		{
+			MethodName: "ChangeAvatar",
+			Handler:    _AdminAuth_ChangeAvatar_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

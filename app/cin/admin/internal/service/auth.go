@@ -6,6 +6,7 @@ import (
 	adminv1 "cyi-app/api/cin/admin/v1"
 	"cyi-app/app/cin/admin/internal/biz"
 	mid "cyi-app/pkg/kratos/server/middleware"
+	"cyi-app/pkg/kratos/service"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -63,15 +64,40 @@ func (s *AdminService) Logout(ctx context.Context, req *adminv1.LogoutRequest) (
 // GetAdminInfo 获取当前管理员信息
 func (s *AdminService) GetAdminInfo(ctx context.Context, req *adminv1.GetAdminInfoRequest) (*adminv1.GetAdminInfoReply, error) {
 	_ = req
+
+	adminID, err := service.GetUserID(ctx)
+	if err != nil {
+		return nil, adminv1.ErrorUnauthorized("未登录")
+	}
+
+	admin, err := s.ac.GetAdminInfo(ctx, adminID)
+	if err != nil {
+		s.log.Errorf("获取管理员信息失败: %v", err)
+		return nil, err
+	}
+
 	return &adminv1.GetAdminInfoReply{
-		Admin: &adminv1.AdminInfo{
-			Id:       1,
-			Name:     "管理员",
-			Username: "admin",
-			Role:     "超级管理员",
-			Email:    "admin@yuexuan.com",
-			Avatar:   "管",
-		},
+		Admin: adminToProto(admin),
+	}, nil
+}
+
+// ChangeAvatar 更换头像（接收 Base64 图片）
+func (s *AdminService) ChangeAvatar(ctx context.Context, req *adminv1.ChangeAvatarRequest) (*adminv1.ChangeAvatarReply, error) {
+	adminID, err := service.GetUserID(ctx)
+	if err != nil {
+		return nil, adminv1.ErrorUnauthorized("未登录")
+	}
+	s.log.Infof("更换头像: adminID=%d", adminID)
+
+	avatarURL, err := s.ac.UpdateAvatar(ctx, adminID, req.AvatarBase64)
+	if err != nil {
+		s.log.Errorf("更换头像失败: %v", err)
+		return nil, err
+	}
+
+	return &adminv1.ChangeAvatarReply{
+		Success:   true,
+		AvatarUrl: avatarURL,
 	}, nil
 }
 

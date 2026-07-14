@@ -6,6 +6,25 @@ info:
     title: ""
     version: 0.0.1
 paths:
+    /admin/v1/auth/avatar:
+        post:
+            tags:
+                - AdminAuth
+            description: 更换头像（上传文件到后端，后端代理传到 OSS）
+            operationId: AdminAuth_ChangeAvatar
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.ChangeAvatarRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ChangeAvatarReply'
     /admin/v1/auth/info:
         get:
             tags:
@@ -1000,6 +1019,20 @@ components:
                     type: string
                 reason:
                     type: string
+        api.cin.admin.v1.ChangeAvatarReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                avatarUrl:
+                    type: string
+                    description: 头像 URL
+        api.cin.admin.v1.ChangeAvatarRequest:
+            type: object
+            properties:
+                avatarBase64:
+                    type: string
+                    description: 头像图片 Base64 编码
         api.cin.admin.v1.ChangePasswordReply:
             type: object
             properties:

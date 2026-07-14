@@ -14,7 +14,8 @@ import (
 
 // RustFSClient RustFS客户端结构体
 type RustFSClient struct {
-	client *rustfs.Client
+	client   *rustfs.Client
+	endpoint string
 }
 
 // Config RustFS配置结构体
@@ -41,8 +42,14 @@ func NewRustFSClient(cfg *Config) (*RustFSClient, error) {
 	}
 
 	return &RustFSClient{
-		client: client,
+		client:   client,
+		endpoint: cfg.Endpoint,
 	}, nil
+}
+
+// GetEndpoint 获取 OSS 端点地址
+func (r *RustFSClient) GetEndpoint() string {
+	return r.endpoint
 }
 
 func (r *RustFSClient) CreateBucket(ctx context.Context, bucketName string) error {

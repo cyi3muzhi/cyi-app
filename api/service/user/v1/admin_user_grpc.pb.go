@@ -27,6 +27,7 @@ const (
 	AdminUser_ToggleAdminUserStatus_FullMethodName = "/api.service.user.v1.AdminUser/ToggleAdminUserStatus"
 	AdminUser_Logout_FullMethodName                = "/api.service.user.v1.AdminUser/Logout"
 	AdminUser_ValidateToken_FullMethodName         = "/api.service.user.v1.AdminUser/ValidateToken"
+	AdminUser_UpdateAdminAvatar_FullMethodName     = "/api.service.user.v1.AdminUser/UpdateAdminAvatar"
 )
 
 // AdminUserClient is the client API for AdminUser service.
@@ -51,6 +52,8 @@ type AdminUserClient interface {
 	Logout(ctx context.Context, in *AdminLogoutRequest, opts ...grpc.CallOption) (*AdminLogoutReply, error)
 	// 验证 token 是否有效（未被新登录覆盖）
 	ValidateToken(ctx context.Context, in *AdminValidateTokenRequest, opts ...grpc.CallOption) (*AdminValidateTokenReply, error)
+	// 更新管理员头像
+	UpdateAdminAvatar(ctx context.Context, in *UpdateAdminAvatarRequest, opts ...grpc.CallOption) (*UpdateAdminAvatarReply, error)
 }
 
 type adminUserClient struct {
@@ -141,6 +144,16 @@ func (c *adminUserClient) ValidateToken(ctx context.Context, in *AdminValidateTo
 	return out, nil
 }
 
+func (c *adminUserClient) UpdateAdminAvatar(ctx context.Context, in *UpdateAdminAvatarRequest, opts ...grpc.CallOption) (*UpdateAdminAvatarReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateAdminAvatarReply)
+	err := c.cc.Invoke(ctx, AdminUser_UpdateAdminAvatar_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminUserServer is the server API for AdminUser service.
 // All implementations must embed UnimplementedAdminUserServer
 // for forward compatibility.
@@ -163,6 +176,8 @@ type AdminUserServer interface {
 	Logout(context.Context, *AdminLogoutRequest) (*AdminLogoutReply, error)
 	// 验证 token 是否有效（未被新登录覆盖）
 	ValidateToken(context.Context, *AdminValidateTokenRequest) (*AdminValidateTokenReply, error)
+	// 更新管理员头像
+	UpdateAdminAvatar(context.Context, *UpdateAdminAvatarRequest) (*UpdateAdminAvatarReply, error)
 	mustEmbedUnimplementedAdminUserServer()
 }
 
@@ -196,6 +211,9 @@ func (UnimplementedAdminUserServer) Logout(context.Context, *AdminLogoutRequest)
 }
 func (UnimplementedAdminUserServer) ValidateToken(context.Context, *AdminValidateTokenRequest) (*AdminValidateTokenReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateToken not implemented")
+}
+func (UnimplementedAdminUserServer) UpdateAdminAvatar(context.Context, *UpdateAdminAvatarRequest) (*UpdateAdminAvatarReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateAdminAvatar not implemented")
 }
 func (UnimplementedAdminUserServer) mustEmbedUnimplementedAdminUserServer() {}
 func (UnimplementedAdminUserServer) testEmbeddedByValue()                   {}
@@ -362,6 +380,24 @@ func _AdminUser_ValidateToken_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminUser_UpdateAdminAvatar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAdminAvatarRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminUserServer).UpdateAdminAvatar(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminUser_UpdateAdminAvatar_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminUserServer).UpdateAdminAvatar(ctx, req.(*UpdateAdminAvatarRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminUser_ServiceDesc is the grpc.ServiceDesc for AdminUser service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -400,6 +436,10 @@ var AdminUser_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ValidateToken",
 			Handler:    _AdminUser_ValidateToken_Handler,
+		},
+		{
+			MethodName: "UpdateAdminAvatar",
+			Handler:    _AdminUser_UpdateAdminAvatar_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

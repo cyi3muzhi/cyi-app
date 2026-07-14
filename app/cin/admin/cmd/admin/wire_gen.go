@@ -31,7 +31,12 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	discovery := server.NewDiscovery(registry)
 	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	adminUserClient := data.NewAdminUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
-	dataData, cleanup, err := data.NewData(productClient, adminUserClient, logger)
+	rustFSClient, err := data.NewOssClient(confData)
+	if err != nil {
+		return nil, nil, err
+	}
+	client := data.NewRedisClient(confData)
+	dataData, cleanup, err := data.NewData(productClient, adminUserClient, rustFSClient, client, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -40,10 +45,11 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	productRepo := data.NewProductRepo(dataData, logger)
 	productUseCase := biz.NewProductUseCase(productRepo, logger)
 	authRepo := data.NewAuthRepo(dataData, logger)
-	authUseCase := biz.NewAuthUseCase(authRepo, logger)
+	string2 := biz.ProvideApiKey(auth)
+	authUseCase := biz.NewAuthUseCase(authRepo, logger, string2)
 	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, logger)
 	server2 := server.NewGRPCServer(grpcServer, adminService)
-	tokenValidator := data.NewTokenValidator(adminUserClient)
+	tokenValidator := data.NewTokenValidator(client)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth, tokenValidator)
 	server3 := server.NewHTTPServer(httpServer, adminService)
 	registrar := server.NewRegistrar(registry)

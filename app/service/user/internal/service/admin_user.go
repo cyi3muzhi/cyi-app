@@ -126,6 +126,15 @@ func (s *AdminUserService) ToggleAdminUserStatus(ctx context.Context, req *v1.To
 	return &v1.ToggleAdminUserStatusReply{Success: true, NewStatus: newStatus}, nil
 }
 
+// UpdateAdminAvatar 更新管理员头像
+func (s *AdminUserService) UpdateAdminAvatar(ctx context.Context, req *v1.UpdateAdminAvatarRequest) (*v1.UpdateAdminAvatarReply, error) {
+	if err := s.uc.UpdateAvatar(ctx, req.AdminId, req.AvatarUrl); err != nil {
+		s.log.Errorf("更新头像失败: %v", err)
+		return nil, err
+	}
+	return &v1.UpdateAdminAvatarReply{Success: true}, nil
+}
+
 // adminToProto biz -> proto 转换
 func adminToProto(admin *biz.AdminUser) *v1.AdminUserInfo {
 	if admin == nil {
@@ -142,6 +151,7 @@ func adminToProto(admin *biz.AdminUser) *v1.AdminUserInfo {
 		Name:      admin.Name,
 		Role:      admin.Role,
 		Email:     admin.Email,
+		Avatar:    admin.Avatar,
 		Status:    admin.Status,
 		LastLogin: lastLogin,
 		CreatedAt: createdAt,

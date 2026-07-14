@@ -718,9 +718,10 @@ type AdminUserInfo struct {
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
 	Email         string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
-	Status        int32                  `protobuf:"varint,6,opt,name=status,proto3" json:"status,omitempty"`
-	LastLogin     string                 `protobuf:"bytes,7,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Avatar        string                 `protobuf:"bytes,6,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	Status        int32                  `protobuf:"varint,7,opt,name=status,proto3" json:"status,omitempty"`
+	LastLogin     string                 `protobuf:"bytes,8,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -786,6 +787,13 @@ func (x *AdminUserInfo) GetRole() string {
 func (x *AdminUserInfo) GetEmail() string {
 	if x != nil {
 		return x.Email
+	}
+	return ""
+}
+
+func (x *AdminUserInfo) GetAvatar() string {
+	if x != nil {
+		return x.Avatar
 	}
 	return ""
 }
@@ -1004,6 +1012,104 @@ func (x *AdminValidateTokenReply) GetUsername() string {
 	return ""
 }
 
+type UpdateAdminAvatarRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 管理员ID
+	AdminId int64 `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"`
+	// 头像URL
+	AvatarUrl     string `protobuf:"bytes,2,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateAdminAvatarRequest) Reset() {
+	*x = UpdateAdminAvatarRequest{}
+	mi := &file_api_service_user_v1_admin_user_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAdminAvatarRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAdminAvatarRequest) ProtoMessage() {}
+
+func (x *UpdateAdminAvatarRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_admin_user_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAdminAvatarRequest.ProtoReflect.Descriptor instead.
+func (*UpdateAdminAvatarRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_admin_user_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *UpdateAdminAvatarRequest) GetAdminId() int64 {
+	if x != nil {
+		return x.AdminId
+	}
+	return 0
+}
+
+func (x *UpdateAdminAvatarRequest) GetAvatarUrl() string {
+	if x != nil {
+		return x.AvatarUrl
+	}
+	return ""
+}
+
+type UpdateAdminAvatarReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateAdminAvatarReply) Reset() {
+	*x = UpdateAdminAvatarReply{}
+	mi := &file_api_service_user_v1_admin_user_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAdminAvatarReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAdminAvatarReply) ProtoMessage() {}
+
+func (x *UpdateAdminAvatarReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_admin_user_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAdminAvatarReply.ProtoReflect.Descriptor instead.
+func (*UpdateAdminAvatarReply) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_admin_user_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *UpdateAdminAvatarReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_api_service_user_v1_admin_user_proto protoreflect.FileDescriptor
 
 const file_api_service_user_v1_admin_user_proto_rawDesc = "" +
@@ -1051,18 +1157,19 @@ const file_api_service_user_v1_admin_user_proto_rawDesc = "" +
 	"\x1aToggleAdminUserStatusReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1d\n" +
 	"\n" +
-	"new_status\x18\x02 \x01(\x05R\tnewStatus\"\xcf\x01\n" +
+	"new_status\x18\x02 \x01(\x05R\tnewStatus\"\xe7\x01\n" +
 	"\rAdminUserInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
 	"\x04role\x18\x04 \x01(\tR\x04role\x12\x14\n" +
 	"\x05email\x18\x05 \x01(\tR\x05email\x12\x16\n" +
-	"\x06status\x18\x06 \x01(\x05R\x06status\x12\x1d\n" +
+	"\x06avatar\x18\x06 \x01(\tR\x06avatar\x12\x16\n" +
+	"\x06status\x18\a \x01(\x05R\x06status\x12\x1d\n" +
 	"\n" +
-	"last_login\x18\a \x01(\tR\tlastLogin\x12\x1d\n" +
+	"last_login\x18\b \x01(\tR\tlastLogin\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\b \x01(\tR\tcreatedAt\"*\n" +
+	"created_at\x18\t \x01(\tR\tcreatedAt\"*\n" +
 	"\x12AdminLogoutRequest\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\",\n" +
 	"\x10AdminLogoutReply\x12\x18\n" +
@@ -1072,7 +1179,14 @@ const file_api_service_user_v1_admin_user_proto_rawDesc = "" +
 	"\x17AdminValidateTokenReply\x12\x14\n" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x19\n" +
 	"\badmin_id\x18\x02 \x01(\x03R\aadminId\x12\x1a\n" +
-	"\busername\x18\x03 \x01(\tR\busername2\xc5\x06\n" +
+	"\busername\x18\x03 \x01(\tR\busername\"i\n" +
+	"\x18UpdateAdminAvatarRequest\x12\"\n" +
+	"\badmin_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aadminId\x12)\n" +
+	"\n" +
+	"avatar_url\x18\x02 \x01(\tB\n" +
+	"\xfaB\ar\x05\x10\x01\x18\x80\bR\tavatarUrl\"2\n" +
+	"\x16UpdateAdminAvatarReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xb6\a\n" +
 	"\tAdminUser\x12U\n" +
 	"\x05Login\x12&.api.service.user.v1.AdminLoginRequest\x1a$.api.service.user.v1.AdminLoginReply\x12i\n" +
 	"\x0fCreateAdminUser\x12+.api.service.user.v1.CreateAdminUserRequest\x1a).api.service.user.v1.CreateAdminUserReply\x12i\n" +
@@ -1081,7 +1195,8 @@ const file_api_service_user_v1_admin_user_proto_rawDesc = "" +
 	"\rListAdminUser\x12).api.service.user.v1.ListAdminUserRequest\x1a'.api.service.user.v1.ListAdminUserReply\x12{\n" +
 	"\x15ToggleAdminUserStatus\x121.api.service.user.v1.ToggleAdminUserStatusRequest\x1a/.api.service.user.v1.ToggleAdminUserStatusReply\x12X\n" +
 	"\x06Logout\x12'.api.service.user.v1.AdminLogoutRequest\x1a%.api.service.user.v1.AdminLogoutReply\x12m\n" +
-	"\rValidateToken\x12..api.service.user.v1.AdminValidateTokenRequest\x1a,.api.service.user.v1.AdminValidateTokenReplyB7\n" +
+	"\rValidateToken\x12..api.service.user.v1.AdminValidateTokenRequest\x1a,.api.service.user.v1.AdminValidateTokenReply\x12o\n" +
+	"\x11UpdateAdminAvatar\x12-.api.service.user.v1.UpdateAdminAvatarRequest\x1a+.api.service.user.v1.UpdateAdminAvatarReplyB7\n" +
 	"\x13api.service.user.v1P\x01Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
 
 var (
@@ -1096,7 +1211,7 @@ func file_api_service_user_v1_admin_user_proto_rawDescGZIP() []byte {
 	return file_api_service_user_v1_admin_user_proto_rawDescData
 }
 
-var file_api_service_user_v1_admin_user_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_api_service_user_v1_admin_user_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_api_service_user_v1_admin_user_proto_goTypes = []any{
 	(*AdminLoginRequest)(nil),            // 0: api.service.user.v1.AdminLoginRequest
 	(*AdminLoginReply)(nil),              // 1: api.service.user.v1.AdminLoginReply
@@ -1115,6 +1230,8 @@ var file_api_service_user_v1_admin_user_proto_goTypes = []any{
 	(*AdminLogoutReply)(nil),             // 14: api.service.user.v1.AdminLogoutReply
 	(*AdminValidateTokenRequest)(nil),    // 15: api.service.user.v1.AdminValidateTokenRequest
 	(*AdminValidateTokenReply)(nil),      // 16: api.service.user.v1.AdminValidateTokenReply
+	(*UpdateAdminAvatarRequest)(nil),     // 17: api.service.user.v1.UpdateAdminAvatarRequest
+	(*UpdateAdminAvatarReply)(nil),       // 18: api.service.user.v1.UpdateAdminAvatarReply
 }
 var file_api_service_user_v1_admin_user_proto_depIdxs = []int32{
 	12, // 0: api.service.user.v1.GetAdminUserReply.admin:type_name -> api.service.user.v1.AdminUserInfo
@@ -1127,16 +1244,18 @@ var file_api_service_user_v1_admin_user_proto_depIdxs = []int32{
 	10, // 7: api.service.user.v1.AdminUser.ToggleAdminUserStatus:input_type -> api.service.user.v1.ToggleAdminUserStatusRequest
 	13, // 8: api.service.user.v1.AdminUser.Logout:input_type -> api.service.user.v1.AdminLogoutRequest
 	15, // 9: api.service.user.v1.AdminUser.ValidateToken:input_type -> api.service.user.v1.AdminValidateTokenRequest
-	1,  // 10: api.service.user.v1.AdminUser.Login:output_type -> api.service.user.v1.AdminLoginReply
-	3,  // 11: api.service.user.v1.AdminUser.CreateAdminUser:output_type -> api.service.user.v1.CreateAdminUserReply
-	5,  // 12: api.service.user.v1.AdminUser.UpdateAdminUser:output_type -> api.service.user.v1.UpdateAdminUserReply
-	7,  // 13: api.service.user.v1.AdminUser.GetAdminUser:output_type -> api.service.user.v1.GetAdminUserReply
-	9,  // 14: api.service.user.v1.AdminUser.ListAdminUser:output_type -> api.service.user.v1.ListAdminUserReply
-	11, // 15: api.service.user.v1.AdminUser.ToggleAdminUserStatus:output_type -> api.service.user.v1.ToggleAdminUserStatusReply
-	14, // 16: api.service.user.v1.AdminUser.Logout:output_type -> api.service.user.v1.AdminLogoutReply
-	16, // 17: api.service.user.v1.AdminUser.ValidateToken:output_type -> api.service.user.v1.AdminValidateTokenReply
-	10, // [10:18] is the sub-list for method output_type
-	2,  // [2:10] is the sub-list for method input_type
+	17, // 10: api.service.user.v1.AdminUser.UpdateAdminAvatar:input_type -> api.service.user.v1.UpdateAdminAvatarRequest
+	1,  // 11: api.service.user.v1.AdminUser.Login:output_type -> api.service.user.v1.AdminLoginReply
+	3,  // 12: api.service.user.v1.AdminUser.CreateAdminUser:output_type -> api.service.user.v1.CreateAdminUserReply
+	5,  // 13: api.service.user.v1.AdminUser.UpdateAdminUser:output_type -> api.service.user.v1.UpdateAdminUserReply
+	7,  // 14: api.service.user.v1.AdminUser.GetAdminUser:output_type -> api.service.user.v1.GetAdminUserReply
+	9,  // 15: api.service.user.v1.AdminUser.ListAdminUser:output_type -> api.service.user.v1.ListAdminUserReply
+	11, // 16: api.service.user.v1.AdminUser.ToggleAdminUserStatus:output_type -> api.service.user.v1.ToggleAdminUserStatusReply
+	14, // 17: api.service.user.v1.AdminUser.Logout:output_type -> api.service.user.v1.AdminLogoutReply
+	16, // 18: api.service.user.v1.AdminUser.ValidateToken:output_type -> api.service.user.v1.AdminValidateTokenReply
+	18, // 19: api.service.user.v1.AdminUser.UpdateAdminAvatar:output_type -> api.service.user.v1.UpdateAdminAvatarReply
+	11, // [11:20] is the sub-list for method output_type
+	2,  // [2:11] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name
 	2,  // [2:2] is the sub-list for extension extendee
 	0,  // [0:2] is the sub-list for field type_name
@@ -1153,7 +1272,7 @@ func file_api_service_user_v1_admin_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_service_user_v1_admin_user_proto_rawDesc), len(file_api_service_user_v1_admin_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   17,
+			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

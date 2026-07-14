@@ -19,11 +19,14 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationAdminAuthChangeAvatar = "/api.cin.admin.v1.AdminAuth/ChangeAvatar"
 const OperationAdminAuthGetAdminInfo = "/api.cin.admin.v1.AdminAuth/GetAdminInfo"
 const OperationAdminAuthLogin = "/api.cin.admin.v1.AdminAuth/Login"
 const OperationAdminAuthLogout = "/api.cin.admin.v1.AdminAuth/Logout"
 
 type AdminAuthHTTPServer interface {
+	// ChangeAvatar 更换头像（上传文件到后端，后端代理传到 OSS）
+	ChangeAvatar(context.Context, *ChangeAvatarRequest) (*ChangeAvatarReply, error)
 	// GetAdminInfo 获取当前管理员信息
 	GetAdminInfo(context.Context, *GetAdminInfoRequest) (*GetAdminInfoReply, error)
 	// Login 管理员登录
@@ -37,6 +40,7 @@ func RegisterAdminAuthHTTPServer(s *http.Server, srv AdminAuthHTTPServer) {
 	r.POST("/admin/v1/auth/login", _AdminAuth_Login0_HTTP_Handler(srv))
 	r.POST("/admin/v1/auth/logout", _AdminAuth_Logout0_HTTP_Handler(srv))
 	r.GET("/admin/v1/auth/info", _AdminAuth_GetAdminInfo0_HTTP_Handler(srv))
+	r.POST("/admin/v1/auth/avatar", _AdminAuth_ChangeAvatar0_HTTP_Handler(srv))
 }
 
 func _AdminAuth_Login0_HTTP_Handler(srv AdminAuthHTTPServer) func(ctx http.Context) error {
@@ -102,7 +106,31 @@ func _AdminAuth_GetAdminInfo0_HTTP_Handler(srv AdminAuthHTTPServer) func(ctx htt
 	}
 }
 
+func _AdminAuth_ChangeAvatar0_HTTP_Handler(srv AdminAuthHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ChangeAvatarRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminAuthChangeAvatar)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ChangeAvatar(ctx, req.(*ChangeAvatarRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ChangeAvatarReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type AdminAuthHTTPClient interface {
+	// ChangeAvatar 更换头像（上传文件到后端，后端代理传到 OSS）
+	ChangeAvatar(ctx context.Context, req *ChangeAvatarRequest, opts ...http.CallOption) (rsp *ChangeAvatarReply, err error)
 	// GetAdminInfo 获取当前管理员信息
 	GetAdminInfo(ctx context.Context, req *GetAdminInfoRequest, opts ...http.CallOption) (rsp *GetAdminInfoReply, err error)
 	// Login 管理员登录
@@ -117,6 +145,20 @@ type AdminAuthHTTPClientImpl struct {
 
 func NewAdminAuthHTTPClient(client *http.Client) AdminAuthHTTPClient {
 	return &AdminAuthHTTPClientImpl{client}
+}
+
+// ChangeAvatar 更换头像（上传文件到后端，后端代理传到 OSS）
+func (c *AdminAuthHTTPClientImpl) ChangeAvatar(ctx context.Context, in *ChangeAvatarRequest, opts ...http.CallOption) (*ChangeAvatarReply, error) {
+	var out ChangeAvatarReply
+	pattern := "/admin/v1/auth/avatar"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminAuthChangeAvatar))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // GetAdminInfo 获取当前管理员信息

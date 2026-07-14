@@ -184,6 +184,11 @@ func (r *adminUserRepo) ValidateToken(ctx context.Context, token string) (bool, 
 	return true, adminID, "", nil
 }
 
+// UpdateAvatar 更新管理员头像
+func (r *adminUserRepo) UpdateAvatar(ctx context.Context, adminID int64, avatarURL string) error {
+	return r.data.db.Model(&models.AdminUser{}).Where("id = ?", adminID).Update("avatar", avatarURL).Error
+}
+
 // parseJWTClaims 从 JWT token 中提取 adminID 和 jti
 func parseJWTClaims(tokenString string) (int64, string, error) {
 	token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
@@ -224,6 +229,7 @@ func modelToBiz(m *models.AdminUser) *biz.AdminUser {
 		Name:      m.Name,
 		Role:      m.Role,
 		Email:     m.Email,
+		Avatar:    m.Avatar,
 		Status:    m.Status,
 		LastLogin: m.LastLogin,
 		CreatedAt: time.Unix(m.CreateTime, 0),

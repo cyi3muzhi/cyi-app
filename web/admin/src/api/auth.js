@@ -29,3 +29,12 @@ export function logout() {
 export function getAdminInfo() {
   return request.get('/admin/v1/auth/info')
 }
+
+/**
+ * 更换头像（上传 Base64 图片）
+ * @param {string} avatarBase64 - Base64 编码的图片数据
+ * @returns {Promise<{success: boolean, avatar_url: string}>}
+ */
+export function changeAvatar(avatarBase64) {
+  return request.post('/admin/v1/auth/avatar', { avatar_base64: avatarBase64 })
+}

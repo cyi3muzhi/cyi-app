@@ -19,7 +19,7 @@
         <div class="avatar-section">
           <div class="avatar-circle" @click="handleChangeAvatar">
             <img v-if="avatarUrl" :src="avatarUrl" class="avatar-image" />
-            <span v-else class="avatar-text">{{ basicForm.realName.charAt(0) }}</span>
+            <span v-else class="avatar-text">{{ getDefaultAvatarText() }}</span>
           </div>
           <el-button class="avatar-btn" size="small" plain @click="handleChangeAvatar">
             更换头像
@@ -235,12 +235,15 @@
  * 个人信息页面组件
  * 展示用户概览、基本资料编辑、安全设置和角色权限管理
  */
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Message, Iphone, Clock, Timer,
   EditPen, Lock, UserFilled
 } from '@element-plus/icons-vue'
+import { useAppStore } from '../../store/app'
+import { getAdminInfo, changeAvatar } from '../../api/auth'
+import request from '../../api/index'
 
 /** 基本信息表单引用 */
 const basicFormRef = ref(null)
@@ -248,18 +251,54 @@ const basicFormRef = ref(null)
 /** 头像文件输入引用 */
 const avatarInputRef = ref(null)
 
+/** 应用状态 */
+const store = useAppStore()
+
 /** 头像 URL */
 const avatarUrl = ref('')
 
 /** 基本信息表单数据 */
 const basicForm = reactive({
-  realName: '张明',
-  phone: '138****8888',
-  email: 'zhangming@yuexuan.com',
-  department: '技术研发部',
-  position: '技术总监',
-  bio: '全栈工程师，专注于电商平台架构设计与团队管理。拥有十余年互联网行业经验，擅长高并发系统设计与微服务架构。'
+  realName: '',
+  phone: '',
+  email: '',
+  department: '',
+  position: '',
+  bio: ''
 })
+
+/**
+ * 页面加载时获取管理员信息
+ */
+async function loadAdminInfo() {
+  try {
+    const res = await getAdminInfo()
+    if (res.admin) {
+      basicForm.realName = res.admin.name || ''
+      basicForm.email = res.admin.email || ''
+      basicForm.phone = res.admin.phone || ''
+      basicForm.bio = res.admin.bio || ''
+      avatarUrl.value = res.admin.avatar || ''
+    }
+  } catch (error) {
+    console.error('获取管理员信息失败:', error)
+  }
+}
+
+onMounted(() => {
+  loadAdminInfo()
+})
+
+/**
+ * 获取默认头像文字（名字的最后一个字）
+ */
+function getDefaultAvatarText() {
+  const name = basicForm.realName || store.adminInfo?.name || ''
+  if (name) {
+    return name.slice(-1)
+  }
+  return '管'
+}
 
 /** 基本信息验证规则 */
 const basicRules = {
@@ -302,7 +341,7 @@ function handleChangeAvatar() {
  * 处理头像文件选择
  * @param {Event} event 文件选择事件
  */
-function handleAvatarChange(event) {
+async function handleAvatarChange(event) {
   const file = event.target.files?.[0]
   if (!file) return
 
@@ -316,12 +355,27 @@ function handleAvatarChange(event) {
     return
   }
 
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    avatarUrl.value = e.target.result
-    ElMessage.success('头像已更新')
+  try {
+    ElMessage.info('正在上传头像...')
+
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const base64Data = e.target.result.split(',')[1]
+
+      const avatarResponse = await changeAvatar(base64Data)
+
+      if (avatarResponse.success) {
+        avatarUrl.value = avatarResponse.avatar_url
+        ElMessage.success('头像上传成功')
+      } else {
+        ElMessage.error('头像保存失败')
+      }
+    }
+    reader.readAsDataURL(file)
+  } catch (error) {
+    console.error('头像上传失败:', error)
+    ElMessage.error('头像上传失败，请重试')
   }
-  reader.readAsDataURL(file)
 
   event.target.value = ''
 }

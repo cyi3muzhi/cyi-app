@@ -10,6 +10,7 @@ type AdminUser struct {
 	Name       string `gorm:"column:name;size:64"`
 	Role       string `gorm:"column:role;size:32"`
 	Email      string `gorm:"column:email;size:128"`
+	Avatar     string `gorm:"column:avatar;size:512"`
 	Status     int32  `gorm:"column:status;default:1"`
 	LastLogin  int64  `gorm:"column:last_login;default:0"`
 }

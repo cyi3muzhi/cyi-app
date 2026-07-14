@@ -21,6 +21,7 @@ type AdminUser struct {
 	Name      string
 	Role      string
 	Email     string
+	Avatar    string
 	Status    int32 // 1=正常 2=冻结
 	LastLogin int64
 	CreatedAt time.Time
@@ -39,6 +40,7 @@ type AdminUserRepo interface {
 	SaveToken(ctx context.Context, token string, adminID int64) error
 	RemoveToken(ctx context.Context, token string) error
 	ValidateToken(ctx context.Context, token string) (bool, int64, string, error)
+	UpdateAvatar(ctx context.Context, adminID int64, avatarURL string) error
 }
 
 // AdminUserUseCase 管理员业务逻辑
@@ -146,6 +148,11 @@ func (uc *AdminUserUseCase) List(ctx context.Context, page, pageSize int32, keyw
 // ToggleStatus 切换状态
 func (uc *AdminUserUseCase) ToggleStatus(ctx context.Context, id int64) (int32, error) {
 	return uc.repo.ToggleStatus(ctx, id)
+}
+
+// UpdateAvatar 更新管理员头像
+func (uc *AdminUserUseCase) UpdateAvatar(ctx context.Context, adminID int64, avatarURL string) error {
+	return uc.repo.UpdateAvatar(ctx, adminID, avatarURL)
 }
 
 // 确保 import 不被移除

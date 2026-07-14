@@ -35,6 +35,7 @@ func newAdminUser(db *gorm.DB) adminUser {
 	_adminUser.Name = field.NewString(tableName, "name")
 	_adminUser.Role = field.NewString(tableName, "role")
 	_adminUser.Email = field.NewString(tableName, "email")
+	_adminUser.Avatar = field.NewString(tableName, "avatar")
 	_adminUser.Status = field.NewInt32(tableName, "status")
 	_adminUser.LastLogin = field.NewInt64(tableName, "last_login")
 
@@ -56,6 +57,7 @@ type adminUser struct {
 	Name       field.String
 	Role       field.String
 	Email      field.String
+	Avatar     field.String
 	Status     field.Int32
 	LastLogin  field.Int64
 
@@ -83,6 +85,7 @@ func (a *adminUser) updateTableName(table string) *adminUser {
 	a.Name = field.NewString(table, "name")
 	a.Role = field.NewString(table, "role")
 	a.Email = field.NewString(table, "email")
+	a.Avatar = field.NewString(table, "avatar")
 	a.Status = field.NewInt32(table, "status")
 	a.LastLogin = field.NewInt64(table, "last_login")
 
@@ -101,7 +104,7 @@ func (a *adminUser) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (a *adminUser) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 11)
+	a.fieldMap = make(map[string]field.Expr, 12)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["create_time"] = a.CreateTime
 	a.fieldMap["update_time"] = a.UpdateTime
@@ -111,6 +114,7 @@ func (a *adminUser) fillFieldMap() {
 	a.fieldMap["name"] = a.Name
 	a.fieldMap["role"] = a.Role
 	a.fieldMap["email"] = a.Email
+	a.fieldMap["avatar"] = a.Avatar
 	a.fieldMap["status"] = a.Status
 	a.fieldMap["last_login"] = a.LastLogin
 }

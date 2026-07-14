@@ -63,7 +63,6 @@ func AuthServiceMiddleware(auth Auth) middleware.Middleware {
 		panic("AuthMiddleware: ApiKey is empty")
 	}
 
-	// JWT 校验中间件
 	jwtMw := jwt.Server(func(token *jwt2.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt2.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -73,40 +72,42 @@ func AuthServiceMiddleware(auth Auth) middleware.Middleware {
 		return &UserClaims{}
 	}))
 
-	// JWT 校验 → TokenValidator（黑名单校验） → handler
 	mainMw := func(handler middleware.Handler) middleware.Handler {
-		return jwtMw(func(ctx context.Context, req interface{}) (interface{}, error) {
+		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			var rawToken string
-			if auth.TokenValidator != nil {
-				tr, ok := transport.FromServerContext(ctx)
-				if !ok {
-					rawToken, ok = GetTokenFromContext(ctx)
-					if !ok || rawToken == "" {
+
+			tr, ok := transport.FromServerContext(ctx)
+			if ok {
+				authHeader := tr.RequestHeader().Get("Authorization")
+				rawToken = strings.TrimPrefix(authHeader, "Bearer ")
+			}
+
+			if rawToken != "" {
+				ctx = SetTokenToContext(ctx, rawToken)
+			}
+
+			return jwtMw(func(ctx context.Context, req interface{}) (interface{}, error) {
+				if auth.TokenValidator != nil {
+					token, ok := GetTokenFromContext(ctx)
+					if !ok || token == "" {
 						return nil, fmt.Errorf("JWT token is missing")
 					}
-				} else {
-					authHeader := tr.RequestHeader().Get("Authorization")
-					rawToken = strings.TrimPrefix(authHeader, "Bearer ")
-					if rawToken == authHeader {
-						return nil, fmt.Errorf("invalid authorization header")
+
+					claims, ok := jwt.FromContext(ctx)
+					if !ok {
+						return nil, fmt.Errorf("no jwt claims in context")
+					}
+					userClaims, ok := claims.(*UserClaims)
+					if !ok {
+						return nil, fmt.Errorf("invalid claims type")
+					}
+					if err := auth.TokenValidator(ctx, token, userClaims); err != nil {
+						return nil, err
 					}
 				}
-
-				claims, ok := jwt.FromContext(ctx)
-				if !ok {
-					return nil, fmt.Errorf("no jwt claims in context")
-				}
-				userClaims, ok := claims.(*UserClaims)
-				if !ok {
-					return nil, fmt.Errorf("invalid claims type")
-				}
-				if err := auth.TokenValidator(ctx, rawToken, userClaims); err != nil {
-					return nil, err
-				}
-			}
-			ctx = SetTokenToContext(ctx, rawToken)
-			return handler(ctx, req)
-		})
+				return handler(ctx, req)
+			})(ctx, req)
+		}
 	}
 
 	if len(auth.WhiteList) > 0 {
