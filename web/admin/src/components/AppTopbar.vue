@@ -34,7 +34,8 @@
                 <div style="font-size:12px;color:var(--shop-muted-foreground);">{{ store.adminInfo.role }}</div>
               </div>
             </el-dropdown-item>
-            <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
+            <el-dropdown-item divided @click="goProfile">个人信息</el-dropdown-item>
+            <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -94,17 +95,20 @@ function handleNotif() {
 async function handleLogout() {
   try {
     await ElMessageBox.confirm('确定要退出登录吗？', '提示', { type: 'warning' })
-    // 先调用后端登出接口（即使失败也继续前端登出）
-      try {
-        await logoutApi()
-      } catch {
-      // 接口调用失败不影响前端登出
+    try {
+      const token = localStorage.getItem('admin_token')
+      await logoutApi(token || '')
+    } catch {
     }
     store.logout()
     router.push('/login')
   } catch {
-    // 取消操作
   }
+}
+
+/** 跳转个人信息页 */
+function goProfile() {
+  router.push('/profile')
 }
 </script>
 

@@ -303,7 +303,7 @@ function handleExport() {
 
 <style scoped>
 .user-list {
-  max-width: 1200px;
+  width: 100%;
 }
 
 /* 统计卡片 */

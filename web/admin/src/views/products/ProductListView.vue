@@ -284,7 +284,7 @@ function bulkAction(action) {
 
 <style scoped>
 .product-list {
-  max-width: 1200px;
+  width: 100%;
 }
 
 .toolbar {

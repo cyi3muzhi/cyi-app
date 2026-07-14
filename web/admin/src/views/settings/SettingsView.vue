@@ -269,7 +269,7 @@ function handleUpdatePassword() {
 
 <style scoped>
 .settings {
-  max-width: 800px;
+  width: 100%;
 }
 
 .settings-tabs :deep(.el-tabs__header) {

@@ -244,7 +244,7 @@ function handleSubmit() {
 
 <style scoped>
 .product-form {
-  max-width: 800px;
+  width: 100%;
 }
 
 .form-card {

@@ -316,7 +316,7 @@ function handleExport() {
 
 <style scoped>
 .order-list {
-  max-width: 1200px;
+  width: 100%;
 }
 
 .status-tabs {

@@ -53,6 +53,30 @@ const routes = [
         meta: { title: '用户管理' }
       },
       {
+        path: 'categories',
+        name: 'Categories',
+        component: () => import('../views/categories/CategoriesView.vue'),
+        meta: { title: '商品分类' }
+      },
+      {
+        path: 'coupons',
+        name: 'Coupons',
+        component: () => import('../views/coupons/CouponsView.vue'),
+        meta: { title: '优惠券管理' }
+      },
+      {
+        path: 'logs',
+        name: 'Logs',
+        component: () => import('../views/logs/LogsView.vue'),
+        meta: { title: '操作日志' }
+      },
+      {
+        path: 'profile',
+        name: 'Profile',
+        component: () => import('../views/profile/ProfileView.vue'),
+        meta: { title: '个人信息' }
+      },
+      {
         path: 'settings',
         name: 'Settings',
         component: () => import('../views/settings/SettingsView.vue'),
