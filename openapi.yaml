@@ -1215,7 +1215,10 @@ components:
                     type: boolean
         api.cin.admin.v1.LogoutRequest:
             type: object
-            properties: {}
+            properties:
+                token:
+                    type: string
+                    description: 要登出的 token
         api.cin.admin.v1.OrderItem:
             type: object
             properties:

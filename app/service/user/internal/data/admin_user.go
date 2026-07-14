@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"cyi-app/app/service/user/internal/biz"
@@ -142,6 +143,19 @@ func (r *adminUserRepo) VerifyPassword(ctx context.Context, id int64, password s
 		return gorm.ErrRecordNotFound
 	}
 	return nil
+}
+
+// SaveToken 将 token 存入 Redis，24h 后自动过期
+func (r *adminUserRepo) SaveToken(ctx context.Context, token string, adminID int64) error {
+	key := "admin_token:" + token
+	return r.data.cache.Set(ctx, key, adminID, 24*time.Hour).Err()
+}
+
+// RemoveToken 从 Redis 中移除 token（登出）
+func (r *adminUserRepo) RemoveToken(ctx context.Context, token string) error {
+	fmt.Printf("RemoveToken: %s\n", token)
+	key := "admin_token:" + token
+	return r.data.cache.Del(ctx, key).Err()
 }
 
 // modelToBiz models -> biz 转换

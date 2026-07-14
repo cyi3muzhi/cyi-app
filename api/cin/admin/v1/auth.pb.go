@@ -132,7 +132,9 @@ func (x *LoginReply) GetAdmin() *AdminInfo {
 }
 
 type LogoutRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 要登出的 token
+	Token         string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -165,6 +167,13 @@ func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use LogoutRequest.ProtoReflect.Descriptor instead.
 func (*LogoutRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *LogoutRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
 }
 
 type LogoutReply struct {
@@ -387,8 +396,9 @@ const file_api_cin_admin_v1_auth_proto_rawDesc = "" +
 	"\n" +
 	"LoginReply\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x121\n" +
-	"\x05admin\x18\x02 \x01(\v2\x1b.api.cin.admin.v1.AdminInfoR\x05admin\"\x0f\n" +
-	"\rLogoutRequest\"'\n" +
+	"\x05admin\x18\x02 \x01(\v2\x1b.api.cin.admin.v1.AdminInfoR\x05admin\"%\n" +
+	"\rLogoutRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"'\n" +
 	"\vLogoutReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x15\n" +
 	"\x13GetAdminInfoRequest\"F\n" +

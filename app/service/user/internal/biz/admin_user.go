@@ -36,6 +36,8 @@ type AdminUserRepo interface {
 	ToggleStatus(ctx context.Context, id int64) (int32, error)
 	UpdateLastLogin(ctx context.Context, id int64) error
 	VerifyPassword(ctx context.Context, id int64, password string) error
+	SaveToken(ctx context.Context, token string, adminID int64) error
+	RemoveToken(ctx context.Context, token string) error
 }
 
 // AdminUserUseCase 管理员业务逻辑
@@ -54,7 +56,7 @@ func NewAdminUserUseCase(repo AdminUserRepo, apiKey string, logger log.Logger) *
 	}
 }
 
-// Login 管理员登录验证，验证通过返回 admin + JWT token
+// Login 管理员登录验证，验证通过返回 admin + JWT token，token 存入 Redis
 func (uc *AdminUserUseCase) Login(ctx context.Context, username, password string) (*AdminUser, string, error) {
 	admin, err := uc.repo.FindByUsername(ctx, username)
 	if err != nil {
@@ -78,7 +80,17 @@ func (uc *AdminUserUseCase) Login(ctx context.Context, username, password string
 		uc.log.Errorf("JWT签名失败: %v", err)
 		return nil, "", v1.ErrorPasswordError("令牌生成失败")
 	}
+	// token 存入 Redis（后续登出时移除，实现黑名单）
+	if err := uc.repo.SaveToken(ctx, token, admin.ID); err != nil {
+		uc.log.Warnf("token存入Redis失败: %v", err)
+		// 不影响登录，Redis 不可用时 token 仍可正常使用（仅到期失效）
+	}
 	return admin, token, nil
+}
+
+// Logout 管理员登出，移除 Redis 中的 token
+func (uc *AdminUserUseCase) Logout(ctx context.Context, token string) error {
+	return uc.repo.RemoveToken(ctx, token)
 }
 
 // generateToken 使用 JWT 签发管理员令牌

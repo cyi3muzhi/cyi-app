@@ -811,6 +811,95 @@ func (x *AdminUserInfo) GetCreatedAt() string {
 	return ""
 }
 
+type AdminLogoutRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 要移除的 token
+	Token         string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminLogoutRequest) Reset() {
+	*x = AdminLogoutRequest{}
+	mi := &file_api_service_user_v1_admin_user_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminLogoutRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminLogoutRequest) ProtoMessage() {}
+
+func (x *AdminLogoutRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_admin_user_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminLogoutRequest.ProtoReflect.Descriptor instead.
+func (*AdminLogoutRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_admin_user_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *AdminLogoutRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+type AdminLogoutReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminLogoutReply) Reset() {
+	*x = AdminLogoutReply{}
+	mi := &file_api_service_user_v1_admin_user_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminLogoutReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminLogoutReply) ProtoMessage() {}
+
+func (x *AdminLogoutReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_admin_user_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminLogoutReply.ProtoReflect.Descriptor instead.
+func (*AdminLogoutReply) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_admin_user_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *AdminLogoutReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_api_service_user_v1_admin_user_proto protoreflect.FileDescriptor
 
 const file_api_service_user_v1_admin_user_proto_rawDesc = "" +
@@ -869,14 +958,19 @@ const file_api_service_user_v1_admin_user_proto_rawDesc = "" +
 	"\n" +
 	"last_login\x18\a \x01(\tR\tlastLogin\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\b \x01(\tR\tcreatedAt2\xfc\x04\n" +
+	"created_at\x18\b \x01(\tR\tcreatedAt\"*\n" +
+	"\x12AdminLogoutRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\",\n" +
+	"\x10AdminLogoutReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xd6\x05\n" +
 	"\tAdminUser\x12U\n" +
 	"\x05Login\x12&.api.service.user.v1.AdminLoginRequest\x1a$.api.service.user.v1.AdminLoginReply\x12i\n" +
 	"\x0fCreateAdminUser\x12+.api.service.user.v1.CreateAdminUserRequest\x1a).api.service.user.v1.CreateAdminUserReply\x12i\n" +
 	"\x0fUpdateAdminUser\x12+.api.service.user.v1.UpdateAdminUserRequest\x1a).api.service.user.v1.UpdateAdminUserReply\x12`\n" +
 	"\fGetAdminUser\x12(.api.service.user.v1.GetAdminUserRequest\x1a&.api.service.user.v1.GetAdminUserReply\x12c\n" +
 	"\rListAdminUser\x12).api.service.user.v1.ListAdminUserRequest\x1a'.api.service.user.v1.ListAdminUserReply\x12{\n" +
-	"\x15ToggleAdminUserStatus\x121.api.service.user.v1.ToggleAdminUserStatusRequest\x1a/.api.service.user.v1.ToggleAdminUserStatusReplyB7\n" +
+	"\x15ToggleAdminUserStatus\x121.api.service.user.v1.ToggleAdminUserStatusRequest\x1a/.api.service.user.v1.ToggleAdminUserStatusReply\x12X\n" +
+	"\x06Logout\x12'.api.service.user.v1.AdminLogoutRequest\x1a%.api.service.user.v1.AdminLogoutReplyB7\n" +
 	"\x13api.service.user.v1P\x01Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
 
 var (
@@ -891,7 +985,7 @@ func file_api_service_user_v1_admin_user_proto_rawDescGZIP() []byte {
 	return file_api_service_user_v1_admin_user_proto_rawDescData
 }
 
-var file_api_service_user_v1_admin_user_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_api_service_user_v1_admin_user_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_api_service_user_v1_admin_user_proto_goTypes = []any{
 	(*AdminLoginRequest)(nil),            // 0: api.service.user.v1.AdminLoginRequest
 	(*AdminLoginReply)(nil),              // 1: api.service.user.v1.AdminLoginReply
@@ -906,6 +1000,8 @@ var file_api_service_user_v1_admin_user_proto_goTypes = []any{
 	(*ToggleAdminUserStatusRequest)(nil), // 10: api.service.user.v1.ToggleAdminUserStatusRequest
 	(*ToggleAdminUserStatusReply)(nil),   // 11: api.service.user.v1.ToggleAdminUserStatusReply
 	(*AdminUserInfo)(nil),                // 12: api.service.user.v1.AdminUserInfo
+	(*AdminLogoutRequest)(nil),           // 13: api.service.user.v1.AdminLogoutRequest
+	(*AdminLogoutReply)(nil),             // 14: api.service.user.v1.AdminLogoutReply
 }
 var file_api_service_user_v1_admin_user_proto_depIdxs = []int32{
 	12, // 0: api.service.user.v1.GetAdminUserReply.admin:type_name -> api.service.user.v1.AdminUserInfo
@@ -916,14 +1012,16 @@ var file_api_service_user_v1_admin_user_proto_depIdxs = []int32{
 	6,  // 5: api.service.user.v1.AdminUser.GetAdminUser:input_type -> api.service.user.v1.GetAdminUserRequest
 	8,  // 6: api.service.user.v1.AdminUser.ListAdminUser:input_type -> api.service.user.v1.ListAdminUserRequest
 	10, // 7: api.service.user.v1.AdminUser.ToggleAdminUserStatus:input_type -> api.service.user.v1.ToggleAdminUserStatusRequest
-	1,  // 8: api.service.user.v1.AdminUser.Login:output_type -> api.service.user.v1.AdminLoginReply
-	3,  // 9: api.service.user.v1.AdminUser.CreateAdminUser:output_type -> api.service.user.v1.CreateAdminUserReply
-	5,  // 10: api.service.user.v1.AdminUser.UpdateAdminUser:output_type -> api.service.user.v1.UpdateAdminUserReply
-	7,  // 11: api.service.user.v1.AdminUser.GetAdminUser:output_type -> api.service.user.v1.GetAdminUserReply
-	9,  // 12: api.service.user.v1.AdminUser.ListAdminUser:output_type -> api.service.user.v1.ListAdminUserReply
-	11, // 13: api.service.user.v1.AdminUser.ToggleAdminUserStatus:output_type -> api.service.user.v1.ToggleAdminUserStatusReply
-	8,  // [8:14] is the sub-list for method output_type
-	2,  // [2:8] is the sub-list for method input_type
+	13, // 8: api.service.user.v1.AdminUser.Logout:input_type -> api.service.user.v1.AdminLogoutRequest
+	1,  // 9: api.service.user.v1.AdminUser.Login:output_type -> api.service.user.v1.AdminLoginReply
+	3,  // 10: api.service.user.v1.AdminUser.CreateAdminUser:output_type -> api.service.user.v1.CreateAdminUserReply
+	5,  // 11: api.service.user.v1.AdminUser.UpdateAdminUser:output_type -> api.service.user.v1.UpdateAdminUserReply
+	7,  // 12: api.service.user.v1.AdminUser.GetAdminUser:output_type -> api.service.user.v1.GetAdminUserReply
+	9,  // 13: api.service.user.v1.AdminUser.ListAdminUser:output_type -> api.service.user.v1.ListAdminUserReply
+	11, // 14: api.service.user.v1.AdminUser.ToggleAdminUserStatus:output_type -> api.service.user.v1.ToggleAdminUserStatusReply
+	14, // 15: api.service.user.v1.AdminUser.Logout:output_type -> api.service.user.v1.AdminLogoutReply
+	9,  // [9:16] is the sub-list for method output_type
+	2,  // [2:9] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name
 	2,  // [2:2] is the sub-list for extension extendee
 	0,  // [0:2] is the sub-list for field type_name
@@ -940,7 +1038,7 @@ func file_api_service_user_v1_admin_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_service_user_v1_admin_user_proto_rawDesc), len(file_api_service_user_v1_admin_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

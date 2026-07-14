@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"fmt"
+	"time"
 
 	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/cin/admin/internal/biz"
@@ -31,7 +32,6 @@ func (r *authRepo) VerifyLogin(ctx context.Context, username, password string) (
 		Password: password,
 	})
 	if err != nil {
-		// gRPC 返回了错误（如密码错误、账号不存在），透传
 		return nil, "", fmt.Errorf("登录失败: %w", err)
 	}
 	if !resp.Valid {
@@ -43,6 +43,12 @@ func (r *authRepo) VerifyLogin(ctx context.Context, username, password string) (
 		Username: resp.Username,
 		Role:     resp.Role,
 	}, resp.Token, nil
+}
+
+// RemoveToken 登出，调用 user service 移除 Redis 中的 token
+func (r *authRepo) RemoveToken(ctx context.Context, token string) error {
+	_, err := r.data.auc.Logout(ctx, &userRpc.AdminLogoutRequest{Token: token})
+	return err
 }
 
 // SaveToken 保存 token
@@ -57,8 +63,5 @@ func (r *authRepo) GetByToken(ctx context.Context, token string) (*biz.AdminAuth
 	return nil, nil
 }
 
-// RemoveToken 移除 token
-func (r *authRepo) RemoveToken(ctx context.Context, token string) error {
-	_ = token
-	return nil
-}
+// Ensure time import is used
+var _ = time.Now

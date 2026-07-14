@@ -44,7 +44,10 @@ func (s *AdminService) Login(ctx context.Context, req *adminv1.LoginRequest) (*a
 
 // Logout 管理员登出
 func (s *AdminService) Logout(ctx context.Context, req *adminv1.LogoutRequest) (*adminv1.LogoutReply, error) {
-	_ = req
+	if err := s.ac.Logout(ctx, req.Token); err != nil {
+		s.log.Errorf("登出失败: %v", err)
+		return nil, err
+	}
 	return &adminv1.LogoutReply{Success: true}, nil
 }
 

@@ -44,6 +44,7 @@ func AuthServiceMiddleware(auth Auth) middleware.Middleware {
 	if len(auth.WhiteList) > 0 {
 		return selector.Server(
 			jwt.Server(func(token *jwt2.Token) (interface{}, error) {
+				fmt.Printf("token: %v\n", token)
 				// 验证签名方法
 				if _, ok := token.Method.(*jwt2.SigningMethodHMAC); !ok {
 					return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])

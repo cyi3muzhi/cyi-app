@@ -41,6 +41,16 @@ func (s *AdminUserService) Login(ctx context.Context, req *v1.AdminLoginRequest)
 	}, nil
 }
 
+// Logout 管理员登出，移除 Redis 中的 token
+func (s *AdminUserService) Logout(ctx context.Context, req *v1.AdminLogoutRequest) (*v1.AdminLogoutReply, error) {
+	if err := s.uc.Logout(ctx, req.Token); err != nil {
+		s.log.Errorf("登出失败: %v", err)
+		return nil, err
+	}
+	s.log.Infof("管理员登出成功")
+	return &v1.AdminLogoutReply{Success: true}, nil
+}
+
 // CreateAdminUser 创建管理员
 func (s *AdminUserService) CreateAdminUser(ctx context.Context, req *v1.CreateAdminUserRequest) (*v1.CreateAdminUserReply, error) {
 	id, err := s.uc.Create(ctx, &biz.AdminUser{

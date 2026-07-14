@@ -15,10 +15,11 @@ export function login(username, password) {
 
 /**
  * 管理员登出
+ * @param {string} token - 当前登录的 token
  * @returns {Promise}
  */
-export function logout() {
-  return request.post('/admin/v1/auth/logout')
+export function logout(token) {
+  return request.post('/admin/v1/auth/logout', { token })
 }
 
 /**

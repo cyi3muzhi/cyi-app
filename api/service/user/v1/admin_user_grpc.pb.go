@@ -25,6 +25,7 @@ const (
 	AdminUser_GetAdminUser_FullMethodName          = "/api.service.user.v1.AdminUser/GetAdminUser"
 	AdminUser_ListAdminUser_FullMethodName         = "/api.service.user.v1.AdminUser/ListAdminUser"
 	AdminUser_ToggleAdminUserStatus_FullMethodName = "/api.service.user.v1.AdminUser/ToggleAdminUserStatus"
+	AdminUser_Logout_FullMethodName                = "/api.service.user.v1.AdminUser/Logout"
 )
 
 // AdminUserClient is the client API for AdminUser service.
@@ -45,6 +46,8 @@ type AdminUserClient interface {
 	ListAdminUser(ctx context.Context, in *ListAdminUserRequest, opts ...grpc.CallOption) (*ListAdminUserReply, error)
 	// 冻结/解冻管理员
 	ToggleAdminUserStatus(ctx context.Context, in *ToggleAdminUserStatusRequest, opts ...grpc.CallOption) (*ToggleAdminUserStatusReply, error)
+	// 管理员登出（移除 token）
+	Logout(ctx context.Context, in *AdminLogoutRequest, opts ...grpc.CallOption) (*AdminLogoutReply, error)
 }
 
 type adminUserClient struct {
@@ -115,6 +118,16 @@ func (c *adminUserClient) ToggleAdminUserStatus(ctx context.Context, in *ToggleA
 	return out, nil
 }
 
+func (c *adminUserClient) Logout(ctx context.Context, in *AdminLogoutRequest, opts ...grpc.CallOption) (*AdminLogoutReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminLogoutReply)
+	err := c.cc.Invoke(ctx, AdminUser_Logout_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminUserServer is the server API for AdminUser service.
 // All implementations must embed UnimplementedAdminUserServer
 // for forward compatibility.
@@ -133,6 +146,8 @@ type AdminUserServer interface {
 	ListAdminUser(context.Context, *ListAdminUserRequest) (*ListAdminUserReply, error)
 	// 冻结/解冻管理员
 	ToggleAdminUserStatus(context.Context, *ToggleAdminUserStatusRequest) (*ToggleAdminUserStatusReply, error)
+	// 管理员登出（移除 token）
+	Logout(context.Context, *AdminLogoutRequest) (*AdminLogoutReply, error)
 	mustEmbedUnimplementedAdminUserServer()
 }
 
@@ -160,6 +175,9 @@ func (UnimplementedAdminUserServer) ListAdminUser(context.Context, *ListAdminUse
 }
 func (UnimplementedAdminUserServer) ToggleAdminUserStatus(context.Context, *ToggleAdminUserStatusRequest) (*ToggleAdminUserStatusReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ToggleAdminUserStatus not implemented")
+}
+func (UnimplementedAdminUserServer) Logout(context.Context, *AdminLogoutRequest) (*AdminLogoutReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
 }
 func (UnimplementedAdminUserServer) mustEmbedUnimplementedAdminUserServer() {}
 func (UnimplementedAdminUserServer) testEmbeddedByValue()                   {}
@@ -290,6 +308,24 @@ func _AdminUser_ToggleAdminUserStatus_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminUser_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminLogoutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminUserServer).Logout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminUser_Logout_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminUserServer).Logout(ctx, req.(*AdminLogoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminUser_ServiceDesc is the grpc.ServiceDesc for AdminUser service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -320,6 +356,10 @@ var AdminUser_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ToggleAdminUserStatus",
 			Handler:    _AdminUser_ToggleAdminUserStatus_Handler,
+		},
+		{
+			MethodName: "Logout",
+			Handler:    _AdminUser_Logout_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

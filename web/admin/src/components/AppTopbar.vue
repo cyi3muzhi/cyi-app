@@ -51,6 +51,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { useAppStore } from '../store/app'
+import { logout as logoutApi } from '../api/auth'
 
 const route = useRoute()
 const router = useRouter()
@@ -93,6 +94,13 @@ function handleNotif() {
 async function handleLogout() {
   try {
     await ElMessageBox.confirm('确定要退出登录吗？', '提示', { type: 'warning' })
+    // 先调用后端登出接口（即使失败也继续前端登出）
+      try {
+        const token = localStorage.getItem('admin_token')
+        await logoutApi(token || '')
+      } catch {
+      // 接口调用失败不影响前端登出
+    }
     store.logout()
     router.push('/login')
   } catch {

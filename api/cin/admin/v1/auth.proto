@@ -47,7 +47,10 @@ message LoginReply {
   AdminInfo admin = 2;
 }
 
-message LogoutRequest {}
+message LogoutRequest {
+  // 要登出的 token
+  string token = 1;
+}
 
 message LogoutReply {
   bool success = 1;
