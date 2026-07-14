@@ -28,24 +28,27 @@ import (
 func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, meter *middleware.Meter) (*kratos.App, func(), error) {
 	traceTracerProvider := provideTracerProvider(tracerProvider)
 	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth)
-	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth)
-	registrar := server.NewRegistrar(registry)
 	discovery := server.NewDiscovery(registry)
 	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	adminUserClient := data.NewAdminUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
-	adminData, cleanup, err := data.NewData(productClient, adminUserClient, logger)
+	dataData, cleanup, err := data.NewData(productClient, adminUserClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	dashboardRepo := data.NewDashboardRepo(adminData, logger)
+	dashboardRepo := data.NewDashboardRepo(dataData, logger)
 	dashboardUseCase := biz.NewDashboardUseCase(dashboardRepo, logger)
-	productRepo := data.NewProductRepo(adminData, logger)
+	productRepo := data.NewProductRepo(dataData, logger)
 	productUseCase := biz.NewProductUseCase(productRepo, logger)
-	authRepo := data.NewAuthRepo(adminData, logger)
+	authRepo := data.NewAuthRepo(dataData, logger)
 	authUseCase := biz.NewAuthUseCase(authRepo, logger)
 	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, logger)
-	grpcApp := server.NewGRPCServer(grpcServer, adminService)
-	httpApp := server.NewHTTPServer(httpServer, adminService)
-	app := newApp(logger, grpcApp, httpApp, registrar)
-	return app, cleanup, nil
+	server2 := server.NewGRPCServer(grpcServer, adminService)
+	tokenValidator := data.NewTokenValidator(adminUserClient)
+	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth, tokenValidator)
+	server3 := server.NewHTTPServer(httpServer, adminService)
+	registrar := server.NewRegistrar(registry)
+	app := newApp(logger, server2, server3, registrar)
+	return app, func() {
+		cleanup()
+	}, nil
 }

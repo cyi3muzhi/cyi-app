@@ -26,6 +26,7 @@ const (
 	AdminUser_ListAdminUser_FullMethodName         = "/api.service.user.v1.AdminUser/ListAdminUser"
 	AdminUser_ToggleAdminUserStatus_FullMethodName = "/api.service.user.v1.AdminUser/ToggleAdminUserStatus"
 	AdminUser_Logout_FullMethodName                = "/api.service.user.v1.AdminUser/Logout"
+	AdminUser_ValidateToken_FullMethodName         = "/api.service.user.v1.AdminUser/ValidateToken"
 )
 
 // AdminUserClient is the client API for AdminUser service.
@@ -48,6 +49,8 @@ type AdminUserClient interface {
 	ToggleAdminUserStatus(ctx context.Context, in *ToggleAdminUserStatusRequest, opts ...grpc.CallOption) (*ToggleAdminUserStatusReply, error)
 	// 管理员登出（移除 token）
 	Logout(ctx context.Context, in *AdminLogoutRequest, opts ...grpc.CallOption) (*AdminLogoutReply, error)
+	// 验证 token 是否有效（未被新登录覆盖）
+	ValidateToken(ctx context.Context, in *AdminValidateTokenRequest, opts ...grpc.CallOption) (*AdminValidateTokenReply, error)
 }
 
 type adminUserClient struct {
@@ -128,6 +131,16 @@ func (c *adminUserClient) Logout(ctx context.Context, in *AdminLogoutRequest, op
 	return out, nil
 }
 
+func (c *adminUserClient) ValidateToken(ctx context.Context, in *AdminValidateTokenRequest, opts ...grpc.CallOption) (*AdminValidateTokenReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminValidateTokenReply)
+	err := c.cc.Invoke(ctx, AdminUser_ValidateToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminUserServer is the server API for AdminUser service.
 // All implementations must embed UnimplementedAdminUserServer
 // for forward compatibility.
@@ -148,6 +161,8 @@ type AdminUserServer interface {
 	ToggleAdminUserStatus(context.Context, *ToggleAdminUserStatusRequest) (*ToggleAdminUserStatusReply, error)
 	// 管理员登出（移除 token）
 	Logout(context.Context, *AdminLogoutRequest) (*AdminLogoutReply, error)
+	// 验证 token 是否有效（未被新登录覆盖）
+	ValidateToken(context.Context, *AdminValidateTokenRequest) (*AdminValidateTokenReply, error)
 	mustEmbedUnimplementedAdminUserServer()
 }
 
@@ -178,6 +193,9 @@ func (UnimplementedAdminUserServer) ToggleAdminUserStatus(context.Context, *Togg
 }
 func (UnimplementedAdminUserServer) Logout(context.Context, *AdminLogoutRequest) (*AdminLogoutReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
+}
+func (UnimplementedAdminUserServer) ValidateToken(context.Context, *AdminValidateTokenRequest) (*AdminValidateTokenReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ValidateToken not implemented")
 }
 func (UnimplementedAdminUserServer) mustEmbedUnimplementedAdminUserServer() {}
 func (UnimplementedAdminUserServer) testEmbeddedByValue()                   {}
@@ -326,6 +344,24 @@ func _AdminUser_Logout_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminUser_ValidateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminValidateTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminUserServer).ValidateToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminUser_ValidateToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminUserServer).ValidateToken(ctx, req.(*AdminValidateTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminUser_ServiceDesc is the grpc.ServiceDesc for AdminUser service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -360,6 +396,10 @@ var AdminUser_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Logout",
 			Handler:    _AdminUser_Logout_Handler,
+		},
+		{
+			MethodName: "ValidateToken",
+			Handler:    _AdminUser_ValidateToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -30,9 +30,10 @@ type TransporterOpt struct {
 
 type MiddlewareOpt struct {
 	// 认证 可选
-	ApiKey     string
-	ServiceKey string
-	WhiteList  []string
+	ApiKey         string
+	ServiceKey     string
+	WhiteList      []string
+	TokenValidator mid.TokenValidator
 
 	// 链路追踪 *
 	TracerProvider trace.TracerProvider
@@ -57,8 +58,9 @@ func NewHttpServerOpt(httpOpt *TransporterOpt, midOpt *MiddlewareOpt) []http.Ser
 	mids = append(mids, mid.WithLoggerMiddleware(midOpt.Logger))
 	if midOpt.ApiKey != "" {
 		mids = append(mids, mid.WithAuthMiddleware(mid.Auth{
-			ApiKey:    midOpt.ApiKey,
-			WhiteList: midOpt.WhiteList,
+			ApiKey:         midOpt.ApiKey,
+			WhiteList:      midOpt.WhiteList,
+			TokenValidator: midOpt.TokenValidator,
 		}))
 	}
 	mids = append(mids, mid.WithMetricsMiddleware(midOpt.Meter))

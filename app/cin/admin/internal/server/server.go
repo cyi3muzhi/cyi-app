@@ -1,22 +1,22 @@
 package server
 
 import (
+	"net"
+
 	"cyi-app/app/cin/admin/internal/conf"
 	consul "cyi-app/pkg/kratos/config"
-	"net"
 
 	ts "cyi-app/pkg/kratos/server/transporter"
 
-	"github.com/go-kratos/kratos/v2/registry"
-	"github.com/google/wire"
-
-	mid "cyi-app/pkg/kratos/server/middleware"
-
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/google/wire"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel/trace"
+
+	mid "cyi-app/pkg/kratos/server/middleware"
 )
 
 // ProviderSet is server providers.
@@ -44,7 +44,9 @@ func NewHTTPServerConf(
 	tp trace.TracerProvider,
 	logger log.Logger,
 	metric *mid.Meter,
-	auth *conf.Auth) *ts.HttpServer {
+	auth *conf.Auth,
+	tokenValidator mid.TokenValidator) *ts.HttpServer {
+
 	srv := http.NewServer(ts.NewHttpServerOpt(
 		&ts.TransporterOpt{
 			Network: c.Http.Network,
@@ -54,6 +56,7 @@ func NewHTTPServerConf(
 		&ts.MiddlewareOpt{
 			ApiKey:         auth.ApiKey,
 			WhiteList:      auth.WhiteList,
+			TokenValidator: tokenValidator,
 			Logger:         logger,
 			TracerProvider: tp,
 			Meter:          metric,

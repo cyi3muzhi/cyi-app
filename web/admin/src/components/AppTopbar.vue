@@ -96,8 +96,7 @@ async function handleLogout() {
     await ElMessageBox.confirm('确定要退出登录吗？', '提示', { type: 'warning' })
     // 先调用后端登出接口（即使失败也继续前端登出）
       try {
-        const token = localStorage.getItem('admin_token')
-        await logoutApi(token || '')
+        await logoutApi()
       } catch {
       // 接口调用失败不影响前端登出
     }

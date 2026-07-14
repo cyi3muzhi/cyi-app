@@ -900,6 +900,110 @@ func (x *AdminLogoutReply) GetSuccess() bool {
 	return false
 }
 
+type AdminValidateTokenRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminValidateTokenRequest) Reset() {
+	*x = AdminValidateTokenRequest{}
+	mi := &file_api_service_user_v1_admin_user_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminValidateTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminValidateTokenRequest) ProtoMessage() {}
+
+func (x *AdminValidateTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_admin_user_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminValidateTokenRequest.ProtoReflect.Descriptor instead.
+func (*AdminValidateTokenRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_admin_user_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *AdminValidateTokenRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+type AdminValidateTokenReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Valid         bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
+	AdminId       int64                  `protobuf:"varint,2,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"`
+	Username      string                 `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminValidateTokenReply) Reset() {
+	*x = AdminValidateTokenReply{}
+	mi := &file_api_service_user_v1_admin_user_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminValidateTokenReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminValidateTokenReply) ProtoMessage() {}
+
+func (x *AdminValidateTokenReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_admin_user_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminValidateTokenReply.ProtoReflect.Descriptor instead.
+func (*AdminValidateTokenReply) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_admin_user_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *AdminValidateTokenReply) GetValid() bool {
+	if x != nil {
+		return x.Valid
+	}
+	return false
+}
+
+func (x *AdminValidateTokenReply) GetAdminId() int64 {
+	if x != nil {
+		return x.AdminId
+	}
+	return 0
+}
+
+func (x *AdminValidateTokenReply) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
 var File_api_service_user_v1_admin_user_proto protoreflect.FileDescriptor
 
 const file_api_service_user_v1_admin_user_proto_rawDesc = "" +
@@ -962,7 +1066,13 @@ const file_api_service_user_v1_admin_user_proto_rawDesc = "" +
 	"\x12AdminLogoutRequest\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\",\n" +
 	"\x10AdminLogoutReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xd6\x05\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"1\n" +
+	"\x19AdminValidateTokenRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"f\n" +
+	"\x17AdminValidateTokenReply\x12\x14\n" +
+	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x19\n" +
+	"\badmin_id\x18\x02 \x01(\x03R\aadminId\x12\x1a\n" +
+	"\busername\x18\x03 \x01(\tR\busername2\xc5\x06\n" +
 	"\tAdminUser\x12U\n" +
 	"\x05Login\x12&.api.service.user.v1.AdminLoginRequest\x1a$.api.service.user.v1.AdminLoginReply\x12i\n" +
 	"\x0fCreateAdminUser\x12+.api.service.user.v1.CreateAdminUserRequest\x1a).api.service.user.v1.CreateAdminUserReply\x12i\n" +
@@ -970,7 +1080,8 @@ const file_api_service_user_v1_admin_user_proto_rawDesc = "" +
 	"\fGetAdminUser\x12(.api.service.user.v1.GetAdminUserRequest\x1a&.api.service.user.v1.GetAdminUserReply\x12c\n" +
 	"\rListAdminUser\x12).api.service.user.v1.ListAdminUserRequest\x1a'.api.service.user.v1.ListAdminUserReply\x12{\n" +
 	"\x15ToggleAdminUserStatus\x121.api.service.user.v1.ToggleAdminUserStatusRequest\x1a/.api.service.user.v1.ToggleAdminUserStatusReply\x12X\n" +
-	"\x06Logout\x12'.api.service.user.v1.AdminLogoutRequest\x1a%.api.service.user.v1.AdminLogoutReplyB7\n" +
+	"\x06Logout\x12'.api.service.user.v1.AdminLogoutRequest\x1a%.api.service.user.v1.AdminLogoutReply\x12m\n" +
+	"\rValidateToken\x12..api.service.user.v1.AdminValidateTokenRequest\x1a,.api.service.user.v1.AdminValidateTokenReplyB7\n" +
 	"\x13api.service.user.v1P\x01Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
 
 var (
@@ -985,7 +1096,7 @@ func file_api_service_user_v1_admin_user_proto_rawDescGZIP() []byte {
 	return file_api_service_user_v1_admin_user_proto_rawDescData
 }
 
-var file_api_service_user_v1_admin_user_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_api_service_user_v1_admin_user_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_api_service_user_v1_admin_user_proto_goTypes = []any{
 	(*AdminLoginRequest)(nil),            // 0: api.service.user.v1.AdminLoginRequest
 	(*AdminLoginReply)(nil),              // 1: api.service.user.v1.AdminLoginReply
@@ -1002,6 +1113,8 @@ var file_api_service_user_v1_admin_user_proto_goTypes = []any{
 	(*AdminUserInfo)(nil),                // 12: api.service.user.v1.AdminUserInfo
 	(*AdminLogoutRequest)(nil),           // 13: api.service.user.v1.AdminLogoutRequest
 	(*AdminLogoutReply)(nil),             // 14: api.service.user.v1.AdminLogoutReply
+	(*AdminValidateTokenRequest)(nil),    // 15: api.service.user.v1.AdminValidateTokenRequest
+	(*AdminValidateTokenReply)(nil),      // 16: api.service.user.v1.AdminValidateTokenReply
 }
 var file_api_service_user_v1_admin_user_proto_depIdxs = []int32{
 	12, // 0: api.service.user.v1.GetAdminUserReply.admin:type_name -> api.service.user.v1.AdminUserInfo
@@ -1013,15 +1126,17 @@ var file_api_service_user_v1_admin_user_proto_depIdxs = []int32{
 	8,  // 6: api.service.user.v1.AdminUser.ListAdminUser:input_type -> api.service.user.v1.ListAdminUserRequest
 	10, // 7: api.service.user.v1.AdminUser.ToggleAdminUserStatus:input_type -> api.service.user.v1.ToggleAdminUserStatusRequest
 	13, // 8: api.service.user.v1.AdminUser.Logout:input_type -> api.service.user.v1.AdminLogoutRequest
-	1,  // 9: api.service.user.v1.AdminUser.Login:output_type -> api.service.user.v1.AdminLoginReply
-	3,  // 10: api.service.user.v1.AdminUser.CreateAdminUser:output_type -> api.service.user.v1.CreateAdminUserReply
-	5,  // 11: api.service.user.v1.AdminUser.UpdateAdminUser:output_type -> api.service.user.v1.UpdateAdminUserReply
-	7,  // 12: api.service.user.v1.AdminUser.GetAdminUser:output_type -> api.service.user.v1.GetAdminUserReply
-	9,  // 13: api.service.user.v1.AdminUser.ListAdminUser:output_type -> api.service.user.v1.ListAdminUserReply
-	11, // 14: api.service.user.v1.AdminUser.ToggleAdminUserStatus:output_type -> api.service.user.v1.ToggleAdminUserStatusReply
-	14, // 15: api.service.user.v1.AdminUser.Logout:output_type -> api.service.user.v1.AdminLogoutReply
-	9,  // [9:16] is the sub-list for method output_type
-	2,  // [2:9] is the sub-list for method input_type
+	15, // 9: api.service.user.v1.AdminUser.ValidateToken:input_type -> api.service.user.v1.AdminValidateTokenRequest
+	1,  // 10: api.service.user.v1.AdminUser.Login:output_type -> api.service.user.v1.AdminLoginReply
+	3,  // 11: api.service.user.v1.AdminUser.CreateAdminUser:output_type -> api.service.user.v1.CreateAdminUserReply
+	5,  // 12: api.service.user.v1.AdminUser.UpdateAdminUser:output_type -> api.service.user.v1.UpdateAdminUserReply
+	7,  // 13: api.service.user.v1.AdminUser.GetAdminUser:output_type -> api.service.user.v1.GetAdminUserReply
+	9,  // 14: api.service.user.v1.AdminUser.ListAdminUser:output_type -> api.service.user.v1.ListAdminUserReply
+	11, // 15: api.service.user.v1.AdminUser.ToggleAdminUserStatus:output_type -> api.service.user.v1.ToggleAdminUserStatusReply
+	14, // 16: api.service.user.v1.AdminUser.Logout:output_type -> api.service.user.v1.AdminLogoutReply
+	16, // 17: api.service.user.v1.AdminUser.ValidateToken:output_type -> api.service.user.v1.AdminValidateTokenReply
+	10, // [10:18] is the sub-list for method output_type
+	2,  // [2:10] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name
 	2,  // [2:2] is the sub-list for extension extendee
 	0,  // [0:2] is the sub-list for field type_name
@@ -1038,7 +1153,7 @@ func file_api_service_user_v1_admin_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_service_user_v1_admin_user_proto_rawDesc), len(file_api_service_user_v1_admin_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

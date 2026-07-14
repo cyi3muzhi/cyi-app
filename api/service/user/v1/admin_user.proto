@@ -24,6 +24,8 @@ service AdminUser {
 	rpc ToggleAdminUserStatus (ToggleAdminUserStatusRequest) returns (ToggleAdminUserStatusReply);
 	// 管理员登出（移除 token）
 	rpc Logout (AdminLogoutRequest) returns (AdminLogoutReply);
+	// 验证 token 是否有效（未被新登录覆盖）
+	rpc ValidateToken (AdminValidateTokenRequest) returns (AdminValidateTokenReply);
 }
 
 message AdminLoginRequest {
@@ -127,4 +129,14 @@ message AdminLogoutRequest {
 
 message AdminLogoutReply {
 	bool success = 1;
+}
+
+message AdminValidateTokenRequest {
+	string token = 1;
+}
+
+message AdminValidateTokenReply {
+	bool valid = 1;
+	int64 admin_id = 2;
+	string username = 3;
 }

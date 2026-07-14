@@ -38,6 +38,7 @@ type AdminUserRepo interface {
 	VerifyPassword(ctx context.Context, id int64, password string) error
 	SaveToken(ctx context.Context, token string, adminID int64) error
 	RemoveToken(ctx context.Context, token string) error
+	ValidateToken(ctx context.Context, token string) (bool, int64, string, error)
 }
 
 // AdminUserUseCase 管理员业务逻辑
@@ -91,6 +92,15 @@ func (uc *AdminUserUseCase) Login(ctx context.Context, username, password string
 // Logout 管理员登出，移除 Redis 中的 token
 func (uc *AdminUserUseCase) Logout(ctx context.Context, token string) error {
 	return uc.repo.RemoveToken(ctx, token)
+}
+
+// ValidateToken 验证 token 是否有效（未被新登录覆盖）
+func (uc *AdminUserUseCase) ValidateToken(ctx context.Context, token string) (bool, int64, string, error) {
+	valid, adminID, username, err := uc.repo.ValidateToken(ctx, token)
+	if err != nil {
+		return false, 0, "", err
+	}
+	return valid, adminID, username, nil
 }
 
 // generateToken 使用 JWT 签发管理员令牌

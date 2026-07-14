@@ -11,9 +11,10 @@ const (
 )
 
 type Auth struct {
-	ApiKey     string
-	ServiceKey string
-	WhiteList  []string
+	ApiKey         string
+	ServiceKey     string
+	WhiteList      []string
+	TokenValidator TokenValidator
 }
 
 type Meter struct {

@@ -3,10 +3,12 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/auth/jwt"
 	"github.com/go-kratos/kratos/v2/middleware/selector"
+	"github.com/go-kratos/kratos/v2/transport"
 	jwt2 "github.com/golang-jwt/jwt/v5"
 )
 
@@ -16,11 +18,27 @@ type UserClaims struct {
 	jwt2.RegisteredClaims
 }
 
+// TokenValidator 验证 token 是否有效（如检查 Redis 黑名单）
+type TokenValidator func(ctx context.Context, rawToken string, claims *UserClaims) error
+
+// tokenContextKey context 中存储 token 的 key
+type tokenContextKey struct{}
+
+// SetTokenToContext 将 token 存入 context
+func SetTokenToContext(ctx context.Context, token string) context.Context {
+	return context.WithValue(ctx, tokenContextKey{}, token)
+}
+
+// GetTokenFromContext 从 context 中获取 token
+func GetTokenFromContext(ctx context.Context) (string, bool) {
+	token, ok := ctx.Value(tokenContextKey{}).(string)
+	return token, ok
+}
+
 // 创建白名单匹配器
 func NewWhiteListMatcher(wl []string) selector.MatchFunc {
 	whiteList := make(map[string]struct{})
 	if wl == nil {
-
 		return func(ctx context.Context, operation string) bool {
 			return false
 		}
@@ -41,27 +59,51 @@ func AuthServiceMiddleware(auth Auth) middleware.Middleware {
 	if auth.ApiKey == "" {
 		panic("AuthMiddleware: ApiKey is empty")
 	}
-	if len(auth.WhiteList) > 0 {
-		return selector.Server(
-			jwt.Server(func(token *jwt2.Token) (interface{}, error) {
-				fmt.Printf("token: %v\n", token)
-				// 验证签名方法
-				if _, ok := token.Method.(*jwt2.SigningMethodHMAC); !ok {
-					return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-				}
-				return []byte(auth.ApiKey), nil
-			}, jwt.WithSigningMethod(jwt2.SigningMethodHS256), jwt.WithClaims(func() jwt2.Claims {
-				return &UserClaims{}
-			})),
-		).
-			Match(NewWhiteListMatcher(auth.WhiteList)).
-			Build()
-	}
-	return jwt.Server(func(token *jwt2.Token) (interface{}, error) {
+
+	// JWT 校验中间件
+	jwtMw := jwt.Server(func(token *jwt2.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt2.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
 		return []byte(auth.ApiKey), nil
 	}, jwt.WithSigningMethod(jwt2.SigningMethodHS256), jwt.WithClaims(func() jwt2.Claims {
 		return &UserClaims{}
 	}))
+
+	// JWT 校验 → TokenValidator（黑名单校验） → handler
+	mainMw := func(handler middleware.Handler) middleware.Handler {
+		return jwtMw(func(ctx context.Context, req interface{}) (interface{}, error) {
+			if auth.TokenValidator != nil {
+				tr, ok := transport.FromServerContext(ctx)
+				if !ok {
+					return nil, fmt.Errorf("no transport in context")
+				}
+				authHeader := tr.RequestHeader().Get("Authorization")
+				rawToken := strings.TrimPrefix(authHeader, "Bearer ")
+				if rawToken == authHeader {
+					return nil, fmt.Errorf("invalid authorization header")
+				}
+
+				claims, ok := jwt.FromContext(ctx)
+				if !ok {
+					return nil, fmt.Errorf("no jwt claims in context")
+				}
+				userClaims, ok := claims.(*UserClaims)
+				if !ok {
+					return nil, fmt.Errorf("invalid claims type")
+				}
+				if err := auth.TokenValidator(ctx, rawToken, userClaims); err != nil {
+					return nil, err
+				}
+			}
+			return handler(ctx, req)
+		})
+	}
+
+	if len(auth.WhiteList) > 0 {
+		return selector.Server(mainMw).Match(NewWhiteListMatcher(auth.WhiteList)).Build()
+	}
+	return mainMw
 }
 
 // 客户端认证中间件

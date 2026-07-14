@@ -15,11 +15,11 @@ export function login(username, password) {
 
 /**
  * 管理员登出
- * @param {string} token - 当前登录的 token
+ * token 通过请求拦截器自动添加到 Authorization 头
  * @returns {Promise}
  */
-export function logout(token) {
-  return request.post('/admin/v1/auth/logout', { token })
+export function logout() {
+  return request.post('/admin/v1/auth/logout')
 }
 
 /**

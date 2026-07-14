@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	v1 "cyi-app/api/service/user/v1"
@@ -49,6 +50,19 @@ func (s *AdminUserService) Logout(ctx context.Context, req *v1.AdminLogoutReques
 	}
 	s.log.Infof("管理员登出成功")
 	return &v1.AdminLogoutReply{Success: true}, nil
+}
+
+// ValidateToken 验证 token 是否有效（未被新登录覆盖）
+func (s *AdminUserService) ValidateToken(ctx context.Context, req *v1.AdminValidateTokenRequest) (*v1.AdminValidateTokenReply, error) {
+	valid, adminID, username, err := s.uc.ValidateToken(ctx, req.Token)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.AdminValidateTokenReply{
+		Valid:    valid,
+		AdminId:  adminID,
+		Username: username,
+	}, nil
 }
 
 // CreateAdminUser 创建管理员
@@ -133,3 +147,6 @@ func adminToProto(admin *biz.AdminUser) *v1.AdminUserInfo {
 		CreatedAt: createdAt,
 	}
 }
+
+// 确保 fmt 被使用
+var _ = fmt.Sprintf

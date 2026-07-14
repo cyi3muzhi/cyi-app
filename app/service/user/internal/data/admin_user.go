@@ -10,6 +10,8 @@ import (
 	"cyi-app/app/service/user/internal/pkg/encryption"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -146,16 +148,68 @@ func (r *adminUserRepo) VerifyPassword(ctx context.Context, id int64, password s
 }
 
 // SaveToken 将 token 存入 Redis，24h 后自动过期
+// key 格式: admin_token:{adminID}，新登录覆盖旧的，实现单点登录
 func (r *adminUserRepo) SaveToken(ctx context.Context, token string, adminID int64) error {
-	key := "admin_token:" + token
-	return r.data.cache.Set(ctx, key, adminID, 24*time.Hour).Err()
+	key := fmt.Sprintf("admin_token:%d", adminID)
+	return r.data.cache.Set(ctx, key, token, 24*time.Hour).Err()
 }
 
 // RemoveToken 从 Redis 中移除 token（登出）
 func (r *adminUserRepo) RemoveToken(ctx context.Context, token string) error {
-	fmt.Printf("RemoveToken: %s\n", token)
-	key := "admin_token:" + token
+	adminID, _, err := parseJWTClaims(token)
+	if err != nil {
+		return err
+	}
+	key := fmt.Sprintf("admin_token:%d", adminID)
 	return r.data.cache.Del(ctx, key).Err()
+}
+
+// ValidateToken 验证 token 是否有效（未被新登录覆盖）
+func (r *adminUserRepo) ValidateToken(ctx context.Context, token string) (bool, int64, string, error) {
+	adminID, _, err := parseJWTClaims(token)
+	if err != nil {
+		return false, 0, "", err
+	}
+	key := fmt.Sprintf("admin_token:%d", adminID)
+	stored, err := r.data.cache.Get(ctx, key).Result()
+	if err == redis.Nil {
+		return false, adminID, "", nil // 不存在即无效
+	}
+	if err != nil {
+		return false, 0, "", err
+	}
+	if stored != token {
+		return false, adminID, "", nil // 已被新 token 覆盖
+	}
+	return true, adminID, "", nil
+}
+
+// parseJWTClaims 从 JWT token 中提取 adminID 和 jti
+func parseJWTClaims(tokenString string) (int64, string, error) {
+	token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
+	if err != nil {
+		return 0, "", err
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return 0, "", fmt.Errorf("无法解析JWT claims")
+	}
+	// admin_id 在 UserClaims 中字段名为 id
+	idFloat, ok := claims["id"].(float64)
+	if !ok {
+		return 0, "", fmt.Errorf("JWT中缺少id字段")
+	}
+	jti, ok := claims["jti"].(string)
+	if !ok || jti == "" {
+		return 0, "", fmt.Errorf("JWT中缺少jti字段")
+	}
+	return int64(idFloat), jti, nil
+}
+
+// extractJTI 仅提取 jti（兼容旧逻辑）
+func extractJTI(tokenString string) (string, error) {
+	_, jti, err := parseJWTClaims(tokenString)
+	return jti, err
 }
 
 // modelToBiz models -> biz 转换
