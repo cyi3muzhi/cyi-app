@@ -22,16 +22,16 @@
 
       <el-dropdown trigger="click">
         <span class="admin-avatar-wrap">
-          <span class="avatar-circle">{{ store.adminInfo.avatar }}</span>
-          <span class="avatar-name">{{ store.adminInfo.name }}</span>
+          <span class="avatar-circle">{{ store.adminInfo?.avatar || '管' }}</span>
+          <span class="avatar-name">{{ store.adminInfo?.name || '管理员' }}</span>
           <el-icon><ArrowDown /></el-icon>
         </span>
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item disabled>
               <div style="text-align: center;">
-                <div style="font-weight:600;">{{ store.adminInfo.name }}</div>
-                <div style="font-size:12px;color:var(--shop-muted-foreground);">{{ store.adminInfo.role }}</div>
+                <div style="font-weight:600;">{{ store.adminInfo?.name || '管理员' }}</div>
+                <div style="font-size:12px;color:var(--shop-muted-foreground);">{{ store.adminInfo?.role || '' }}</div>
               </div>
             </el-dropdown-item>
             <el-dropdown-item divided @click="goProfile">个人信息</el-dropdown-item>

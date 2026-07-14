@@ -6,6 +6,9 @@ import { ElMessage } from 'element-plus'
 import router from '../router'
 import { useAppStore } from '../store/app'
 
+/** 防止 401 重复处理（多个请求同时失败时只处理一次） */
+let isHandling401 = false
+
 const request = axios.create({
   baseURL: '',
   timeout: 15000
@@ -37,12 +40,21 @@ request.interceptors.response.use(
     if (error.response) {
       const { status } = error.response
       if (status === 401) {
-        const store = useAppStore()
+        // 防止多个请求同时 401 时重复弹窗和跳转
+        if (isHandling401) {
+          return Promise.reject(error)
+        }
+        isHandling401 = true
+
         const message = error.response.data?.message || '登录已过期，请重新登录'
         ElMessage.error(message)
-        store.logout()
+
+        // 延迟清除状态，确保 ElMessage 先渲染完成
         setTimeout(() => {
+          const store = useAppStore()
+          store.logout()
           router.push('/login')
+          isHandling401 = false
         }, 1500)
       } else if (status === 403) {
         ElMessage.error('没有权限执行此操作')
