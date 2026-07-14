@@ -4,6 +4,7 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '../router'
+import { useAppStore } from '../store/app'
 
 const request = axios.create({
   baseURL: '',
@@ -36,9 +37,13 @@ request.interceptors.response.use(
     if (error.response) {
       const { status } = error.response
       if (status === 401) {
-        localStorage.removeItem('admin_token')
-        router.push('/login')
-        ElMessage.error('登录已过期，请重新登录')
+        const store = useAppStore()
+        const message = error.response.data?.message || '登录已过期，请重新登录'
+        ElMessage.error(message)
+        store.logout()
+        setTimeout(() => {
+          router.push('/login')
+        }, 1500)
       } else if (status === 403) {
         ElMessage.error('没有权限执行此操作')
       } else {

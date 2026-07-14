@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	adminv1 "cyi-app/api/cin/admin/v1"
 	productRpc "cyi-app/api/service/product/v1"
 	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/cin/admin/internal/conf"
@@ -69,12 +70,12 @@ func NewTokenValidator(rdb *redis.Client) mid.TokenValidator {
 		storedToken, err := rdb.Get(ctx, fmt.Sprintf("admin:token:%d", claims.ID)).Result()
 		if err != nil {
 			if err == redis.Nil {
-				return fmt.Errorf("token已失效，账号已在其他地方登录")
+				return adminv1.ErrorUnauthorized("token已失效，账号已在其他地方登录")
 			}
-			return fmt.Errorf("检查token失败: %w", err)
+			return adminv1.ErrorUnauthorized("检查token失败")
 		}
 		if storedToken != rawToken {
-			return fmt.Errorf("token已失效，账号已在其他地方登录")
+			return adminv1.ErrorUnauthorized("token已失效，账号已在其他地方登录")
 		}
 		return nil
 	}

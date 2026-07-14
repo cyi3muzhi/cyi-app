@@ -10,7 +10,7 @@ import "validate/validate.proto";
 
 // 管理后台 - 管理员用户服务
 service AdminUser {
-	// 管理员登录验证
+	// 管理员登录验证（token 由 admin BFF 生成）
 	rpc Login (AdminLoginRequest) returns (AdminLoginReply);
 	// 创建管理员
 	rpc CreateAdminUser (CreateAdminUserRequest) returns (CreateAdminUserReply);
@@ -22,10 +22,6 @@ service AdminUser {
 	rpc ListAdminUser (ListAdminUserRequest) returns (ListAdminUserReply);
 	// 冻结/解冻管理员
 	rpc ToggleAdminUserStatus (ToggleAdminUserStatusRequest) returns (ToggleAdminUserStatusReply);
-	// 管理员登出（移除 token）
-	rpc Logout (AdminLogoutRequest) returns (AdminLogoutReply);
-	// 验证 token 是否有效（未被新登录覆盖）
-	rpc ValidateToken (AdminValidateTokenRequest) returns (AdminValidateTokenReply);
 	// 更新管理员头像
 	rpc UpdateAdminAvatar (UpdateAdminAvatarRequest) returns (UpdateAdminAvatarReply);
 }
@@ -48,8 +44,6 @@ message AdminLoginReply {
 	string role = 4;
 	// 是否验证通过
 	bool valid = 5;
-	// 认证令牌（JWT）
-	string token = 6;
 }
 
 message CreateAdminUserRequest {
@@ -125,24 +119,7 @@ message AdminUserInfo {
 	string created_at = 9;
 }
 
-message AdminLogoutRequest {
-	// 要移除的 token
-	string token = 1;
-}
 
-message AdminLogoutReply {
-	bool success = 1;
-}
-
-message AdminValidateTokenRequest {
-	string token = 1;
-}
-
-message AdminValidateTokenReply {
-	bool valid = 1;
-	int64 admin_id = 2;
-	string username = 3;
-}
 
 message UpdateAdminAvatarRequest {
 	// 管理员ID

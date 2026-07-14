@@ -25,8 +25,6 @@ const (
 	AdminUser_GetAdminUser_FullMethodName          = "/api.service.user.v1.AdminUser/GetAdminUser"
 	AdminUser_ListAdminUser_FullMethodName         = "/api.service.user.v1.AdminUser/ListAdminUser"
 	AdminUser_ToggleAdminUserStatus_FullMethodName = "/api.service.user.v1.AdminUser/ToggleAdminUserStatus"
-	AdminUser_Logout_FullMethodName                = "/api.service.user.v1.AdminUser/Logout"
-	AdminUser_ValidateToken_FullMethodName         = "/api.service.user.v1.AdminUser/ValidateToken"
 	AdminUser_UpdateAdminAvatar_FullMethodName     = "/api.service.user.v1.AdminUser/UpdateAdminAvatar"
 )
 
@@ -36,7 +34,7 @@ const (
 //
 // 管理后台 - 管理员用户服务
 type AdminUserClient interface {
-	// 管理员登录验证
+	// 管理员登录验证（token 由 admin BFF 生成）
 	Login(ctx context.Context, in *AdminLoginRequest, opts ...grpc.CallOption) (*AdminLoginReply, error)
 	// 创建管理员
 	CreateAdminUser(ctx context.Context, in *CreateAdminUserRequest, opts ...grpc.CallOption) (*CreateAdminUserReply, error)
@@ -48,10 +46,6 @@ type AdminUserClient interface {
 	ListAdminUser(ctx context.Context, in *ListAdminUserRequest, opts ...grpc.CallOption) (*ListAdminUserReply, error)
 	// 冻结/解冻管理员
 	ToggleAdminUserStatus(ctx context.Context, in *ToggleAdminUserStatusRequest, opts ...grpc.CallOption) (*ToggleAdminUserStatusReply, error)
-	// 管理员登出（移除 token）
-	Logout(ctx context.Context, in *AdminLogoutRequest, opts ...grpc.CallOption) (*AdminLogoutReply, error)
-	// 验证 token 是否有效（未被新登录覆盖）
-	ValidateToken(ctx context.Context, in *AdminValidateTokenRequest, opts ...grpc.CallOption) (*AdminValidateTokenReply, error)
 	// 更新管理员头像
 	UpdateAdminAvatar(ctx context.Context, in *UpdateAdminAvatarRequest, opts ...grpc.CallOption) (*UpdateAdminAvatarReply, error)
 }
@@ -124,26 +118,6 @@ func (c *adminUserClient) ToggleAdminUserStatus(ctx context.Context, in *ToggleA
 	return out, nil
 }
 
-func (c *adminUserClient) Logout(ctx context.Context, in *AdminLogoutRequest, opts ...grpc.CallOption) (*AdminLogoutReply, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AdminLogoutReply)
-	err := c.cc.Invoke(ctx, AdminUser_Logout_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *adminUserClient) ValidateToken(ctx context.Context, in *AdminValidateTokenRequest, opts ...grpc.CallOption) (*AdminValidateTokenReply, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AdminValidateTokenReply)
-	err := c.cc.Invoke(ctx, AdminUser_ValidateToken_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *adminUserClient) UpdateAdminAvatar(ctx context.Context, in *UpdateAdminAvatarRequest, opts ...grpc.CallOption) (*UpdateAdminAvatarReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpdateAdminAvatarReply)
@@ -160,7 +134,7 @@ func (c *adminUserClient) UpdateAdminAvatar(ctx context.Context, in *UpdateAdmin
 //
 // 管理后台 - 管理员用户服务
 type AdminUserServer interface {
-	// 管理员登录验证
+	// 管理员登录验证（token 由 admin BFF 生成）
 	Login(context.Context, *AdminLoginRequest) (*AdminLoginReply, error)
 	// 创建管理员
 	CreateAdminUser(context.Context, *CreateAdminUserRequest) (*CreateAdminUserReply, error)
@@ -172,10 +146,6 @@ type AdminUserServer interface {
 	ListAdminUser(context.Context, *ListAdminUserRequest) (*ListAdminUserReply, error)
 	// 冻结/解冻管理员
 	ToggleAdminUserStatus(context.Context, *ToggleAdminUserStatusRequest) (*ToggleAdminUserStatusReply, error)
-	// 管理员登出（移除 token）
-	Logout(context.Context, *AdminLogoutRequest) (*AdminLogoutReply, error)
-	// 验证 token 是否有效（未被新登录覆盖）
-	ValidateToken(context.Context, *AdminValidateTokenRequest) (*AdminValidateTokenReply, error)
 	// 更新管理员头像
 	UpdateAdminAvatar(context.Context, *UpdateAdminAvatarRequest) (*UpdateAdminAvatarReply, error)
 	mustEmbedUnimplementedAdminUserServer()
@@ -205,12 +175,6 @@ func (UnimplementedAdminUserServer) ListAdminUser(context.Context, *ListAdminUse
 }
 func (UnimplementedAdminUserServer) ToggleAdminUserStatus(context.Context, *ToggleAdminUserStatusRequest) (*ToggleAdminUserStatusReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ToggleAdminUserStatus not implemented")
-}
-func (UnimplementedAdminUserServer) Logout(context.Context, *AdminLogoutRequest) (*AdminLogoutReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
-}
-func (UnimplementedAdminUserServer) ValidateToken(context.Context, *AdminValidateTokenRequest) (*AdminValidateTokenReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ValidateToken not implemented")
 }
 func (UnimplementedAdminUserServer) UpdateAdminAvatar(context.Context, *UpdateAdminAvatarRequest) (*UpdateAdminAvatarReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAdminAvatar not implemented")
@@ -344,42 +308,6 @@ func _AdminUser_ToggleAdminUserStatus_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AdminUser_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AdminLogoutRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AdminUserServer).Logout(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AdminUser_Logout_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminUserServer).Logout(ctx, req.(*AdminLogoutRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AdminUser_ValidateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AdminValidateTokenRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AdminUserServer).ValidateToken(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AdminUser_ValidateToken_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminUserServer).ValidateToken(ctx, req.(*AdminValidateTokenRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _AdminUser_UpdateAdminAvatar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateAdminAvatarRequest)
 	if err := dec(in); err != nil {
@@ -428,14 +356,6 @@ var AdminUser_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ToggleAdminUserStatus",
 			Handler:    _AdminUser_ToggleAdminUserStatus_Handler,
-		},
-		{
-			MethodName: "Logout",
-			Handler:    _AdminUser_Logout_Handler,
-		},
-		{
-			MethodName: "ValidateToken",
-			Handler:    _AdminUser_ValidateToken_Handler,
 		},
 		{
 			MethodName: "UpdateAdminAvatar",

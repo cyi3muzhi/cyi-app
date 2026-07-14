@@ -6,11 +6,7 @@ import (
 
 	v1 "cyi-app/api/service/user/v1"
 
-	server "cyi-app/pkg/kratos/server/middleware"
-
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 // AdminUser 管理员用户
@@ -59,70 +55,23 @@ func NewAdminUserUseCase(repo AdminUserRepo, apiKey string, logger log.Logger) *
 	}
 }
 
-// Login 管理员登录验证，验证通过返回 admin + JWT token，token 存入 Redis
-func (uc *AdminUserUseCase) Login(ctx context.Context, username, password string) (*AdminUser, string, error) {
+// Login 管理员登录验证，验证通过返回 admin 信息（token 由 admin BFF 生成）
+func (uc *AdminUserUseCase) Login(ctx context.Context, username, password string) (*AdminUser, error) {
 	admin, err := uc.repo.FindByUsername(ctx, username)
 	if err != nil {
-		return nil, "", v1.ErrorUserNotFound("管理员账号不存在")
+		return nil, v1.ErrorUserNotFound("管理员账号不存在")
 	}
 	if admin == nil {
-		return nil, "", v1.ErrorUserNotFound("管理员账号不存在")
+		return nil, v1.ErrorUserNotFound("管理员账号不存在")
 	}
 	if admin.Status == 2 {
-		return nil, "", v1.ErrorUserNotFound("管理员账号已冻结")
+		return nil, v1.ErrorUserNotFound("管理员账号已冻结")
 	}
 	if err := uc.repo.VerifyPassword(ctx, admin.ID, password); err != nil {
-		return nil, "", v1.ErrorPasswordError("管理员密码错误")
+		return nil, v1.ErrorPasswordError("管理员密码错误")
 	}
-	// 更新最后登录时间
 	_ = uc.repo.UpdateLastLogin(ctx, admin.ID)
-
-	// JWT 签发 token
-	token, err := uc.generateToken(admin)
-	if err != nil {
-		uc.log.Errorf("JWT签名失败: %v", err)
-		return nil, "", v1.ErrorPasswordError("令牌生成失败")
-	}
-	// token 存入 Redis（后续登出时移除，实现黑名单）
-	if err := uc.repo.SaveToken(ctx, token, admin.ID); err != nil {
-		uc.log.Warnf("token存入Redis失败: %v", err)
-		// 不影响登录，Redis 不可用时 token 仍可正常使用（仅到期失效）
-	}
-	return admin, token, nil
-}
-
-// Logout 管理员登出，移除 Redis 中的 token
-func (uc *AdminUserUseCase) Logout(ctx context.Context, token string) error {
-	return uc.repo.RemoveToken(ctx, token)
-}
-
-// ValidateToken 验证 token 是否有效（未被新登录覆盖）
-func (uc *AdminUserUseCase) ValidateToken(ctx context.Context, token string) (bool, int64, string, error) {
-	valid, adminID, username, err := uc.repo.ValidateToken(ctx, token)
-	if err != nil {
-		return false, 0, "", err
-	}
-	return valid, adminID, username, nil
-}
-
-// generateToken 使用 JWT 签发管理员令牌
-func (uc *AdminUserUseCase) generateToken(admin *AdminUser) (string, error) {
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, server.UserClaims{
-		ID:       admin.ID,
-		Username: admin.Username,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
-			Issuer:    "cin",
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-			ID:        uuid.New().String(),
-		},
-	})
-	signedString, err := claims.SignedString([]byte(uc.apiKey))
-	if err != nil {
-		return "", err
-	}
-	return signedString, nil
+	return admin, nil
 }
 
 // Create 创建管理员

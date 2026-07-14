@@ -9,9 +9,11 @@ import (
 
 	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/cin/admin/internal/biz"
+	mid "cyi-app/pkg/kratos/server/middleware"
 	"cyi-app/pkg/util/rustfs"
 
 	"github.com/go-kratos/kratos/v2/log"
+	jwt2 "github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
@@ -56,7 +58,13 @@ func (r *authRepo) SaveToken(ctx context.Context, userID int64, token string) er
 
 // RemoveToken 登出，从本地 Redis 移除 token
 func (r *authRepo) RemoveToken(ctx context.Context, token string) error {
-	return r.data.redis.Del(ctx, token).Err()
+	claims := &mid.UserClaims{}
+	_, _, err := jwt2.NewParser().ParseUnverified(token, claims)
+	if err != nil {
+		return fmt.Errorf("解析token失败: %w", err)
+	}
+	key := fmt.Sprintf("admin:token:%d", claims.ID)
+	return r.data.redis.Del(ctx, key).Err()
 }
 
 // GetAdminInfo 根据管理员 ID 获取管理员信息（通过 gRPC 调用 user service）

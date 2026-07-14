@@ -26,9 +26,9 @@ func NewAdminUserService(uc *biz.AdminUserUseCase, logger log.Logger) *AdminUser
 	}
 }
 
-// Login 管理员登录验证，返回 token
+// Login 管理员登录验证，返回管理员信息（token 由 admin BFF 生成）
 func (s *AdminUserService) Login(ctx context.Context, req *v1.AdminLoginRequest) (*v1.AdminLoginReply, error) {
-	admin, token, err := s.uc.Login(ctx, req.Username, req.Password)
+	admin, err := s.uc.Login(ctx, req.Username, req.Password)
 	if err != nil || admin == nil {
 		return nil, err
 	}
@@ -38,30 +38,6 @@ func (s *AdminUserService) Login(ctx context.Context, req *v1.AdminLoginRequest)
 		Name:     admin.Name,
 		Role:     admin.Role,
 		Valid:    true,
-		Token:    token,
-	}, nil
-}
-
-// Logout 管理员登出，移除 Redis 中的 token
-func (s *AdminUserService) Logout(ctx context.Context, req *v1.AdminLogoutRequest) (*v1.AdminLogoutReply, error) {
-	if err := s.uc.Logout(ctx, req.Token); err != nil {
-		s.log.Errorf("登出失败: %v", err)
-		return nil, err
-	}
-	s.log.Infof("管理员登出成功")
-	return &v1.AdminLogoutReply{Success: true}, nil
-}
-
-// ValidateToken 验证 token 是否有效（未被新登录覆盖）
-func (s *AdminUserService) ValidateToken(ctx context.Context, req *v1.AdminValidateTokenRequest) (*v1.AdminValidateTokenReply, error) {
-	valid, adminID, username, err := s.uc.ValidateToken(ctx, req.Token)
-	if err != nil {
-		return nil, err
-	}
-	return &v1.AdminValidateTokenReply{
-		Valid:    valid,
-		AdminId:  adminID,
-		Username: username,
 	}, nil
 }
 
