@@ -1,0 +1,119 @@
+syntax = "proto3";
+
+package api.service.user.v1;
+
+option go_package = "cyi-app/api/service/user/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.service.user.v1";
+
+import "validate/validate.proto";
+
+// 管理后台 - 管理员用户服务
+service AdminUser {
+	// 管理员登录验证
+	rpc Login (AdminLoginRequest) returns (AdminLoginReply);
+	// 创建管理员
+	rpc CreateAdminUser (CreateAdminUserRequest) returns (CreateAdminUserReply);
+	// 更新管理员
+	rpc UpdateAdminUser (UpdateAdminUserRequest) returns (UpdateAdminUserReply);
+	// 获取管理员
+	rpc GetAdminUser (GetAdminUserRequest) returns (GetAdminUserReply);
+	// 管理员列表
+	rpc ListAdminUser (ListAdminUserRequest) returns (ListAdminUserReply);
+	// 冻结/解冻管理员
+	rpc ToggleAdminUserStatus (ToggleAdminUserStatusRequest) returns (ToggleAdminUserStatusReply);
+}
+
+message AdminLoginRequest {
+	// 管理员账号
+	string username = 1 [(validate.rules).string = {min_len: 2, max_len: 32}];
+	// 管理员密码
+	string password = 2 [(validate.rules).string = {min_len: 6, max_len: 32}];
+}
+
+message AdminLoginReply {
+	// 管理员ID
+	int64 admin_id = 1;
+	// 用户名
+	string username = 2;
+	// 姓名
+	string name = 3;
+	// 角色
+	string role = 4;
+	// 是否验证通过
+	bool valid = 5;
+	// 认证令牌（JWT）
+	string token = 6;
+}
+
+message CreateAdminUserRequest {
+	// 用户名
+	string username = 1 [(validate.rules).string = {min_len: 2, max_len: 32}];
+	// 密码
+	string password = 2 [(validate.rules).string = {min_len: 6, max_len: 32}];
+	// 姓名
+	string name = 3;
+	// 角色
+	string role = 4;
+	// 邮箱
+	string email = 5;
+}
+
+message CreateAdminUserReply {
+	int64 id = 1;
+}
+
+message UpdateAdminUserRequest {
+	// 管理员ID
+	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+	// 姓名
+	string name = 2;
+	// 角色
+	string role = 3;
+	// 邮箱
+	string email = 4;
+}
+
+message UpdateAdminUserReply {
+	bool success = 1;
+}
+
+message GetAdminUserRequest {
+	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message GetAdminUserReply {
+	AdminUserInfo admin = 1;
+}
+
+message ListAdminUserRequest {
+	int32 page = 1;
+	int32 page_size = 2;
+	string keyword = 3;
+	string status = 4;
+}
+
+message ListAdminUserReply {
+	repeated AdminUserInfo items = 1;
+	int32 total = 2;
+}
+
+message ToggleAdminUserStatusRequest {
+	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message ToggleAdminUserStatusReply {
+	bool success = 1;
+	int32 new_status = 2;
+}
+
+message AdminUserInfo {
+	int64 id = 1;
+	string username = 2;
+	string name = 3;
+	string role = 4;
+	string email = 5;
+	int32 status = 6;
+	string last_login = 7;
+	string created_at = 8;
+}

@@ -143,6 +143,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock, View, Hide } from '@element-plus/icons-vue'
 import { useAppStore } from '../../store/app'
+import { login as loginApi } from '../../api/auth'
 
 const router = useRouter()
 const store = useAppStore()
@@ -178,9 +179,9 @@ const rules = {
 
 /**
  * 处理登录提交
- * 验证表单 -> 模拟登录请求 -> 存储 token -> 跳转仪表盘
+ * 调用后端 API -> 存储 token 和用户信息 -> 跳转仪表盘
  */
-function handleLogin() {
+async function handleLogin() {
   formRef.value.validate(async (valid) => {
     if (!valid) return
 
@@ -188,21 +189,42 @@ function handleLogin() {
     errorMsg.value = ''
 
     try {
-      // 模拟登录请求
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // 调用后端登录 API
+      const res = await loginApi(form.username, form.password)
+
+      // 检查登录结果
+      if (!res.token) {
+        errorMsg.value = '账号或密码错误，请重试'
+        loading.value = false
+        return
+      }
 
       // 登录成功，存储信息
       store.login({
-        name: '管理员',
-        avatar: '管',
-        role: '超级管理员',
-        email: 'admin@yuexuan.com'
+        token: res.token,
+        name: res.admin?.name || '管理员',
+        avatar: res.admin?.avatar || '管',
+        role: res.admin?.role || '超级管理员',
+        email: res.admin?.email || 'admin@yuexuan.com',
+        username: res.admin?.username || form.username
       })
 
       ElMessage.success('登录成功！正在跳转...')
-      router.push('/dashboard')
+      // 等 Pinia 状态更新完毕再跳转
+      await new Promise(r => setTimeout(r, 100))
+      // 直接使用 window.location 跳转，避免 router 守卫可能的时序问题
+      window.location.href = '/dashboard'
     } catch (e) {
-      errorMsg.value = '登录失败，请检查账号密码'
+      const msg = e.response?.data?.message || e.response?.data?.reason || ''
+      if (e.response?.status === 401) {
+        errorMsg.value = msg || '账号或密码错误'
+      } else if (e.response?.status === 422) {
+        errorMsg.value = msg || '账号或密码错误'
+      } else if (e.response?.status === 404) {
+        errorMsg.value = '服务不可用，请稍后重试'
+      } else {
+        errorMsg.value = msg || '登录失败，请检查网络连接或联系管理员'
+      }
     } finally {
       loading.value = false
     }

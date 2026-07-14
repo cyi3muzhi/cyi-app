@@ -32,7 +32,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	registrar := server.NewRegistrar(registry)
 	discovery := server.NewDiscovery(registry)
 	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
-	adminData, cleanup, err := data.NewData(productClient, logger)
+	adminUserClient := data.NewAdminUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	adminData, cleanup, err := data.NewData(productClient, adminUserClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -40,7 +41,9 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	dashboardUseCase := biz.NewDashboardUseCase(dashboardRepo, logger)
 	productRepo := data.NewProductRepo(adminData, logger)
 	productUseCase := biz.NewProductUseCase(productRepo, logger)
-	adminService := service.NewAdminService(dashboardUseCase, productUseCase, logger)
+	authRepo := data.NewAuthRepo(adminData, logger)
+	authUseCase := biz.NewAuthUseCase(authRepo, logger)
+	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, logger)
 	grpcApp := server.NewGRPCServer(grpcServer, adminService)
 	httpApp := server.NewHTTPServer(httpServer, adminService)
 	app := newApp(logger, grpcApp, httpApp, registrar)

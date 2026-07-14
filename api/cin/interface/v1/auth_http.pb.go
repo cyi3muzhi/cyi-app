@@ -31,11 +31,11 @@ type AuthHTTPServer interface {
 
 func RegisterAuthHTTPServer(s *http.Server, srv AuthHTTPServer) {
 	r := s.Route("/")
-	r.POST("/user/v1/login", _Auth_Login0_HTTP_Handler(srv))
+	r.POST("/user/v1/login", _Auth_Login1_HTTP_Handler(srv))
 	r.POST("/user/v1/register", _Auth_Register0_HTTP_Handler(srv))
 }
 
-func _Auth_Login0_HTTP_Handler(srv AuthHTTPServer) func(ctx http.Context) error {
+func _Auth_Login1_HTTP_Handler(srv AuthHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in LoginRequest
 		if err := ctx.Bind(&in); err != nil {

@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+option java_multiple_files = true;
+option java_package = "api.cin.admin.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+// 管理后台 - 认证服务
+service AdminAuth {
+  // 管理员登录
+  rpc Login (LoginRequest) returns (LoginReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/auth/login"
+      body: "*"
+    };
+  }
+  // 管理员登出
+  rpc Logout (LogoutRequest) returns (LogoutReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/auth/logout"
+      body: "*"
+    };
+  }
+  // 获取当前管理员信息
+  rpc GetAdminInfo (GetAdminInfoRequest) returns (GetAdminInfoReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/auth/info"
+    };
+  }
+}
+
+message LoginRequest {
+  // 管理员账号
+  string username = 1 [(validate.rules).string = {min_len: 2, max_len: 32}];
+  // 管理员密码
+  string password = 2 [(validate.rules).string = {min_len: 6, max_len: 32}];
+}
+
+message LoginReply {
+  // 认证令牌
+  string token = 1;
+  // 管理员信息
+  AdminInfo admin = 2;
+}
+
+message LogoutRequest {}
+
+message LogoutReply {
+  bool success = 1;
+}
+
+message GetAdminInfoRequest {}
+
+message GetAdminInfoReply {
+  AdminInfo admin = 1;
+}
+
+// 管理员信息
+message AdminInfo {
+  int64 id = 1;
+  string name = 2;
+  string username = 3;
+  string role = 4;
+  string email = 5;
+  string avatar = 6;
+}

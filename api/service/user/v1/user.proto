@@ -8,6 +8,7 @@ option java_package = "api.service.user.v1";
 
 import "google/protobuf/empty.proto";
 import "validate/validate.proto";
+
 service User {
 	rpc CreateUser (CreateUserRequest) returns (CreateUserReply);
 	rpc UpdateUser (UpdateUserRequest) returns (UpdateUserReply);

@@ -12,44 +12,51 @@ import (
 )
 
 var (
-	Q    = new(Query)
-	User *user
+	Q         = new(Query)
+	AdminUser *adminUser
+	User      *user
 )
 
 func SetDefault(db *gorm.DB) {
 	*Q = *Use(db)
+	AdminUser = &Q.AdminUser
 	User = &Q.User
 }
 
 func Use(db *gorm.DB) *Query {
 	return &Query{
-		db:   db,
-		User: newUser(db),
+		db:        db,
+		AdminUser: newAdminUser(db),
+		User:      newUser(db),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	User user
+	AdminUser adminUser
+	User      user
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:   db,
-		User: q.User.clone(db),
+		db:        db,
+		AdminUser: q.AdminUser.clone(db),
+		User:      q.User.clone(db),
 	}
 }
 
 type queryCtx struct {
-	User userDo
+	AdminUser adminUserDo
+	User      userDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		User: *q.User.WithContext(ctx),
+		AdminUser: *q.AdminUser.WithContext(ctx),
+		User:      *q.User.WithContext(ctx),
 	}
 }
 

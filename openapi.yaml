@@ -6,6 +6,57 @@ info:
     title: ""
     version: 0.0.1
 paths:
+    /admin/v1/auth/info:
+        get:
+            tags:
+                - AdminAuth
+            description: 获取当前管理员信息
+            operationId: AdminAuth_GetAdminInfo
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetAdminInfoReply'
+    /admin/v1/auth/login:
+        post:
+            tags:
+                - AdminAuth
+            description: 管理员登录
+            operationId: AdminAuth_Login
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.LoginRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.LoginReply'
+    /admin/v1/auth/logout:
+        post:
+            tags:
+                - AdminAuth
+            description: 管理员登出
+            operationId: AdminAuth_Logout
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.LogoutRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.LogoutReply'
     /admin/v1/dashboard/order_trend:
         get:
             tags:
@@ -904,6 +955,22 @@ components:
             properties:
                 message:
                     type: string
+        api.cin.admin.v1.AdminInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                username:
+                    type: string
+                role:
+                    type: string
+                email:
+                    type: string
+                avatar:
+                    type: string
+            description: 管理员信息
         api.cin.admin.v1.BatchOperationReply:
             type: object
             properties:
@@ -999,6 +1066,11 @@ components:
             properties:
                 downloadUrl:
                     type: string
+        api.cin.admin.v1.GetAdminInfoReply:
+            type: object
+            properties:
+                admin:
+                    $ref: '#/components/schemas/api.cin.admin.v1.AdminInfo'
         api.cin.admin.v1.GetDashboardStatsReply:
             type: object
             properties:
@@ -1117,6 +1189,33 @@ components:
                 total:
                     type: integer
                     format: int32
+        api.cin.admin.v1.LoginReply:
+            type: object
+            properties:
+                token:
+                    type: string
+                    description: 认证令牌
+                admin:
+                    allOf:
+                        - $ref: '#/components/schemas/api.cin.admin.v1.AdminInfo'
+                    description: 管理员信息
+        api.cin.admin.v1.LoginRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                    description: 管理员账号
+                password:
+                    type: string
+                    description: 管理员密码
+        api.cin.admin.v1.LogoutReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.LogoutRequest:
+            type: object
+            properties: {}
         api.cin.admin.v1.OrderItem:
             type: object
             properties:
@@ -1580,6 +1679,8 @@ components:
                 avatar:
                     type: string
 tags:
+    - name: AdminAuth
+      description: 管理后台 - 认证服务
     - name: AdminOrder
       description: 管理后台 - 订单管理服务
     - name: AdminProduct

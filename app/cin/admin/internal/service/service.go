@@ -21,16 +21,19 @@ type AdminService struct {
 	adminv1.UnimplementedAdminOrderServer
 	adminv1.UnimplementedAdminUserServer
 	adminv1.UnimplementedSettingsServer
+	adminv1.UnimplementedAdminAuthServer
 	log  *log.Helper
 	dc   *biz.DashboardUseCase
 	pc   *biz.ProductUseCase
+	ac   *biz.AuthUseCase
 }
 
 // NewAdminService 创建 AdminService
-func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, logger log.Logger) *AdminService {
+func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.AuthUseCase, logger log.Logger) *AdminService {
 	return &AdminService{
 		log: log.NewHelper(logger),
 		dc:  dc,
 		pc:  pc,
+		ac:  ac,
 	}
 }

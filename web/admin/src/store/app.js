@@ -11,13 +11,8 @@ export const useAppStore = defineStore('app', () => {
   // 当前高亮菜单
   const activeMenu = ref('')
 
-  // 管理员信息
-  const adminInfo = ref({
-    name: '管理员',
-    avatar: '管',
-    role: '超级管理员',
-    email: 'admin@yuexuan.com'
-  })
+  // 管理员信息 - 从 localStorage 读取持久化数据
+  const adminInfo = ref(loadAdminInfo())
 
   // 通知数量
   const notificationCount = ref(3)
@@ -26,25 +21,51 @@ export const useAppStore = defineStore('app', () => {
   const sidebarWidth = computed(() => sidebarCollapsed.value ? '64px' : '240px')
 
   /**
-   * 切换侧边栏折叠状态
+   * 从 localStorage 加载管理员信息
    */
-  function toggleSidebar() {
-    sidebarCollapsed.value = !sidebarCollapsed.value
+  function loadAdminInfo() {
+    try {
+      const saved = localStorage.getItem('admin_info')
+      if (saved) {
+        return JSON.parse(saved)
+      }
+    } catch {
+      // ignore
+    }
+    return null
   }
 
   /**
-   * 登录
+   * 检查是否已登录
+   */
+  const isLoggedIn = computed(() => {
+    return !!localStorage.getItem('admin_token') && !!adminInfo.value
+  })
+
+  /**
+   * 登录 - 保存 token 和管理员信息
    */
   function login(userInfo) {
-    adminInfo.value = userInfo
-    localStorage.setItem('admin_token', 'mock_token_' + Date.now())
+    adminInfo.value = {
+      name: userInfo.name || '管理员',
+      avatar: userInfo.avatar || '管',
+      role: userInfo.role || '超级管理员',
+      email: userInfo.email || '',
+      username: userInfo.username || ''
+    }
+    if (userInfo.token) {
+      localStorage.setItem('admin_token', userInfo.token)
+    }
+    localStorage.setItem('admin_info', JSON.stringify(adminInfo.value))
   }
 
   /**
-   * 登出
+   * 登出 - 清除所有登录状态
    */
   function logout() {
+    adminInfo.value = null
     localStorage.removeItem('admin_token')
+    localStorage.removeItem('admin_info')
   }
 
   return {
@@ -53,7 +74,8 @@ export const useAppStore = defineStore('app', () => {
     adminInfo,
     notificationCount,
     sidebarWidth,
-    toggleSidebar,
+    isLoggedIn,
+    toggleSidebar() { sidebarCollapsed.value = !sidebarCollapsed.value },
     login,
     logout
   }

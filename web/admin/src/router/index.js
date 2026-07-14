@@ -2,6 +2,7 @@
  * 悦选商城管理后台 - 路由配置
  */
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAppStore } from '../store/app'
 
 const routes = [
   {
@@ -69,10 +70,11 @@ const router = createRouter({
 // 路由守卫 - 未登录跳转登录页
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title ? `${to.meta.title} - 悦选商城管理后台` : '悦选商城管理后台'
-  const token = localStorage.getItem('admin_token')
-  if (to.name !== 'Login' && !token) {
+
+  const store = useAppStore()
+  if (to.name !== 'Login' && !store.isLoggedIn) {
     next({ name: 'Login' })
-  } else if (to.name === 'Login' && token) {
+  } else if (to.name === 'Login' && store.isLoggedIn) {
     next({ name: 'Dashboard' })
   } else {
     next()

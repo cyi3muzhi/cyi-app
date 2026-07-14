@@ -1,18 +1,20 @@
 package encryption
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
 
 // TestEncryptPassword 测试密码加密
 func TestEncryptPassword(t *testing.T) {
-	password := "testPassword123"
+	password := "admin123"
 
 	hashed, err := EncryptPassword(password)
 	if err != nil {
 		t.Fatalf("EncryptPassword failed: %v", err)
 	}
+	fmt.Printf("hashed password: %s\n", hashed)
 
 	// 加密后的密码不应该等于原始密码
 	if hashed == password {
