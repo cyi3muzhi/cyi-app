@@ -27,6 +27,7 @@ app/service/user/
 │   └── register.yaml    # 注册配置
 ├── internal/
 │   ├── biz/
+│   │   ├── admin_user.go # 管理员业务逻辑
 │   │   ├── auth.go      # 认证业务逻辑
 │   │   ├── biz.go       # 业务层依赖注入
 │   │   └── user.go      # 用户业务逻辑
@@ -34,12 +35,14 @@ app/service/user/
 │   │   ├── conf.pb.go   # 配置结构体
 │   │   └── conf.proto   # 配置定义
 │   ├── data/
+│   │   ├── admin_user.go # 管理员数据访问
 │   │   ├── curd/
 │   │   │   ├── address.gen.go # 地址 CURD
 │   │   │   ├── gen.go   # 代码生成工具
 │   │   │   └── user.gen.go   # 用户 CURD
 │   │   ├── data.go      # 数据层初始化
 │   │   ├── models/
+│   │   │   ├── admin_user.go # 管理员模型
 │   │   │   └── user.go  # 用户模型
 │   │   ├── pkg/
 │   │   │   └── encryption/
@@ -50,6 +53,7 @@ app/service/user/
 │   │   ├── grpc.go      # gRPC 服务注册
 │   │   └── server.go    # 服务器配置
 │   └── service/
+│       ├── admin_user.go # 管理员服务（gRPC）
 │       ├── service.go   # 服务层依赖注入
 │       └── user.go      # 用户服务
 ├── Makefile             # 构建脚本
@@ -76,11 +80,19 @@ app/service/user/
 | UseCase | 职责 |
 |---------|------|
 | `UserUseCase` | 用户管理（注册、登录、信息管理） |
+| `AdminUserUseCase` | 管理员管理（登录验证、CRUD、头像管理） |
 
 ### 认证流程
 
+**普通用户认证**：
 ```
 用户请求 → JWT Token 验证 → 用户信息查询 → 权限校验 → 业务处理
+```
+
+**管理员认证**：
+```
+admin BFF 请求 → 调用 Login gRPC 验证账号密码 → 返回管理员信息
+（管理员 token 由 admin BFF 生成和管理）
 ```
 
 ### 加密工具
@@ -88,6 +100,8 @@ app/service/user/
 提供密码加密和验证功能，位于 `pkg/encryption/encryption.go`
 
 ### 服务接口
+
+#### 用户服务（User）
 
 | 接口 | 方法 | 说明 |
 |------|------|------|
@@ -100,6 +114,18 @@ app/service/user/
 | `AddAddress` | gRPC | 添加地址 |
 | `UpdateAddress` | gRPC | 更新地址 |
 | `DeleteAddress` | gRPC | 删除地址 |
+
+#### 管理员服务（AdminUser）
+
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `Login` | gRPC | 管理员登录验证（返回管理员信息，token 由 admin BFF 生成） |
+| `CreateAdminUser` | gRPC | 创建管理员 |
+| `UpdateAdminUser` | gRPC | 更新管理员 |
+| `GetAdminUser` | gRPC | 获取管理员信息 |
+| `ListAdminUser` | gRPC | 管理员列表 |
+| `ToggleAdminUserStatus` | gRPC | 冻结/解冻管理员 |
+| `UpdateAdminAvatar` | gRPC | 更新管理员头像 |
 
 ## 运行方式
 

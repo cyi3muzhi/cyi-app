@@ -5,38 +5,43 @@
 ## 架构图
 
 ```
-                          ┌─────────────┐
-                          │   前端 / 客户端  │
-                          └──────┬──────┘
-                                 │
-                          ┌──────▼──────┐
-                          │ CIN Interface │  ← 接口网关（HTTP/gRPC/WS/SSE）
-                          └──┬───┬───┬───┘
-                             │   │   │
-              ┌──────────────┘   │   └──────────────┐
-              │                  │                  │
-       ┌──────▼──────┐   ┌──────▼──────┐   ┌──────▼──────┐
-       │ User Service │   │Order Service│   │Product Service│
-       │    用户服务    │   │   订单服务   │   │    商品服务    │
-       └──────┬──────┘   └──────┬──────┘   └──────┬──────┘
-              │                  │                  │
-              │            ┌─────┴─────┐            │
-              │            │           │            │
-       ┌──────▼──────┐ ┌───▼───┐ ┌─────▼──────┐    │
-       │    MySQL     │ │ NATS  │ │ RabbitMQ  │    │
-       │    Redis     │ │Consumer│ │ Consumer  │    │
-       └─────────────┘ └───────┘ └────────────┘    │
-                                                    │
-                          ┌─────────────────────────┘
-                          │
-                   ┌──────▼──────┐
-                   │Blades Service│  ← AI 智能助手（DeepSeek）
-                   └─────────────┘
+   ┌────────────────┐                ┌────────────────┐
+   │   用户端前端     │                │  管理后台前端    │
+   │  (H5/小程序等)  │                │  (web/admin)   │
+   └───────┬────────┘                └───────┬────────┘
+           │                                 │
+   ┌───────▼────────┐                ┌───────▼────────┐
+   │ CIN Interface  │                │   CIN Admin    │
+   │  接口网关       │                │  管理后台 BFF   │
+   │ HTTP/gRPC/WS/SSE│               │  HTTP          │
+   └──┬───┬───┬─────┘                └──┬───┬────────┘
+      │   │   │                         │   │
+      │   │   └──────────┬──────────────┘   │
+      │   │              │                  │
+      │   │     ┌────────▼────────┐         │
+      │   │     │  User Service   │◄────────┘
+      │   │     │    用户服务      │
+      │   │     └───────┬─────────┘
+      │   │              │
+   ┌──▼───▼──────┐  ┌───▼──────┐  ┌──────────────┐
+   │Order Service│  │ NATS     │  │Product Service│
+   │  订单服务    │  │ Consumer │  │   商品服务     │
+   └──────┬──────┘  └──────────┘  └──────┬───────┘
+          │                              │
+          │     ┌──────────┐             │
+          └────►│ RabbitMQ │◄────────────┘
+                │ Consumer │
+                └──────────┘
 
-     ┌──────────────────────────────────────────────────┐
-     │                   基础设施层                       │
-     │  Consul │ Jaeger │ Prometheus │ Grafana │ ELK    │
-     └──────────────────────────────────────────────────┘
+          ┌────────────────┐
+          │ Blades Service │  ← AI 智能助手（DeepSeek）
+          └────────────────┘
+
+   ┌──────────────────────────────────────────────────┐
+   │                   基础设施层                       │
+   │  Consul │ Jaeger │ Prometheus │ Grafana │ ELK    │
+   │  MySQL  │ Redis  │ NATS      │ RabbitMQ │ RustFS │
+   └──────────────────────────────────────────────────┘
 ```
 
 ## 技术栈
@@ -66,6 +71,7 @@
 | 服务 | 目录 | 说明 | 文档 |
 |------|------|------|------|
 | CIN Interface | `app/cin/interface` | 接口网关，统一入口 | [README](app/cin/interface/README.md) |
+| Admin BFF | `app/cin/admin` | 管理后台 BFF | [README](app/cin/admin/README.md) |
 | Order Service | `app/service/order` | 订单管理（状态机） | [README](app/service/order/README.md) |
 | Product Service | `app/service/product` | 商品 & 库存管理 | [README](app/service/product/README.md) |
 | User Service | `app/service/user` | 用户认证 & 管理 | [README](app/service/user/README.md) |
@@ -104,7 +110,9 @@
 cyi-app/
 ├── api/                    # Protobuf API 定义
 │   ├── blades/v1/          # AI 助手 API
-│   ├── cin/interface/v1/   # 接口网关 API
+│   ├── cin/
+│   │   ├── admin/v1/       # 管理后台 API
+│   │   └── interface/v1/   # 接口网关 API
 │   ├── service/order/v1/   # 订单 API
 │   ├── service/product/v1/ # 商品 & 库存 API
 │   ├── service/user/v1/    # 用户 API
@@ -112,7 +120,9 @@ cyi-app/
 │   └── task/v1/            # 任务 API
 ├── app/                    # 服务实现
 │   ├── blades/             # AI 助手服务
-│   ├── cin/interface/      # 接口网关
+│   ├── cin/
+│   │   ├── admin/           # 管理后台 BFF
+│   │   └── interface/      # 接口网关
 │   ├── job/                # 定时任务服务
 │   ├── nats/               # NATS 消费者
 │   ├── rabbit/             # RabbitMQ 消费者
