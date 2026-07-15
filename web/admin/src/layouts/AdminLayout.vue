@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="admin-layout">
     <!-- 侧边栏遮罩（移动端） -->
     <div
@@ -34,6 +34,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import AppSidebar from '../components/AppSidebar.vue'
 import AppTopbar from '../components/AppTopbar.vue'
 import { useAppStore } from '../store/app'
+import { getMyPermissions } from '../api/auth'
 
 const store = useAppStore()
 const windowWidth = ref(window.innerWidth)
@@ -45,9 +46,25 @@ function handleResize() {
   }
 }
 
+// 页面加载/刷新时加载权限
+async function loadPermissions() {
+  if (!store.adminInfo?.role) return
+  try {
+    const permRes = await getMyPermissions()
+    const perms: Record<string, Record<string, boolean>> = {}
+    for (const modKey in permRes.permissions) {
+      perms[modKey] = permRes.permissions[modKey]?.values || {}
+    }
+    store.setPermissions(perms)
+  } catch {
+    // 权限加载失败不影响页面展示
+  }
+}
+
 onMounted(() => {
   window.addEventListener('resize', handleResize)
   handleResize()
+  loadPermissions()
 })
 
 onUnmounted(() => {

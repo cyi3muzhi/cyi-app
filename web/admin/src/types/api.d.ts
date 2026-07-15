@@ -14,6 +14,9 @@ export interface AdminInfo {
   position: string
   bio: string
   avatar: string
+  createdAt?: string
+  lastLogin?: string
+  /** @deprecated 使用 createdAt/lastLogin */
   created_at?: string
   last_login?: string
 }

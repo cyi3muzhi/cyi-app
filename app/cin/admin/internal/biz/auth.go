@@ -41,6 +41,8 @@ type AuthRepo interface {
 	UpdateAvatar(ctx context.Context, adminID int64, avatarBase64 string) (string, error)
 	// UpdateAdminInfo 更新管理员基本信息
 	UpdateAdminInfo(ctx context.Context, adminID int64, info *AdminAuth) error
+	// GetOnlineAdminIds 获取当前在线管理员的 ID 列表（Redis 中有 token 的）
+	GetOnlineAdminIds(ctx context.Context) ([]int64, error)
 }
 
 // AuthUseCase 认证业务逻辑
@@ -99,6 +101,11 @@ func (uc *AuthUseCase) Logout(ctx context.Context, token string) error {
 // GetAdminInfo 根据管理员 ID 获取管理员信息
 func (uc *AuthUseCase) GetAdminInfo(ctx context.Context, adminID int64) (*AdminAuth, error) {
 	return uc.repo.GetAdminInfo(ctx, adminID)
+}
+
+// GetOnlineAdminIds 获取当前在线管理员 ID 列表
+func (uc *AuthUseCase) GetOnlineAdminIds(ctx context.Context) ([]int64, error) {
+	return uc.repo.GetOnlineAdminIds(ctx)
 }
 
 // UpdateAvatar 更新管理员头像（接收 Base64 图片）

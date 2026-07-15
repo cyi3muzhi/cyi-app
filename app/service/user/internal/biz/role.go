@@ -16,6 +16,7 @@ type RoleRepo interface {
 	UpdateRolePermissions(ctx context.Context, role string, permissions map[string]map[string]bool) error
 	ListAllPermissions(ctx context.Context) []PermModule
 	CheckPermission(ctx context.Context, role, object, action string) (bool, error)
+	HasPolicyForOperation(ctx context.Context, operation string) (bool, error)
 }
 
 // RoleUseCase 角色管理业务逻辑
@@ -94,4 +95,9 @@ func (uc *RoleUseCase) ListAllPermissions(ctx context.Context) []PermModule {
 // CheckPermission 校验用户角色是否有权限执行操作
 func (uc *RoleUseCase) CheckPermission(ctx context.Context, role, object, action string) (bool, error) {
 	return uc.repo.CheckPermission(ctx, role, object, action)
+}
+
+// HasPolicyForOperation 检查是否有任何策略引用了指定操作
+func (uc *RoleUseCase) HasPolicyForOperation(ctx context.Context, operation string) (bool, error) {
+	return uc.repo.HasPolicyForOperation(ctx, operation)
 }

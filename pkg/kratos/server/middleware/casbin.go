@@ -13,20 +13,21 @@ import (
 // EnforcerProvider 提供 Casbin Enforcer 的接口（方便测试时 mock）
 type EnforcerProvider interface {
 	// Enforce 判断用户是否有权限执行操作
-	// 使用 variadic interface{} 以匹配 casbin.Enforcer 的签名
 	Enforce(rvals ...interface{}) (bool, error)
+	// GetFilteredPolicy 获取过滤后的策略（用于检查操作是否有策略定义）
+	GetFilteredPolicy(fieldIndex int, fieldValues ...string) ([][]string, error)
 }
 
 // PermissionMiddleware 创建 Casbin 权限校验中间件
 // 从 JWT claims 中提取用户角色，然后使用 Casbin Enforcer 校验权限
-// 无 JWT claims 时放行（说明该接口在白名单中，由 AuthServiceMiddleware 跳过）
+// 无 JWT claims 时放行（如登录）
+// 规则：如果某个 operation 没有任何 Casbin 策略定义，则允许所有登录用户访问；
+// 如果有策略定义，则按 Enforce 结果判断
 func PermissionMiddleware(enforcer EnforcerProvider) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
-			// 从 JWT claims 中提取用户角色
 			claims, ok := jwt.FromContext(ctx)
 			if !ok {
-				// 无 claims = 白名单接口（如登录），放行
 				return handler(ctx, req)
 			}
 			userClaims, ok := claims.(*UserClaims)
@@ -34,22 +35,29 @@ func PermissionMiddleware(enforcer EnforcerProvider) middleware.Middleware {
 				return nil, fmt.Errorf("权限校验失败: 无效的 claims 类型")
 			}
 
-			// 从 transport context 中获取操作信息
 			tr, ok := transport.FromServerContext(ctx)
 			if !ok {
 				return nil, fmt.Errorf("权限校验失败: 无法获取请求上下文")
 			}
 
-			// Operation 格式: /api.cin.admin.v1.AdminProduct/DeleteProduct
 			operation := tr.Operation()
-			// HTTP method（仅 HTTP 协议有，gRPC 用 operation 自身）
 			method := tr.RequestHeader().Get("X-Method")
 			if method == "" {
 				method = operation
 			}
 
-			// 执行 Casbin 权限校验: Enforce(subject, object, action)
-			ok, err := enforcer.Enforce(userClaims.Role, operation, method)
+			// 检查该 operation 是否有任何 Casbin 策略定义
+			// 如果没有策略定义，说明该接口无需权限管控，直接放行
+			policies, err := enforcer.GetFilteredPolicy(1, operation)
+			if err != nil {
+				return nil, fmt.Errorf("权限校验异常: %w", err)
+			}
+			if len(policies) == 0 {
+				return handler(ctx, req)
+			}
+
+			// 有策略定义 → 执行 Casbin 权限校验
+			ok, err = enforcer.Enforce(userClaims.Role, operation, method)
 			if err != nil {
 				return nil, fmt.Errorf("权限校验异常: %w", err)
 			}

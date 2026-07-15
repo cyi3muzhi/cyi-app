@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.2
-// source: cin/admin/v1/auth.proto
+// source: api/cin/admin/v1/auth.proto
 
 package adminv1
 
@@ -19,11 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AdminAuth_Login_FullMethodName           = "/api.cin.admin.v1.AdminAuth/Login"
-	AdminAuth_Logout_FullMethodName          = "/api.cin.admin.v1.AdminAuth/Logout"
-	AdminAuth_GetAdminInfo_FullMethodName    = "/api.cin.admin.v1.AdminAuth/GetAdminInfo"
-	AdminAuth_ChangeAvatar_FullMethodName    = "/api.cin.admin.v1.AdminAuth/ChangeAvatar"
-	AdminAuth_UpdateAdminInfo_FullMethodName = "/api.cin.admin.v1.AdminAuth/UpdateAdminInfo"
+	AdminAuth_Login_FullMethodName             = "/api.cin.admin.v1.AdminAuth/Login"
+	AdminAuth_Logout_FullMethodName            = "/api.cin.admin.v1.AdminAuth/Logout"
+	AdminAuth_GetAdminInfo_FullMethodName      = "/api.cin.admin.v1.AdminAuth/GetAdminInfo"
+	AdminAuth_ChangeAvatar_FullMethodName      = "/api.cin.admin.v1.AdminAuth/ChangeAvatar"
+	AdminAuth_UpdateAdminInfo_FullMethodName   = "/api.cin.admin.v1.AdminAuth/UpdateAdminInfo"
+	AdminAuth_GetOnlineAdminIds_FullMethodName = "/api.cin.admin.v1.AdminAuth/GetOnlineAdminIds"
+	AdminAuth_GetMyPermissions_FullMethodName  = "/api.cin.admin.v1.AdminAuth/GetMyPermissions"
 )
 
 // AdminAuthClient is the client API for AdminAuth service.
@@ -42,6 +44,10 @@ type AdminAuthClient interface {
 	ChangeAvatar(ctx context.Context, in *ChangeAvatarRequest, opts ...grpc.CallOption) (*ChangeAvatarReply, error)
 	// 更新基本信息
 	UpdateAdminInfo(ctx context.Context, in *UpdateAdminInfoRequest, opts ...grpc.CallOption) (*UpdateAdminInfoReply, error)
+	// 获取当前在线管理员 ID 列表
+	GetOnlineAdminIds(ctx context.Context, in *GetOnlineAdminIdsRequest, opts ...grpc.CallOption) (*GetOnlineAdminIdsReply, error)
+	// 获取当前登录用户的角色权限（无需角色管理权限）
+	GetMyPermissions(ctx context.Context, in *GetMyPermissionsRequest, opts ...grpc.CallOption) (*GetMyPermissionsReply, error)
 }
 
 type adminAuthClient struct {
@@ -102,6 +108,26 @@ func (c *adminAuthClient) UpdateAdminInfo(ctx context.Context, in *UpdateAdminIn
 	return out, nil
 }
 
+func (c *adminAuthClient) GetOnlineAdminIds(ctx context.Context, in *GetOnlineAdminIdsRequest, opts ...grpc.CallOption) (*GetOnlineAdminIdsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetOnlineAdminIdsReply)
+	err := c.cc.Invoke(ctx, AdminAuth_GetOnlineAdminIds_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminAuthClient) GetMyPermissions(ctx context.Context, in *GetMyPermissionsRequest, opts ...grpc.CallOption) (*GetMyPermissionsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMyPermissionsReply)
+	err := c.cc.Invoke(ctx, AdminAuth_GetMyPermissions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminAuthServer is the server API for AdminAuth service.
 // All implementations must embed UnimplementedAdminAuthServer
 // for forward compatibility.
@@ -118,6 +144,10 @@ type AdminAuthServer interface {
 	ChangeAvatar(context.Context, *ChangeAvatarRequest) (*ChangeAvatarReply, error)
 	// 更新基本信息
 	UpdateAdminInfo(context.Context, *UpdateAdminInfoRequest) (*UpdateAdminInfoReply, error)
+	// 获取当前在线管理员 ID 列表
+	GetOnlineAdminIds(context.Context, *GetOnlineAdminIdsRequest) (*GetOnlineAdminIdsReply, error)
+	// 获取当前登录用户的角色权限（无需角色管理权限）
+	GetMyPermissions(context.Context, *GetMyPermissionsRequest) (*GetMyPermissionsReply, error)
 	mustEmbedUnimplementedAdminAuthServer()
 }
 
@@ -142,6 +172,12 @@ func (UnimplementedAdminAuthServer) ChangeAvatar(context.Context, *ChangeAvatarR
 }
 func (UnimplementedAdminAuthServer) UpdateAdminInfo(context.Context, *UpdateAdminInfoRequest) (*UpdateAdminInfoReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAdminInfo not implemented")
+}
+func (UnimplementedAdminAuthServer) GetOnlineAdminIds(context.Context, *GetOnlineAdminIdsRequest) (*GetOnlineAdminIdsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOnlineAdminIds not implemented")
+}
+func (UnimplementedAdminAuthServer) GetMyPermissions(context.Context, *GetMyPermissionsRequest) (*GetMyPermissionsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMyPermissions not implemented")
 }
 func (UnimplementedAdminAuthServer) mustEmbedUnimplementedAdminAuthServer() {}
 func (UnimplementedAdminAuthServer) testEmbeddedByValue()                   {}
@@ -254,6 +290,42 @@ func _AdminAuth_UpdateAdminInfo_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminAuth_GetOnlineAdminIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetOnlineAdminIdsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminAuthServer).GetOnlineAdminIds(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminAuth_GetOnlineAdminIds_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminAuthServer).GetOnlineAdminIds(ctx, req.(*GetOnlineAdminIdsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminAuth_GetMyPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMyPermissionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminAuthServer).GetMyPermissions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminAuth_GetMyPermissions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminAuthServer).GetMyPermissions(ctx, req.(*GetMyPermissionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminAuth_ServiceDesc is the grpc.ServiceDesc for AdminAuth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -281,7 +353,15 @@ var AdminAuth_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "UpdateAdminInfo",
 			Handler:    _AdminAuth_UpdateAdminInfo_Handler,
 		},
+		{
+			MethodName: "GetOnlineAdminIds",
+			Handler:    _AdminAuth_GetOnlineAdminIds_Handler,
+		},
+		{
+			MethodName: "GetMyPermissions",
+			Handler:    _AdminAuth_GetMyPermissions_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "cin/admin/v1/auth.proto",
+	Metadata: "api/cin/admin/v1/auth.proto",
 }

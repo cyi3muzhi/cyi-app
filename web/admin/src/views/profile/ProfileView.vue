@@ -28,7 +28,7 @@
         <div class="overview-info">
           <div class="info-top">
             <h2 class="user-name">{{ basicForm.realName }}</h2>
-            <el-tag class="role-badge" size="small" type="primary" effect="dark">超级管理员</el-tag>
+            <el-tag class="role-badge" size="small" type="primary" effect="dark">{{ roleDisplayName }}</el-tag>
           </div>
           <p class="user-bio">{{ basicForm.bio }}</p>
         </div>
@@ -102,7 +102,9 @@
           </el-col>
           <el-col :xs="24" :md="12">
             <el-form-item label="所属部门">
-              <el-input v-model="basicForm.department" placeholder="请输入所属部门" />
+              <el-select v-model="basicForm.department" placeholder="请选择所属部门" style="width:100%">
+                <el-option v-for="d in deptOptions" :key="d" :label="d" :value="d" />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :xs="24" :md="12">
@@ -230,7 +232,7 @@
  * 个人信息页面组件
  * 展示用户概览、基本资料编辑、安全设置和角色权限管理
  */
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Message, Iphone, Clock, Timer,
@@ -238,6 +240,16 @@ import {
 } from '@element-plus/icons-vue'
 import { useAppStore } from '../../store/app'
 import { getAdminInfo, changeAvatar, updateAdminInfo } from '../../api/auth'
+import { getRoleNameMap } from '../../api/staff'
+
+/** 角色名称映射 */
+const roleNameMap = ref<Record<string, string>>({})
+
+/** 角色显示名 */
+const roleDisplayName = computed(() => {
+  const slug = store.adminInfo?.role || ''
+  return roleNameMap.value[slug] || slug
+})
 
 /** 基本信息表单引用 */
 const basicFormRef = ref(null)
@@ -250,6 +262,9 @@ const store = useAppStore()
 
 /** 头像 URL */
 const avatarUrl = ref('')
+
+/** 部门选项 */
+const deptOptions = ['技术部', '运营部', '客服部', '数据部', '市场部', '人力部', '财务部']
 
 /** 基本信息表单数据 */
 const basicForm = reactive({
@@ -277,8 +292,8 @@ async function loadAdminInfo() {
       basicForm.department = res.admin.department || ''
       basicForm.position = res.admin.position || ''
       basicForm.bio = res.admin.bio || ''
-      basicForm.createdAt = (res.admin as any).created_at || ''
-      basicForm.lastLogin = (res.admin as any).last_login || ''
+      basicForm.createdAt = res.admin?.createdAt || ''
+      basicForm.lastLogin = res.admin?.lastLogin || ''
       avatarUrl.value = res.admin.avatar || ''
 
       // 同步更新 store，使顶部栏头像保持最新
@@ -292,8 +307,15 @@ async function loadAdminInfo() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   loadAdminInfo()
+  // 加载角色显示名称映射
+  try {
+    const res = await getRoleNameMap()
+    roleNameMap.value = res.items || {}
+  } catch {
+    // 忽略
+  }
 })
 
 /**

@@ -8,6 +8,7 @@ option java_package = "api.cin.admin.v1";
 
 import "validate/validate.proto";
 import "google/api/annotations.proto";
+import "api/cin/admin/v1/role.proto";
 
 // 管理后台 - 认证服务
 service AdminAuth {
@@ -43,6 +44,18 @@ service AdminAuth {
     option (google.api.http) = {
       put: "/admin/v1/auth/info"
       body: "*"
+    };
+  }
+  // 获取当前在线管理员 ID 列表
+  rpc GetOnlineAdminIds (GetOnlineAdminIdsRequest) returns (GetOnlineAdminIdsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/auth/online-ids"
+    };
+  }
+  // 获取当前登录用户的角色权限（无需角色管理权限）
+  rpc GetMyPermissions (GetMyPermissionsRequest) returns (GetMyPermissionsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/auth/my-permissions"
     };
   }
 }
@@ -120,4 +133,16 @@ message UpdateAdminInfoRequest {
 
 message UpdateAdminInfoReply {
   bool success = 1;
+}
+
+message GetOnlineAdminIdsRequest {}
+
+message GetOnlineAdminIdsReply {
+  repeated int64 ids = 1;
+}
+
+message GetMyPermissionsRequest {}
+
+message GetMyPermissionsReply {
+  map<string, PermissionValue> permissions = 1;
 }

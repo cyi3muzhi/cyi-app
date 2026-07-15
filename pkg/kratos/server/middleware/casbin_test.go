@@ -13,11 +13,16 @@ import (
 // ---------- Mock Enforcer ----------
 
 type mockEnforcer struct {
-	enforceFn func(rvals ...interface{}) (bool, error)
+	enforceFn        func(rvals ...interface{}) (bool, error)
+	filteredPolicies [][]string // 预定义过滤后的策略
 }
 
 func (m *mockEnforcer) Enforce(rvals ...interface{}) (bool, error) {
 	return m.enforceFn(rvals...)
+}
+
+func (m *mockEnforcer) GetFilteredPolicy(fieldIndex int, fieldValues ...string) ([][]string, error) {
+	return m.filteredPolicies, nil
 }
 
 // ---------- Mock Transport ----------
@@ -27,8 +32,8 @@ type mockTransport struct {
 	method    string
 }
 
-func (m *mockTransport) Kind() transport.Kind           { return transport.KindHTTP }
-func (m *mockTransport) Endpoint() string               { return "" }
+func (m *mockTransport) Kind() transport.Kind            { return transport.KindHTTP }
+func (m *mockTransport) Endpoint() string                { return "" }
 func (m *mockTransport) Operation() string               { return m.operation }
 func (m *mockTransport) RequestHeader() transport.Header { return &mockHeader{m.method} }
 func (m *mockTransport) ReplyHeader() transport.Header   { return &mockHeader{} }
@@ -43,8 +48,8 @@ func (h *mockHeader) Get(key string) string {
 	}
 	return ""
 }
-func (h *mockHeader) Set(key, value string) {}
-func (h *mockHeader) Add(key, value string) {}
+func (h *mockHeader) Set(key, value string)      {}
+func (h *mockHeader) Add(key, value string)      {}
 func (h *mockHeader) Values(key string) []string { return nil }
 func (h *mockHeader) Keys() []string             { return nil }
 
@@ -101,6 +106,8 @@ func TestPermissionMiddleware_Allowed(t *testing.T) {
 			}
 			return true, nil
 		},
+		// 模拟有策略定义
+		filteredPolicies: [][]string{{"super_admin", "/api.cin.admin.v1.AdminProduct/DeleteProduct", "DELETE"}},
 	}
 
 	mw := PermissionMiddleware(enforcer)
@@ -116,6 +123,8 @@ func TestPermissionMiddleware_Denied(t *testing.T) {
 		enforceFn: func(rvals ...interface{}) (bool, error) {
 			return false, nil
 		},
+		// 模拟有策略定义
+		filteredPolicies: [][]string{{"finance", "/api.cin.admin.v1.AdminProduct/DeleteProduct", "DELETE"}},
 	}
 
 	mw := PermissionMiddleware(enforcer)
@@ -154,6 +163,8 @@ func TestPermissionMiddleware_EnforceError(t *testing.T) {
 		enforceFn: func(rvals ...interface{}) (bool, error) {
 			return false, errors.New("casbin internal error")
 		},
+		// 模拟有策略定义，才会进入 Enforce 调用
+		filteredPolicies: [][]string{{"super_admin", "/api.cin.admin.v1.AdminProduct/DeleteProduct", "DELETE"}},
 	}
 
 	mw := PermissionMiddleware(enforcer)
@@ -172,6 +183,7 @@ func TestPermissionMiddleware_MultipleRoles(t *testing.T) {
 		operation string
 		method    string
 		allowed   bool
+		policies  [][]string
 	}{
 		{
 			name:      "超管可以删除商品",
@@ -179,6 +191,7 @@ func TestPermissionMiddleware_MultipleRoles(t *testing.T) {
 			operation: "/api.cin.admin.v1.AdminProduct/DeleteProduct",
 			method:    "DELETE",
 			allowed:   true,
+			policies:  [][]string{{"超级管理员", "/api.cin.admin.v1.AdminProduct/DeleteProduct", "DELETE"}},
 		},
 		{
 			name:      "运营编辑可以获取商品列表",
@@ -186,6 +199,7 @@ func TestPermissionMiddleware_MultipleRoles(t *testing.T) {
 			operation: "/api.cin.admin.v1.AdminProduct/ListProducts",
 			method:    "GET",
 			allowed:   true,
+			policies:  [][]string{{"运营编辑", "/api.cin.admin.v1.AdminProduct/ListProducts", "GET"}},
 		},
 		{
 			name:      "财务不能创建商品",
@@ -193,6 +207,7 @@ func TestPermissionMiddleware_MultipleRoles(t *testing.T) {
 			operation: "/api.cin.admin.v1.AdminProduct/CreateProduct",
 			method:    "POST",
 			allowed:   false,
+			policies:  [][]string{{"运营编辑", "/api.cin.admin.v1.AdminProduct/CreateProduct", "POST"}},
 		},
 	}
 
@@ -202,6 +217,7 @@ func TestPermissionMiddleware_MultipleRoles(t *testing.T) {
 				enforceFn: func(rvals ...interface{}) (bool, error) {
 					return tt.allowed, nil
 				},
+				filteredPolicies: tt.policies,
 			}
 
 			mw := PermissionMiddleware(enforcer)

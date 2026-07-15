@@ -34,7 +34,7 @@
             <el-dropdown-item disabled>
               <div style="text-align: center;">
                 <div style="font-weight:600;">{{ store.adminInfo?.name || '管理员' }}</div>
-                <div style="font-size:12px;color:var(--shop-muted-foreground);">{{ store.adminInfo?.role || '' }}</div>
+                <div style="font-size:12px;color:var(--shop-muted-foreground);">{{ roleDisplayName }}</div>
               </div>
             </el-dropdown-item>
             <el-dropdown-item divided @click="goProfile">个人信息</el-dropdown-item>
@@ -50,16 +50,34 @@
 /**
  * 顶部栏组件
  */
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { useAppStore } from '../store/app'
 import { logout as logoutApi } from '../api/auth'
+import { getRoleNameMap } from '../api/staff'
 
 const route = useRoute()
 const router = useRouter()
 const store = useAppStore()
+
+// 角色标识 → 显示名称映射（从角色管理 API 动态加载）
+const roleNameMap = ref<Record<string, string>>({})
+
+const roleDisplayName = computed(() => {
+  const slug = store.adminInfo?.role
+  return roleNameMap.value[slug || ''] || slug || ''
+})
+
+onMounted(async () => {
+  try {
+    const res = await getRoleNameMap()
+    roleNameMap.value = res.items || {}
+  } catch {
+    // 加载失败时使用原始值显示
+  }
+})
 
 const currentTime = ref('')
 let timer = null

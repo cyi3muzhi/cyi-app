@@ -38,12 +38,12 @@
       <div class="filter-bar">
         <div class="filter-group">
           <label>搜索</label>
-          <el-input v-model="searchKeyword" placeholder="姓名 / 手机号 / 邮箱" clearable size="default" style="width:200px" @input="applyFilters" />
+          <el-input v-model="searchKeyword" placeholder="姓名 / 手机号 / 邮箱" clearable size="default" style="width:200px" @input="onSearchInput" />
         </div>
         <div class="filter-group">
           <label>角色</label>
           <el-select v-model="roleFilter" placeholder="全部" clearable size="default" style="width:150px" @change="applyFilters">
-            <el-option v-for="r in roleOptions" :key="r" :label="r" :value="r" />
+            <el-option v-for="r in roleOptions" :key="r.value" :label="r.label" :value="r.value" />
           </el-select>
         </div>
         <div class="filter-group">
@@ -60,53 +60,82 @@
 
     <!-- 员工表格 -->
     <el-card class="table-card" shadow="never">
-      <el-table :data="filteredStaff" stripe style="width:100%">
-        <el-table-column label="姓名" min-width="160">
+      <el-table :data="staffList" stripe style="width:100%" v-loading="loading">
+        <el-table-column label="姓名" min-width="180">
           <template #default="{ row }">
             <div class="staff-cell">
-              <div class="staff-avatar" :style="{ background: row.color }">{{ row.avatar }}</div>
+              <div class="staff-avatar" :style="{ background: row.avatar?.startsWith('http') ? 'transparent' : getAvatarColor(row.name) }">
+                <img v-if="row.avatar?.startsWith('http')" :src="row.avatar" class="staff-avatar-img" />
+                <span v-else>{{ row.name?.charAt(0) || '?' }}</span>
+              </div>
               <div>
                 <div class="staff-name" @click="editStaff(row.id)">{{ row.name }}</div>
+                <div class="staff-online">
+                  <span :class="['online-dot', onlineSet.has(row.id) ? 'on' : 'off']" />
+                  {{ onlineSet.has(row.id) ? '在线' : '离线' }}
+                </div>
               </div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="账号" min-width="180">
+        <el-table-column label="账号" width="130">
           <template #default="{ row }">
-            <div class="staff-phone">{{ row.phone }}</div>
+            <span>{{ row.username }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="联系方式" min-width="180">
+          <template #default="{ row }">
+            <div class="staff-phone">{{ row.phone || '-' }}</div>
             <div class="staff-email">{{ row.email }}</div>
           </template>
         </el-table-column>
         <el-table-column label="所属角色" width="140">
           <template #default="{ row }">
-            <el-tag :type="getRoleTagType(row.role)" size="small" effect="plain">{{ row.role }}</el-tag>
+            <el-tag :type="getRoleTagType(row.role)" size="small" effect="plain">{{ roleDisplayName(row.role) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="dept" label="部门" width="100" />
+        <el-table-column prop="department" label="部门" width="100" />
         <el-table-column label="最后登录" width="150">
           <template #default="{ row }">
-            <span class="login-time">{{ row.lastLogin }}</span>
+            <span class="login-time">{{ row.lastLogin || '尚未登录' }}</span>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="90" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'danger'" size="small" effect="plain">
-              {{ row.status === 'active' ? '启用' : '禁用' }}
+            <el-tag :type="row.status === 1 ? 'success' : 'danger'" size="small" effect="plain">
+              {{ row.status === 1 ? '启用' : '禁用' }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
-            <el-button text size="small" type="primary" @click="editStaff(row.id)">编辑</el-button>
-            <el-button
-              text size="small"
-              :type="row.status === 'active' ? 'danger' : 'success'"
-              @click="toggleStaff(row.id)">
-              {{ row.status === 'active' ? '禁用' : '启用' }}
-            </el-button>
+            <template v-if="row.role === 'super_admin' || row.role === '超级管理员'">
+               <span class="staff-system-tag">系统账号</span>
+             </template>
+             <template v-else>
+              <el-button text size="small" type="primary" @click="editStaff(row.id)">编辑</el-button>
+              <el-button
+                text size="small"
+                :type="row.status === 1 ? 'danger' : 'success'"
+                @click="toggleStaff(row.id)">
+                {{ row.status === 1 ? '禁用' : '启用' }}
+              </el-button>
+            </template>
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- 分页 -->
+      <div class="pagination-wrapper" v-if="total > 0">
+        <el-pagination
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :total="total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @change="loadStaffList"
+        />
+      </div>
     </el-card>
 
     <!-- 新增/编辑员工对话框 -->
@@ -114,8 +143,13 @@
       v-model="staffDialogVisible"
       :title="editingId ? '编辑员工' : '添加员工'"
       width="560px"
-      :close-on-click-modal="false">
+      :close-on-click-modal="false"
+      @close="resetStaffForm">
       <el-form ref="staffFormRef" :model="staffForm" :rules="staffFormRules" label-width="80px">
+        <el-form-item label="登录账号" prop="username">
+          <el-input v-model="staffForm.username" placeholder="请输入登录账号" :disabled="!!editingId" />
+          <span v-if="editingId" class="form-hint">创建后不可修改</span>
+        </el-form-item>
         <el-form-item label="姓名" prop="name">
           <el-input v-model="staffForm.name" placeholder="请输入员工姓名" />
         </el-form-item>
@@ -135,7 +169,7 @@
           <el-col :span="12">
             <el-form-item label="所属角色">
               <el-select v-model="staffForm.role" style="width:100%">
-                <el-option v-for="r in roleOptions" :key="r" :label="r" :value="r" />
+                <el-option v-for="r in formRoleOptions" :key="r.value" :label="r.label" :value="r.value" />
               </el-select>
               <div class="form-tip">
                 <el-icon><InfoFilled /></el-icon>
@@ -145,25 +179,22 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="所属部门">
-              <el-select v-model="staffForm.dept" style="width:100%">
+              <el-select v-model="staffForm.department" style="width:100%">
                 <el-option v-for="d in deptOptions" :key="d" :label="d" :value="d" />
               </el-select>
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="初始密码">
+        <el-form-item label="初始密码" v-if="!editingId">
           <div class="password-row">
             <el-input v-model="staffForm.password" placeholder="请设置登录密码" />
             <el-button size="default" @click="generatePassword">自动生成</el-button>
           </div>
         </el-form-item>
-        <el-form-item label="状态">
-          <el-switch v-model="staffForm.status" active-value="active" inactive-value="inactive" active-text="启用" inactive-text="停用" />
-        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="staffDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveStaff">{{ editingId ? '保存修改' : '保存' }}</el-button>
+        <el-button type="primary" @click="saveStaff" :loading="saving">{{ editingId ? '保存修改' : '保存' }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -173,74 +204,152 @@
 /**
  * 员工管理页面
  * 支持员工的增删改查、按角色/状态筛选、启用/禁用切换
+ * 数据通过 API 实时获取，在线状态通过 Redis 检测
  */
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, InfoFilled } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
+import { listStaff, createStaff, updateStaff, toggleStaffStatus, getOnlineAdminIds } from '../../api/staff'
+import type { StaffInfo } from '../../api/staff'
+import { listRoles } from '../../api/role'
 
-// ---------- 类型定义 ----------
-interface Staff {
-  id: number
-  name: string
-  phone: string
-  email: string
-  role: string
-  dept: string
-  lastLogin: string
-  status: 'active' | 'inactive'
-  avatar: string
-  color: string
+// ---------- 状态 ----------
+const loading = ref(false)
+const saving = ref(false)
+const staffList = ref<StaffInfo[]>([])
+const total = ref(0)
+const page = ref(1)
+const pageSize = ref(20)
+const onlineSet = ref<Set<number>>(new Set())
+
+// ---------- 角色映射 ----------
+interface RoleOption { label: string; value: string }
+const roleOptions = ref<RoleOption[]>([])
+const roleMap = ref<Record<string, string>>({}) // slug → name
+
+async function loadRoles() {
+  try {
+    const res = await listRoles()
+    const items = res.items || []
+    const options: RoleOption[] = []
+    const map: Record<string, string> = {}
+    for (const r of items) {
+      const slug = r.slug || r.name
+      const name = r.name || slug
+      options.push({ label: name, value: slug })
+      map[slug] = name
+    }
+    roleOptions.value = options
+    roleMap.value = map
+  } catch {
+    // 加载失败时保持默认
+  }
 }
 
-// ---------- 模拟数据 ----------
-const staffData = reactive<Staff[]>([
-  { id: 1, name: '张明', phone: '138****0001', email: 'admin@yuexuan.com', role: '超级管理员', dept: '技术部', lastLogin: '2025-07-14 08:30', status: 'active', avatar: '张', color: '#f59e0b' },
-  { id: 2, name: '李华', phone: '138****0002', email: 'lihua@yuexuan.com', role: '运营专员', dept: '运营部', lastLogin: '2025-07-13 16:45', status: 'active', avatar: '李', color: '#3b82f6' },
-  { id: 3, name: '王芳', phone: '138****0003', email: 'wangfang@yuexuan.com', role: '客服专员', dept: '客服部', lastLogin: '2025-07-13 14:20', status: 'active', avatar: '王', color: '#10b981' },
-  { id: 4, name: '赵强', phone: '138****0004', email: 'zhaoqiang@yuexuan.com', role: '管理员', dept: '技术部', lastLogin: '2025-07-12 09:15', status: 'active', avatar: '赵', color: '#8b5cf6' },
-  { id: 5, name: '刘洋', phone: '138****0005', email: 'liuyang@yuexuan.com', role: '运营专员', dept: '运营部', lastLogin: '2025-07-11 11:30', status: 'inactive', avatar: '刘', color: '#ec4899' },
-  { id: 6, name: '陈丽', phone: '138****0006', email: 'chenli@yuexuan.com', role: '客服专员', dept: '客服部', lastLogin: '2025-07-10 17:00', status: 'active', avatar: '陈', color: '#0d9488' },
-  { id: 7, name: '孙杰', phone: '138****0007', email: 'sunjie@yuexuan.com', role: '数据分析师', dept: '数据部', lastLogin: '2025-07-09 08:50', status: 'active', avatar: '孙', color: '#4f46e5' },
-  { id: 8, name: '周婷', phone: '138****0008', email: 'zhouting@yuexuan.com', role: '运营专员', dept: '运营部', lastLogin: '2025-06-28 15:10', status: 'inactive', avatar: '周', color: '#db2777' }
-])
+// 获取角色显示名
+function roleDisplayName(slug: string): string {
+  return roleMap.value[slug] || slug
+}
 
-// ---------- 下拉选项 ----------
-const roleOptions = ['超级管理员', '管理员', '运营专员', '客服专员', '数据分析师', '自定义角色']
+// 新增/编辑时可选的角色（过滤掉超级管理员）
+const formRoleOptions = computed(() => roleOptions.value.filter(r => r.value !== 'super_admin'))
+
 const deptOptions = ['技术部', '运营部', '客服部', '数据部', '市场部', '人力部', '财务部']
 
 // ---------- 筛选 ----------
 const searchKeyword = ref('')
 const roleFilter = ref('')
 const statusFilter = ref('')
+let searchTimer: ReturnType<typeof setTimeout> | null = null
 
-const filteredStaff = computed(() => {
-  return staffData.filter(s => {
-    if (searchKeyword.value) {
-      const kw = searchKeyword.value.toLowerCase()
-      if (!s.name.toLowerCase().includes(kw) && !s.phone.includes(kw) && !s.email.toLowerCase().includes(kw)) {
-        return false
-      }
-    }
-    if (roleFilter.value && s.role !== roleFilter.value) return false
-    if (statusFilter.value && s.status !== statusFilter.value) return false
-    return true
-  })
-})
+/** 搜索输入防抖 */
+function onSearchInput() {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    page.value = 1
+    loadStaffList()
+  }, 300)
+}
 
-function applyFilters() { /* 计算属性已自动响应 */ }
+function applyFilters() {
+  page.value = 1
+  loadStaffList()
+}
+
 function resetFilters() {
   searchKeyword.value = ''
   roleFilter.value = ''
   statusFilter.value = ''
+  page.value = 1
+  loadStaffList()
 }
 
+// ---------- 数据加载 ----------
+/** 加载员工列表 */
+async function loadStaffList() {
+  loading.value = true
+  try {
+    const params: { page?: number; page_size?: number; keyword?: string; status?: string } = {
+      page: page.value,
+      page_size: pageSize.value
+    }
+    if (searchKeyword.value) params.keyword = searchKeyword.value
+    if (statusFilter.value) params.status = statusFilter.value
+    const res = await listStaff(params)
+    staffList.value = res.items || []
+    total.value = res.total || 0
+  } catch {
+    ElMessage.error('获取员工列表失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// ---------- 在线状态 ----------
+let onlineTimer: ReturnType<typeof setInterval> | null = null
+
+async function refreshOnlineStatus() {
+  try {
+    const res = await getOnlineAdminIds()
+    onlineSet.value = new Set(res.ids || [])
+  } catch {
+    // API 失败时保持上次状态
+  }
+}
+
+onMounted(() => {
+  loadRoles()
+  loadStaffList()
+  refreshOnlineStatus()
+  onlineTimer = setInterval(refreshOnlineStatus, 60000)
+})
+
+onUnmounted(() => {
+  if (onlineTimer) clearInterval(onlineTimer)
+})
+
 // ---------- 统计卡片 ----------
-const stats = computed(() => [
-  { label: '员工总数', value: staffData.length, unit: '人', color: 'blue', icon: 'UserFilled', change: 1, changeText: '较上月 +2' },
-  { label: '在线中', value: staffData.filter(s => s.status === 'active').length, unit: '人', color: 'green', icon: 'Clock', change: null, changeText: '当前在线' },
-  { label: '今日登录', value: '8', unit: '人', color: 'orange', icon: 'Right', change: 1, changeText: '昨日 6 人' }
-])
+const stats = computed(() => {
+  const activeCount = staffList.value.filter(s => s.status === 1).length
+  const onlineCount = staffList.value.filter(s => onlineSet.value.has(s.id)).length
+  return [
+    { label: '员工总数', value: total.value, unit: '人', color: 'blue', icon: 'UserFilled', change: 1, changeText: '含全部状态' },
+    { label: '已启用', value: activeCount, unit: '人', color: 'green', icon: 'Clock', change: null, changeText: '正常状态' },
+    { label: '在线中', value: onlineCount, unit: '人', color: 'orange', icon: 'Right', change: null, changeText: '当前在线' }
+  ]
+})
+
+// ---------- 头像颜色 ----------
+const avatarColors = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#0d9488', '#4f46e5', '#db2777']
+
+function getAvatarColor(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return avatarColors[Math.abs(hash) % avatarColors.length]
+}
 
 // ---------- 角色 Tag 颜色 ----------
 function getRoleTagType(role: string): string {
@@ -260,80 +369,85 @@ const editingId = ref<number | null>(null)
 const staffFormRef = ref<FormInstance>()
 
 const staffForm = reactive({
+  username: '',
   name: '',
   phone: '',
   email: '',
-  role: '运营专员',
-  dept: '运营部',
-  password: 'yuexuan123',
-  status: 'active' as 'active' | 'inactive'
+  role: '',
+  department: '',
+  password: 'yuexuan123'
 })
 
 const staffFormRules: FormRules = {
   name: [{ required: true, message: '请输入员工姓名', trigger: 'blur' }],
-  phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }],
-  email: [{ required: true, message: '请输入邮箱地址', trigger: 'blur' }]
+  email: [{ required: true, message: '请输入邮箱地址', trigger: 'blur' }],
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }]
 }
 
 function openAddModal() {
   editingId.value = null
-  staffForm.name = ''
-  staffForm.phone = ''
-  staffForm.email = ''
-  staffForm.role = '运营专员'
-  staffForm.dept = '运营部'
-  staffForm.password = 'yuexuan123'
-  staffForm.status = 'active'
+  resetStaffForm()
   staffDialogVisible.value = true
 }
 
-function editStaff(id: number) {
-  const staff = staffData.find(s => s.id === id)
-  if (!staff) return
+function resetStaffForm() {
+  staffForm.username = ''
+  staffForm.name = ''
+  staffForm.phone = ''
+  staffForm.email = ''
+  staffForm.role = formRoleOptions.value[0]?.value || ''
+  staffForm.department = ''
+  staffForm.password = 'yuexuan123'
+}
+
+async function editStaff(id: number) {
   editingId.value = id
+  const staff = staffList.value.find(s => s.id === id)
+  if (!staff) return
+  staffForm.username = staff.username
   staffForm.name = staff.name
   staffForm.phone = staff.phone
   staffForm.email = staff.email
   staffForm.role = staff.role
-  staffForm.dept = staff.dept
-  staffForm.password = '********'
-  staffForm.status = staff.status
+  staffForm.department = staff.department
+  staffForm.password = ''
   staffDialogVisible.value = true
 }
 
-function saveStaff() {
-  staffFormRef.value?.validate((valid) => {
-    if (!valid) return
+async function saveStaff() {
+  const valid = await staffFormRef.value?.validate().catch(() => false)
+  if (!valid) return
+
+  saving.value = true
+  try {
     if (editingId.value) {
-      const staff = staffData.find(s => s.id === editingId.value)
-      if (staff) {
-        staff.name = staffForm.name
-        staff.phone = staffForm.phone
-        staff.email = staffForm.email
-        staff.role = staffForm.role
-        staff.dept = staffForm.dept
-        staff.status = staffForm.status
-      }
+      await updateStaff(editingId.value, {
+        name: staffForm.name,
+        role: staffForm.role,
+        email: staffForm.email,
+        phone: staffForm.phone || undefined,
+        department: staffForm.department || undefined
+      })
       ElMessage.success('员工信息已更新')
     } else {
-      const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#0d9488', '#4f46e5', '#db2777']
-      const newStaff: Staff = {
-        id: staffData.length > 0 ? staffData[staffData.length - 1].id + 1 : 1,
+      await createStaff({
+        username: staffForm.username,
+        password: staffForm.password,
         name: staffForm.name,
-        phone: staffForm.phone,
-        email: staffForm.email,
         role: staffForm.role,
-        dept: staffForm.dept,
-        lastLogin: '尚未登录',
-        status: staffForm.status,
-        avatar: staffForm.name.charAt(0),
-        color: colors[staffData.length % colors.length]
-      }
-      staffData.push(newStaff)
+        email: staffForm.email,
+        phone: staffForm.phone || undefined,
+        department: staffForm.department || undefined
+      })
       ElMessage.success('员工已添加')
     }
     staffDialogVisible.value = false
-  })
+    loadStaffList()
+  } catch {
+    ElMessage.error(editingId.value ? '更新员工信息失败' : '添加员工失败')
+  } finally {
+    saving.value = false
+  }
 }
 
 function generatePassword() {
@@ -345,21 +459,23 @@ function generatePassword() {
   staffForm.password = pwd
 }
 
-function toggleStaff(id: number) {
-  const staff = staffData.find(s => s.id === id)
+async function toggleStaff(id: number) {
+  const staff = staffList.value.find(s => s.id === id)
   if (!staff) return
-  const newStatus = staff.status === 'active' ? 'inactive' : 'active'
-  const actionText = newStatus === 'active' ? '启用' : '禁用'
-  ElMessageBox.confirm(
-    `确定要${actionText}员工「${staff.name}」吗？`,
-    `确认${actionText}`,
-    { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
-  ).then(() => {
-    staff.status = newStatus
+  const actionText = staff.status === 1 ? '禁用' : '启用'
+  try {
+    await ElMessageBox.confirm(
+      `确定要${actionText}员工「${staff.name}」吗？`,
+      `确认${actionText}`,
+      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+    )
+    await toggleStaffStatus(id)
     ElMessage.success(`员工「${staff.name}」已${actionText}`)
-  }).catch(() => {})
+    loadStaffList()
+  } catch {
+    // 取消操作不做处理
+  }
 }
-
 </script>
 
 <style scoped>
@@ -486,6 +602,12 @@ function toggleStaff(id: number) {
   border-radius: var(--shop-radius-lg);
 }
 
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 0;
+}
+
 .staff-cell {
   display: flex;
   align-items: center;
@@ -503,6 +625,13 @@ function toggleStaff(id: number) {
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.staff-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .staff-name {
@@ -514,6 +643,24 @@ function toggleStaff(id: number) {
 .staff-name:hover {
   color: var(--shop-primary-dark);
 }
+
+.staff-online {
+  font-size: 0.6875rem;
+  color: var(--shop-muted-foreground);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.online-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  display: inline-block;
+}
+.online-dot.on { background: #10b981; }
+.online-dot.off { background: #94a3b8; }
 
 .staff-phone {
   font-size: 0.8125rem;
@@ -527,6 +674,12 @@ function toggleStaff(id: number) {
 .login-time {
   font-size: 0.75rem;
   color: var(--shop-muted-foreground);
+}
+
+.staff-system-tag {
+  font-size: 0.75rem;
+  color: var(--shop-muted-foreground);
+  white-space: nowrap;
 }
 
 /* 表单 */

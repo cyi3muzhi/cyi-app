@@ -21,6 +21,11 @@ export function logout(token?: string): Promise<void> {
   return request.post('/admin/v1/auth/logout', token ? { token } : undefined)
 }
 
+/** 获取当前用户的角色权限（无需角色管理权限） */
+export function getMyPermissions(): Promise<{ permissions: Record<string, { values: Record<string, boolean> }> }> {
+  return request.get('/admin/v1/auth/my-permissions')
+}
+
 /**
  * 获取当前管理员信息
  */

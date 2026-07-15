@@ -24,6 +24,9 @@ export const useAppStore = defineStore('app', () => {
   // 管理员信息 - 从 localStorage 读取持久化数据
   const adminInfo = ref<AdminInfo | StoredAdminInfo | null>(loadAdminInfo())
 
+  // 用户权限映射（模块 → 权限列表）
+  const userPermissions = ref<Record<string, Record<string, boolean>>>({})
+
   // 通知数量
   const notificationCount = ref(3)
 
@@ -70,6 +73,22 @@ export const useAppStore = defineStore('app', () => {
   }
 
   /**
+   * 设置用户权限
+   */
+  function setPermissions(perms: Record<string, Record<string, boolean>>) {
+    userPermissions.value = perms
+  }
+
+  /**
+   * 检查是否有某权限
+   */
+  function hasPerm(module: string, action: string): boolean {
+    const mod = userPermissions.value[module]
+    if (!mod) return false
+    return !!mod[action]
+  }
+
+  /**
    * 登出 - 清除所有登录状态
    */
   function logout() {
@@ -82,11 +101,14 @@ export const useAppStore = defineStore('app', () => {
     sidebarCollapsed,
     activeMenu,
     adminInfo,
+    userPermissions,
     notificationCount,
     sidebarWidth,
     isLoggedIn,
     toggleSidebar() { sidebarCollapsed.value = !sidebarCollapsed.value },
     login,
+    setPermissions,
+    hasPerm,
     logout
   }
 })

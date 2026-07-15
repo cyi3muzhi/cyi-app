@@ -94,6 +94,32 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.LogoutReply'
+    /admin/v1/auth/my-permissions:
+        get:
+            tags:
+                - AdminAuth
+            description: 获取当前登录用户的角色权限（无需角色管理权限）
+            operationId: AdminAuth_GetMyPermissions
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetMyPermissionsReply'
+    /admin/v1/auth/online-ids:
+        get:
+            tags:
+                - AdminAuth
+            description: 获取当前在线管理员 ID 列表
+            operationId: AdminAuth_GetOnlineAdminIds
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetOnlineAdminIdsReply'
     /admin/v1/dashboard/order_trend:
         get:
             tags:
@@ -415,6 +441,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.DeleteProductReply'
+    /admin/v1/role-name-map:
+        get:
+            tags:
+                - Staff
+            description: 获取角色名称映射（无需角色管理权限）
+            operationId: Staff_GetRoleNameMap
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetRoleNameMapReply'
     /admin/v1/roles:
         get:
             tags:
@@ -582,6 +621,106 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.ChangePasswordReply'
+    /admin/v1/staff:
+        get:
+            tags:
+                - Staff
+            description: 员工列表
+            operationId: Staff_ListStaff
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+                - name: status
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ListStaffReply'
+        post:
+            tags:
+                - Staff
+            description: 创建员工
+            operationId: Staff_CreateStaff
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.CreateStaffRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CreateStaffReply'
+    /admin/v1/staff/{id}:
+        put:
+            tags:
+                - Staff
+            description: 更新员工
+            operationId: Staff_UpdateStaff
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.UpdateStaffRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.UpdateStaffReply'
+    /admin/v1/staff/{id}/toggle-status:
+        post:
+            tags:
+                - Staff
+            description: 切换员工状态
+            operationId: Staff_ToggleStaffStatus
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.ToggleStaffStatusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ToggleStaffStatusReply'
     /admin/v1/users:
         get:
             tags:
@@ -1244,6 +1383,28 @@ components:
                     type: string
                 desc:
                     type: string
+        api.cin.admin.v1.CreateStaffReply:
+            type: object
+            properties:
+                id:
+                    type: string
+        api.cin.admin.v1.CreateStaffRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                password:
+                    type: string
+                name:
+                    type: string
+                role:
+                    type: string
+                email:
+                    type: string
+                phone:
+                    type: string
+                department:
+                    type: string
         api.cin.admin.v1.CreateUserReply:
             type: object
             properties:
@@ -1306,6 +1467,20 @@ components:
                 productsGrowth:
                     type: number
                     format: double
+        api.cin.admin.v1.GetMyPermissionsReply:
+            type: object
+            properties:
+                permissions:
+                    type: object
+                    additionalProperties:
+                        $ref: '#/components/schemas/api.cin.admin.v1.PermissionValue'
+        api.cin.admin.v1.GetOnlineAdminIdsReply:
+            type: object
+            properties:
+                ids:
+                    type: array
+                    items:
+                        type: string
         api.cin.admin.v1.GetOrderReply:
             type: object
             properties:
@@ -1330,6 +1505,13 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.RevenueCategory'
+        api.cin.admin.v1.GetRoleNameMapReply:
+            type: object
+            properties:
+                items:
+                    type: object
+                    additionalProperties:
+                        type: string
         api.cin.admin.v1.GetRolePermissionsReply:
             type: object
             properties:
@@ -1412,6 +1594,16 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.RoleItem'
+        api.cin.admin.v1.ListStaffReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.StaffInfo'
+                total:
+                    type: integer
+                    format: int32
         api.cin.admin.v1.ListUserReply:
             type: object
             properties:
@@ -1581,6 +1773,49 @@ components:
                     type: string
                 logisticsNo:
                     type: string
+        api.cin.admin.v1.StaffInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                username:
+                    type: string
+                phone:
+                    type: string
+                email:
+                    type: string
+                role:
+                    type: string
+                department:
+                    type: string
+                position:
+                    type: string
+                bio:
+                    type: string
+                avatar:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                lastLogin:
+                    type: string
+                createdAt:
+                    type: string
+        api.cin.admin.v1.ToggleStaffStatusReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                newStatus:
+                    type: integer
+                    format: int32
+        api.cin.admin.v1.ToggleStaffStatusRequest:
+            type: object
+            properties:
+                id:
+                    type: string
         api.cin.admin.v1.ToggleUserStatusReply:
             type: object
             properties:
@@ -1706,6 +1941,30 @@ components:
                     type: boolean
                 systemNotification:
                     type: boolean
+        api.cin.admin.v1.UpdateStaffReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.UpdateStaffRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                role:
+                    type: string
+                email:
+                    type: string
+                phone:
+                    type: string
+                department:
+                    type: string
+                position:
+                    type: string
+                bio:
+                    type: string
         api.cin.admin.v1.UpdateUserReply:
             type: object
             properties:
@@ -2029,8 +2288,8 @@ tags:
     - name: Auth
       description: 用户认证服务
     - name: Blades
-      description: AI 智能助手服务
     - name: Blades
+      description: AI 智能助手服务
     - name: Cart
       description: 购物车服务
     - name: Dashboard
@@ -2041,6 +2300,8 @@ tags:
       description: 商品服务
     - name: Settings
       description: 管理后台 - 系统设置服务
+    - name: Staff
+      description: 管理后台 - 员工管理服务
     - name: Stock
       description: 库存服务
     - name: User

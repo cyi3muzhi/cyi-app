@@ -116,3 +116,12 @@ func (r *roleRepo) CheckPermission(ctx context.Context, role, object, action str
 	}
 	return resp.Allowed, nil
 }
+
+// HasPolicyForOperation 检查是否有任何策略引用了指定操作路径
+func (r *roleRepo) HasPolicyForOperation(ctx context.Context, operation string) (bool, error) {
+	resp, err := r.client.HasPolicyForOperation(ctx, &userV1.HasPolicyForOperationRequest{Operation: operation})
+	if err != nil {
+		return false, err
+	}
+	return resp.Has, nil
+}

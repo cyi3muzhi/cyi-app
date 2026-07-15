@@ -63,6 +63,14 @@ func (r *adminUserRepo) Create(ctx context.Context, admin *biz.AdminUser) (int64
 	if result.Error != nil {
 		return 0, result.Error
 	}
+	// 同步 Casbin 角色策略：创建用户后，将用户 ID 与角色关联到分组策略
+	// 这样角色列表 API 统计用户数时能通过 g 策略正确计数
+	if m.ID > 0 && m.Role != "" {
+		r.data.enforcer.RemoveFilteredGroupingPolicy(0, fmt.Sprintf("%d", m.ID))
+		if _, err := r.data.enforcer.AddGroupingPolicy(fmt.Sprintf("%d", m.ID), m.Role); err != nil {
+			r.log.Warnf("为用户分配 Casbin 角色失败: id=%d, role=%s, err=%v", m.ID, m.Role, err)
+		}
+	}
 	return m.ID, nil
 }
 
@@ -98,6 +106,14 @@ func (r *adminUserRepo) Update(ctx context.Context, admin *biz.AdminUser) error 
 	}
 	if len(updates) == 0 {
 		return nil
+	}
+	// 如果角色变更，同步 Casbin 分组策略
+	// 删除旧的角色分配并添加新的，确保角色列表 API 统计用户数正确
+	if admin.Role != "" {
+		r.data.enforcer.RemoveFilteredGroupingPolicy(0, fmt.Sprintf("%d", admin.ID))
+		if _, err := r.data.enforcer.AddGroupingPolicy(fmt.Sprintf("%d", admin.ID), admin.Role); err != nil {
+			r.log.Warnf("更新用户 Casbin 角色失败: id=%d, role=%s, err=%v", admin.ID, admin.Role, err)
+		}
 	}
 	return r.data.db.Model(&models.AdminUser{}).Where("id = ?", admin.ID).Updates(updates).Error
 }

@@ -62,6 +62,15 @@ var permModules = []biz.PermModule{
 		{Key: "dashboard", Label: "查看仪表盘"}, {Key: "report", Label: "查看报表"},
 		{Key: "export", Label: "导出报表"},
 	}},
+	{Key: "staff", Title: "员工管理", Items: []biz.PermItem{
+		{Key: "view", Label: "查看员工"}, {Key: "add", Label: "添加员工"},
+		{Key: "edit", Label: "编辑员工"}, {Key: "delete", Label: "删除员工"},
+		{Key: "toggle", Label: "启用/禁用"},
+	}},
+	{Key: "categories", Title: "商品分类", Items: []biz.PermItem{
+		{Key: "view", Label: "查看分类"}, {Key: "add", Label: "添加分类"},
+		{Key: "edit", Label: "编辑分类"}, {Key: "delete", Label: "删除分类"},
+	}},
 }
 
 // ListRoles 获取所有角色
@@ -259,4 +268,13 @@ func (r *roleRepo) CheckPermission(ctx context.Context, role, object, action str
 // ListAllPermissions 获取所有权限模块定义
 func (r *roleRepo) ListAllPermissions(ctx context.Context) []biz.PermModule {
 	return permModules
+}
+
+// HasPolicyForOperation 检查是否有任何策略引用了指定 operation
+func (r *roleRepo) HasPolicyForOperation(ctx context.Context, operation string) (bool, error) {
+	policies, err := r.enforcer.GetFilteredPolicy(1, operation)
+	if err != nil {
+		return false, err
+	}
+	return len(policies) > 0, nil
 }

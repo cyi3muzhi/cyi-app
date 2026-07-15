@@ -1013,6 +1013,94 @@ func (x *CheckPermissionReply) GetAllowed() bool {
 	return false
 }
 
+type HasPolicyForOperationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Operation     string                 `protobuf:"bytes,1,opt,name=operation,proto3" json:"operation,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HasPolicyForOperationRequest) Reset() {
+	*x = HasPolicyForOperationRequest{}
+	mi := &file_api_service_user_v1_role_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HasPolicyForOperationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HasPolicyForOperationRequest) ProtoMessage() {}
+
+func (x *HasPolicyForOperationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_role_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HasPolicyForOperationRequest.ProtoReflect.Descriptor instead.
+func (*HasPolicyForOperationRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_role_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *HasPolicyForOperationRequest) GetOperation() string {
+	if x != nil {
+		return x.Operation
+	}
+	return ""
+}
+
+type HasPolicyForOperationReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Has           bool                   `protobuf:"varint,1,opt,name=has,proto3" json:"has,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HasPolicyForOperationReply) Reset() {
+	*x = HasPolicyForOperationReply{}
+	mi := &file_api_service_user_v1_role_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HasPolicyForOperationReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HasPolicyForOperationReply) ProtoMessage() {}
+
+func (x *HasPolicyForOperationReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_role_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HasPolicyForOperationReply.ProtoReflect.Descriptor instead.
+func (*HasPolicyForOperationReply) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_role_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *HasPolicyForOperationReply) GetHas() bool {
+	if x != nil {
+		return x.Has
+	}
+	return false
+}
+
 var File_api_service_user_v1_role_proto protoreflect.FileDescriptor
 
 const file_api_service_user_v1_role_proto_rawDesc = "" +
@@ -1082,7 +1170,11 @@ const file_api_service_user_v1_role_proto_rawDesc = "" +
 	"\x06object\x18\x02 \x01(\tR\x06object\x12\x16\n" +
 	"\x06action\x18\x03 \x01(\tR\x06action\"0\n" +
 	"\x14CheckPermissionReply\x12\x18\n" +
-	"\aallowed\x18\x01 \x01(\bR\aallowed2\xc8\x06\n" +
+	"\aallowed\x18\x01 \x01(\bR\aallowed\"<\n" +
+	"\x1cHasPolicyForOperationRequest\x12\x1c\n" +
+	"\toperation\x18\x01 \x01(\tR\toperation\".\n" +
+	"\x1aHasPolicyForOperationReply\x12\x10\n" +
+	"\x03has\x18\x01 \x01(\bR\x03has2\xc5\a\n" +
 	"\tAdminRole\x12W\n" +
 	"\tListRoles\x12%.api.service.user.v1.ListRolesRequest\x1a#.api.service.user.v1.ListRolesReply\x12Z\n" +
 	"\n" +
@@ -1094,7 +1186,8 @@ const file_api_service_user_v1_role_proto_rawDesc = "" +
 	"\x12GetRolePermissions\x12..api.service.user.v1.GetRolePermissionsRequest\x1a,.api.service.user.v1.GetRolePermissionsReply\x12{\n" +
 	"\x15UpdateRolePermissions\x121.api.service.user.v1.UpdateRolePermissionsRequest\x1a/.api.service.user.v1.UpdateRolePermissionsReply\x12r\n" +
 	"\x12ListAllPermissions\x12..api.service.user.v1.ListAllPermissionsRequest\x1a,.api.service.user.v1.ListAllPermissionsReply\x12i\n" +
-	"\x0fCheckPermission\x12+.api.service.user.v1.CheckPermissionRequest\x1a).api.service.user.v1.CheckPermissionReplyB7\n" +
+	"\x0fCheckPermission\x12+.api.service.user.v1.CheckPermissionRequest\x1a).api.service.user.v1.CheckPermissionReply\x12{\n" +
+	"\x15HasPolicyForOperation\x121.api.service.user.v1.HasPolicyForOperationRequest\x1a/.api.service.user.v1.HasPolicyForOperationReplyB7\n" +
 	"\x13api.service.user.v1P\x01Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
 
 var (
@@ -1109,7 +1202,7 @@ func file_api_service_user_v1_role_proto_rawDescGZIP() []byte {
 	return file_api_service_user_v1_role_proto_rawDescData
 }
 
-var file_api_service_user_v1_role_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_api_service_user_v1_role_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_api_service_user_v1_role_proto_goTypes = []any{
 	(*RoleItem)(nil),                     // 0: api.service.user.v1.RoleItem
 	(*PermItem)(nil),                     // 1: api.service.user.v1.PermItem
@@ -1131,16 +1224,18 @@ var file_api_service_user_v1_role_proto_goTypes = []any{
 	(*ListAllPermissionsReply)(nil),      // 17: api.service.user.v1.ListAllPermissionsReply
 	(*CheckPermissionRequest)(nil),       // 18: api.service.user.v1.CheckPermissionRequest
 	(*CheckPermissionReply)(nil),         // 19: api.service.user.v1.CheckPermissionReply
-	nil,                                  // 20: api.service.user.v1.PermissionValue.ValuesEntry
-	nil,                                  // 21: api.service.user.v1.GetRolePermissionsReply.PermissionsEntry
-	nil,                                  // 22: api.service.user.v1.UpdateRolePermissionsRequest.PermissionsEntry
+	(*HasPolicyForOperationRequest)(nil), // 20: api.service.user.v1.HasPolicyForOperationRequest
+	(*HasPolicyForOperationReply)(nil),   // 21: api.service.user.v1.HasPolicyForOperationReply
+	nil,                                  // 22: api.service.user.v1.PermissionValue.ValuesEntry
+	nil,                                  // 23: api.service.user.v1.GetRolePermissionsReply.PermissionsEntry
+	nil,                                  // 24: api.service.user.v1.UpdateRolePermissionsRequest.PermissionsEntry
 }
 var file_api_service_user_v1_role_proto_depIdxs = []int32{
 	1,  // 0: api.service.user.v1.PermModule.items:type_name -> api.service.user.v1.PermItem
-	20, // 1: api.service.user.v1.PermissionValue.values:type_name -> api.service.user.v1.PermissionValue.ValuesEntry
+	22, // 1: api.service.user.v1.PermissionValue.values:type_name -> api.service.user.v1.PermissionValue.ValuesEntry
 	0,  // 2: api.service.user.v1.ListRolesReply.items:type_name -> api.service.user.v1.RoleItem
-	21, // 3: api.service.user.v1.GetRolePermissionsReply.permissions:type_name -> api.service.user.v1.GetRolePermissionsReply.PermissionsEntry
-	22, // 4: api.service.user.v1.UpdateRolePermissionsRequest.permissions:type_name -> api.service.user.v1.UpdateRolePermissionsRequest.PermissionsEntry
+	23, // 3: api.service.user.v1.GetRolePermissionsReply.permissions:type_name -> api.service.user.v1.GetRolePermissionsReply.PermissionsEntry
+	24, // 4: api.service.user.v1.UpdateRolePermissionsRequest.permissions:type_name -> api.service.user.v1.UpdateRolePermissionsRequest.PermissionsEntry
 	2,  // 5: api.service.user.v1.ListAllPermissionsReply.modules:type_name -> api.service.user.v1.PermModule
 	3,  // 6: api.service.user.v1.GetRolePermissionsReply.PermissionsEntry.value:type_name -> api.service.user.v1.PermissionValue
 	3,  // 7: api.service.user.v1.UpdateRolePermissionsRequest.PermissionsEntry.value:type_name -> api.service.user.v1.PermissionValue
@@ -1152,16 +1247,18 @@ var file_api_service_user_v1_role_proto_depIdxs = []int32{
 	14, // 13: api.service.user.v1.AdminRole.UpdateRolePermissions:input_type -> api.service.user.v1.UpdateRolePermissionsRequest
 	16, // 14: api.service.user.v1.AdminRole.ListAllPermissions:input_type -> api.service.user.v1.ListAllPermissionsRequest
 	18, // 15: api.service.user.v1.AdminRole.CheckPermission:input_type -> api.service.user.v1.CheckPermissionRequest
-	5,  // 16: api.service.user.v1.AdminRole.ListRoles:output_type -> api.service.user.v1.ListRolesReply
-	7,  // 17: api.service.user.v1.AdminRole.CreateRole:output_type -> api.service.user.v1.CreateRoleReply
-	9,  // 18: api.service.user.v1.AdminRole.UpdateRole:output_type -> api.service.user.v1.UpdateRoleReply
-	11, // 19: api.service.user.v1.AdminRole.DeleteRole:output_type -> api.service.user.v1.DeleteRoleReply
-	13, // 20: api.service.user.v1.AdminRole.GetRolePermissions:output_type -> api.service.user.v1.GetRolePermissionsReply
-	15, // 21: api.service.user.v1.AdminRole.UpdateRolePermissions:output_type -> api.service.user.v1.UpdateRolePermissionsReply
-	17, // 22: api.service.user.v1.AdminRole.ListAllPermissions:output_type -> api.service.user.v1.ListAllPermissionsReply
-	19, // 23: api.service.user.v1.AdminRole.CheckPermission:output_type -> api.service.user.v1.CheckPermissionReply
-	16, // [16:24] is the sub-list for method output_type
-	8,  // [8:16] is the sub-list for method input_type
+	20, // 16: api.service.user.v1.AdminRole.HasPolicyForOperation:input_type -> api.service.user.v1.HasPolicyForOperationRequest
+	5,  // 17: api.service.user.v1.AdminRole.ListRoles:output_type -> api.service.user.v1.ListRolesReply
+	7,  // 18: api.service.user.v1.AdminRole.CreateRole:output_type -> api.service.user.v1.CreateRoleReply
+	9,  // 19: api.service.user.v1.AdminRole.UpdateRole:output_type -> api.service.user.v1.UpdateRoleReply
+	11, // 20: api.service.user.v1.AdminRole.DeleteRole:output_type -> api.service.user.v1.DeleteRoleReply
+	13, // 21: api.service.user.v1.AdminRole.GetRolePermissions:output_type -> api.service.user.v1.GetRolePermissionsReply
+	15, // 22: api.service.user.v1.AdminRole.UpdateRolePermissions:output_type -> api.service.user.v1.UpdateRolePermissionsReply
+	17, // 23: api.service.user.v1.AdminRole.ListAllPermissions:output_type -> api.service.user.v1.ListAllPermissionsReply
+	19, // 24: api.service.user.v1.AdminRole.CheckPermission:output_type -> api.service.user.v1.CheckPermissionReply
+	21, // 25: api.service.user.v1.AdminRole.HasPolicyForOperation:output_type -> api.service.user.v1.HasPolicyForOperationReply
+	17, // [17:26] is the sub-list for method output_type
+	8,  // [8:17] is the sub-list for method input_type
 	8,  // [8:8] is the sub-list for extension type_name
 	8,  // [8:8] is the sub-list for extension extendee
 	0,  // [0:8] is the sub-list for field type_name
@@ -1178,7 +1275,7 @@ func file_api_service_user_v1_role_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_service_user_v1_role_proto_rawDesc), len(file_api_service_user_v1_role_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   23,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

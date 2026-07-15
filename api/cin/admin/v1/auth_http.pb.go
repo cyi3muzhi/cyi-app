@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.9.0
 // - protoc             v5.27.2
-// source: cin/admin/v1/auth.proto
+// source: api/cin/admin/v1/auth.proto
 
 package adminv1
 
@@ -21,6 +21,8 @@ const _ = http.SupportPackageIsVersion1
 
 const OperationAdminAuthChangeAvatar = "/api.cin.admin.v1.AdminAuth/ChangeAvatar"
 const OperationAdminAuthGetAdminInfo = "/api.cin.admin.v1.AdminAuth/GetAdminInfo"
+const OperationAdminAuthGetMyPermissions = "/api.cin.admin.v1.AdminAuth/GetMyPermissions"
+const OperationAdminAuthGetOnlineAdminIds = "/api.cin.admin.v1.AdminAuth/GetOnlineAdminIds"
 const OperationAdminAuthLogin = "/api.cin.admin.v1.AdminAuth/Login"
 const OperationAdminAuthLogout = "/api.cin.admin.v1.AdminAuth/Logout"
 const OperationAdminAuthUpdateAdminInfo = "/api.cin.admin.v1.AdminAuth/UpdateAdminInfo"
@@ -30,6 +32,10 @@ type AdminAuthHTTPServer interface {
 	ChangeAvatar(context.Context, *ChangeAvatarRequest) (*ChangeAvatarReply, error)
 	// GetAdminInfo 获取当前管理员信息
 	GetAdminInfo(context.Context, *GetAdminInfoRequest) (*GetAdminInfoReply, error)
+	// GetMyPermissions 获取当前登录用户的角色权限（无需角色管理权限）
+	GetMyPermissions(context.Context, *GetMyPermissionsRequest) (*GetMyPermissionsReply, error)
+	// GetOnlineAdminIds 获取当前在线管理员 ID 列表
+	GetOnlineAdminIds(context.Context, *GetOnlineAdminIdsRequest) (*GetOnlineAdminIdsReply, error)
 	// Login 管理员登录
 	Login(context.Context, *LoginRequest) (*LoginReply, error)
 	// Logout 管理员登出
@@ -45,6 +51,8 @@ func RegisterAdminAuthHTTPServer(s *http.Server, srv AdminAuthHTTPServer) {
 	r.GET("/admin/v1/auth/info", _AdminAuth_GetAdminInfo0_HTTP_Handler(srv))
 	r.POST("/admin/v1/auth/avatar", _AdminAuth_ChangeAvatar0_HTTP_Handler(srv))
 	r.PUT("/admin/v1/auth/info", _AdminAuth_UpdateAdminInfo0_HTTP_Handler(srv))
+	r.GET("/admin/v1/auth/online-ids", _AdminAuth_GetOnlineAdminIds0_HTTP_Handler(srv))
+	r.GET("/admin/v1/auth/my-permissions", _AdminAuth_GetMyPermissions0_HTTP_Handler(srv))
 }
 
 func _AdminAuth_Login0_HTTP_Handler(srv AdminAuthHTTPServer) func(ctx http.Context) error {
@@ -154,11 +162,53 @@ func _AdminAuth_UpdateAdminInfo0_HTTP_Handler(srv AdminAuthHTTPServer) func(ctx 
 	}
 }
 
+func _AdminAuth_GetOnlineAdminIds0_HTTP_Handler(srv AdminAuthHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetOnlineAdminIdsRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminAuthGetOnlineAdminIds)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetOnlineAdminIds(ctx, req.(*GetOnlineAdminIdsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetOnlineAdminIdsReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _AdminAuth_GetMyPermissions0_HTTP_Handler(srv AdminAuthHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetMyPermissionsRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminAuthGetMyPermissions)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetMyPermissions(ctx, req.(*GetMyPermissionsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetMyPermissionsReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type AdminAuthHTTPClient interface {
 	// ChangeAvatar 更换头像（上传文件到后端，后端代理传到 OSS）
 	ChangeAvatar(ctx context.Context, req *ChangeAvatarRequest, opts ...http.CallOption) (rsp *ChangeAvatarReply, err error)
 	// GetAdminInfo 获取当前管理员信息
 	GetAdminInfo(ctx context.Context, req *GetAdminInfoRequest, opts ...http.CallOption) (rsp *GetAdminInfoReply, err error)
+	// GetMyPermissions 获取当前登录用户的角色权限（无需角色管理权限）
+	GetMyPermissions(ctx context.Context, req *GetMyPermissionsRequest, opts ...http.CallOption) (rsp *GetMyPermissionsReply, err error)
+	// GetOnlineAdminIds 获取当前在线管理员 ID 列表
+	GetOnlineAdminIds(ctx context.Context, req *GetOnlineAdminIdsRequest, opts ...http.CallOption) (rsp *GetOnlineAdminIdsReply, err error)
 	// Login 管理员登录
 	Login(ctx context.Context, req *LoginRequest, opts ...http.CallOption) (rsp *LoginReply, err error)
 	// Logout 管理员登出
@@ -195,6 +245,34 @@ func (c *AdminAuthHTTPClientImpl) GetAdminInfo(ctx context.Context, in *GetAdmin
 	pattern := "/admin/v1/auth/info"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAdminAuthGetAdminInfo))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// GetMyPermissions 获取当前登录用户的角色权限（无需角色管理权限）
+func (c *AdminAuthHTTPClientImpl) GetMyPermissions(ctx context.Context, in *GetMyPermissionsRequest, opts ...http.CallOption) (*GetMyPermissionsReply, error) {
+	var out GetMyPermissionsReply
+	pattern := "/admin/v1/auth/my-permissions"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminAuthGetMyPermissions))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// GetOnlineAdminIds 获取当前在线管理员 ID 列表
+func (c *AdminAuthHTTPClientImpl) GetOnlineAdminIds(ctx context.Context, in *GetOnlineAdminIdsRequest, opts ...http.CallOption) (*GetOnlineAdminIdsReply, error) {
+	var out GetOnlineAdminIdsReply
+	pattern := "/admin/v1/auth/online-ids"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminAuthGetOnlineAdminIds))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

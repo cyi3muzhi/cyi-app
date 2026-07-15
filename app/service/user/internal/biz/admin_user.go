@@ -2,9 +2,11 @@ package biz
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	v1 "cyi-app/api/service/user/v1"
+	"cyi-app/app/service/user/internal/pkg/encryption"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -80,7 +82,20 @@ func (uc *AdminUserUseCase) Login(ctx context.Context, username, password string
 
 // Create 创建管理员
 func (uc *AdminUserUseCase) Create(ctx context.Context, admin *AdminUser) (int64, error) {
-	return uc.repo.Create(ctx, admin)
+	encryptedPassword, err := encryption.EncryptPassword(admin.Password)
+	if err != nil {
+		return 0, err
+	}
+	admin.Password = encryptedPassword
+	id, err := uc.repo.Create(ctx, admin)
+	if err != nil {
+		// 用户名重复 → 转换为业务错误
+		if strings.Contains(err.Error(), "Duplicate entry") && strings.Contains(err.Error(), "idx_admin_user_username") {
+			return 0, v1.ErrorUserAlreadyRegistered("该账号已注册，请更换用户名")
+		}
+		return 0, err
+	}
+	return id, nil
 }
 
 // Update 更新管理员

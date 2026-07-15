@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <!-- 登录页 - 左侧深色品牌展示 + 右侧白色登录表单 -->
   <main class="login-container">
     <!-- 左侧品牌展示区（大屏显示） -->
@@ -143,7 +143,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock, View, Hide } from '@element-plus/icons-vue'
 import { useAppStore } from '../../store/app'
-import { login as loginApi } from '../../api/auth'
+import { login as loginApi, getMyPermissions } from '../../api/auth'
 
 const router = useRouter()
 const store = useAppStore()
@@ -208,6 +208,18 @@ async function handleLogin() {
         email: res.admin?.email || 'admin@yuexuan.com',
         username: res.admin?.username || form.username
       })
+
+      // 加载当前角色的权限
+      try {
+        const permRes = await getMyPermissions()
+        const perms: Record<string, Record<string, boolean>> = {}
+        for (const modKey in permRes.permissions) {
+          perms[modKey] = permRes.permissions[modKey]?.values || {}
+        }
+        store.setPermissions(perms)
+      } catch {
+        // 权限加载失败不影响登录
+      }
 
       ElMessage.success('登录成功！正在跳转...')
       // 等 Pinia 状态更新完毕再跳转

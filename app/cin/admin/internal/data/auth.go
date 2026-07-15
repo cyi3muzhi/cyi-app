@@ -208,5 +208,18 @@ func (r *authRepo) UpdateAdminInfo(ctx context.Context, adminID int64, info *biz
 	return err
 }
 
-// Ensure time import is used
-var _ = time.Now
+// GetOnlineAdminIds 获取当前在线管理员 ID 列表（通过扫描 Redis 中的 token key）
+func (r *authRepo) GetOnlineAdminIds(ctx context.Context) ([]int64, error) {
+	keys, err := r.data.redis.Keys(ctx, "admin:token:*").Result()
+	if err != nil {
+		return nil, fmt.Errorf("扫描在线用户失败: %w", err)
+	}
+	ids := make([]int64, 0, len(keys))
+	for _, key := range keys {
+		var id int64
+		if _, err := fmt.Sscanf(key, "admin:token:%d", &id); err == nil {
+			ids = append(ids, id)
+		}
+	}
+	return ids, nil
+}

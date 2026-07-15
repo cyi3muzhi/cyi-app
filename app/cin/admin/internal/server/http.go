@@ -18,5 +18,6 @@ func NewHTTPServer(s *ts.HttpServer, adminService *service.AdminService) *kratos
 	adminv1.RegisterSettingsHTTPServer(s.HttpServer, adminService)
 	adminv1.RegisterAdminAuthHTTPServer(s.HttpServer, adminService)
 	adminv1.RegisterAdminRoleHTTPServer(s.HttpServer, adminService)
+	adminv1.RegisterStaffHTTPServer(s.HttpServer, adminService)
 	return s.HttpServer
 }

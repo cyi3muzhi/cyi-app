@@ -23,6 +23,7 @@ var ProviderSet = wire.NewSet(
 	NewDashboardRepo,
 	NewProductRepo,
 	NewAuthRepo,
+	NewStaffRepo,
 	NewProductServiceClient,
 	NewAdminUserServiceClient,
 	NewAdminRoleClient,

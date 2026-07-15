@@ -8,7 +8,7 @@ import (
 
 // TestEncryptPassword 测试密码加密
 func TestEncryptPassword(t *testing.T) {
-	password := "admin123"
+	password := "yuexuan123"
 
 	hashed, err := EncryptPassword(password)
 	if err != nil {

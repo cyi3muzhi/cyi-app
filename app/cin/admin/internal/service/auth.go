@@ -132,6 +132,38 @@ func (s *AdminService) UpdateAdminInfo(ctx context.Context, req *adminv1.UpdateA
 	return &adminv1.UpdateAdminInfoReply{Success: true}, nil
 }
 
+// GetMyPermissions 获取当前登录用户的角色权限
+func (s *AdminService) GetMyPermissions(ctx context.Context, req *adminv1.GetMyPermissionsRequest) (*adminv1.GetMyPermissionsReply, error) {
+	role, err := mid.GetRoleFromClaims(ctx)
+	if err != nil {
+		return nil, adminv1.ErrorUnauthorized("未登录")
+	}
+	perms, err := s.rc.GetRolePermissions(ctx, role)
+	if err != nil {
+		s.log.Errorf("获取角色权限失败: %v", err)
+		return &adminv1.GetMyPermissionsReply{Permissions: map[string]*adminv1.PermissionValue{}}, nil
+	}
+	result := make(map[string]*adminv1.PermissionValue)
+	for modKey, modPerms := range perms {
+		pv := &adminv1.PermissionValue{Values: make(map[string]bool)}
+		for k, v := range modPerms {
+			pv.Values[k] = v
+		}
+		result[modKey] = pv
+	}
+	return &adminv1.GetMyPermissionsReply{Permissions: result}, nil
+}
+
+// GetOnlineAdminIds 获取当前在线管理员 ID 列表
+func (s *AdminService) GetOnlineAdminIds(ctx context.Context, req *adminv1.GetOnlineAdminIdsRequest) (*adminv1.GetOnlineAdminIdsReply, error) {
+	ids, err := s.ac.GetOnlineAdminIds(ctx)
+	if err != nil {
+		s.log.Errorf("获取在线管理员列表失败: %v", err)
+		return &adminv1.GetOnlineAdminIdsReply{Ids: []int64{}}, nil
+	}
+	return &adminv1.GetOnlineAdminIdsReply{Ids: ids}, nil
+}
+
 // 确保 AdminService 实现了 AuthServer 接口
 var _ adminv1.AdminAuthServer = (*AdminService)(nil)
 

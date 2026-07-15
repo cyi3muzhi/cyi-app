@@ -5,6 +5,7 @@ import (
 	"cyi-app/app/service/user/internal/conf"
 	"cyi-app/app/service/user/internal/pkg/encryption"
 	"cyi-app/pkg/util/rustfs"
+	"fmt"
 	"os"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"cyi-app/app/service/user/internal/data/curd"
 	mod "cyi-app/app/service/user/internal/data/models"
 
+	"github.com/casbin/casbin/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
 	"github.com/redis/go-redis/v9"
@@ -34,22 +36,24 @@ var ProviderSet = wire.NewSet(
 )
 
 type Data struct {
-	db    *gorm.DB
-	cache *redis.Client
-	oss   *rustfs.RustFSClient
+	db       *gorm.DB
+	cache    *redis.Client
+	oss      *rustfs.RustFSClient
+	enforcer *casbin.Enforcer
 }
 
 // NewData .
-func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, oss *rustfs.RustFSClient, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, oss *rustfs.RustFSClient, enforcer *casbin.Enforcer, logger log.Logger) (*Data, func(), error) {
 
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	curd.SetDefault(db)
 	return &Data{
-		db:    db,
-		cache: cache,
-		oss:   oss,
+		db:       db,
+		cache:    cache,
+		oss:      oss,
+		enforcer: enforcer,
 	}, cleanup, nil
 }
 
@@ -75,6 +79,9 @@ func NewDB(c *conf.Data) *gorm.DB {
 
 	// 初始化 Casbin 默认策略（仅表为空时插入）
 	initCasbinPolicies(db)
+
+	// 同步所有管理员的角色到 Casbin 分组策略
+	syncAdminUserRoles(db)
 
 	// 仅在开发环境且文件不存在时执行生成
 	if shouldGenerateCode() {
@@ -192,5 +199,32 @@ func initCasbinPolicies(db *gorm.DB) {
 	db.Model(&mod.RoleMeta{}).Count(&metaCount)
 	if metaCount == 0 {
 		db.Create(&mod.RoleMeta{Slug: "super_admin", Name: "超级管理员", Desc: "拥有所有系统权限"})
+	}
+}
+
+// syncAdminUserRoles 同步所有管理员的角色到 Casbin 分组策略
+// 确保已有管理员的角色也能在 Casbin 中被正确统计
+func syncAdminUserRoles(db *gorm.DB) {
+	var admins []mod.AdminUser
+	if err := db.Find(&admins).Error; err != nil {
+		log.NewHelper(log.DefaultLogger).Warnf("查询管理员列表失败: %v", err)
+		return
+	}
+	for _, admin := range admins {
+		if admin.Role == "" {
+			continue
+		}
+		// 检查是否已有分组策略
+		var count int64
+		db.Model(&mod.CasbinRule{}).
+			Where("ptype = ? AND v0 = ? AND v1 = ?", "g", fmt.Sprintf("%d", admin.ID), admin.Role).
+			Count(&count)
+		if count == 0 {
+			if err := db.Create(&mod.CasbinRule{Ptype: "g", V0: fmt.Sprintf("%d", admin.ID), V1: admin.Role}).Error; err != nil {
+				log.NewHelper(log.DefaultLogger).Warnf("为用户 %d 添加 Casbin 分组策略失败: %v", admin.ID, err)
+			} else {
+				log.NewHelper(log.DefaultLogger).Infof("已为用户 %d 添加 Casbin 角色: %s", admin.ID, admin.Role)
+			}
+		}
 	}
 }

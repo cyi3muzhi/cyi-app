@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.9
 // 	protoc        v5.27.2
-// source: cin/admin/v1/errors.proto
+// source: api/cin/admin/v1/errors.proto
 
 package adminv1
 
@@ -93,11 +93,11 @@ func (x AdminErrorReason) String() string {
 }
 
 func (AdminErrorReason) Descriptor() protoreflect.EnumDescriptor {
-	return file_cin_admin_v1_errors_proto_enumTypes[0].Descriptor()
+	return file_api_cin_admin_v1_errors_proto_enumTypes[0].Descriptor()
 }
 
 func (AdminErrorReason) Type() protoreflect.EnumType {
-	return &file_cin_admin_v1_errors_proto_enumTypes[0]
+	return &file_api_cin_admin_v1_errors_proto_enumTypes[0]
 }
 
 func (x AdminErrorReason) Number() protoreflect.EnumNumber {
@@ -106,14 +106,14 @@ func (x AdminErrorReason) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use AdminErrorReason.Descriptor instead.
 func (AdminErrorReason) EnumDescriptor() ([]byte, []int) {
-	return file_cin_admin_v1_errors_proto_rawDescGZIP(), []int{0}
+	return file_api_cin_admin_v1_errors_proto_rawDescGZIP(), []int{0}
 }
 
-var File_cin_admin_v1_errors_proto protoreflect.FileDescriptor
+var File_api_cin_admin_v1_errors_proto protoreflect.FileDescriptor
 
-const file_cin_admin_v1_errors_proto_rawDesc = "" +
+const file_api_cin_admin_v1_errors_proto_rawDesc = "" +
 	"\n" +
-	"\x19cin/admin/v1/errors.proto\x12\x10api.cin.admin.v1\x1a\x13errors/errors.proto*\xbf\x03\n" +
+	"\x1dapi/cin/admin/v1/errors.proto\x12\x10api.cin.admin.v1\x1a\x13errors/errors.proto*\xbf\x03\n" +
 	"\x10AdminErrorReason\x12\x16\n" +
 	"\fUNAUTHORIZED\x10\x00\x1a\x04\xa8E\x91\x03\x12\x13\n" +
 	"\tFORBIDDEN\x10\x01\x1a\x04\xa8E\x93\x03\x12\x13\n" +
@@ -132,22 +132,22 @@ const file_cin_admin_v1_errors_proto_rawDesc = "" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (
-	file_cin_admin_v1_errors_proto_rawDescOnce sync.Once
-	file_cin_admin_v1_errors_proto_rawDescData []byte
+	file_api_cin_admin_v1_errors_proto_rawDescOnce sync.Once
+	file_api_cin_admin_v1_errors_proto_rawDescData []byte
 )
 
-func file_cin_admin_v1_errors_proto_rawDescGZIP() []byte {
-	file_cin_admin_v1_errors_proto_rawDescOnce.Do(func() {
-		file_cin_admin_v1_errors_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_cin_admin_v1_errors_proto_rawDesc), len(file_cin_admin_v1_errors_proto_rawDesc)))
+func file_api_cin_admin_v1_errors_proto_rawDescGZIP() []byte {
+	file_api_cin_admin_v1_errors_proto_rawDescOnce.Do(func() {
+		file_api_cin_admin_v1_errors_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_errors_proto_rawDesc), len(file_api_cin_admin_v1_errors_proto_rawDesc)))
 	})
-	return file_cin_admin_v1_errors_proto_rawDescData
+	return file_api_cin_admin_v1_errors_proto_rawDescData
 }
 
-var file_cin_admin_v1_errors_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_cin_admin_v1_errors_proto_goTypes = []any{
+var file_api_cin_admin_v1_errors_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_api_cin_admin_v1_errors_proto_goTypes = []any{
 	(AdminErrorReason)(0), // 0: api.cin.admin.v1.AdminErrorReason
 }
-var file_cin_admin_v1_errors_proto_depIdxs = []int32{
+var file_api_cin_admin_v1_errors_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -155,26 +155,26 @@ var file_cin_admin_v1_errors_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_cin_admin_v1_errors_proto_init() }
-func file_cin_admin_v1_errors_proto_init() {
-	if File_cin_admin_v1_errors_proto != nil {
+func init() { file_api_cin_admin_v1_errors_proto_init() }
+func file_api_cin_admin_v1_errors_proto_init() {
+	if File_api_cin_admin_v1_errors_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cin_admin_v1_errors_proto_rawDesc), len(file_cin_admin_v1_errors_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_errors_proto_rawDesc), len(file_api_cin_admin_v1_errors_proto_rawDesc)),
 			NumEnums:      1,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_cin_admin_v1_errors_proto_goTypes,
-		DependencyIndexes: file_cin_admin_v1_errors_proto_depIdxs,
-		EnumInfos:         file_cin_admin_v1_errors_proto_enumTypes,
+		GoTypes:           file_api_cin_admin_v1_errors_proto_goTypes,
+		DependencyIndexes: file_api_cin_admin_v1_errors_proto_depIdxs,
+		EnumInfos:         file_api_cin_admin_v1_errors_proto_enumTypes,
 	}.Build()
-	File_cin_admin_v1_errors_proto = out.File
-	file_cin_admin_v1_errors_proto_goTypes = nil
-	file_cin_admin_v1_errors_proto_depIdxs = nil
+	File_api_cin_admin_v1_errors_proto = out.File
+	file_api_cin_admin_v1_errors_proto_goTypes = nil
+	file_api_cin_admin_v1_errors_proto_depIdxs = nil
 }

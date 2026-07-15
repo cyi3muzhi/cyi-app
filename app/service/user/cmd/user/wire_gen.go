@@ -35,7 +35,11 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	if err != nil {
 		return nil, nil, err
 	}
-	dataData, cleanup, err := data.NewData(confData, db, client, rustFSClient, logger)
+	enforcer, err := data.NewCasbinEnforcer(db)
+	if err != nil {
+		return nil, nil, err
+	}
+	dataData, cleanup, err := data.NewData(confData, db, client, rustFSClient, enforcer, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -46,11 +50,6 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	string2 := biz.ProvideApiKey(auth)
 	adminUserUseCase := biz.NewAdminUserUseCase(adminUserRepo, string2, logger)
 	adminUserService := service.NewAdminUserService(adminUserUseCase, logger)
-	enforcer, err := data.NewCasbinEnforcer(db)
-	if err != nil {
-		cleanup()
-		return nil, nil, err
-	}
 	roleRepo := data.NewRoleRepo(enforcer, db, logger)
 	roleUseCase := biz.NewRoleUseCase(roleRepo, logger)
 	adminRoleService := service.NewAdminRoleService(roleUseCase, logger)

@@ -24,6 +24,8 @@ service AdminRole {
   rpc ListAllPermissions (ListAllPermissionsRequest) returns (ListAllPermissionsReply);
   // 校验权限（供 admin BFF 中间件使用）
   rpc CheckPermission (CheckPermissionRequest) returns (CheckPermissionReply);
+  // 检查操作是否有策略定义（供 admin BFF 中间件使用）
+  rpc HasPolicyForOperation (HasPolicyForOperationRequest) returns (HasPolicyForOperationReply);
 }
 
 message RoleItem {
@@ -108,4 +110,11 @@ message CheckPermissionRequest {
 }
 message CheckPermissionReply {
   bool allowed = 1;
+}
+
+message HasPolicyForOperationRequest {
+  string operation = 1;
+}
+message HasPolicyForOperationReply {
+  bool has = 1;
 }

@@ -27,6 +27,7 @@ const (
 	AdminRole_UpdateRolePermissions_FullMethodName = "/api.service.user.v1.AdminRole/UpdateRolePermissions"
 	AdminRole_ListAllPermissions_FullMethodName    = "/api.service.user.v1.AdminRole/ListAllPermissions"
 	AdminRole_CheckPermission_FullMethodName       = "/api.service.user.v1.AdminRole/CheckPermission"
+	AdminRole_HasPolicyForOperation_FullMethodName = "/api.service.user.v1.AdminRole/HasPolicyForOperation"
 )
 
 // AdminRoleClient is the client API for AdminRole service.
@@ -51,6 +52,8 @@ type AdminRoleClient interface {
 	ListAllPermissions(ctx context.Context, in *ListAllPermissionsRequest, opts ...grpc.CallOption) (*ListAllPermissionsReply, error)
 	// 校验权限（供 admin BFF 中间件使用）
 	CheckPermission(ctx context.Context, in *CheckPermissionRequest, opts ...grpc.CallOption) (*CheckPermissionReply, error)
+	// 检查操作是否有策略定义（供 admin BFF 中间件使用）
+	HasPolicyForOperation(ctx context.Context, in *HasPolicyForOperationRequest, opts ...grpc.CallOption) (*HasPolicyForOperationReply, error)
 }
 
 type adminRoleClient struct {
@@ -141,6 +144,16 @@ func (c *adminRoleClient) CheckPermission(ctx context.Context, in *CheckPermissi
 	return out, nil
 }
 
+func (c *adminRoleClient) HasPolicyForOperation(ctx context.Context, in *HasPolicyForOperationRequest, opts ...grpc.CallOption) (*HasPolicyForOperationReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(HasPolicyForOperationReply)
+	err := c.cc.Invoke(ctx, AdminRole_HasPolicyForOperation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminRoleServer is the server API for AdminRole service.
 // All implementations must embed UnimplementedAdminRoleServer
 // for forward compatibility.
@@ -163,6 +176,8 @@ type AdminRoleServer interface {
 	ListAllPermissions(context.Context, *ListAllPermissionsRequest) (*ListAllPermissionsReply, error)
 	// 校验权限（供 admin BFF 中间件使用）
 	CheckPermission(context.Context, *CheckPermissionRequest) (*CheckPermissionReply, error)
+	// 检查操作是否有策略定义（供 admin BFF 中间件使用）
+	HasPolicyForOperation(context.Context, *HasPolicyForOperationRequest) (*HasPolicyForOperationReply, error)
 	mustEmbedUnimplementedAdminRoleServer()
 }
 
@@ -196,6 +211,9 @@ func (UnimplementedAdminRoleServer) ListAllPermissions(context.Context, *ListAll
 }
 func (UnimplementedAdminRoleServer) CheckPermission(context.Context, *CheckPermissionRequest) (*CheckPermissionReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckPermission not implemented")
+}
+func (UnimplementedAdminRoleServer) HasPolicyForOperation(context.Context, *HasPolicyForOperationRequest) (*HasPolicyForOperationReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HasPolicyForOperation not implemented")
 }
 func (UnimplementedAdminRoleServer) mustEmbedUnimplementedAdminRoleServer() {}
 func (UnimplementedAdminRoleServer) testEmbeddedByValue()                   {}
@@ -362,6 +380,24 @@ func _AdminRole_CheckPermission_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminRole_HasPolicyForOperation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HasPolicyForOperationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminRoleServer).HasPolicyForOperation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminRole_HasPolicyForOperation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminRoleServer).HasPolicyForOperation(ctx, req.(*HasPolicyForOperationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminRole_ServiceDesc is the grpc.ServiceDesc for AdminRole service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -400,6 +436,10 @@ var AdminRole_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckPermission",
 			Handler:    _AdminRole_CheckPermission_Handler,
+		},
+		{
+			MethodName: "HasPolicyForOperation",
+			Handler:    _AdminRole_HasPolicyForOperation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

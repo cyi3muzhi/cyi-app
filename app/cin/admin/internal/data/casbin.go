@@ -65,6 +65,21 @@ func (e *RemoteEnforcer) Enforce(rvals ...interface{}) (bool, error) {
 	return e.checker.CheckPermission(context.Background(), role, obj, act)
 }
 
+// GetFilteredPolicy 实现 EnforcerProvider 接口，检查 operation 是否有策略定义
+func (e *RemoteEnforcer) GetFilteredPolicy(fieldIndex int, fieldValues ...string) ([][]string, error) {
+	if len(fieldValues) == 0 {
+		return nil, nil
+	}
+	has, err := e.checker.HasPolicyForOperation(context.Background(), fieldValues[0])
+	if err != nil {
+		return nil, err
+	}
+	if has {
+		return [][]string{{}}, nil // 非空表示有策略
+	}
+	return nil, nil
+}
+
 // ProvideEnforcerProvider 将 *RemoteEnforcer 转换为 EnforcerProvider 接口（用于 wire 注入）
 func ProvideEnforcerProvider(e *RemoteEnforcer) mid.EnforcerProvider {
 	return e

@@ -121,3 +121,12 @@ func (s *AdminRoleService) CheckPermission(ctx context.Context, req *v1.CheckPer
 	}
 	return &v1.CheckPermissionReply{Allowed: allowed}, nil
 }
+
+// HasPolicyForOperation 检查是否有任何策略引用了指定操作路径
+func (s *AdminRoleService) HasPolicyForOperation(ctx context.Context, req *v1.HasPolicyForOperationRequest) (*v1.HasPolicyForOperationReply, error) {
+	has, err := s.uc.HasPolicyForOperation(ctx, req.Operation)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.HasPolicyForOperationReply{Has: has}, nil
+}
