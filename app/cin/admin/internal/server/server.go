@@ -45,7 +45,8 @@ func NewHTTPServerConf(
 	logger log.Logger,
 	metric *mid.Meter,
 	auth *conf.Auth,
-	tokenValidator mid.TokenValidator) *ts.HttpServer {
+	tokenValidator mid.TokenValidator,
+	enforcer mid.EnforcerProvider) *ts.HttpServer {
 
 	srv := http.NewServer(ts.NewHttpServerOpt(
 		&ts.TransporterOpt{
@@ -57,6 +58,7 @@ func NewHTTPServerConf(
 			ApiKey:         auth.ApiKey,
 			WhiteList:      auth.WhiteList,
 			TokenValidator: tokenValidator,
+			Enforcer:       enforcer,
 			Logger:         logger,
 			TracerProvider: tp,
 			Meter:          metric,
@@ -73,6 +75,7 @@ func NewGRPCServerConf(
 	logger log.Logger,
 	metric *mid.Meter,
 	ac *conf.Auth,
+	enforcer mid.EnforcerProvider,
 ) *ts.GrpcServer {
 	srv := grpc.NewServer(ts.NewGrpcServerOpt(&ts.TransporterOpt{
 		Network: c.Grpc.Network,
@@ -82,6 +85,7 @@ func NewGRPCServerConf(
 		TracerProvider: tp,
 		Logger:         logger,
 		ApiKey:         ac.ApiKey,
+		Enforcer:       enforcer,
 		Meter:          metric,
 	})...)
 

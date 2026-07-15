@@ -28,6 +28,8 @@ var ProviderSet = wire.NewSet(
 	NewTokenValidator,
 	NewOssClient,
 	NewRedisClient,
+	NewCasbinEnforcer,
+	ProvideEnforcerProvider,
 )
 
 // Data 包含所有下游微服务的 gRPC 客户端连接

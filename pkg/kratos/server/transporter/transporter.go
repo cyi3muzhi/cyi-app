@@ -36,6 +36,9 @@ type MiddlewareOpt struct {
 	WhiteList      []string
 	TokenValidator mid.TokenValidator
 
+	// Casbin 权限校验 可选
+	Enforcer mid.EnforcerProvider
+
 	// 链路追踪 *
 	TracerProvider trace.TracerProvider
 	// 日志 *
@@ -63,6 +66,9 @@ func NewHttpServerOpt(httpOpt *TransporterOpt, midOpt *MiddlewareOpt) []khttp.Se
 			WhiteList:      midOpt.WhiteList,
 			TokenValidator: midOpt.TokenValidator,
 		}))
+	}
+	if midOpt.Enforcer != nil {
+		mids = append(mids, mid.WithCasbinMiddleware(midOpt.Enforcer))
 	}
 	mids = append(mids, mid.WithMetricsMiddleware(midOpt.Meter))
 	middlewares := mid.ServerMiddlewares(midOpt.TracerProvider, mids...)
@@ -106,6 +112,9 @@ func NewGrpcServerOpt(grpcOpt *TransporterOpt, midOpt *MiddlewareOpt) []grpc.Ser
 		mids = append(mids, mid.WithAuthMiddleware(mid.Auth{
 			ApiKey: midOpt.ApiKey,
 		}))
+	}
+	if midOpt.Enforcer != nil {
+		mids = append(mids, mid.WithCasbinMiddleware(midOpt.Enforcer))
 	}
 	mids = append(mids, mid.WithMetricsMiddleware(midOpt.Meter))
 	middlewares := mid.ServerMiddlewares(midOpt.TracerProvider, mids...)

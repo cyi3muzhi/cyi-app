@@ -72,6 +72,18 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '操作日志' }
       },
       {
+        path: 'roles',
+        name: 'Roles',
+        component: () => import('../views/roles/RolesView.vue'),
+        meta: { title: '角色管理' }
+      },
+      {
+        path: 'staff',
+        name: 'Staff',
+        component: () => import('../views/staff/StaffView.vue'),
+        meta: { title: '员工管理' }
+      },
+      {
         path: 'profile',
         name: 'Profile',
         component: () => import('../views/profile/ProfileView.vue'),

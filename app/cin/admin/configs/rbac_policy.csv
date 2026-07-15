@@ -1,0 +1,17 @@
+# 权限策略: p = role, object(operation), action(method)
+# 操作通配符 "*" 表示所有方法
+p, 超级管理员, *, *
+p, 管理员, /api.cin.admin.v1.Dashboard/GetDashboardStats, GET
+p, 管理员, /api.cin.admin.v1.AdminProduct/*, *
+p, 管理员, /api.cin.admin.v1.AdminOrder/ListOrders, GET
+p, 管理员, /api.cin.admin.v1.AdminOrder/GetOrder, GET
+p, 运营编辑, /api.cin.admin.v1.AdminProduct/*, GET
+p, 运营编辑, /api.cin.admin.v1.AdminProduct/CreateProduct, POST
+p, 运营编辑, /api.cin.admin.v1.AdminProduct/UpdateProduct, PUT
+p, 运营编辑, /api.cin.admin.v1.AdminOrder/ListOrders, GET
+p, 运营编辑, /api.cin.admin.v1.AdminOrder/GetOrder, GET
+p, 财务, /api.cin.admin.v1.AdminOrder/ListOrders, GET
+p, 财务, /api.cin.admin.v1.AdminOrder/GetOrder, GET
+
+# 角色继承: g = user_id/user_role, inherited_role
+# 这里使用角色名直接匹配，实际使用时可以按用户ID分配

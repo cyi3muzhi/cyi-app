@@ -25,9 +25,10 @@ type Meter struct {
 type MiddlewareType bool
 
 type MiddlewareOptions struct {
-	Auth   Auth
-	logger log.Logger
-	Meter  *Meter
+	Auth     Auth
+	Enforcer EnforcerProvider
+	logger   log.Logger
+	Meter    *Meter
 }
 
 type MiddlewareOption func(*MiddlewareOptions)
@@ -50,5 +51,12 @@ func WithAuthMiddleware(auth Auth) MiddlewareOption {
 func WithMetricsMiddleware(meter*Meter) MiddlewareOption {
 	return func(o *MiddlewareOptions) {
 		o.Meter = meter
+	}
+}
+
+// 添加 Casbin 权限中间件
+func WithCasbinMiddleware(enforcer EnforcerProvider) MiddlewareOption {
+	return func(o *MiddlewareOptions) {
+		o.Enforcer = enforcer
 	}
 }

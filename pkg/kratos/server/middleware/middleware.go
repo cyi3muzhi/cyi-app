@@ -66,6 +66,9 @@ func Middlewares(tp trace.TracerProvider, middlewareType MiddlewareType, opts ..
 		if options.Auth.ApiKey != "" {
 			middlewareList = append(middlewareList, AuthServiceMiddleware(options.Auth))
 		}
+		if options.Enforcer != nil {
+			middlewareList = append(middlewareList, PermissionMiddleware(options.Enforcer))
+		}
 		middlewareList = append(middlewareList,
 			Validate(),
 			ratelimit.Server(),

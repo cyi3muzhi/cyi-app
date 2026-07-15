@@ -15,6 +15,7 @@ import (
 type UserClaims struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
+	Role     string `json:"role"`
 	jwt2.RegisteredClaims
 }
 

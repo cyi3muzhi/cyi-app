@@ -27,7 +27,12 @@ import (
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, meter *middleware.Meter) (*kratos.App, func(), error) {
 	traceTracerProvider := provideTracerProvider(tracerProvider)
-	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth)
+	enforcer, err := data.NewCasbinEnforcer()
+	if err != nil {
+		return nil, nil, err
+	}
+	enforcerProvider := data.ProvideEnforcerProvider(enforcer)
+	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth, enforcerProvider)
 	discovery := server.NewDiscovery(registry)
 	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	adminUserClient := data.NewAdminUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
@@ -50,7 +55,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, logger)
 	server2 := server.NewGRPCServer(grpcServer, adminService)
 	tokenValidator := data.NewTokenValidator(client)
-	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth, tokenValidator)
+	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth, tokenValidator, enforcerProvider)
 	server3 := server.NewHTTPServer(httpServer, adminService)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, server2, server3, registrar)
