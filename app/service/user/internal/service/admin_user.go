@@ -87,7 +87,7 @@ func (s *AdminUserService) GetAdminUser(ctx context.Context, req *v1.GetAdminUse
 
 // ListAdminUser 管理员列表
 func (s *AdminUserService) ListAdminUser(ctx context.Context, req *v1.ListAdminUserRequest) (*v1.ListAdminUserReply, error) {
-	items, total, err := s.uc.List(ctx, req.Page, req.PageSize, req.Keyword, req.Status)
+	items, total, err := s.uc.List(ctx, req.Page, req.PageSize, req.Keyword, req.Status, req.Role)
 	if err != nil {
 		return nil, err
 	}

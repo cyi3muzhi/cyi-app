@@ -25,7 +25,7 @@ type Staff struct {
 
 // StaffRepo 员工仓库接口
 type StaffRepo interface {
-	List(ctx context.Context, page, pageSize int32, keyword, status string) ([]*Staff, int32, error)
+	List(ctx context.Context, page, pageSize int32, keyword, status, role string) ([]*Staff, int32, error)
 	Create(ctx context.Context, s *Staff, password string) (int64, error)
 	Update(ctx context.Context, s *Staff) error
 	ToggleStatus(ctx context.Context, id int64) (int, error)
@@ -43,14 +43,14 @@ func NewStaffUseCase(repo StaffRepo, logger log.Logger) *StaffUseCase {
 }
 
 // List 获取员工列表（带分页）
-func (uc *StaffUseCase) List(ctx context.Context, page, pageSize int32, keyword, status string) ([]*Staff, int32, error) {
+func (uc *StaffUseCase) List(ctx context.Context, page, pageSize int32, keyword, status, role string) ([]*Staff, int32, error) {
 	if page < 1 {
 		page = 1
 	}
 	if pageSize < 1 || pageSize > 100 {
 		pageSize = 20
 	}
-	return uc.repo.List(ctx, page, pageSize, keyword, status)
+	return uc.repo.List(ctx, page, pageSize, keyword, status, role)
 }
 
 // Create 创建员工

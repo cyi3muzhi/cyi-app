@@ -66,6 +66,7 @@ message ListStaffRequest {
   int32 page_size = 2;
   string keyword = 3;
   string status = 4;
+  string role = 5;
 }
 
 message ListStaffReply {

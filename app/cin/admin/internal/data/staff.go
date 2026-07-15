@@ -22,10 +22,13 @@ func NewStaffRepo(data *Data, logger log.Logger) biz.StaffRepo {
 }
 
 // List 获取员工列表
-func (r *staffRepo) List(ctx context.Context, page, pageSize int32, keyword, status string) ([]*biz.Staff, int32, error) {
+func (r *staffRepo) List(ctx context.Context, page, pageSize int32, keyword, status, role string) ([]*biz.Staff, int32, error) {
 	req := &userV1.ListAdminUserRequest{Page: page, PageSize: pageSize, Keyword: keyword}
 	if status != "" {
 		req.Status = status
+	}
+	if role != "" {
+		req.Role = role
 	}
 	resp, err := r.data.auc.ListAdminUser(ctx, req)
 	if err != nil {

@@ -7,7 +7,7 @@
         <h2 class="page-title">员工管理</h2>
         <span class="page-subtitle">管理所有后台账号与员工信息</span>
       </div>
-      <el-button type="primary" @click="openAddModal">
+      <el-button v-if="store.hasPerm('staff', 'add')" type="primary" @click="openAddModal">
         <el-icon><Plus /></el-icon>
         添加员工
       </el-button>
@@ -113,8 +113,9 @@
                <span class="staff-system-tag">系统账号</span>
              </template>
              <template v-else>
-              <el-button text size="small" type="primary" @click="editStaff(row.id)">编辑</el-button>
+              <el-button v-if="store.hasPerm('staff', 'edit')" text size="small" type="primary" @click="editStaff(row.id)">编辑</el-button>
               <el-button
+                v-if="store.hasPerm('staff', 'toggle')"
                 text size="small"
                 :type="row.status === 1 ? 'danger' : 'success'"
                 @click="toggleStaff(row.id)">
@@ -213,6 +214,9 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { listStaff, createStaff, updateStaff, toggleStaffStatus, getOnlineAdminIds } from '../../api/staff'
 import type { StaffInfo } from '../../api/staff'
 import { listRoles } from '../../api/role'
+import { useAppStore } from '../../store/app'
+
+const store = useAppStore()
 
 // ---------- 状态 ----------
 const loading = ref(false)
@@ -290,12 +294,13 @@ function resetFilters() {
 async function loadStaffList() {
   loading.value = true
   try {
-    const params: { page?: number; page_size?: number; keyword?: string; status?: string } = {
+    const params: { page?: number; page_size?: number; keyword?: string; status?: string; role?: string } = {
       page: page.value,
       page_size: pageSize.value
     }
     if (searchKeyword.value) params.keyword = searchKeyword.value
     if (statusFilter.value) params.status = statusFilter.value
+    if (roleFilter.value) params.role = roleFilter.value
     const res = await listStaff(params)
     staffList.value = res.items || []
     total.value = res.total || 0

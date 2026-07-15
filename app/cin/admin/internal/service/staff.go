@@ -11,7 +11,7 @@ import (
 
 // ListStaff 获取员工列表
 func (s *AdminService) ListStaff(ctx context.Context, req *adminv1.ListStaffRequest) (*adminv1.ListStaffReply, error) {
-	items, total, err := s.sc.List(ctx, req.Page, req.PageSize, req.Keyword, req.Status)
+	items, total, err := s.sc.List(ctx, req.Page, req.PageSize, req.Keyword, req.Status, req.Role)
 	if err != nil {
 		return nil, err
 	}

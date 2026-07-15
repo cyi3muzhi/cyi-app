@@ -119,14 +119,25 @@ func (r *adminUserRepo) Update(ctx context.Context, admin *biz.AdminUser) error 
 }
 
 // List 管理员列表
-func (r *adminUserRepo) List(ctx context.Context, page, pageSize int32, keyword, status string) ([]*biz.AdminUser, int64, error) {
+func (r *adminUserRepo) List(ctx context.Context, page, pageSize int32, keyword, status, role string) ([]*biz.AdminUser, int64, error) {
 	var total int64
 	query := r.data.db.Model(&models.AdminUser{})
 	if keyword != "" {
-		query = query.Where("username LIKE ? OR name LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
+		query = query.Where("username LIKE ? OR name LIKE ? OR phone LIKE ? OR email LIKE ?",
+			"%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%")
+	}
+	if role != "" {
+		query = query.Where("role = ?", role)
 	}
 	if status != "" && status != "all" {
-		query = query.Where("status = ?", status)
+		statusValue := status
+		switch status {
+		case "active":
+			statusValue = "1"
+		case "inactive":
+			statusValue = "2"
+		}
+		query = query.Where("status = ?", statusValue)
 	}
 	query.Count(&total)
 

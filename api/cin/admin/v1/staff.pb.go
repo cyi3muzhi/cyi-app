@@ -168,6 +168,7 @@ type ListStaffRequest struct {
 	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	Keyword       string                 `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`
 	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	Role          string                 `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -226,6 +227,13 @@ func (x *ListStaffRequest) GetKeyword() string {
 func (x *ListStaffRequest) GetStatus() string {
 	if x != nil {
 		return x.Status
+	}
+	return ""
+}
+
+func (x *ListStaffRequest) GetRole() string {
+	if x != nil {
+		return x.Role
 	}
 	return ""
 }
@@ -761,12 +769,13 @@ const file_api_cin_admin_v1_staff_proto_rawDesc = "" +
 	"\n" +
 	"last_login\x18\f \x01(\tR\tlastLogin\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\r \x01(\tR\tcreatedAt\"u\n" +
+	"created_at\x18\r \x01(\tR\tcreatedAt\"\x89\x01\n" +
 	"\x10ListStaffRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x18\n" +
 	"\akeyword\x18\x03 \x01(\tR\akeyword\x12\x16\n" +
-	"\x06status\x18\x04 \x01(\tR\x06status\"Y\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\x12\x12\n" +
+	"\x04role\x18\x05 \x01(\tR\x04role\"Y\n" +
 	"\x0eListStaffReply\x121\n" +
 	"\x05items\x18\x01 \x03(\v2\x1b.api.cin.admin.v1.StaffInfoR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\"\xc0\x01\n" +

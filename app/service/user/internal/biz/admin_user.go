@@ -35,7 +35,7 @@ type AdminUserRepo interface {
 	FindByID(ctx context.Context, id int64) (*AdminUser, error)
 	Create(ctx context.Context, admin *AdminUser) (int64, error)
 	Update(ctx context.Context, admin *AdminUser) error
-	List(ctx context.Context, page, pageSize int32, keyword, status string) ([]*AdminUser, int64, error)
+	List(ctx context.Context, page, pageSize int32, keyword, status, role string) ([]*AdminUser, int64, error)
 	ToggleStatus(ctx context.Context, id int64) (int32, error)
 	UpdateLastLogin(ctx context.Context, id int64) error
 	VerifyPassword(ctx context.Context, id int64, password string) error
@@ -109,8 +109,8 @@ func (uc *AdminUserUseCase) Get(ctx context.Context, id int64) (*AdminUser, erro
 }
 
 // List 管理员列表
-func (uc *AdminUserUseCase) List(ctx context.Context, page, pageSize int32, keyword, status string) ([]*AdminUser, int64, error) {
-	return uc.repo.List(ctx, page, pageSize, keyword, status)
+func (uc *AdminUserUseCase) List(ctx context.Context, page, pageSize int32, keyword, status, role string) ([]*AdminUser, int64, error) {
+	return uc.repo.List(ctx, page, pageSize, keyword, status, role)
 }
 
 // ToggleStatus 切换状态
