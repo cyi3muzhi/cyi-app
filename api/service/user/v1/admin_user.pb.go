@@ -87,7 +87,9 @@ type AdminLoginReply struct {
 	// 角色
 	Role string `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
 	// 是否验证通过
-	Valid         bool `protobuf:"varint,5,opt,name=valid,proto3" json:"valid,omitempty"`
+	Valid bool `protobuf:"varint,5,opt,name=valid,proto3" json:"valid,omitempty"`
+	// 头像URL
+	Avatar        string `protobuf:"bytes,6,opt,name=avatar,proto3" json:"avatar,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -155,6 +157,13 @@ func (x *AdminLoginReply) GetValid() bool {
 		return x.Valid
 	}
 	return false
+}
+
+func (x *AdminLoginReply) GetAvatar() string {
+	if x != nil {
+		return x.Avatar
+	}
+	return ""
 }
 
 type CreateAdminUserRequest struct {
@@ -291,7 +300,15 @@ type UpdateAdminUserRequest struct {
 	// 角色
 	Role string `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
 	// 邮箱
-	Email         string `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
+	Email string `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
+	// 手机号
+	Phone string `protobuf:"bytes,5,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 部门
+	Department string `protobuf:"bytes,6,opt,name=department,proto3" json:"department,omitempty"`
+	// 职位
+	Position string `protobuf:"bytes,7,opt,name=position,proto3" json:"position,omitempty"`
+	// 个人简介
+	Bio           string `protobuf:"bytes,8,opt,name=bio,proto3" json:"bio,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -350,6 +367,34 @@ func (x *UpdateAdminUserRequest) GetRole() string {
 func (x *UpdateAdminUserRequest) GetEmail() string {
 	if x != nil {
 		return x.Email
+	}
+	return ""
+}
+
+func (x *UpdateAdminUserRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *UpdateAdminUserRequest) GetDepartment() string {
+	if x != nil {
+		return x.Department
+	}
+	return ""
+}
+
+func (x *UpdateAdminUserRequest) GetPosition() string {
+	if x != nil {
+		return x.Position
+	}
+	return ""
+}
+
+func (x *UpdateAdminUserRequest) GetBio() string {
+	if x != nil {
+		return x.Bio
 	}
 	return ""
 }
@@ -709,10 +754,14 @@ type AdminUserInfo struct {
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
 	Email         string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
-	Avatar        string                 `protobuf:"bytes,6,opt,name=avatar,proto3" json:"avatar,omitempty"`
-	Status        int32                  `protobuf:"varint,7,opt,name=status,proto3" json:"status,omitempty"`
-	LastLogin     string                 `protobuf:"bytes,8,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Phone         string                 `protobuf:"bytes,6,opt,name=phone,proto3" json:"phone,omitempty"`
+	Department    string                 `protobuf:"bytes,7,opt,name=department,proto3" json:"department,omitempty"`
+	Position      string                 `protobuf:"bytes,8,opt,name=position,proto3" json:"position,omitempty"`
+	Bio           string                 `protobuf:"bytes,9,opt,name=bio,proto3" json:"bio,omitempty"`
+	Avatar        string                 `protobuf:"bytes,10,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	Status        int32                  `protobuf:"varint,11,opt,name=status,proto3" json:"status,omitempty"`
+	LastLogin     string                 `protobuf:"bytes,12,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -778,6 +827,34 @@ func (x *AdminUserInfo) GetRole() string {
 func (x *AdminUserInfo) GetEmail() string {
 	if x != nil {
 		return x.Email
+	}
+	return ""
+}
+
+func (x *AdminUserInfo) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *AdminUserInfo) GetDepartment() string {
+	if x != nil {
+		return x.Department
+	}
+	return ""
+}
+
+func (x *AdminUserInfo) GetPosition() string {
+	if x != nil {
+		return x.Position
+	}
+	return ""
+}
+
+func (x *AdminUserInfo) GetBio() string {
+	if x != nil {
+		return x.Bio
 	}
 	return ""
 }
@@ -915,13 +992,14 @@ const file_api_service_user_v1_admin_user_proto_rawDesc = "" +
 	"$api/service/user/v1/admin_user.proto\x12\x13api.service.user.v1\x1a\x17validate/validate.proto\"a\n" +
 	"\x11AdminLoginRequest\x12%\n" +
 	"\busername\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x02\x18 R\busername\x12%\n" +
-	"\bpassword\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18 R\bpassword\"\x86\x01\n" +
+	"\bpassword\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18 R\bpassword\"\x9e\x01\n" +
 	"\x0fAdminLoginReply\x12\x19\n" +
 	"\badmin_id\x18\x01 \x01(\x03R\aadminId\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
 	"\x04role\x18\x04 \x01(\tR\x04role\x12\x14\n" +
-	"\x05valid\x18\x05 \x01(\bR\x05valid\"\xa4\x01\n" +
+	"\x05valid\x18\x05 \x01(\bR\x05valid\x12\x16\n" +
+	"\x06avatar\x18\x06 \x01(\tR\x06avatar\"\xa4\x01\n" +
 	"\x16CreateAdminUserRequest\x12%\n" +
 	"\busername\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x02\x18 R\busername\x12%\n" +
 	"\bpassword\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18 R\bpassword\x12\x12\n" +
@@ -929,12 +1007,18 @@ const file_api_service_user_v1_admin_user_proto_rawDesc = "" +
 	"\x04role\x18\x04 \x01(\tR\x04role\x12\x14\n" +
 	"\x05email\x18\x05 \x01(\tR\x05email\"&\n" +
 	"\x14CreateAdminUserReply\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"o\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\xd3\x01\n" +
 	"\x16UpdateAdminUserRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
 	"\x04role\x18\x03 \x01(\tR\x04role\x12\x14\n" +
-	"\x05email\x18\x04 \x01(\tR\x05email\"0\n" +
+	"\x05email\x18\x04 \x01(\tR\x05email\x12\x14\n" +
+	"\x05phone\x18\x05 \x01(\tR\x05phone\x12\x1e\n" +
+	"\n" +
+	"department\x18\x06 \x01(\tR\n" +
+	"department\x12\x1a\n" +
+	"\bposition\x18\a \x01(\tR\bposition\x12\x10\n" +
+	"\x03bio\x18\b \x01(\tR\x03bio\"0\n" +
 	"\x14UpdateAdminUserReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\".\n" +
 	"\x13GetAdminUserRequest\x12\x17\n" +
@@ -954,19 +1038,26 @@ const file_api_service_user_v1_admin_user_proto_rawDesc = "" +
 	"\x1aToggleAdminUserStatusReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1d\n" +
 	"\n" +
-	"new_status\x18\x02 \x01(\x05R\tnewStatus\"\xe7\x01\n" +
+	"new_status\x18\x02 \x01(\x05R\tnewStatus\"\xcb\x02\n" +
 	"\rAdminUserInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
 	"\x04role\x18\x04 \x01(\tR\x04role\x12\x14\n" +
-	"\x05email\x18\x05 \x01(\tR\x05email\x12\x16\n" +
-	"\x06avatar\x18\x06 \x01(\tR\x06avatar\x12\x16\n" +
-	"\x06status\x18\a \x01(\x05R\x06status\x12\x1d\n" +
+	"\x05email\x18\x05 \x01(\tR\x05email\x12\x14\n" +
+	"\x05phone\x18\x06 \x01(\tR\x05phone\x12\x1e\n" +
 	"\n" +
-	"last_login\x18\b \x01(\tR\tlastLogin\x12\x1d\n" +
+	"department\x18\a \x01(\tR\n" +
+	"department\x12\x1a\n" +
+	"\bposition\x18\b \x01(\tR\bposition\x12\x10\n" +
+	"\x03bio\x18\t \x01(\tR\x03bio\x12\x16\n" +
+	"\x06avatar\x18\n" +
+	" \x01(\tR\x06avatar\x12\x16\n" +
+	"\x06status\x18\v \x01(\x05R\x06status\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\t \x01(\tR\tcreatedAt\"i\n" +
+	"last_login\x18\f \x01(\tR\tlastLogin\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\r \x01(\tR\tcreatedAt\"i\n" +
 	"\x18UpdateAdminAvatarRequest\x12\"\n" +
 	"\badmin_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aadminId\x12)\n" +
 	"\n" +

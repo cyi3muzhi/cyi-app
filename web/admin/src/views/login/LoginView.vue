@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- 登录页 - 左侧深色品牌展示 + 右侧白色登录表单 -->
   <main class="login-container">
     <!-- 左侧品牌展示区（大屏显示） -->
@@ -132,7 +132,7 @@
   </main>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * 登录页面组件
  * 左侧深色品牌展示 + 右侧白色登录表单卡片
@@ -215,13 +215,17 @@ async function handleLogin() {
       // 直接使用 window.location 跳转，避免 router 守卫可能的时序问题
       window.location.href = '/dashboard'
     } catch (e) {
-      const msg = e.response?.data?.message || e.response?.data?.reason || ''
+      // 过滤 gRPC 错误前缀，如 "rpc error: code = Unknown desc = 管理员密码错误"
+      const rawMsg = e.response?.data?.message || e.response?.data?.reason || ''
+      const msg = rawMsg.replace(/rpc error: code = \w+ desc = /g, '')
       if (e.response?.status === 401) {
         errorMsg.value = msg || '账号或密码错误'
       } else if (e.response?.status === 422) {
         errorMsg.value = msg || '账号或密码错误'
       } else if (e.response?.status === 404) {
-        errorMsg.value = '服务不可用，请稍后重试'
+        errorMsg.value = '服务暂不可用，请稍后再试'
+      } else if (e.response?.status === 503) {
+        errorMsg.value = '服务暂不可用，请稍后重试'
       } else {
         errorMsg.value = msg || '登录失败，请检查网络连接或联系管理员'
       }

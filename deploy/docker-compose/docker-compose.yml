@@ -135,15 +135,21 @@ services:
     image: rustfs/rustfs:latest
     container_name: rustfs
     ports:
-      - "${RUSTFS_WEB_PORT}:9000"  # Web控制台端口
-      - "${RUSTFS_API_PORT}:9001"  # API端口
+      - "${RUSTFS_API_PORT}:9000"  # S3 API端口
+      - "${RUSTFS_WEB_PORT}:9001"  # Web控制台端口
     volumes:
       - rustfs_data:/data  # 数据存储目录
       - rustfs_logs:/logs  # 日志目录
     environment:
-      - RUSTFS_ROOT_USER=rustfsadmin  # 管理员用户名
-      - RUSTFS_ROOT_PASSWORD=rustfsadmin  # 管理员密码
-      - RUSTFS_REGION=us-east-1  # 区域设置
+      - RUSTFS_VOLUMES=/data
+      - RUSTFS_ADDRESS=0.0.0.0:9000
+      - RUSTFS_CONSOLE_ADDRESS=0.0.0.0:9001
+      - RUSTFS_CONSOLE_ENABLE=true
+      - RUSTFS_ACCESS_KEY=rustfsadmin
+      - RUSTFS_SECRET_KEY=rustfsadmin
+      - RUSTFS_REGION=us-east-1
+      - RUSTFS_CORS_ALLOWED_ORIGINS=*
+      - RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS=*
     restart: always
     networks:
       - cyi-network

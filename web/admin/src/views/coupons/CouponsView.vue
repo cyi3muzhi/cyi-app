@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- 优惠券管理页面 - 统计卡片 + 筛选栏 + 优惠券表格（可展开发放记录）+ 新增/编辑弹窗 -->
   <div class="coupon-list">
     <!-- 统计卡片 -->
@@ -275,7 +275,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * 优惠券管理页面
  * 支持统计概览、搜索筛选、新增/编辑弹窗、状态切换、删除确认、可展开发放记录

@@ -38,6 +38,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.GetAdminInfoReply'
+        put:
+            tags:
+                - AdminAuth
+            description: 更新基本信息
+            operationId: AdminAuth_UpdateAdminInfo
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.UpdateAdminInfoRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.UpdateAdminInfoReply'
     /admin/v1/auth/login:
         post:
             tags:
@@ -987,7 +1005,19 @@ components:
                     type: string
                 email:
                     type: string
+                phone:
+                    type: string
+                department:
+                    type: string
+                position:
+                    type: string
+                bio:
+                    type: string
                 avatar:
+                    type: string
+                createdAt:
+                    type: string
+                lastLogin:
                     type: string
             description: 管理员信息
         api.cin.admin.v1.BatchOperationReply:
@@ -1354,6 +1384,32 @@ components:
                 value:
                     type: integer
                     format: int32
+        api.cin.admin.v1.UpdateAdminInfoReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.UpdateAdminInfoRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: 姓名
+                email:
+                    type: string
+                    description: 邮箱
+                phone:
+                    type: string
+                    description: 手机号
+                department:
+                    type: string
+                    description: 部门
+                position:
+                    type: string
+                    description: 职位
+                bio:
+                    type: string
+                    description: 个人简介
         api.cin.admin.v1.UpdateProductReply:
             type: object
             properties:

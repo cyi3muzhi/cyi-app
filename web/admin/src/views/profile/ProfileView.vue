@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- 个人信息页面 - 包含概览卡片、基本信息表单、安全设置、角色权限 -->
   <div class="profile">
     <!-- 面包屑导航 -->
@@ -28,7 +28,7 @@
         <div class="overview-info">
           <div class="info-top">
             <h2 class="user-name">{{ basicForm.realName }}</h2>
-            <el-tag class="role-badge" size="small" color="#fff" effect="dark">超级管理员</el-tag>
+            <el-tag class="role-badge" size="small" type="primary" effect="dark">超级管理员</el-tag>
           </div>
           <p class="user-bio">{{ basicForm.bio }}</p>
         </div>
@@ -48,25 +48,25 @@
         <el-descriptions-item label="电子邮箱" width="150px">
           <div class="meta-cell">
             <el-icon class="meta-icon"><Message /></el-icon>
-            zhangming@yuexuan.com
+            {{ basicForm.email || '未设置' }}
           </div>
         </el-descriptions-item>
         <el-descriptions-item label="手机号码" width="150px">
           <div class="meta-cell">
             <el-icon class="meta-icon"><Iphone /></el-icon>
-            138****8888
+            {{ basicForm.phone || '未设置' }}
           </div>
         </el-descriptions-item>
         <el-descriptions-item label="注册日期" width="150px">
           <div class="meta-cell">
             <el-icon class="meta-icon"><Clock /></el-icon>
-            2024-06-15
+            {{ basicForm.createdAt || '未知' }}
           </div>
         </el-descriptions-item>
         <el-descriptions-item label="最后登录" width="150px">
           <div class="meta-cell">
             <el-icon class="meta-icon"><Timer /></el-icon>
-            2026-07-14 09:32:18
+            {{ basicForm.lastLogin || '未知' }}
           </div>
         </el-descriptions-item>
       </el-descriptions>
@@ -82,37 +82,32 @@
           </div>
         </div>
       </template>
-      <el-form
-        ref="basicFormRef"
-        :model="basicForm"
-        :rules="basicRules"
-        label-position="top"
-        class="basic-form"
-      >
+
+      <el-form ref="basicFormRef" :rules="basicRules" :model="basicForm" label-width="100px" class="basic-form">
         <el-row :gutter="24">
-          <el-col :span="12">
+          <el-col :xs="24" :md="12">
             <el-form-item label="真实姓名" prop="realName">
               <el-input v-model="basicForm.realName" placeholder="请输入真实姓名" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :xs="24" :md="12">
             <el-form-item label="手机号码" prop="phone">
               <el-input v-model="basicForm.phone" placeholder="请输入手机号码" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :xs="24" :md="12">
             <el-form-item label="电子邮箱" prop="email">
               <el-input v-model="basicForm.email" placeholder="请输入电子邮箱" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="所属部门" prop="department">
+          <el-col :xs="24" :md="12">
+            <el-form-item label="所属部门">
               <el-input v-model="basicForm.department" placeholder="请输入所属部门" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="职位" prop="position">
-              <el-input v-model="basicForm.position" placeholder="请输入职位" />
+          <el-col :xs="24" :md="12">
+            <el-form-item label="担任职位">
+              <el-input v-model="basicForm.position" placeholder="请输入担任职位" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
@@ -230,7 +225,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * 个人信息页面组件
  * 展示用户概览、基本资料编辑、安全设置和角色权限管理
@@ -242,8 +237,7 @@ import {
   EditPen, Lock, UserFilled
 } from '@element-plus/icons-vue'
 import { useAppStore } from '../../store/app'
-import { getAdminInfo, changeAvatar } from '../../api/auth'
-import request from '../../api/index'
+import { getAdminInfo, changeAvatar, updateAdminInfo } from '../../api/auth'
 
 /** 基本信息表单引用 */
 const basicFormRef = ref(null)
@@ -264,7 +258,9 @@ const basicForm = reactive({
   email: '',
   department: '',
   position: '',
-  bio: ''
+  bio: '',
+  createdAt: '',
+  lastLogin: ''
 })
 
 /**
@@ -273,12 +269,23 @@ const basicForm = reactive({
 async function loadAdminInfo() {
   try {
     const res = await getAdminInfo()
+    console.log('getAdminInfo response:', res)
     if (res.admin) {
       basicForm.realName = res.admin.name || ''
       basicForm.email = res.admin.email || ''
       basicForm.phone = res.admin.phone || ''
+      basicForm.department = res.admin.department || ''
+      basicForm.position = res.admin.position || ''
       basicForm.bio = res.admin.bio || ''
+      basicForm.createdAt = (res.admin as any).created_at || ''
+      basicForm.lastLogin = (res.admin as any).last_login || ''
       avatarUrl.value = res.admin.avatar || ''
+
+      // 同步更新 store，使顶部栏头像保持最新
+      if (res.admin.avatar && res.admin.avatar !== store.adminInfo?.avatar) {
+        store.adminInfo = { ...store.adminInfo!, avatar: res.admin.avatar } as any
+        localStorage.setItem('admin_info', JSON.stringify(store.adminInfo))
+      }
     }
   } catch (error) {
     console.error('获取管理员信息失败:', error)
@@ -356,22 +363,36 @@ async function handleAvatarChange(event) {
   }
 
   try {
-    ElMessage.info('正在上传头像...')
+    const loadingMsg = ElMessage.info('正在上传头像...')
 
-    const reader = new FileReader()
-    reader.onload = async (e) => {
-      const base64Data = e.target.result.split(',')[1]
-
-      const avatarResponse = await changeAvatar(base64Data)
-
-      if (avatarResponse.success) {
-        avatarUrl.value = avatarResponse.avatar_url
-        ElMessage.success('头像上传成功')
-      } else {
-        ElMessage.error('头像保存失败')
+    const base64Data = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        resolve((e.target!.result as string).split(',')[1])
       }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+
+    const avatarResponse = await changeAvatar(base64Data)
+
+    loadingMsg.close()
+
+    // Kratos v2.9.2 的 protojson 使用 camelCase，avatar_url 在 JSON 响应中为 avatarUrl
+    const newAvatarUrl = avatarResponse.avatarUrl || avatarResponse.avatar_url
+    if (avatarResponse.success && newAvatarUrl) {
+      avatarUrl.value = newAvatarUrl
+      // 同步更新 store 和 localStorage，使顶部栏头像立即更新
+      store.adminInfo = {
+        ...store.adminInfo!,
+        avatar: newAvatarUrl
+      } as any
+      localStorage.setItem('admin_info', JSON.stringify(store.adminInfo))
+      ElMessage.success('头像上传成功')
+    } else {
+      console.error('头像上传响应异常:', avatarResponse)
+      ElMessage.error('头像保存失败')
     }
-    reader.readAsDataURL(file)
   } catch (error) {
     console.error('头像上传失败:', error)
     ElMessage.error('头像上传失败，请重试')
@@ -381,26 +402,47 @@ async function handleAvatarChange(event) {
 }
 
 /**
- * 保存基本信息（模拟）
+ * 保存基本信息
  */
-function handleSaveBasic() {
-  basicFormRef.value.validate((valid) => {
+async function handleSaveBasic() {
+  basicFormRef.value.validate(async (valid) => {
     if (!valid) return
-    ElMessage.success('基本信息已保存')
+
+    try {
+      const res = await updateAdminInfo({
+        name: basicForm.realName,
+        email: basicForm.email,
+        phone: basicForm.phone,
+        department: basicForm.department,
+        position: basicForm.position,
+        bio: basicForm.bio
+      })
+
+      if (res.success) {
+        // 同步更新 store 中的姓名
+        store.adminInfo = { ...store.adminInfo!, name: basicForm.realName } as any
+        localStorage.setItem('admin_info', JSON.stringify(store.adminInfo))
+        ElMessage.success('基本信息已保存')
+      } else {
+        ElMessage.error('保存失败')
+      }
+    } catch (error) {
+      console.error('保存基本信息失败:', error)
+      ElMessage.error('保存失败，请重试')
+    }
   })
 }
 
 /**
- * 重置基本信息表单
+ * 重置基本信息表单（重新加载服务器数据）
  */
-function handleResetBasic() {
-  basicForm.realName = '张明'
-  basicForm.phone = '138****8888'
-  basicForm.email = 'zhangming@yuexuan.com'
-  basicForm.department = '技术研发部'
-  basicForm.position = '技术总监'
-  basicForm.bio = '全栈工程师，专注于电商平台架构设计与团队管理。拥有十余年互联网行业经验，擅长高并发系统设计与微服务架构。'
-  ElMessage.success('表单已重置')
+async function handleResetBasic() {
+  try {
+    await loadAdminInfo()
+    ElMessage.success('表单已重置')
+  } catch {
+    ElMessage.error('重置失败')
+  }
 }
 
 /**
@@ -563,22 +605,20 @@ function handleViewActivity() {
 
 .role-badge {
   font-size: 0.75rem;
-  font-weight: 600;
-  border: 1px solid var(--shop-primary);
-  background: var(--shop-primary) !important;
-  color: #fff !important;
-  border-radius: 999px;
-  padding: 0 10px;
-  line-height: 22px;
 }
 
 .user-bio {
-  margin: 0.375rem 0 0;
-  font-size: 0.8125rem;
+  margin-top: 0.5rem;
   color: var(--shop-muted-foreground);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* ---- 元数据卡片 ---- */
+/* ---- 元数据信息卡片 ---- */
 .meta-card {
   margin-bottom: 1.25rem;
   border: 1px solid var(--shop-border);
@@ -588,17 +628,20 @@ function handleViewActivity() {
 .meta-cell {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: 6px;
   font-size: 0.8125rem;
-  color: var(--shop-foreground);
 }
 
 .meta-icon {
-  font-size: 0.9375rem;
-  color: var(--shop-primary);
+  color: var(--shop-muted-foreground);
+  font-size: 14px;
 }
 
-/* ---- 通用分区卡片 ---- */
+.meta-card :deep(.el-descriptions__title) {
+  font-weight: 600;
+}
+
+/* ---- 相关信息卡片 ---- */
 .section-card {
   margin-bottom: 1.25rem;
   border: 1px solid var(--shop-border);
@@ -609,31 +652,31 @@ function handleViewActivity() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--shop-foreground);
 }
 
 .section-title-left {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .section-icon {
-  font-size: 1rem;
   color: var(--shop-primary);
+  font-size: 16px;
 }
 
 /* ---- 基本信息表单 ---- */
 .basic-form {
-  width: 100%;
+  max-width: 820px;
 }
 
 .form-actions {
   display: flex;
-  gap: 0.75rem;
-  padding-top: 0.25rem;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--shop-border);
 }
 
 /* ---- 安全设置 ---- */
@@ -652,39 +695,37 @@ function handleViewActivity() {
 .security-item-left {
   flex: 1;
   min-width: 0;
-  padding-right: 1rem;
+  padding-right: 2rem;
 }
 
 .security-item-title {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--shop-foreground);
-  margin-bottom: 0.25rem;
+  margin-bottom: 4px;
 }
 
 .security-item-desc {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--shop-muted-foreground);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  line-height: 1.4;
 }
 
 .pwd-strength-tag {
-  font-weight: 600;
+  margin-left: 4px;
 }
 
 .pwd-hint {
-  color: var(--shop-muted-foreground);
+  margin-left: 8px;
 }
 
 /* ---- 角色与权限 ---- */
 .perm-note {
   font-size: 0.8125rem;
   color: var(--shop-muted-foreground);
-  margin: 0 0 1rem;
-  line-height: 1.5;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--shop-border);
 }
 
 .perm-grid {
@@ -698,13 +739,14 @@ function handleViewActivity() {
   align-items: flex-start;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
-  background: var(--shop-muted);
-  border-radius: var(--shop-radius-md);
-  transition: background 0.2s ease;
+  border: 1px solid var(--shop-border);
+  border-radius: var(--shop-radius);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .perm-item:hover {
-  background: hsl(220, 14%, 92%);
+  border-color: var(--shop-primary);
+  box-shadow: 0 2px 8px rgba(79, 110, 247, 0.08);
 }
 
 .perm-check {
@@ -712,7 +754,7 @@ function handleViewActivity() {
   width: 22px;
   height: 22px;
   border-radius: 999px;
-  background: var(--shop-success);
+  background: #e8f5e9;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -720,14 +762,11 @@ function handleViewActivity() {
 }
 
 .perm-check-icon {
-  color: #fff;
-  stroke-width: 3;
+  color: #2e7d32;
 }
 
 .perm-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
+  flex: 1;
   min-width: 0;
 }
 
@@ -735,10 +774,12 @@ function handleViewActivity() {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--shop-foreground);
+  display: block;
+  margin-bottom: 2px;
 }
 
 .perm-desc {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: var(--shop-muted-foreground);
   line-height: 1.4;
 }
@@ -849,5 +890,4 @@ function handleViewActivity() {
     width: 100%;
   }
 }
-
 </style>

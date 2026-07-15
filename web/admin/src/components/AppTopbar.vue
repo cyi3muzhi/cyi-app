@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <header class="topbar">
     <div class="topbar-left">
       <el-button class="hamburger-btn" @click="store.toggleSidebar" text>
@@ -22,7 +22,10 @@
 
       <el-dropdown trigger="click">
         <span class="admin-avatar-wrap">
-          <span class="avatar-circle">{{ store.adminInfo?.avatar || '管' }}</span>
+          <span class="avatar-circle">
+            <img v-if="store.adminInfo?.avatar && store.adminInfo.avatar.startsWith('http')" :src="store.adminInfo.avatar" class="avatar-img" />
+            <span v-else>{{ store.adminInfo?.avatar || '管' }}</span>
+          </span>
           <span class="avatar-name">{{ store.adminInfo?.name || '管理员' }}</span>
           <el-icon><ArrowDown /></el-icon>
         </span>
@@ -43,7 +46,7 @@
   </header>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * 顶部栏组件
  */
@@ -188,6 +191,13 @@ function goProfile() {
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 700;
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .avatar-name {

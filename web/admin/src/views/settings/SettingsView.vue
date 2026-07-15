@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- 系统设置页面 - 使用 el-tabs 分标签页 -->
   <div class="settings">
     <el-tabs v-model="activeTab" type="card" class="settings-tabs">
@@ -148,7 +148,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * 系统设置页面
  * 包含基本信息、安全设置、通知设置三个标签页

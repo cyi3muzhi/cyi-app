@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- 仪表盘页面 - 统计卡片 + 图表 + 最新订单 + 快捷操作 -->
   <div class="dashboard">
     <!-- 4个统计卡片 -->
@@ -112,7 +112,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * 仪表盘页面组件
  * 展示统计卡片、订单趋势图表、营收分类占比、最新订单列表、快捷操作

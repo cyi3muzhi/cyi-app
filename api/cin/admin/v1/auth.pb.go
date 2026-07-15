@@ -308,7 +308,13 @@ type AdminInfo struct {
 	Username      string                 `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
 	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
 	Email         string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
-	Avatar        string                 `protobuf:"bytes,6,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	Phone         string                 `protobuf:"bytes,6,opt,name=phone,proto3" json:"phone,omitempty"`
+	Department    string                 `protobuf:"bytes,7,opt,name=department,proto3" json:"department,omitempty"`
+	Position      string                 `protobuf:"bytes,8,opt,name=position,proto3" json:"position,omitempty"`
+	Bio           string                 `protobuf:"bytes,9,opt,name=bio,proto3" json:"bio,omitempty"`
+	Avatar        string                 `protobuf:"bytes,10,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	LastLogin     string                 `protobuf:"bytes,12,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -378,9 +384,51 @@ func (x *AdminInfo) GetEmail() string {
 	return ""
 }
 
+func (x *AdminInfo) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *AdminInfo) GetDepartment() string {
+	if x != nil {
+		return x.Department
+	}
+	return ""
+}
+
+func (x *AdminInfo) GetPosition() string {
+	if x != nil {
+		return x.Position
+	}
+	return ""
+}
+
+func (x *AdminInfo) GetBio() string {
+	if x != nil {
+		return x.Bio
+	}
+	return ""
+}
+
 func (x *AdminInfo) GetAvatar() string {
 	if x != nil {
 		return x.Avatar
+	}
+	return ""
+}
+
+func (x *AdminInfo) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *AdminInfo) GetLastLogin() string {
+	if x != nil {
+		return x.LastLogin
 	}
 	return ""
 }
@@ -483,6 +531,140 @@ func (x *ChangeAvatarReply) GetAvatarUrl() string {
 	return ""
 }
 
+type UpdateAdminInfoRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 姓名
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// 邮箱
+	Email string `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	// 手机号
+	Phone string `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 部门
+	Department string `protobuf:"bytes,4,opt,name=department,proto3" json:"department,omitempty"`
+	// 职位
+	Position string `protobuf:"bytes,5,opt,name=position,proto3" json:"position,omitempty"`
+	// 个人简介
+	Bio           string `protobuf:"bytes,6,opt,name=bio,proto3" json:"bio,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateAdminInfoRequest) Reset() {
+	*x = UpdateAdminInfoRequest{}
+	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAdminInfoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAdminInfoRequest) ProtoMessage() {}
+
+func (x *UpdateAdminInfoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAdminInfoRequest.ProtoReflect.Descriptor instead.
+func (*UpdateAdminInfoRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *UpdateAdminInfoRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateAdminInfoRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *UpdateAdminInfoRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *UpdateAdminInfoRequest) GetDepartment() string {
+	if x != nil {
+		return x.Department
+	}
+	return ""
+}
+
+func (x *UpdateAdminInfoRequest) GetPosition() string {
+	if x != nil {
+		return x.Position
+	}
+	return ""
+}
+
+func (x *UpdateAdminInfoRequest) GetBio() string {
+	if x != nil {
+		return x.Bio
+	}
+	return ""
+}
+
+type UpdateAdminInfoReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateAdminInfoReply) Reset() {
+	*x = UpdateAdminInfoReply{}
+	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAdminInfoReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAdminInfoReply) ProtoMessage() {}
+
+func (x *UpdateAdminInfoReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAdminInfoReply.ProtoReflect.Descriptor instead.
+func (*UpdateAdminInfoReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *UpdateAdminInfoReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_api_cin_admin_v1_auth_proto protoreflect.FileDescriptor
 
 const file_api_cin_admin_v1_auth_proto_rawDesc = "" +
@@ -501,25 +683,48 @@ const file_api_cin_admin_v1_auth_proto_rawDesc = "" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x15\n" +
 	"\x13GetAdminInfoRequest\"F\n" +
 	"\x11GetAdminInfoReply\x121\n" +
-	"\x05admin\x18\x01 \x01(\v2\x1b.api.cin.admin.v1.AdminInfoR\x05admin\"\x8d\x01\n" +
+	"\x05admin\x18\x01 \x01(\v2\x1b.api.cin.admin.v1.AdminInfoR\x05admin\"\xaf\x02\n" +
 	"\tAdminInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
 	"\busername\x18\x03 \x01(\tR\busername\x12\x12\n" +
 	"\x04role\x18\x04 \x01(\tR\x04role\x12\x14\n" +
-	"\x05email\x18\x05 \x01(\tR\x05email\x12\x16\n" +
-	"\x06avatar\x18\x06 \x01(\tR\x06avatar\"H\n" +
+	"\x05email\x18\x05 \x01(\tR\x05email\x12\x14\n" +
+	"\x05phone\x18\x06 \x01(\tR\x05phone\x12\x1e\n" +
+	"\n" +
+	"department\x18\a \x01(\tR\n" +
+	"department\x12\x1a\n" +
+	"\bposition\x18\b \x01(\tR\bposition\x12\x10\n" +
+	"\x03bio\x18\t \x01(\tR\x03bio\x12\x16\n" +
+	"\x06avatar\x18\n" +
+	" \x01(\tR\x06avatar\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\v \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"last_login\x18\f \x01(\tR\tlastLogin\"H\n" +
 	"\x13ChangeAvatarRequest\x121\n" +
 	"\ravatar_base64\x18\x01 \x01(\tB\f\xfaB\tr\a\x10\x01\x18\x80\x80\xc0\x02R\favatarBase64\"L\n" +
 	"\x11ChangeAvatarReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1d\n" +
 	"\n" +
-	"avatar_url\x18\x02 \x01(\tR\tavatarUrl2\xd6\x03\n" +
+	"avatar_url\x18\x02 \x01(\tR\tavatarUrl\"\xa6\x01\n" +
+	"\x16UpdateAdminInfoRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\x12\x14\n" +
+	"\x05phone\x18\x03 \x01(\tR\x05phone\x12\x1e\n" +
+	"\n" +
+	"department\x18\x04 \x01(\tR\n" +
+	"department\x12\x1a\n" +
+	"\bposition\x18\x05 \x01(\tR\bposition\x12\x10\n" +
+	"\x03bio\x18\x06 \x01(\tR\x03bio\"0\n" +
+	"\x14UpdateAdminInfoReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xdc\x04\n" +
 	"\tAdminAuth\x12f\n" +
 	"\x05Login\x12\x1e.api.cin.admin.v1.LoginRequest\x1a\x1c.api.cin.admin.v1.LoginReply\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/admin/v1/auth/login\x12j\n" +
 	"\x06Logout\x12\x1f.api.cin.admin.v1.LogoutRequest\x1a\x1d.api.cin.admin.v1.LogoutReply\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/admin/v1/auth/logout\x12w\n" +
 	"\fGetAdminInfo\x12%.api.cin.admin.v1.GetAdminInfoRequest\x1a#.api.cin.admin.v1.GetAdminInfoReply\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/admin/v1/auth/info\x12|\n" +
-	"\fChangeAvatar\x12%.api.cin.admin.v1.ChangeAvatarRequest\x1a#.api.cin.admin.v1.ChangeAvatarReply\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/admin/v1/auth/avatarB6\n" +
+	"\fChangeAvatar\x12%.api.cin.admin.v1.ChangeAvatarRequest\x1a#.api.cin.admin.v1.ChangeAvatarReply\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/admin/v1/auth/avatar\x12\x83\x01\n" +
+	"\x0fUpdateAdminInfo\x12(.api.cin.admin.v1.UpdateAdminInfoRequest\x1a&.api.cin.admin.v1.UpdateAdminInfoReply\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\x1a\x13/admin/v1/auth/infoB6\n" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (
@@ -534,34 +739,38 @@ func file_api_cin_admin_v1_auth_proto_rawDescGZIP() []byte {
 	return file_api_cin_admin_v1_auth_proto_rawDescData
 }
 
-var file_api_cin_admin_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_api_cin_admin_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_api_cin_admin_v1_auth_proto_goTypes = []any{
-	(*LoginRequest)(nil),        // 0: api.cin.admin.v1.LoginRequest
-	(*LoginReply)(nil),          // 1: api.cin.admin.v1.LoginReply
-	(*LogoutRequest)(nil),       // 2: api.cin.admin.v1.LogoutRequest
-	(*LogoutReply)(nil),         // 3: api.cin.admin.v1.LogoutReply
-	(*GetAdminInfoRequest)(nil), // 4: api.cin.admin.v1.GetAdminInfoRequest
-	(*GetAdminInfoReply)(nil),   // 5: api.cin.admin.v1.GetAdminInfoReply
-	(*AdminInfo)(nil),           // 6: api.cin.admin.v1.AdminInfo
-	(*ChangeAvatarRequest)(nil), // 7: api.cin.admin.v1.ChangeAvatarRequest
-	(*ChangeAvatarReply)(nil),   // 8: api.cin.admin.v1.ChangeAvatarReply
+	(*LoginRequest)(nil),           // 0: api.cin.admin.v1.LoginRequest
+	(*LoginReply)(nil),             // 1: api.cin.admin.v1.LoginReply
+	(*LogoutRequest)(nil),          // 2: api.cin.admin.v1.LogoutRequest
+	(*LogoutReply)(nil),            // 3: api.cin.admin.v1.LogoutReply
+	(*GetAdminInfoRequest)(nil),    // 4: api.cin.admin.v1.GetAdminInfoRequest
+	(*GetAdminInfoReply)(nil),      // 5: api.cin.admin.v1.GetAdminInfoReply
+	(*AdminInfo)(nil),              // 6: api.cin.admin.v1.AdminInfo
+	(*ChangeAvatarRequest)(nil),    // 7: api.cin.admin.v1.ChangeAvatarRequest
+	(*ChangeAvatarReply)(nil),      // 8: api.cin.admin.v1.ChangeAvatarReply
+	(*UpdateAdminInfoRequest)(nil), // 9: api.cin.admin.v1.UpdateAdminInfoRequest
+	(*UpdateAdminInfoReply)(nil),   // 10: api.cin.admin.v1.UpdateAdminInfoReply
 }
 var file_api_cin_admin_v1_auth_proto_depIdxs = []int32{
-	6, // 0: api.cin.admin.v1.LoginReply.admin:type_name -> api.cin.admin.v1.AdminInfo
-	6, // 1: api.cin.admin.v1.GetAdminInfoReply.admin:type_name -> api.cin.admin.v1.AdminInfo
-	0, // 2: api.cin.admin.v1.AdminAuth.Login:input_type -> api.cin.admin.v1.LoginRequest
-	2, // 3: api.cin.admin.v1.AdminAuth.Logout:input_type -> api.cin.admin.v1.LogoutRequest
-	4, // 4: api.cin.admin.v1.AdminAuth.GetAdminInfo:input_type -> api.cin.admin.v1.GetAdminInfoRequest
-	7, // 5: api.cin.admin.v1.AdminAuth.ChangeAvatar:input_type -> api.cin.admin.v1.ChangeAvatarRequest
-	1, // 6: api.cin.admin.v1.AdminAuth.Login:output_type -> api.cin.admin.v1.LoginReply
-	3, // 7: api.cin.admin.v1.AdminAuth.Logout:output_type -> api.cin.admin.v1.LogoutReply
-	5, // 8: api.cin.admin.v1.AdminAuth.GetAdminInfo:output_type -> api.cin.admin.v1.GetAdminInfoReply
-	8, // 9: api.cin.admin.v1.AdminAuth.ChangeAvatar:output_type -> api.cin.admin.v1.ChangeAvatarReply
-	6, // [6:10] is the sub-list for method output_type
-	2, // [2:6] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	6,  // 0: api.cin.admin.v1.LoginReply.admin:type_name -> api.cin.admin.v1.AdminInfo
+	6,  // 1: api.cin.admin.v1.GetAdminInfoReply.admin:type_name -> api.cin.admin.v1.AdminInfo
+	0,  // 2: api.cin.admin.v1.AdminAuth.Login:input_type -> api.cin.admin.v1.LoginRequest
+	2,  // 3: api.cin.admin.v1.AdminAuth.Logout:input_type -> api.cin.admin.v1.LogoutRequest
+	4,  // 4: api.cin.admin.v1.AdminAuth.GetAdminInfo:input_type -> api.cin.admin.v1.GetAdminInfoRequest
+	7,  // 5: api.cin.admin.v1.AdminAuth.ChangeAvatar:input_type -> api.cin.admin.v1.ChangeAvatarRequest
+	9,  // 6: api.cin.admin.v1.AdminAuth.UpdateAdminInfo:input_type -> api.cin.admin.v1.UpdateAdminInfoRequest
+	1,  // 7: api.cin.admin.v1.AdminAuth.Login:output_type -> api.cin.admin.v1.LoginReply
+	3,  // 8: api.cin.admin.v1.AdminAuth.Logout:output_type -> api.cin.admin.v1.LogoutReply
+	5,  // 9: api.cin.admin.v1.AdminAuth.GetAdminInfo:output_type -> api.cin.admin.v1.GetAdminInfoReply
+	8,  // 10: api.cin.admin.v1.AdminAuth.ChangeAvatar:output_type -> api.cin.admin.v1.ChangeAvatarReply
+	10, // 11: api.cin.admin.v1.AdminAuth.UpdateAdminInfo:output_type -> api.cin.admin.v1.UpdateAdminInfoReply
+	7,  // [7:12] is the sub-list for method output_type
+	2,  // [2:7] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_api_cin_admin_v1_auth_proto_init() }
@@ -575,7 +784,7 @@ func file_api_cin_admin_v1_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_auth_proto_rawDesc), len(file_api_cin_admin_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

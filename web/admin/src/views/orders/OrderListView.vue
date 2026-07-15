@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- 订单管理页面 - 状态标签页 + 筛选栏 + 订单表格（可展开）+ 分页 -->
   <div class="order-list">
     <!-- 状态标签页 -->
@@ -139,7 +139,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * 订单管理列表页面
  * 支持状态筛选、日期范围搜索、订单号搜索、展开明细、导出 CSV、发货/取消操作

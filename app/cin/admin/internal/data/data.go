@@ -49,9 +49,10 @@ func NewData(pc productRpc.ProductClient, auc userRpc.AdminUserClient, oss *rust
 // NewOssClient 创建 OSS 客户端
 func NewOssClient(cfg *conf.Data) (*rustfs.RustFSClient, error) {
 	return rustfs.NewRustFSClient(&rustfs.Config{
-		Endpoint:  cfg.Oss.Endpoint,
-		AccessKey: cfg.Oss.AccessKey,
-		SecretKey: cfg.Oss.SecretKey,
+		Endpoint:       cfg.Oss.Endpoint,
+		PublicEndpoint: cfg.Oss.PublicEndpoint,
+		AccessKey:      cfg.Oss.AccessKey,
+		SecretKey:      cfg.Oss.SecretKey,
 	})
 }
 

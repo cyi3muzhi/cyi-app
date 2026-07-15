@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <aside class="sidebar" :style="{ width: store.sidebarWidth }">
     <!-- Logo区域 -->
     <div class="sidebar-logo">
@@ -38,7 +38,7 @@
   </aside>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * 侧边栏导航组件
  */

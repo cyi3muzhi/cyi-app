@@ -38,6 +38,7 @@ func (s *AdminUserService) Login(ctx context.Context, req *v1.AdminLoginRequest)
 		Name:     admin.Name,
 		Role:     admin.Role,
 		Valid:    true,
+		Avatar:   admin.Avatar,
 	}, nil
 }
 
@@ -60,10 +61,14 @@ func (s *AdminUserService) CreateAdminUser(ctx context.Context, req *v1.CreateAd
 // UpdateAdminUser 更新管理员
 func (s *AdminUserService) UpdateAdminUser(ctx context.Context, req *v1.UpdateAdminUserRequest) (*v1.UpdateAdminUserReply, error) {
 	err := s.uc.Update(ctx, &biz.AdminUser{
-		ID:    req.Id,
-		Name:  req.Name,
-		Role:  req.Role,
-		Email: req.Email,
+		ID:         req.Id,
+		Name:       req.Name,
+		Role:       req.Role,
+		Email:      req.Email,
+		Phone:      req.Phone,
+		Department: req.Department,
+		Position:   req.Position,
+		Bio:        req.Bio,
 	})
 	if err != nil {
 		return nil, err
@@ -122,15 +127,19 @@ func adminToProto(admin *biz.AdminUser) *v1.AdminUserInfo {
 		lastLogin = time.Unix(admin.LastLogin, 0).Format("2006-01-02 15:04:05")
 	}
 	return &v1.AdminUserInfo{
-		Id:        admin.ID,
-		Username:  admin.Username,
-		Name:      admin.Name,
-		Role:      admin.Role,
-		Email:     admin.Email,
-		Avatar:    admin.Avatar,
-		Status:    admin.Status,
-		LastLogin: lastLogin,
-		CreatedAt: createdAt,
+		Id:         admin.ID,
+		Username:   admin.Username,
+		Name:       admin.Name,
+		Role:       admin.Role,
+		Email:      admin.Email,
+		Phone:      admin.Phone,
+		Department: admin.Department,
+		Position:   admin.Position,
+		Bio:        admin.Bio,
+		Avatar:     admin.Avatar,
+		Status:     admin.Status,
+		LastLogin:  lastLogin,
+		CreatedAt:  createdAt,
 	}
 }
 

@@ -7,9 +7,9 @@ import (
 
 // DefaultConfig 默认配置
 var DefaultConfig = &Config{
-	Endpoint:  "http://localhost:9001",
-	AccessKey: "kZu5gGheApNDUWdEP0qX",
-	SecretKey: "Wi69cUtLTem13xhYDQVPpCdIzXZ7BbOkwKfEun2v",
+	Endpoint:  "http://localhost:9000",
+	AccessKey: "rustfsadmin",
+	SecretKey: "rustfsadmin",
 }
 
 // InitDefaultClient 初始化默认RustFS客户端

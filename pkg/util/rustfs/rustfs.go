@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/Scorpio69t/rustfs-go"
@@ -14,15 +15,17 @@ import (
 
 // RustFSClient RustFS客户端结构体
 type RustFSClient struct {
-	client   *rustfs.Client
-	endpoint string
+	client         *rustfs.Client
+	endpoint       string
+	publicEndpoint string
 }
 
 // Config RustFS配置结构体
 type Config struct {
-	Endpoint  string
-	AccessKey string
-	SecretKey string
+	Endpoint       string
+	PublicEndpoint string
+	AccessKey      string
+	SecretKey      string
 }
 
 // NewRustFSClient 创建RustFS客户端实例
@@ -31,7 +34,6 @@ func NewRustFSClient(cfg *Config) (*RustFSClient, error) {
 		return nil, fmt.Errorf("missing required config: Endpoint, AccessKey, SecretKey")
 	}
 
-	// 创建RustFS客户端
 	client, err := rustfs.New(cfg.Endpoint, &rustfs.Options{
 		Credentials:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
 		Secure:       false,
@@ -41,15 +43,26 @@ func NewRustFSClient(cfg *Config) (*RustFSClient, error) {
 		return nil, fmt.Errorf("failed to create RustFS client: %v", err)
 	}
 
+	publicEndpoint := cfg.PublicEndpoint
+	if publicEndpoint == "" {
+		publicEndpoint = cfg.Endpoint
+	}
+
 	return &RustFSClient{
-		client:   client,
-		endpoint: cfg.Endpoint,
+		client:         client,
+		endpoint:       cfg.Endpoint,
+		publicEndpoint: publicEndpoint,
 	}, nil
 }
 
-// GetEndpoint 获取 OSS 端点地址
+// GetEndpoint 获取后端上传用的 OSS 端点地址
 func (r *RustFSClient) GetEndpoint() string {
 	return r.endpoint
+}
+
+// GetPublicEndpoint 获取前端访问用的 OSS 端点地址
+func (r *RustFSClient) GetPublicEndpoint() string {
+	return r.publicEndpoint
 }
 
 func (r *RustFSClient) CreateBucket(ctx context.Context, bucketName string) error {
@@ -124,7 +137,12 @@ func (r *RustFSClient) GetPresignedURL(ctx context.Context, bucketName, objectKe
 		return "", err
 	}
 
-	return presignedURL.String(), nil
+	urlStr := presignedURL.String()
+	if r.endpoint != r.publicEndpoint {
+		urlStr = strings.Replace(urlStr, r.endpoint, r.publicEndpoint, 1)
+	}
+
+	return urlStr, nil
 }
 
 func (r *RustFSClient) BucketExists(ctx context.Context, bucketName string) (bool, error) {
@@ -141,8 +159,11 @@ func (r *RustFSClient) ObjectExists(ctx context.Context, bucketName, objectKey s
 }
 
 type BucketName string
+
 const (
-	UserServiceBucket BucketName = "user-service"
+	UserServiceBucket    BucketName = "cyi-app-user"
+	AdminServiceBucket   BucketName = "cyi-app-admin"
+	ProductServiceBucket BucketName = "cyi-app-product"
 )
 
 // 上传文件并返回链接

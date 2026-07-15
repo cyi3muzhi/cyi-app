@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- 添加/编辑商品表单页面 -->
   <div class="product-form">
     <!-- 基本信息 -->
@@ -114,7 +114,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * 添加/编辑商品表单页面
  * 支持添加和编辑两种模式，根据路由参数判断

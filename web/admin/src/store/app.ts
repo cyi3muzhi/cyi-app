@@ -3,6 +3,16 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { AdminInfo } from '../types/api'
+
+/** localStorage 中保存的管理员信息 */
+interface StoredAdminInfo {
+  name: string
+  avatar: string
+  role: string
+  email: string
+  username: string
+}
 
 export const useAppStore = defineStore('app', () => {
   // 侧边栏折叠状态
@@ -12,7 +22,7 @@ export const useAppStore = defineStore('app', () => {
   const activeMenu = ref('')
 
   // 管理员信息 - 从 localStorage 读取持久化数据
-  const adminInfo = ref(loadAdminInfo())
+  const adminInfo = ref<AdminInfo | StoredAdminInfo | null>(loadAdminInfo())
 
   // 通知数量
   const notificationCount = ref(3)
@@ -23,7 +33,7 @@ export const useAppStore = defineStore('app', () => {
   /**
    * 从 localStorage 加载管理员信息
    */
-  function loadAdminInfo() {
+  function loadAdminInfo(): StoredAdminInfo | null {
     try {
       const saved = localStorage.getItem('admin_info')
       if (saved) {
@@ -45,7 +55,7 @@ export const useAppStore = defineStore('app', () => {
   /**
    * 登录 - 保存 token 和管理员信息
    */
-  function login(userInfo) {
+  function login(userInfo: { token?: string; name?: string; avatar?: string; role?: string; email?: string; username?: string }) {
     adminInfo.value = {
       name: userInfo.name || '管理员',
       avatar: userInfo.avatar || '管',

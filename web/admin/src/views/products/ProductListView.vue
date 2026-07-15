@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- 商品管理页面 - 工具栏 + 批量操作 + 商品表格 + 分页 -->
   <div class="product-list">
     <!-- 工具栏 -->
@@ -125,7 +125,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * 商品管理列表页面
  * 支持搜索筛选、批量操作、上下架切换、删除确认

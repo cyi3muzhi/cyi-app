@@ -209,7 +209,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * 商品分类管理页面
  * 支持分类的增删改查、排序调整、状态切换、图片与图标设置
@@ -541,7 +541,7 @@ function handleFileChange(event) {
 
   const reader = new FileReader()
   reader.onload = (e) => {
-    formData.image = e.target.result
+    formData.image = e.target!.result as string
   }
   reader.readAsDataURL(file)
 

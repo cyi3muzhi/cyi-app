@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- 用户管理页面 - 统计卡片 + 搜索筛选 + 用户表格 + 分页 -->
   <div class="user-list">
     <!-- 统计卡片 -->
@@ -125,7 +125,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * 用户管理列表页面
  * 支持搜索、会员等级筛选、状态筛选、冻结/解冻操作、导出数据

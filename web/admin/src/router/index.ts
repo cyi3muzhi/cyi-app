@@ -2,9 +2,10 @@
  * 悦选商城管理后台 - 路由配置
  */
 import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
 import { useAppStore } from '../store/app'
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'Login',
@@ -92,7 +93,7 @@ const router = createRouter({
 })
 
 // 路由守卫 - 未登录跳转登录页
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   document.title = to.meta.title ? `${to.meta.title} - 悦选商城管理后台` : '悦选商城管理后台'
 
   const store = useAppStore()

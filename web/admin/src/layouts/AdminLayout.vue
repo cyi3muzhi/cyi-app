@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="admin-layout">
     <!-- 侧边栏遮罩（移动端） -->
     <div
@@ -25,7 +25,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * 管理后台布局组件
  * 包含侧边栏 + 顶部栏 + 内容区

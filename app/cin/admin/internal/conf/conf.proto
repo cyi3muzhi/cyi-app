@@ -42,8 +42,9 @@ message Data {
 
 message OSS {
   string endpoint = 1;
-  string access_key = 2;
-  string secret_key = 3;
+  string public_endpoint = 2;
+  string access_key = 3;
+  string secret_key = 4;
 }
 
 message Registry {

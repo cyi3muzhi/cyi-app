@@ -38,6 +38,13 @@ service AdminAuth {
       body: "*"
     };
   }
+  // 更新基本信息
+  rpc UpdateAdminInfo (UpdateAdminInfoRequest) returns (UpdateAdminInfoReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/auth/info"
+      body: "*"
+    };
+  }
 }
 
 message LoginRequest {
@@ -76,7 +83,13 @@ message AdminInfo {
   string username = 3;
   string role = 4;
   string email = 5;
-  string avatar = 6;
+  string phone = 6;
+  string department = 7;
+  string position = 8;
+  string bio = 9;
+  string avatar = 10;
+  string created_at = 11;
+  string last_login = 12;
 }
 
 message ChangeAvatarRequest {
@@ -88,4 +101,23 @@ message ChangeAvatarReply {
   bool success = 1;
   // 头像 URL
   string avatar_url = 2;
+}
+
+message UpdateAdminInfoRequest {
+  // 姓名
+  string name = 1;
+  // 邮箱
+  string email = 2;
+  // 手机号
+  string phone = 3;
+  // 部门
+  string department = 4;
+  // 职位
+  string position = 5;
+  // 个人简介
+  string bio = 6;
+}
+
+message UpdateAdminInfoReply {
+  bool success = 1;
 }

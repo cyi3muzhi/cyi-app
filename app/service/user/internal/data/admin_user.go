@@ -8,6 +8,7 @@ import (
 	"cyi-app/app/service/user/internal/biz"
 	"cyi-app/app/service/user/internal/data/models"
 	"cyi-app/app/service/user/internal/pkg/encryption"
+	"cyi-app/pkg/util/convert"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/golang-jwt/jwt/v5"
@@ -76,6 +77,18 @@ func (r *adminUserRepo) Update(ctx context.Context, admin *biz.AdminUser) error 
 	}
 	if admin.Email != "" {
 		updates["email"] = admin.Email
+	}
+	if admin.Phone != "" {
+		updates["phone"] = admin.Phone
+	}
+	if admin.Department != "" {
+		updates["department"] = admin.Department
+	}
+	if admin.Position != "" {
+		updates["position"] = admin.Position
+	}
+	if admin.Bio != "" {
+		updates["bio"] = admin.Bio
 	}
 	if admin.Status > 0 {
 		updates["status"] = admin.Status
@@ -222,28 +235,23 @@ func modelToBiz(m *models.AdminUser) *biz.AdminUser {
 	if m == nil {
 		return nil
 	}
-	return &biz.AdminUser{
-		ID:        m.ID,
-		Username:  m.Username,
-		Password:  m.Password,
-		Name:      m.Name,
-		Role:      m.Role,
-		Email:     m.Email,
-		Avatar:    m.Avatar,
-		Status:    m.Status,
-		LastLogin: m.LastLogin,
-		CreatedAt: time.Unix(m.CreateTime, 0),
+	b := &biz.AdminUser{}
+	if err := convert.Convert(m, b); err != nil {
+		return nil
 	}
+	// mapstructure 无法映射嵌入的 gorm.Model 字段（ID, CreateTime），需要手动处理
+	b.ID = m.ID
+	b.CreatedAt = time.Unix(m.CreateTime, 0)
+	return b
 }
 
 // bizToModel biz -> models 转换
 func bizToModel(b *biz.AdminUser) *models.AdminUser {
-	return &models.AdminUser{
-		Username: b.Username,
-		Password: b.Password,
-		Name:     b.Name,
-		Role:     b.Role,
-		Email:    b.Email,
-		Status:   b.Status,
+	m := &models.AdminUser{}
+	if err := convert.Convert(b, m); err != nil {
+		return nil
 	}
+	// mapstructure 无法映射嵌入的 gorm.Model 字段
+	m.ID = b.ID
+	return m
 }

@@ -13,13 +13,18 @@ import (
 
 // AdminAuth 管理员认证信息
 type AdminAuth struct {
-	ID        int64
-	Name      string
-	Username  string
-	Role      string
-	Email     string
-	Avatar    string
-	CreatedAt time.Time
+	ID         int64
+	Name       string
+	Username   string
+	Role       string
+	Email      string
+	Phone      string
+	Department string
+	Position   string
+	Bio        string
+	Avatar     string
+	CreatedAt  string
+	LastLogin  string
 }
 
 // AuthRepo 认证数据仓库接口
@@ -34,6 +39,8 @@ type AuthRepo interface {
 	GetAdminInfo(ctx context.Context, adminID int64) (*AdminAuth, error)
 	// UpdateAvatar 更新管理员头像（接收 Base64 图片）
 	UpdateAvatar(ctx context.Context, adminID int64, avatarBase64 string) (string, error)
+	// UpdateAdminInfo 更新管理员基本信息
+	UpdateAdminInfo(ctx context.Context, adminID int64, info *AdminAuth) error
 }
 
 // AuthUseCase 认证业务逻辑
@@ -96,4 +103,9 @@ func (uc *AuthUseCase) GetAdminInfo(ctx context.Context, adminID int64) (*AdminA
 // UpdateAvatar 更新管理员头像（接收 Base64 图片）
 func (uc *AuthUseCase) UpdateAvatar(ctx context.Context, adminID int64, avatarBase64 string) (string, error) {
 	return uc.repo.UpdateAvatar(ctx, adminID, avatarBase64)
+}
+
+// UpdateAdminInfo 更新管理员基本信息
+func (uc *AuthUseCase) UpdateAdminInfo(ctx context.Context, adminID int64, info *AdminAuth) error {
+	return uc.repo.UpdateAdminInfo(ctx, adminID, info)
 }

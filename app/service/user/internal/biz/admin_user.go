@@ -11,16 +11,20 @@ import (
 
 // AdminUser 管理员用户
 type AdminUser struct {
-	ID        int64
-	Username  string
-	Password  string
-	Name      string
-	Role      string
-	Email     string
-	Avatar    string
-	Status    int32 // 1=正常 2=冻结
-	LastLogin int64
-	CreatedAt time.Time
+	ID         int64
+	Username   string
+	Password   string
+	Name       string
+	Role       string
+	Email      string
+	Phone      string
+	Department string
+	Position   string
+	Bio        string
+	Avatar     string
+	Status     int32 // 1=正常 2=冻结
+	LastLogin  int64
+	CreatedAt  time.Time
 }
 
 // AdminUserRepo 管理员数据仓库接口

@@ -31,8 +31,10 @@ request.interceptors.response.use(
   response => {
     const data = response.data
     if (data.code !== 0 && data.code !== undefined) {
-      ElMessage.error(data.message || '请求失败')
-      return Promise.reject(new Error(data.message))
+      // 过滤 gRPC 错误前缀
+      const msg = (data.message || '请求失败').replace(/rpc error: code = \w+ desc = /g, '')
+      ElMessage.error(msg)
+      return Promise.reject(new Error(msg))
     }
     return data
   },
@@ -46,7 +48,7 @@ request.interceptors.response.use(
         }
         isHandling401 = true
 
-        const message = error.response.data?.message || '登录已过期，请重新登录'
+        const message = (error.response.data?.message || '登录已过期，请重新登录').replace(/rpc error: code = \w+ desc = /g, '')
         ElMessage.error(message)
 
         // 延迟清除状态，确保 ElMessage 先渲染完成
@@ -58,8 +60,10 @@ request.interceptors.response.use(
         }, 1500)
       } else if (status === 403) {
         ElMessage.error('没有权限执行此操作')
+      } else if (status === 503) {
+        ElMessage.error('服务暂不可用，请稍后再试')
       } else {
-        ElMessage.error(error.response.data?.message || '服务器错误')
+        ElMessage.error((error.response.data?.message || '服务器错误').replace(/rpc error: code = \w+ desc = /g, ''))
       }
     } else {
       ElMessage.error('网络连接失败，请检查网络')

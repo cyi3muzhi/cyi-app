@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"net/url"
+	"strings"
 	"time"
 
 	userRpc "cyi-app/api/service/user/v1"
@@ -43,12 +45,39 @@ func (r *authRepo) VerifyLogin(ctx context.Context, username, password string) (
 	if !resp.Valid {
 		return nil, fmt.Errorf("账号或密码错误")
 	}
-	return &biz.AdminAuth{
+
+	admin := &biz.AdminAuth{
 		ID:       resp.AdminId,
 		Name:     resp.Name,
 		Username: resp.Username,
 		Role:     resp.Role,
-	}, nil
+	}
+
+	if resp.Avatar != "" {
+		var bucketName, objectKey string
+		if strings.HasPrefix(resp.Avatar, "http") {
+			parsedURL, err := url.Parse(resp.Avatar)
+			if err == nil && parsedURL.Path != "" {
+				pathParts := strings.SplitN(strings.TrimPrefix(parsedURL.Path, "/"), "/", 2)
+				if len(pathParts) == 2 {
+					bucketName, objectKey = pathParts[0], pathParts[1]
+				}
+			}
+		} else {
+			parts := strings.SplitN(resp.Avatar, "/", 2)
+			if len(parts) == 2 {
+				bucketName, objectKey = parts[0], parts[1]
+			}
+		}
+		if bucketName != "" && objectKey != "" {
+			presignedURL, err := r.data.oss.GetPresignedURL(ctx, bucketName, objectKey, 3600*24*30)
+			if err == nil {
+				admin.Avatar = presignedURL
+			}
+		}
+	}
+
+	return admin, nil
 }
 
 // SaveToken 保存 token 到本地 Redis（单点登录：一个账号只能一个人登录）
@@ -76,21 +105,53 @@ func (r *authRepo) GetAdminInfo(ctx context.Context, adminID int64) (*biz.AdminA
 	if resp.Admin == nil {
 		return nil, fmt.Errorf("管理员不存在")
 	}
+
+	avatar := resp.Admin.Avatar
+	if avatar != "" {
+		var bucketName, objectKey string
+		if strings.HasPrefix(avatar, "http") {
+			parsedURL, err := url.Parse(avatar)
+			if err == nil && parsedURL.Path != "" {
+				pathParts := strings.SplitN(strings.TrimPrefix(parsedURL.Path, "/"), "/", 2)
+				if len(pathParts) == 2 {
+					bucketName, objectKey = pathParts[0], pathParts[1]
+				}
+			}
+		} else {
+			parts := strings.SplitN(avatar, "/", 2)
+			if len(parts) == 2 {
+				bucketName, objectKey = parts[0], parts[1]
+			}
+		}
+		if bucketName != "" && objectKey != "" {
+			presignedURL, err := r.data.oss.GetPresignedURL(ctx, bucketName, objectKey, 3600*24*30)
+			if err == nil {
+				avatar = presignedURL
+			}
+		}
+	}
+
 	return &biz.AdminAuth{
-		ID:       resp.Admin.Id,
-		Name:     resp.Admin.Name,
-		Username: resp.Admin.Username,
-		Role:     resp.Admin.Role,
-		Email:    resp.Admin.Email,
-		Avatar:   resp.Admin.Avatar,
+		ID:         resp.Admin.Id,
+		Name:       resp.Admin.Name,
+		Username:   resp.Admin.Username,
+		Role:       resp.Admin.Role,
+		Email:      resp.Admin.Email,
+		Phone:      resp.Admin.Phone,
+		Department: resp.Admin.Department,
+		Position:   resp.Admin.Position,
+		Bio:        resp.Admin.Bio,
+		Avatar:     avatar,
+		CreatedAt:  resp.Admin.CreatedAt,
+		LastLogin:  resp.Admin.LastLogin,
 	}, nil
 }
 
-// UpdateAvatar 更新管理员头像（接收 Base64 图片，上传到 OSS 后保存 URL）
+// UpdateAvatar 更新管理员头像（接收 Base64 图片，上传到 OSS 后保存路径）
 func (r *authRepo) UpdateAvatar(ctx context.Context, adminID int64, avatarBase64 string) (string, error) {
 	objectKey := fmt.Sprintf("admin/avatar/%d/%s.jpg", adminID, uuid.New().String())
 
-	bucketName := string(rustfs.UserServiceBucket)
+	bucketName := string(rustfs.AdminServiceBucket)
 	exists, err := r.data.oss.BucketExists(ctx, bucketName)
 	if err != nil {
 		return "", fmt.Errorf("检查存储桶失败: %w", err)
@@ -111,13 +172,17 @@ func (r *authRepo) UpdateAvatar(ctx context.Context, adminID int64, avatarBase64
 		return "", fmt.Errorf("上传到OSS失败: %w", err)
 	}
 
-	permanentURL := fmt.Sprintf("http://%s/%s/%s", r.data.oss.GetEndpoint(), bucketName, objectKey)
-
-	if err := r.saveAvatarToDB(ctx, adminID, permanentURL); err != nil {
-		return "", fmt.Errorf("保存头像URL失败: %w", err)
+	avatarPath := fmt.Sprintf("%s/%s", bucketName, objectKey)
+	if err := r.saveAvatarToDB(ctx, adminID, avatarPath); err != nil {
+		return "", fmt.Errorf("保存头像路径失败: %w", err)
 	}
 
-	return permanentURL, nil
+	presignedURL, err := r.data.oss.GetPresignedURL(ctx, bucketName, objectKey, 3600*24*30)
+	if err != nil {
+		return "", fmt.Errorf("生成预签名URL失败: %w", err)
+	}
+
+	return presignedURL, nil
 }
 
 // saveAvatarToDB 保存头像 URL 到数据库（通过 gRPC 调用 user service）
@@ -125,6 +190,20 @@ func (r *authRepo) saveAvatarToDB(ctx context.Context, adminID int64, avatarURL 
 	_, err := r.data.auc.UpdateAdminAvatar(ctx, &userRpc.UpdateAdminAvatarRequest{
 		AdminId:   adminID,
 		AvatarUrl: avatarURL,
+	})
+	return err
+}
+
+// UpdateAdminInfo 更新管理员基本信息（通过 gRPC 调用 user service）
+func (r *authRepo) UpdateAdminInfo(ctx context.Context, adminID int64, info *biz.AdminAuth) error {
+	_, err := r.data.auc.UpdateAdminUser(ctx, &userRpc.UpdateAdminUserRequest{
+		Id:         adminID,
+		Name:       info.Name,
+		Email:      info.Email,
+		Phone:      info.Phone,
+		Department: info.Department,
+		Position:   info.Position,
+		Bio:        info.Bio,
 	})
 	return err
 }
