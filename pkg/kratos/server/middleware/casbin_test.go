@@ -126,7 +126,7 @@ func TestPermissionMiddleware_Denied(t *testing.T) {
 	t.Logf("正确的拒绝响应: %v", err)
 }
 
-// TestPermissionMiddleware_NoClaims 测试无 JWT claims 时拒绝
+// TestPermissionMiddleware_NoClaims 测试无 JWT claims 时放行（白名单接口）
 func TestPermissionMiddleware_NoClaims(t *testing.T) {
 	enforcer := &mockEnforcer{
 		enforceFn: func(rvals ...interface{}) (bool, error) {
@@ -141,10 +141,11 @@ func TestPermissionMiddleware_NoClaims(t *testing.T) {
 		method:    "GET",
 	})
 	_, err := mw(mockHandler)(ctx, nil)
-	if err == nil {
-		t.Fatal("期望无 JWT claims 时返回错误")
+	// 无 claims = 白名单接口（如登录），应放行
+	if err != nil {
+		t.Fatalf("期望无 JWT claims 时放行（白名单接口），实际返回错误: %v", err)
 	}
-	t.Logf("正确的拒绝响应: %v", err)
+	t.Logf("正确的行为: 无 JWT claims 时放行（白名单接口）")
 }
 
 // TestPermissionMiddleware_EnforceError 测试 Casbin 异常时返回错误
