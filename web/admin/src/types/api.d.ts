@@ -40,3 +40,27 @@ export interface ChangeAvatarReply {
 export interface UpdateAdminInfoReply {
   success: boolean
 }
+
+/** 角色项 */
+export interface RoleItem {
+  name: string
+  slug: string
+  desc: string
+  users: number
+  enabled: boolean
+  is_system: boolean
+  created_at: string
+}
+
+/** 权限项 */
+export interface PermItem {
+  key: string
+  label: string
+}
+
+/** 权限模块 */
+export interface PermModule {
+  key: string
+  title: string
+  items: PermItem[]
+}

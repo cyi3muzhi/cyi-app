@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.27.2
-// source: api/cin/admin/v1/dashboard.proto
+// source: cin/admin/v1/dashboard.proto
 
 package adminv1
 
@@ -203,5 +203,5 @@ var Dashboard_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/cin/admin/v1/dashboard.proto",
+	Metadata: "cin/admin/v1/dashboard.proto",
 }

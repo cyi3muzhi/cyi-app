@@ -12,51 +12,65 @@ import (
 )
 
 var (
-	Q         = new(Query)
-	AdminUser *adminUser
-	User      *user
+	Q          = new(Query)
+	AdminUser  *adminUser
+	CasbinRule *casbinRule
+	RoleMeta   *roleMeta
+	User       *user
 )
 
 func SetDefault(db *gorm.DB) {
 	*Q = *Use(db)
 	AdminUser = &Q.AdminUser
+	CasbinRule = &Q.CasbinRule
+	RoleMeta = &Q.RoleMeta
 	User = &Q.User
 }
 
 func Use(db *gorm.DB) *Query {
 	return &Query{
-		db:        db,
-		AdminUser: newAdminUser(db),
-		User:      newUser(db),
+		db:         db,
+		AdminUser:  newAdminUser(db),
+		CasbinRule: newCasbinRule(db),
+		RoleMeta:   newRoleMeta(db),
+		User:       newUser(db),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	AdminUser adminUser
-	User      user
+	AdminUser  adminUser
+	CasbinRule casbinRule
+	RoleMeta   roleMeta
+	User       user
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:        db,
-		AdminUser: q.AdminUser.clone(db),
-		User:      q.User.clone(db),
+		db:         db,
+		AdminUser:  q.AdminUser.clone(db),
+		CasbinRule: q.CasbinRule.clone(db),
+		RoleMeta:   q.RoleMeta.clone(db),
+		User:       q.User.clone(db),
 	}
 }
 
 type queryCtx struct {
-	AdminUser adminUserDo
-	User      userDo
+	AdminUser  adminUserDo
+	CasbinRule casbinRuleDo
+	RoleMeta   roleMetaDo
+	User       userDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		AdminUser: *q.AdminUser.WithContext(ctx),
-		User:      *q.User.WithContext(ctx),
+		AdminUser:  *q.AdminUser.WithContext(ctx),
+		CasbinRule: *q.CasbinRule.WithContext(ctx),
+		RoleMeta:   *q.RoleMeta.WithContext(ctx),
+		User:       *q.User.WithContext(ctx),
 	}
 }
 

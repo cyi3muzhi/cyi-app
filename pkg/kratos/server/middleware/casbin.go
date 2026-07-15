@@ -19,13 +19,15 @@ type EnforcerProvider interface {
 
 // PermissionMiddleware 创建 Casbin 权限校验中间件
 // 从 JWT claims 中提取用户角色，然后使用 Casbin Enforcer 校验权限
+// 无 JWT claims 时放行（说明该接口在白名单中，由 AuthServiceMiddleware 跳过）
 func PermissionMiddleware(enforcer EnforcerProvider) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			// 从 JWT claims 中提取用户角色
 			claims, ok := jwt.FromContext(ctx)
 			if !ok {
-				return nil, fmt.Errorf("权限校验失败: 无法获取 JWT claims")
+				// 无 claims = 白名单接口（如登录），放行
+				return handler(ctx, req)
 			}
 			userClaims, ok := claims.(*UserClaims)
 			if !ok || userClaims == nil {

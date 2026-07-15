@@ -36,8 +36,13 @@ message Data {
     google.protobuf.Duration write_timeout = 4;
     string password = 5;
   }
+  message Database {
+    string driver = 1;
+    string source = 2;
+  }
   Redis redis = 2;
   OSS oss = 3;
+  Database database = 4;
 }
 
 message OSS {

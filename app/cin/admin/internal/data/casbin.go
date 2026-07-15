@@ -1,51 +1,71 @@
 package data
 
 import (
+	"context"
 	"fmt"
-	"path/filepath"
-	"runtime"
+
+	"cyi-app/app/cin/admin/internal/biz"
+	mid "cyi-app/pkg/kratos/server/middleware"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
-	fileadapter "github.com/casbin/casbin/v2/persist/file-adapter"
-	mid "cyi-app/pkg/kratos/server/middleware"
 )
 
-// NewCasbinEnforcer 创建 Casbin Enforcer 实例（自动从 configs 目录加载模型和策略）
+// NewCasbinEnforcer 创建 Casbin Enforcer（简化版，仅加载模型，无策略适配器）
+// 策略通过 gRPC 从 user 服务获取，此 enforcer 仅作为本地模型参考
 func NewCasbinEnforcer() (*casbin.Enforcer, error) {
-	configDir := GetConfigDir()
-	modelPath := filepath.Join(configDir, "rbac_model.conf")
-	policyPath := filepath.Join(configDir, "rbac_policy.csv")
+	modelText := `
+[request_definition]
+r = sub, obj, act
 
-	// 从文件加载模型
-	m, err := model.NewModelFromFile(modelPath)
+[policy_definition]
+p = sub, obj, act
+
+[role_definition]
+g = _, _
+
+[policy_effect]
+e = some(where (p.eft == allow))
+
+[matchers]
+m = g(r.sub, p.sub) && keyMatch(r.obj, p.obj) && (r.act == p.act || p.act == "*")
+`
+	m, err := model.NewModelFromString(modelText)
 	if err != nil {
 		return nil, fmt.Errorf("加载 Casbin 模型失败: %w", err)
 	}
-
-	// 从文件加载策略
-	a := fileadapter.NewAdapter(policyPath)
-
-	// 创建 Enforcer
-	e, err := casbin.NewEnforcer(m, a)
+	// 创建空 Enforcer（无策略适配器，策略从 user 服务获取）
+	e, err := casbin.NewEnforcer(m)
 	if err != nil {
 		return nil, fmt.Errorf("创建 Casbin Enforcer 失败: %w", err)
 	}
-
-	// 启用自动保存（策略修改时自动写回文件）
-	e.EnableAutoSave(true)
-
 	return e, nil
 }
 
-// ProvideEnforcerProvider 将 *casbin.Enforcer 转换为 EnforcerProvider 接口（用于 wire 注入）
-func ProvideEnforcerProvider(e *casbin.Enforcer) mid.EnforcerProvider {
-	return e
+// RemoteEnforcer 远程权限校验器，通过 gRPC 调用 user 服务的 CheckPermission
+// 实现 mid.EnforcerProvider 接口，供中间件使用
+type RemoteEnforcer struct {
+	checker biz.RoleRepo
 }
 
-// GetConfigDir 获取配置文件目录（用于定位 rbac_model.conf 和 rbac_policy.csv）
-func GetConfigDir() string {
-	_, filename, _, _ := runtime.Caller(0)
-	// 从 internal/data/ 回到 configs/
-	return filepath.Join(filepath.Dir(filename), "..", "..", "configs")
+// NewRemoteEnforcer 创建 RemoteEnforcer
+func NewRemoteEnforcer(checker biz.RoleRepo) *RemoteEnforcer {
+	return &RemoteEnforcer{checker: checker}
+}
+
+// Enforce 实现 EnforcerProvider 接口，通过 gRPC 调用 user 服务进行权限校验
+func (e *RemoteEnforcer) Enforce(rvals ...interface{}) (bool, error) {
+	if len(rvals) < 3 {
+		return false, nil
+	}
+	role, _ := rvals[0].(string)
+	obj, _ := rvals[1].(string)
+	act, _ := rvals[2].(string)
+	// 使用 background context，中间件的 context 无法传递到这里
+	return e.checker.CheckPermission(context.Background(), role, obj, act)
+}
+
+// ProvideEnforcerProvider 将 *RemoteEnforcer 转换为 EnforcerProvider 接口（用于 wire 注入）
+func ProvideEnforcerProvider(e *RemoteEnforcer) mid.EnforcerProvider {
+	return e
 }

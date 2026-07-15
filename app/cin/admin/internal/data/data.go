@@ -25,10 +25,12 @@ var ProviderSet = wire.NewSet(
 	NewAuthRepo,
 	NewProductServiceClient,
 	NewAdminUserServiceClient,
+	NewAdminRoleClient,
 	NewTokenValidator,
 	NewOssClient,
 	NewRedisClient,
-	NewCasbinEnforcer,
+	NewRoleRepo,
+	NewRemoteEnforcer,
 	ProvideEnforcerProvider,
 )
 

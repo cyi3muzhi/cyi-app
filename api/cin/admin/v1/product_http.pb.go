@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.9.0
 // - protoc             v5.27.2
-// source: api/cin/admin/v1/product.proto
+// source: cin/admin/v1/product.proto
 
 package adminv1
 

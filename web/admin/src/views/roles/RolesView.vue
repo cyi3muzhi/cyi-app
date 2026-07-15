@@ -36,7 +36,7 @@
           @click="activeTab = 'list'">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
           角色列表
-          <span class="tab-badge">{{ rolesData.length }}</span>
+          <span class="tab-badge">{{ roles.length }}</span>
         </div>
         <div
           class="perm-tab"
@@ -52,9 +52,9 @@
       <div v-show="activeTab === 'list'" class="tab-content">
         <div class="tab-header">
           <span style="font-weight:600;font-size:0.9375rem;">所有角色</span>
-          <span class="tab-total">共 {{ rolesData.length }} 个角色</span>
+          <span class="tab-total">共 {{ roles.length }} 个角色</span>
         </div>
-        <el-table :data="rolesData" stripe highlight-current-row>
+        <el-table :data="roles" stripe highlight-current-row>
           <el-table-column prop="name" label="角色名称" min-width="120">
             <template #default="{ row }">
               <span class="role-name">{{ row.name }}</span>
@@ -75,24 +75,29 @@
             </template>
           </el-table-column>
           <el-table-column label="创建时间" width="110" align="center">
-            <template #default="{ row }">{{ row.createdAt }}</template>
+            <template #default="{ row }">{{ row.created_at }}</template>
           </el-table-column>
-          <el-table-column label="操作" width="240" fixed="right">
+          <el-table-column label="操作" width="160" fixed="right">
             <template #default="{ row, $index }">
-              <el-button text size="small" type="primary" @click="editPermission($index)">编辑权限</el-button>
-              <el-button text size="small" type="warning" @click="openEditModal($index)">编辑</el-button>
-              <el-button
-                v-if="!row.isSystem"
-                text size="small" type="danger"
-                @click="openDeleteModal($index)">删除</el-button>
-              <el-tag v-else size="small" type="info" effect="plain" style="cursor:default;">系统</el-tag>
+              <template v-if="row.slug === 'super_admin'">
+                <span class="role-system-tag">系统角色，不可操作</span>
+              </template>
+              <template v-else>
+                <el-button text size="small" type="primary" @click="editPermission($index)">编辑权限</el-button>
+                <el-button text size="small" type="warning" @click="openEditModal($index)">编辑</el-button>
+                <el-button
+                  v-if="!row.is_system"
+                  text size="small" type="danger"
+                  @click="openDeleteModal($index)">删除</el-button>
+                <el-tag v-else size="small" type="info" effect="plain" style="cursor:default;">系统</el-tag>
+              </template>
             </template>
           </el-table-column>
         </el-table>
       </div>
 
       <!-- Tab 内容: 权限配置 -->
-      <div v-show="activeTab === 'permission'" class="tab-content">
+      <div v-if="currentRole && activeTab === 'permission'" class="tab-content">
         <div class="perm-header">
           <h3>权限配置</h3>
           <div class="perm-summary">
@@ -109,7 +114,7 @@
               <div class="perm-module-header">
                 <span class="perm-module-title">{{ mod.title }}</span>
                 <el-button
-                  v-if="currentRole.slug !== 'super_admin'"
+                  v-if="!isSuperAdmin"
                   text size="small" type="primary"
                   @click="toggleSelectAll(mod.key)">
                   {{ isModuleAllChecked(mod.key) ? '取消全选' : '全选' }}
@@ -121,10 +126,10 @@
                   class="perm-checkbox"
                   v-for="item in mod.items"
                   :key="item.key"
-                  :class="{ disabled: currentRole.slug === 'super_admin' }">
+                  :class="{ disabled: isSuperAdmin }">
                   <el-checkbox
                     :model-value="getPermValue(mod.key, item.key)"
-                    :disabled="currentRole.slug === 'super_admin'"
+                    :disabled="isSuperAdmin"
                     size="small"
                     @change="(val: boolean) => onPermChange(mod.key, item.key, val)" />
                   <span class="perm-label">{{ item.label }}</span>
@@ -135,8 +140,8 @@
         </div>
         <div class="perm-footer">
           <span class="perm-count">已选择 <strong>{{ permSelectedCount }}</strong> / {{ totalPermCount }} 项权限</span>
-          <el-button @click="resetPermissions" :disabled="currentRole.slug === 'super_admin'">重置</el-button>
-          <el-button type="primary" @click="savePermissions" :disabled="currentRole.slug === 'super_admin'">保存权限</el-button>
+          <el-button @click="resetPermissions" :disabled="isSuperAdmin">重置</el-button>
+          <el-button type="primary" @click="savePermissions" :disabled="isSuperAdmin">保存权限</el-button>
         </div>
       </div>
     </el-card>
@@ -152,14 +157,15 @@
           <el-input v-model="roleForm.name" placeholder="请输入角色名称" @input="autoGenerateSlug" />
         </el-form-item>
         <el-form-item label="角色标识" prop="slug">
-          <el-input v-model="roleForm.slug" placeholder="自动生成或手动输入" />
-          <span class="form-hint">仅支持英文小写字母、数字和下划线</span>
+          <el-input v-model="roleForm.slug" placeholder="自动生成或手动输入" :disabled="editingIndex >= 0" />
+          <span class="form-hint">{{ editingIndex >= 0 ? '创建后不可修改' : '仅支持英文小写字母、数字和下划线' }}</span>
         </el-form-item>
         <el-form-item label="角色描述">
           <el-input v-model="roleForm.desc" type="textarea" :rows="3" placeholder="请输入角色描述" />
         </el-form-item>
         <el-form-item label="状态">
-          <el-switch v-model="roleForm.enabled" active-text="启用" inactive-text="停用" />
+          <el-switch v-model="roleForm.enabled" active-text="启用" inactive-text="停用" :disabled="isEditingSuperAdmin" />
+          <span v-if="isEditingSuperAdmin" class="form-hint">系统角色状态不可修改</span>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -193,22 +199,19 @@
 /**
  * 角色管理页面
  * 支持 Tab 切换：角色列表 / 权限配置，角色的增删改查
+ * 对接后端 Casbin RBAC API
  */
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, WarningFilled } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
+import { listRoles, createRole, updateRole, deleteRole, getRolePermissions, updateRolePermissions, listAllPermissions } from '@/api/role'
 
 // ---------- 类型定义 ----------
-interface PermItem {
-  key: string
-  label: string
-}
-
 interface PermModule {
   key: string
   title: string
-  items: PermItem[]
+  items: { key: string; label: string }[]
 }
 
 interface RolePermissions {
@@ -216,95 +219,119 @@ interface RolePermissions {
 }
 
 interface Role {
-  id: number
   name: string
   slug: string
   desc: string
   users: number
   enabled: boolean
-  createdAt: string
-  isSystem: boolean
+  is_system: boolean
+  created_at: string
   permissions: RolePermissions
 }
 
-// ---------- 权限模块 ----------
-const permModules: PermModule[] = [
-  { key: 'products', title: '商品管理', items: [
-    { key: 'view', label: '查看商品列表' }, { key: 'add', label: '添加商品' },
-    { key: 'edit', label: '编辑商品' }, { key: 'delete', label: '删除商品' },
-    { key: 'publish', label: '上架/下架' }
-  ]},
-  { key: 'orders', title: '订单管理', items: [
-    { key: 'view', label: '查看订单' }, { key: 'edit', label: '编辑订单' },
-    { key: 'refund', label: '退款处理' }, { key: 'ship', label: '发货操作' },
-    { key: 'cancel', label: '取消订单' }
-  ]},
-  { key: 'users', title: '用户管理', items: [
-    { key: 'view', label: '查看用户' }, { key: 'edit', label: '编辑用户' },
-    { key: 'freeze', label: '冻结/解冻' }, { key: 'export', label: '导出数据' }
-  ]},
-  { key: 'settings', title: '系统设置', items: [
-    { key: 'basic', label: '基本设置' }, { key: 'security', label: '安全设置' },
-    { key: 'notification', label: '通知设置' }, { key: 'logs', label: '操作日志查看' }
-  ]},
-  { key: 'roles', title: '权限管理', items: [
-    { key: 'view', label: '查看角色' }, { key: 'add', label: '添加角色' },
-    { key: 'edit', label: '编辑角色' }, { key: 'delete', label: '删除角色' }
-  ]},
-  { key: 'coupons', title: '优惠券管理', items: [
-    { key: 'view', label: '查看优惠券' }, { key: 'create', label: '创建优惠券' },
-    { key: 'edit', label: '编辑优惠券' }, { key: 'void', label: '作废优惠券' }
-  ]},
-  { key: 'data', title: '数据查看', items: [
-    { key: 'dashboard', label: '查看仪表盘' }, { key: 'report', label: '查看报表' },
-    { key: 'export', label: '导出报表' }
-  ]}
-]
-
-function createEmptyPermissions(): RolePermissions {
-  const perms: RolePermissions = {}
-  for (const mod of permModules) {
-    perms[mod.key] = {}
-    for (const item of mod.items) {
-      perms[mod.key][item.key] = false
-    }
-  }
-  return perms
-}
-
-// ---------- 模拟数据 ----------
-const rolesData = reactive<Role[]>([
-  { id: 1, name: '超级管理员', slug: 'super_admin', desc: '拥有所有系统权限', users: 1, enabled: true, createdAt: '2024-06-01', isSystem: true,
-    permissions: { products: { view: true, add: true, edit: true, delete: true, publish: true }, orders: { view: true, edit: true, refund: true, ship: true, cancel: true }, users: { view: true, edit: true, freeze: true, export: true }, settings: { basic: true, security: true, notification: true, logs: true }, roles: { view: true, add: true, edit: true, delete: true }, coupons: { view: true, create: true, edit: true, void: true }, data: { dashboard: true, report: true, export: true } } },
-  { id: 2, name: '管理员', slug: 'admin', desc: '除系统设置外的所有管理权限', users: 2, enabled: true, createdAt: '2024-06-01', isSystem: true,
-    permissions: { products: { view: true, add: true, edit: true, delete: true, publish: true }, orders: { view: true, edit: true, refund: true, ship: true, cancel: true }, users: { view: true, edit: true, freeze: true, export: true }, settings: { basic: false, security: false, notification: false, logs: true }, roles: { view: true, add: false, edit: false, delete: false }, coupons: { view: true, create: true, edit: true, void: true }, data: { dashboard: true, report: true, export: true } } },
-  { id: 3, name: '运营专员', slug: 'operation', desc: '商品管理+订单管理+用户查看', users: 5, enabled: true, createdAt: '2024-06-15', isSystem: true,
-    permissions: { products: { view: true, add: true, edit: true, delete: false, publish: true }, orders: { view: true, edit: true, refund: false, ship: true, cancel: false }, users: { view: true, edit: false, freeze: false, export: false }, settings: { basic: false, security: false, notification: false, logs: false }, roles: { view: false, add: false, edit: false, delete: false }, coupons: { view: true, create: false, edit: false, void: false }, data: { dashboard: true, report: false, export: false } } },
-  { id: 4, name: '客服专员', slug: 'support', desc: '订单查看+用户查看+售后处理', users: 7, enabled: true, createdAt: '2024-08-01', isSystem: true,
-    permissions: { products: { view: false, add: false, edit: false, delete: false, publish: false }, orders: { view: true, edit: false, refund: true, ship: false, cancel: false }, users: { view: true, edit: false, freeze: false, export: false }, settings: { basic: false, security: false, notification: false, logs: false }, roles: { view: false, add: false, edit: false, delete: false }, coupons: { view: false, create: false, edit: false, void: false }, data: { dashboard: true, report: false, export: false } } },
-  { id: 5, name: '数据分析师', slug: 'analyst', desc: '数据查看+报表导出', users: 3, enabled: true, createdAt: '2025-01-10', isSystem: true,
-    permissions: { products: { view: false, add: false, edit: false, delete: false, publish: false }, orders: { view: false, edit: false, refund: false, ship: false, cancel: false }, users: { view: false, edit: false, freeze: false, export: false }, settings: { basic: false, security: false, notification: false, logs: false }, roles: { view: false, add: false, edit: false, delete: false }, coupons: { view: false, create: false, edit: false, void: false }, data: { dashboard: true, report: true, export: true } } },
-  { id: 6, name: '自定义角色', slug: 'custom_role', desc: '自定义权限组合', users: 1, enabled: false, createdAt: '2025-03-20', isSystem: false,
-    permissions: { products: { view: true, add: false, edit: false, delete: false, publish: false }, orders: { view: true, edit: false, refund: false, ship: false, cancel: false }, users: { view: true, edit: false, freeze: false, export: false }, settings: { basic: false, security: false, notification: false, logs: false }, roles: { view: true, add: false, edit: false, delete: false }, coupons: { view: false, create: false, edit: false, void: false }, data: { dashboard: true, report: false, export: false } } }
-])
+// ---------- 状态 ----------
+const permModules = ref<PermModule[]>([])
+const roles = ref<Role[]>([])
+const loading = ref(false)
 
 // ---------- Tab 切换 ----------
 const activeTab = ref<'list' | 'permission'>('list')
 
 // ---------- 选中角色 ----------
 const selectedIndex = ref(0)
-const currentRole = computed(() => rolesData[selectedIndex.value])
+const currentRole = computed(() => roles.value[selectedIndex.value])
+const isSuperAdmin = computed(() => {
+  const role = currentRole.value
+  return role?.slug === 'super_admin'
+})
+const isEditingSuperAdmin = computed(() => {
+  if (editingIndex.value < 0) return false
+  const role = roles.value[editingIndex.value]
+  return role?.slug === 'super_admin'
+})
+
+// ---------- 数据加载 ----------
+async function loadData() {
+  loading.value = true
+  try {
+    const [roleRes, permRes] = await Promise.all([
+      listRoles().catch((e: any) => {
+        ElMessage.error('加载角色列表失败: ' + (e?.message || '未知错误'))
+        return { items: [] }
+      }),
+      listAllPermissions().catch(() => ({ modules: [] }))
+    ])
+    // 转换后端角色数据为前端格式
+    roles.value = (roleRes.items || []).map((r: any) => ({
+      name: r.name,
+      slug: r.slug || r.name,
+      desc: r.desc || '',
+      users: r.users || 0,
+      enabled: r.enabled !== false,
+      is_system: r.is_system === true,
+      created_at: r.created_at || '',
+      permissions: {} as RolePermissions
+    }))
+    permModules.value = permRes.modules || []
+
+    // 加载第一个角色的权限
+    if (roles.value.length > 0) {
+      await loadRolePermissions(0)
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+async function loadRolePermissions(index: number) {
+  if (index < 0 || index >= roles.value.length) return
+  const role = roles.value[index]
+  try {
+    const res = await getRolePermissions(role.slug)
+    // 解包 PermissionValue.values
+    const raw = res.permissions || {}
+    const unwrapped: RolePermissions = {}
+    for (const modKey in raw) {
+      unwrapped[modKey] = (raw[modKey]?.values || {}) as Record<string, boolean>
+    }
+    role.permissions = unwrapped
+  } catch {
+    // API 失败时，超级管理员默认全选，其他角色全不选
+    const perms: RolePermissions = {}
+    for (const mod of permModules.value) {
+      perms[mod.key] = {}
+      for (const item of mod.items) {
+        perms[mod.key][item.key] = role.slug === 'super_admin'
+      }
+    }
+    role.permissions = perms
+  }
+}
+
+onMounted(() => loadData())
 
 // ---------- 统计卡片 ----------
-const stats = computed(() => [
-  { label: '角色总数', value: rolesData.length, unit: '个', color: 'blue', icon: 'Shield' },
-  { label: '管理员', value: rolesData.filter(r => r.name === '超级管理员' || r.name === '管理员').reduce((s, r) => s + r.users, 0), unit: '人', color: 'green', icon: 'UserFilled' },
-  { label: '运营人员', value: rolesData.filter(r => r.name === '运营专员' || r.name === '客服专员').reduce((s, r) => s + r.users, 0), unit: '人', color: 'orange', icon: 'Avatar' },
-  { label: '自定义角色', value: rolesData.filter(r => !r.isSystem).length, unit: '个', color: 'purple', icon: 'SetUp' }
-])
+const stats = computed(() => {
+  const data = roles.value
+  const cards: { label: string; value: number; unit: string; color: string; icon: string }[] = [
+    { label: '角色总数', value: data.length, unit: '个', color: 'blue', icon: 'Shield' },
+  ]
+  // 每个角色一行（超级管理员固定不展示）
+   const colors = ['green', 'orange', 'purple', 'pink', 'teal', 'indigo']
+   data.filter((r: Role) => r.slug !== 'super_admin').forEach((r, idx) => {
+     cards.push({
+       label: r.name,
+       value: r.users || 0,
+       unit: '人',
+       color: colors[idx % colors.length],
+       icon: idx === 0 ? 'UserFilled' : idx === 1 ? 'Avatar' : idx === 2 ? 'SetUp' : 'User',
+     })
+   })
+  return cards
+})
 
 // ---------- 权限相关 ----------
-const totalPermCount = computed(() => permModules.reduce((s, m) => s + m.items.length, 0))
+const totalPermCount = computed(() => permModules.value.reduce((s: number, m: PermModule) => s + m.items.length, 0))
 
 function countPermissions(perms: RolePermissions): number {
   let count = 0
@@ -316,48 +343,67 @@ function countPermissions(perms: RolePermissions): number {
   return count
 }
 
-const permSelectedCount = computed(() => countPermissions(currentRole.value.permissions))
+const permSelectedCount = computed(() => countPermissions(currentRole.value?.permissions || {}))
 
 function getPermValue(modKey: string, permKey: string): boolean {
-  return currentRole.value.permissions[modKey]?.[permKey] ?? false
+  return currentRole.value?.permissions?.[modKey]?.[permKey] ?? false
 }
 
 function onPermChange(modKey: string, permKey: string, val: boolean) {
-  if (currentRole.value.slug === 'super_admin') return
+  if (!currentRole.value || isSuperAdmin.value) return
   currentRole.value.permissions[modKey][permKey] = val
 }
 
 function isModuleAllChecked(modKey: string): boolean {
-  const modPerms = currentRole.value.permissions[modKey]
+  const modPerms = currentRole.value?.permissions?.[modKey]
   if (!modPerms) return false
-  return permModules.find(m => m.key === modKey)?.items.every(item => modPerms[item.key] === true) ?? false
+  const mod = permModules.value.find(m => m.key === modKey)
+  if (!mod) return false
+  return mod.items.every(item => modPerms[item.key] === true)
 }
 
 function toggleSelectAll(modKey: string) {
-  if (currentRole.value.slug === 'super_admin') return
+  if (!currentRole.value || isSuperAdmin.value) return
   const allChecked = isModuleAllChecked(modKey)
   const modPerms = currentRole.value.permissions[modKey]
-  for (const item of permModules.find(m => m.key === modKey)?.items ?? []) {
+  const mod = permModules.value.find(m => m.key === modKey)
+  if (!mod || !modPerms) return
+  for (const item of mod.items) {
     modPerms[item.key] = !allChecked
   }
 }
 
 function resetPermissions() {
-  if (currentRole.value.slug === 'super_admin') return
-  for (const mod of permModules) {
+  if (!currentRole.value || isSuperAdmin.value) return
+  for (const mod of permModules.value) {
     for (const item of mod.items) {
       currentRole.value.permissions[mod.key][item.key] = false
     }
   }
 }
 
-function savePermissions() {
-  ElMessage.success(`角色「${currentRole.value.name}」权限已保存（共 ${permSelectedCount.value} 项权限）`)
+async function savePermissions() {
+  if (!currentRole.value) return
+  try {
+    // 包裹成 proto 需要的 { values: {...} } 格式
+    const wrapped: Record<string, { values: Record<string, boolean> }> = {}
+    for (const modKey in currentRole.value.permissions) {
+      wrapped[modKey] = { values: currentRole.value.permissions[modKey] }
+    }
+    await updateRolePermissions(currentRole.value.slug, wrapped)
+    ElMessage.success(`角色「${currentRole.value.name}」权限已保存（共 ${permSelectedCount.value} 项权限）`)
+  } catch (e: any) {
+    ElMessage.error('保存权限失败: ' + (e?.message || ''))
+  }
 }
 
-// ---------- 编辑权限（点击表格操作列） ----------
-function editPermission(index: number) {
+// ---------- 编辑权限 ----------
+async function editPermission(index: number) {
   selectedIndex.value = index
+  // 如果该角色还没加载过权限，加载它
+  if (!roles.value[index]?.permissions || Object.keys(roles.value[index].permissions).length === 0) {
+    await loadRolePermissions(index)
+  }
   activeTab.value = 'permission'
 }
 
@@ -391,16 +437,18 @@ function openAddModal() {
 }
 
 function openEditModal(index: number) {
-  const role = rolesData[index]
+  const role = roles.value[index]
   editingIndex.value = index
   roleForm.name = role.name
   roleForm.slug = role.slug
   roleForm.desc = role.desc
-  roleForm.enabled = role.enabled
+  roleForm.enabled = role.enabled !== false
   roleDialogVisible.value = true
 }
 
 function autoGenerateSlug() {
+  // 编辑模式不自动生成 slug（创建后不可修改）
+  if (editingIndex.value >= 0) return
   const name = roleForm.name
   if (!name) return
   roleForm.slug = name.toLowerCase()
@@ -409,48 +457,47 @@ function autoGenerateSlug() {
     .replace(/[\u4e00-\u9fa5]/g, 'x')
 }
 
-function saveRole() {
-  roleFormRef.value?.validate((valid) => {
+async function saveRole() {
+  roleFormRef.value?.validate(async (valid) => {
     if (!valid) return
-    if (editingIndex.value >= 0) {
-      const role = rolesData[editingIndex.value]
-      role.name = roleForm.name
-      role.slug = roleForm.slug
-      role.desc = roleForm.desc
-      role.enabled = roleForm.enabled
-      ElMessage.success('角色已更新')
-    } else {
-      const newRole: Role = {
-        id: rolesData.length + 1,
-        name: roleForm.name,
-        slug: roleForm.slug,
-        desc: roleForm.desc,
-        users: 0,
-        enabled: roleForm.enabled,
-        createdAt: new Date().toISOString().slice(0, 10),
-        isSystem: false,
-        permissions: createEmptyPermissions()
+    try {
+      if (editingIndex.value >= 0) {
+        await updateRole(roleForm.slug, { name: roleForm.name, desc: roleForm.desc })
+        const role = roles.value[editingIndex.value]
+        role.name = roleForm.name
+        role.desc = roleForm.desc
+        ElMessage.success('角色已更新')
+      } else {
+        await createRole({ name: roleForm.name, slug: roleForm.slug, desc: roleForm.desc })
+        // 重新加载列表
+        await loadData()
+        ElMessage.success('角色已添加')
       }
-      rolesData.push(newRole)
-      ElMessage.success('角色已添加')
+      roleDialogVisible.value = false
+    } catch (e: any) {
+      ElMessage.error('操作失败: ' + (e?.message || ''))
     }
-    roleDialogVisible.value = false
   })
 }
 
 function openDeleteModal(index: number) {
   deleteIndex.value = index
-  deleteRoleName.value = rolesData[index].name
+  deleteRoleName.value = roles.value[index].name
   deleteDialogVisible.value = true
 }
 
-function confirmDelete() {
-  if (deleteIndex.value >= 0) {
-    rolesData.splice(deleteIndex.value, 1)
-    if (selectedIndex.value >= rolesData.length) {
-      selectedIndex.value = Math.max(0, rolesData.length - 1)
+async function confirmDelete() {
+  if (deleteIndex.value >= 0 && deleteIndex.value < roles.value.length) {
+    try {
+      await deleteRole(roles.value[deleteIndex.value].slug)
+      roles.value.splice(deleteIndex.value, 1)
+      if (selectedIndex.value >= roles.value.length) {
+        selectedIndex.value = Math.max(0, roles.value.length - 1)
+      }
+      ElMessage.success('角色已删除')
+    } catch (e: any) {
+      ElMessage.error('删除失败: ' + (e?.message || ''))
     }
-    ElMessage.success('角色已删除')
   }
   deleteDialogVisible.value = false
 }
@@ -760,6 +807,12 @@ function confirmDelete() {
 .confirm-hint {
   font-size: 0.75rem !important;
   color: var(--shop-muted-foreground) !important;
+}
+
+.role-system-tag {
+  font-size: 0.75rem;
+  color: var(--shop-muted-foreground);
+  white-space: nowrap;
 }
 
 .form-hint {

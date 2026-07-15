@@ -43,9 +43,18 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	userUseCase := biz.NewUserUseCase(userRepo, logger)
 	userService := service.NewUserService(userUseCase, logger)
 	adminUserRepo := data.NewAdminUserRepo(dataData, logger)
-	adminUserUseCase := biz.NewAdminUserUseCase(adminUserRepo, auth.ApiKey, logger)
+	string2 := biz.ProvideApiKey(auth)
+	adminUserUseCase := biz.NewAdminUserUseCase(adminUserRepo, string2, logger)
 	adminUserService := service.NewAdminUserService(adminUserUseCase, logger)
-	server2 := server.NewServer(grpcServer, userService, adminUserService)
+	enforcer, err := data.NewCasbinEnforcer(db)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	roleRepo := data.NewRoleRepo(enforcer, db, logger)
+	roleUseCase := biz.NewRoleUseCase(roleRepo, logger)
+	adminRoleService := service.NewAdminRoleService(roleUseCase, logger)
+	server2 := server.NewServer(grpcServer, userService, adminUserService, adminRoleService)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, server2, registrar)
 	return app, func() {

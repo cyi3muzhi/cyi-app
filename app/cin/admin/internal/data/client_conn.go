@@ -56,3 +56,23 @@ func NewAdminUserServiceClient(r registry.Discovery, conf *conf.Server, auth *co
 	}
 	return userRpc.NewAdminUserClient(conn)
 }
+
+// NewAdminRoleClient 创建角色管理服务 gRPC 客户端
+func NewAdminRoleClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) userRpc.AdminRoleClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.USER_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			ServiceKey:     auth.ServiceKey[grpc.USER_SERVICE],
+			Meter:          metric,
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.USER_SERVICE, err))
+	}
+	return userRpc.NewAdminRoleClient(conn)
+}

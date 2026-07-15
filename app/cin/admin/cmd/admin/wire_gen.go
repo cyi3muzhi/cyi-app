@@ -27,13 +27,12 @@ import (
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, meter *middleware.Meter) (*kratos.App, func(), error) {
 	traceTracerProvider := provideTracerProvider(tracerProvider)
-	enforcer, err := data.NewCasbinEnforcer()
-	if err != nil {
-		return nil, nil, err
-	}
-	enforcerProvider := data.ProvideEnforcerProvider(enforcer)
-	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth, enforcerProvider)
 	discovery := server.NewDiscovery(registry)
+	adminRoleClient := data.NewAdminRoleClient(discovery, confServer, auth, traceTracerProvider, meter)
+	roleRepo := data.NewRoleRepo(adminRoleClient, logger)
+	remoteEnforcer := data.NewRemoteEnforcer(roleRepo)
+	enforcerProvider := data.ProvideEnforcerProvider(remoteEnforcer)
+	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth, enforcerProvider)
 	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	adminUserClient := data.NewAdminUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	rustFSClient, err := data.NewOssClient(confData)
@@ -52,7 +51,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	authRepo := data.NewAuthRepo(dataData, logger)
 	string2 := biz.ProvideApiKey(auth)
 	authUseCase := biz.NewAuthUseCase(authRepo, logger, string2)
-	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, logger)
+	roleUseCase := biz.NewRoleUseCase(roleRepo, logger)
+	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, logger)
 	server2 := server.NewGRPCServer(grpcServer, adminService)
 	tokenValidator := data.NewTokenValidator(client)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth, tokenValidator, enforcerProvider)

@@ -21,14 +21,16 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// ProviderSet is dat  a providers.
+// ProviderSet is data providers.
 var ProviderSet = wire.NewSet(
 	NewUserRepo,
 	NewAdminUserRepo,
+	NewRoleRepo,
 	NewData,
 	NewDB,
 	NewRedisClient,
 	NewOssClient,
+	NewCasbinEnforcer,
 )
 
 type Data struct {
@@ -64,12 +66,15 @@ func NewDB(c *conf.Data) *gorm.DB {
 		panic(err)
 	}
 	// 自动迁移：创建或更新数据库表结构
-	if err := db.AutoMigrate(&mod.User{}, &mod.AdminUser{}); err != nil {
+	if err := db.AutoMigrate(&mod.User{}, &mod.AdminUser{}, &mod.CasbinRule{}, &mod.RoleMeta{}); err != nil {
 		panic(err)
 	}
 
 	// 初始化默认管理员（仅表为空时插入）
 	initDefaultAdmin(db)
+
+	// 初始化 Casbin 默认策略（仅表为空时插入）
+	initCasbinPolicies(db)
 
 	// 仅在开发环境且文件不存在时执行生成
 	if shouldGenerateCode() {
@@ -99,6 +104,8 @@ func generateCode(db *gorm.DB) {
 	g.ApplyBasic(&mod.User{}, &mod.AdminUser{})
 	g.ApplyInterface(func(mod.IUser) {}, mod.User{})
 	g.ApplyInterface(func(mod.IAdminUser) {}, mod.AdminUser{})
+	g.ApplyInterface(func(mod.IRoleMeta) {}, mod.RoleMeta{})
+	g.ApplyInterface(func(mod.ICasbinRule) {}, mod.CasbinRule{})
 	g.Execute()
 }
 
@@ -146,7 +153,7 @@ func initDefaultAdmin(db *gorm.DB) {
 		Username:  "admin",
 		Password:  hashedPwd,
 		Name:      "管理员",
-		Role:      "超级管理员",
+		Role:      "super_admin",
 		Email:     "admin@yuexuan.com",
 		Status:    1,
 		LastLogin: 0,
@@ -157,5 +164,33 @@ func initDefaultAdmin(db *gorm.DB) {
 		log.NewHelper(log.DefaultLogger).Warnf("初始化默认管理员失败: %v", err)
 	} else {
 		log.NewHelper(log.DefaultLogger).Infof("已创建默认管理员账号: admin/admin123")
+	}
+}
+
+// initCasbinPolicies 初始化 Casbin 默认策略（仅首次启动时 casbin_rule 表为空时插入）
+func initCasbinPolicies(db *gorm.DB) {
+	var count int64
+	db.Model(&mod.CasbinRule{}).Count(&count)
+	if count > 0 {
+		return
+	}
+
+	rules := []mod.CasbinRule{
+		// 超级管理员拥有所有权限（通配符）
+		{Ptype: "p", V0: "super_admin", V1: "*", V2: "*"},
+		// 将默认管理员用户（ID=1）分配给超级管理员角色
+		{Ptype: "g", V0: "1", V1: "super_admin"},
+	}
+	if err := db.Create(&rules).Error; err != nil {
+		log.NewHelper(log.DefaultLogger).Warnf("初始化 Casbin 策略失败: %v", err)
+	} else {
+		log.NewHelper(log.DefaultLogger).Infof("已初始化 Casbin 默认策略")
+	}
+
+	// 同时写入超级管理员的角色元数据
+	var metaCount int64
+	db.Model(&mod.RoleMeta{}).Count(&metaCount)
+	if metaCount == 0 {
+		db.Create(&mod.RoleMeta{Slug: "super_admin", Name: "超级管理员", Desc: "拥有所有系统权限"})
 	}
 }

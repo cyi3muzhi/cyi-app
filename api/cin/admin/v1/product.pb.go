@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.9
 // 	protoc        v5.27.2
-// source: api/cin/admin/v1/product.proto
+// source: cin/admin/v1/product.proto
 
 package adminv1
 
@@ -36,7 +36,7 @@ type ListProductRequest struct {
 
 func (x *ListProductRequest) Reset() {
 	*x = ListProductRequest{}
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[0]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48,7 +48,7 @@ func (x *ListProductRequest) String() string {
 func (*ListProductRequest) ProtoMessage() {}
 
 func (x *ListProductRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[0]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61,7 +61,7 @@ func (x *ListProductRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListProductRequest.ProtoReflect.Descriptor instead.
 func (*ListProductRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_product_proto_rawDescGZIP(), []int{0}
+	return file_cin_admin_v1_product_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *ListProductRequest) GetPage() int32 {
@@ -109,7 +109,7 @@ type ListProductReply struct {
 
 func (x *ListProductReply) Reset() {
 	*x = ListProductReply{}
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[1]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -121,7 +121,7 @@ func (x *ListProductReply) String() string {
 func (*ListProductReply) ProtoMessage() {}
 
 func (x *ListProductReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[1]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -134,7 +134,7 @@ func (x *ListProductReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListProductReply.ProtoReflect.Descriptor instead.
 func (*ListProductReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_product_proto_rawDescGZIP(), []int{1}
+	return file_cin_admin_v1_product_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ListProductReply) GetItems() []*ProductItem {
@@ -168,7 +168,7 @@ type ProductItem struct {
 
 func (x *ProductItem) Reset() {
 	*x = ProductItem{}
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[2]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -180,7 +180,7 @@ func (x *ProductItem) String() string {
 func (*ProductItem) ProtoMessage() {}
 
 func (x *ProductItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[2]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -193,7 +193,7 @@ func (x *ProductItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProductItem.ProtoReflect.Descriptor instead.
 func (*ProductItem) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_product_proto_rawDescGZIP(), []int{2}
+	return file_cin_admin_v1_product_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ProductItem) GetId() int64 {
@@ -274,7 +274,7 @@ type CreateProductRequest struct {
 
 func (x *CreateProductRequest) Reset() {
 	*x = CreateProductRequest{}
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[3]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -286,7 +286,7 @@ func (x *CreateProductRequest) String() string {
 func (*CreateProductRequest) ProtoMessage() {}
 
 func (x *CreateProductRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[3]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -299,7 +299,7 @@ func (x *CreateProductRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateProductRequest.ProtoReflect.Descriptor instead.
 func (*CreateProductRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_product_proto_rawDescGZIP(), []int{3}
+	return file_cin_admin_v1_product_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *CreateProductRequest) GetName() string {
@@ -360,7 +360,7 @@ type CreateProductReply struct {
 
 func (x *CreateProductReply) Reset() {
 	*x = CreateProductReply{}
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[4]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -372,7 +372,7 @@ func (x *CreateProductReply) String() string {
 func (*CreateProductReply) ProtoMessage() {}
 
 func (x *CreateProductReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[4]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -385,7 +385,7 @@ func (x *CreateProductReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateProductReply.ProtoReflect.Descriptor instead.
 func (*CreateProductReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_product_proto_rawDescGZIP(), []int{4}
+	return file_cin_admin_v1_product_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CreateProductReply) GetId() int64 {
@@ -412,7 +412,7 @@ type UpdateProductRequest struct {
 
 func (x *UpdateProductRequest) Reset() {
 	*x = UpdateProductRequest{}
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[5]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -424,7 +424,7 @@ func (x *UpdateProductRequest) String() string {
 func (*UpdateProductRequest) ProtoMessage() {}
 
 func (x *UpdateProductRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[5]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -437,7 +437,7 @@ func (x *UpdateProductRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateProductRequest.ProtoReflect.Descriptor instead.
 func (*UpdateProductRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_product_proto_rawDescGZIP(), []int{5}
+	return file_cin_admin_v1_product_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *UpdateProductRequest) GetId() int64 {
@@ -512,7 +512,7 @@ type UpdateProductReply struct {
 
 func (x *UpdateProductReply) Reset() {
 	*x = UpdateProductReply{}
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[6]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -524,7 +524,7 @@ func (x *UpdateProductReply) String() string {
 func (*UpdateProductReply) ProtoMessage() {}
 
 func (x *UpdateProductReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[6]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -537,7 +537,7 @@ func (x *UpdateProductReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateProductReply.ProtoReflect.Descriptor instead.
 func (*UpdateProductReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_product_proto_rawDescGZIP(), []int{6}
+	return file_cin_admin_v1_product_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *UpdateProductReply) GetSuccess() bool {
@@ -556,7 +556,7 @@ type DeleteProductRequest struct {
 
 func (x *DeleteProductRequest) Reset() {
 	*x = DeleteProductRequest{}
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[7]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -568,7 +568,7 @@ func (x *DeleteProductRequest) String() string {
 func (*DeleteProductRequest) ProtoMessage() {}
 
 func (x *DeleteProductRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[7]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -581,7 +581,7 @@ func (x *DeleteProductRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteProductRequest.ProtoReflect.Descriptor instead.
 func (*DeleteProductRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_product_proto_rawDescGZIP(), []int{7}
+	return file_cin_admin_v1_product_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *DeleteProductRequest) GetId() int64 {
@@ -600,7 +600,7 @@ type DeleteProductReply struct {
 
 func (x *DeleteProductReply) Reset() {
 	*x = DeleteProductReply{}
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[8]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -612,7 +612,7 @@ func (x *DeleteProductReply) String() string {
 func (*DeleteProductReply) ProtoMessage() {}
 
 func (x *DeleteProductReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[8]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -625,7 +625,7 @@ func (x *DeleteProductReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteProductReply.ProtoReflect.Descriptor instead.
 func (*DeleteProductReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_product_proto_rawDescGZIP(), []int{8}
+	return file_cin_admin_v1_product_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *DeleteProductReply) GetSuccess() bool {
@@ -644,7 +644,7 @@ type GetProductRequest struct {
 
 func (x *GetProductRequest) Reset() {
 	*x = GetProductRequest{}
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[9]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -656,7 +656,7 @@ func (x *GetProductRequest) String() string {
 func (*GetProductRequest) ProtoMessage() {}
 
 func (x *GetProductRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[9]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -669,7 +669,7 @@ func (x *GetProductRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProductRequest.ProtoReflect.Descriptor instead.
 func (*GetProductRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_product_proto_rawDescGZIP(), []int{9}
+	return file_cin_admin_v1_product_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetProductRequest) GetId() int64 {
@@ -688,7 +688,7 @@ type GetProductReply struct {
 
 func (x *GetProductReply) Reset() {
 	*x = GetProductReply{}
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[10]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -700,7 +700,7 @@ func (x *GetProductReply) String() string {
 func (*GetProductReply) ProtoMessage() {}
 
 func (x *GetProductReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[10]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -713,7 +713,7 @@ func (x *GetProductReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProductReply.ProtoReflect.Descriptor instead.
 func (*GetProductReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_product_proto_rawDescGZIP(), []int{10}
+	return file_cin_admin_v1_product_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetProductReply) GetProduct() *ProductItem {
@@ -733,7 +733,7 @@ type BatchOperationRequest struct {
 
 func (x *BatchOperationRequest) Reset() {
 	*x = BatchOperationRequest{}
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[11]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -745,7 +745,7 @@ func (x *BatchOperationRequest) String() string {
 func (*BatchOperationRequest) ProtoMessage() {}
 
 func (x *BatchOperationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[11]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -758,7 +758,7 @@ func (x *BatchOperationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchOperationRequest.ProtoReflect.Descriptor instead.
 func (*BatchOperationRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_product_proto_rawDescGZIP(), []int{11}
+	return file_cin_admin_v1_product_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *BatchOperationRequest) GetAction() string {
@@ -785,7 +785,7 @@ type BatchOperationReply struct {
 
 func (x *BatchOperationReply) Reset() {
 	*x = BatchOperationReply{}
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[12]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -797,7 +797,7 @@ func (x *BatchOperationReply) String() string {
 func (*BatchOperationReply) ProtoMessage() {}
 
 func (x *BatchOperationReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_product_proto_msgTypes[12]
+	mi := &file_cin_admin_v1_product_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -810,7 +810,7 @@ func (x *BatchOperationReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchOperationReply.ProtoReflect.Descriptor instead.
 func (*BatchOperationReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_product_proto_rawDescGZIP(), []int{12}
+	return file_cin_admin_v1_product_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *BatchOperationReply) GetSuccess() bool {
@@ -827,11 +827,11 @@ func (x *BatchOperationReply) GetAffectedCount() int32 {
 	return 0
 }
 
-var File_api_cin_admin_v1_product_proto protoreflect.FileDescriptor
+var File_cin_admin_v1_product_proto protoreflect.FileDescriptor
 
-const file_api_cin_admin_v1_product_proto_rawDesc = "" +
+const file_cin_admin_v1_product_proto_rawDesc = "" +
 	"\n" +
-	"\x1eapi/cin/admin/v1/product.proto\x12\x10api.cin.admin.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\x93\x01\n" +
+	"\x1acin/admin/v1/product.proto\x12\x10api.cin.admin.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\x93\x01\n" +
 	"\x12ListProductRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x18\n" +
@@ -899,19 +899,19 @@ const file_api_cin_admin_v1_product_proto_rawDesc = "" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (
-	file_api_cin_admin_v1_product_proto_rawDescOnce sync.Once
-	file_api_cin_admin_v1_product_proto_rawDescData []byte
+	file_cin_admin_v1_product_proto_rawDescOnce sync.Once
+	file_cin_admin_v1_product_proto_rawDescData []byte
 )
 
-func file_api_cin_admin_v1_product_proto_rawDescGZIP() []byte {
-	file_api_cin_admin_v1_product_proto_rawDescOnce.Do(func() {
-		file_api_cin_admin_v1_product_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_product_proto_rawDesc), len(file_api_cin_admin_v1_product_proto_rawDesc)))
+func file_cin_admin_v1_product_proto_rawDescGZIP() []byte {
+	file_cin_admin_v1_product_proto_rawDescOnce.Do(func() {
+		file_cin_admin_v1_product_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_cin_admin_v1_product_proto_rawDesc), len(file_cin_admin_v1_product_proto_rawDesc)))
 	})
-	return file_api_cin_admin_v1_product_proto_rawDescData
+	return file_cin_admin_v1_product_proto_rawDescData
 }
 
-var file_api_cin_admin_v1_product_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
-var file_api_cin_admin_v1_product_proto_goTypes = []any{
+var file_cin_admin_v1_product_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_cin_admin_v1_product_proto_goTypes = []any{
 	(*ListProductRequest)(nil),    // 0: api.cin.admin.v1.ListProductRequest
 	(*ListProductReply)(nil),      // 1: api.cin.admin.v1.ListProductReply
 	(*ProductItem)(nil),           // 2: api.cin.admin.v1.ProductItem
@@ -926,7 +926,7 @@ var file_api_cin_admin_v1_product_proto_goTypes = []any{
 	(*BatchOperationRequest)(nil), // 11: api.cin.admin.v1.BatchOperationRequest
 	(*BatchOperationReply)(nil),   // 12: api.cin.admin.v1.BatchOperationReply
 }
-var file_api_cin_admin_v1_product_proto_depIdxs = []int32{
+var file_cin_admin_v1_product_proto_depIdxs = []int32{
 	2,  // 0: api.cin.admin.v1.ListProductReply.items:type_name -> api.cin.admin.v1.ProductItem
 	2,  // 1: api.cin.admin.v1.GetProductReply.product:type_name -> api.cin.admin.v1.ProductItem
 	0,  // 2: api.cin.admin.v1.AdminProduct.ListProduct:input_type -> api.cin.admin.v1.ListProductRequest
@@ -948,26 +948,26 @@ var file_api_cin_admin_v1_product_proto_depIdxs = []int32{
 	0,  // [0:2] is the sub-list for field type_name
 }
 
-func init() { file_api_cin_admin_v1_product_proto_init() }
-func file_api_cin_admin_v1_product_proto_init() {
-	if File_api_cin_admin_v1_product_proto != nil {
+func init() { file_cin_admin_v1_product_proto_init() }
+func file_cin_admin_v1_product_proto_init() {
+	if File_cin_admin_v1_product_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_product_proto_rawDesc), len(file_api_cin_admin_v1_product_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cin_admin_v1_product_proto_rawDesc), len(file_cin_admin_v1_product_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_api_cin_admin_v1_product_proto_goTypes,
-		DependencyIndexes: file_api_cin_admin_v1_product_proto_depIdxs,
-		MessageInfos:      file_api_cin_admin_v1_product_proto_msgTypes,
+		GoTypes:           file_cin_admin_v1_product_proto_goTypes,
+		DependencyIndexes: file_cin_admin_v1_product_proto_depIdxs,
+		MessageInfos:      file_cin_admin_v1_product_proto_msgTypes,
 	}.Build()
-	File_api_cin_admin_v1_product_proto = out.File
-	file_api_cin_admin_v1_product_proto_goTypes = nil
-	file_api_cin_admin_v1_product_proto_depIdxs = nil
+	File_cin_admin_v1_product_proto = out.File
+	file_cin_admin_v1_product_proto_goTypes = nil
+	file_cin_admin_v1_product_proto_depIdxs = nil
 }

@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.9
 // 	protoc        v5.27.2
-// source: api/cin/admin/v1/auth.proto
+// source: cin/admin/v1/auth.proto
 
 package adminv1
 
@@ -35,7 +35,7 @@ type LoginRequest struct {
 
 func (x *LoginRequest) Reset() {
 	*x = LoginRequest{}
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[0]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47,7 +47,7 @@ func (x *LoginRequest) String() string {
 func (*LoginRequest) ProtoMessage() {}
 
 func (x *LoginRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[0]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60,7 +60,7 @@ func (x *LoginRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginRequest.ProtoReflect.Descriptor instead.
 func (*LoginRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{0}
+	return file_cin_admin_v1_auth_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *LoginRequest) GetUsername() string {
@@ -89,7 +89,7 @@ type LoginReply struct {
 
 func (x *LoginReply) Reset() {
 	*x = LoginReply{}
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[1]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -101,7 +101,7 @@ func (x *LoginReply) String() string {
 func (*LoginReply) ProtoMessage() {}
 
 func (x *LoginReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[1]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -114,7 +114,7 @@ func (x *LoginReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginReply.ProtoReflect.Descriptor instead.
 func (*LoginReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{1}
+	return file_cin_admin_v1_auth_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *LoginReply) GetToken() string {
@@ -141,7 +141,7 @@ type LogoutRequest struct {
 
 func (x *LogoutRequest) Reset() {
 	*x = LogoutRequest{}
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[2]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -153,7 +153,7 @@ func (x *LogoutRequest) String() string {
 func (*LogoutRequest) ProtoMessage() {}
 
 func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[2]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -166,7 +166,7 @@ func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutRequest.ProtoReflect.Descriptor instead.
 func (*LogoutRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{2}
+	return file_cin_admin_v1_auth_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *LogoutRequest) GetToken() string {
@@ -185,7 +185,7 @@ type LogoutReply struct {
 
 func (x *LogoutReply) Reset() {
 	*x = LogoutReply{}
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[3]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -197,7 +197,7 @@ func (x *LogoutReply) String() string {
 func (*LogoutReply) ProtoMessage() {}
 
 func (x *LogoutReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[3]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -210,7 +210,7 @@ func (x *LogoutReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutReply.ProtoReflect.Descriptor instead.
 func (*LogoutReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{3}
+	return file_cin_admin_v1_auth_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *LogoutReply) GetSuccess() bool {
@@ -228,7 +228,7 @@ type GetAdminInfoRequest struct {
 
 func (x *GetAdminInfoRequest) Reset() {
 	*x = GetAdminInfoRequest{}
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[4]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -240,7 +240,7 @@ func (x *GetAdminInfoRequest) String() string {
 func (*GetAdminInfoRequest) ProtoMessage() {}
 
 func (x *GetAdminInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[4]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -253,7 +253,7 @@ func (x *GetAdminInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAdminInfoRequest.ProtoReflect.Descriptor instead.
 func (*GetAdminInfoRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{4}
+	return file_cin_admin_v1_auth_proto_rawDescGZIP(), []int{4}
 }
 
 type GetAdminInfoReply struct {
@@ -265,7 +265,7 @@ type GetAdminInfoReply struct {
 
 func (x *GetAdminInfoReply) Reset() {
 	*x = GetAdminInfoReply{}
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[5]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -277,7 +277,7 @@ func (x *GetAdminInfoReply) String() string {
 func (*GetAdminInfoReply) ProtoMessage() {}
 
 func (x *GetAdminInfoReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[5]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -290,7 +290,7 @@ func (x *GetAdminInfoReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAdminInfoReply.ProtoReflect.Descriptor instead.
 func (*GetAdminInfoReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{5}
+	return file_cin_admin_v1_auth_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetAdminInfoReply) GetAdmin() *AdminInfo {
@@ -321,7 +321,7 @@ type AdminInfo struct {
 
 func (x *AdminInfo) Reset() {
 	*x = AdminInfo{}
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[6]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -333,7 +333,7 @@ func (x *AdminInfo) String() string {
 func (*AdminInfo) ProtoMessage() {}
 
 func (x *AdminInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[6]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -346,7 +346,7 @@ func (x *AdminInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminInfo.ProtoReflect.Descriptor instead.
 func (*AdminInfo) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{6}
+	return file_cin_admin_v1_auth_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *AdminInfo) GetId() int64 {
@@ -443,7 +443,7 @@ type ChangeAvatarRequest struct {
 
 func (x *ChangeAvatarRequest) Reset() {
 	*x = ChangeAvatarRequest{}
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[7]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -455,7 +455,7 @@ func (x *ChangeAvatarRequest) String() string {
 func (*ChangeAvatarRequest) ProtoMessage() {}
 
 func (x *ChangeAvatarRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[7]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -468,7 +468,7 @@ func (x *ChangeAvatarRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChangeAvatarRequest.ProtoReflect.Descriptor instead.
 func (*ChangeAvatarRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{7}
+	return file_cin_admin_v1_auth_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ChangeAvatarRequest) GetAvatarBase64() string {
@@ -489,7 +489,7 @@ type ChangeAvatarReply struct {
 
 func (x *ChangeAvatarReply) Reset() {
 	*x = ChangeAvatarReply{}
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[8]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -501,7 +501,7 @@ func (x *ChangeAvatarReply) String() string {
 func (*ChangeAvatarReply) ProtoMessage() {}
 
 func (x *ChangeAvatarReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[8]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -514,7 +514,7 @@ func (x *ChangeAvatarReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChangeAvatarReply.ProtoReflect.Descriptor instead.
 func (*ChangeAvatarReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{8}
+	return file_cin_admin_v1_auth_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ChangeAvatarReply) GetSuccess() bool {
@@ -551,7 +551,7 @@ type UpdateAdminInfoRequest struct {
 
 func (x *UpdateAdminInfoRequest) Reset() {
 	*x = UpdateAdminInfoRequest{}
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[9]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -563,7 +563,7 @@ func (x *UpdateAdminInfoRequest) String() string {
 func (*UpdateAdminInfoRequest) ProtoMessage() {}
 
 func (x *UpdateAdminInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[9]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -576,7 +576,7 @@ func (x *UpdateAdminInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateAdminInfoRequest.ProtoReflect.Descriptor instead.
 func (*UpdateAdminInfoRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{9}
+	return file_cin_admin_v1_auth_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UpdateAdminInfoRequest) GetName() string {
@@ -630,7 +630,7 @@ type UpdateAdminInfoReply struct {
 
 func (x *UpdateAdminInfoReply) Reset() {
 	*x = UpdateAdminInfoReply{}
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[10]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -642,7 +642,7 @@ func (x *UpdateAdminInfoReply) String() string {
 func (*UpdateAdminInfoReply) ProtoMessage() {}
 
 func (x *UpdateAdminInfoReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_auth_proto_msgTypes[10]
+	mi := &file_cin_admin_v1_auth_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -655,7 +655,7 @@ func (x *UpdateAdminInfoReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateAdminInfoReply.ProtoReflect.Descriptor instead.
 func (*UpdateAdminInfoReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{10}
+	return file_cin_admin_v1_auth_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *UpdateAdminInfoReply) GetSuccess() bool {
@@ -665,11 +665,11 @@ func (x *UpdateAdminInfoReply) GetSuccess() bool {
 	return false
 }
 
-var File_api_cin_admin_v1_auth_proto protoreflect.FileDescriptor
+var File_cin_admin_v1_auth_proto protoreflect.FileDescriptor
 
-const file_api_cin_admin_v1_auth_proto_rawDesc = "" +
+const file_cin_admin_v1_auth_proto_rawDesc = "" +
 	"\n" +
-	"\x1bapi/cin/admin/v1/auth.proto\x12\x10api.cin.admin.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\\\n" +
+	"\x17cin/admin/v1/auth.proto\x12\x10api.cin.admin.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\\\n" +
 	"\fLoginRequest\x12%\n" +
 	"\busername\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x02\x18 R\busername\x12%\n" +
 	"\bpassword\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18 R\bpassword\"U\n" +
@@ -728,19 +728,19 @@ const file_api_cin_admin_v1_auth_proto_rawDesc = "" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (
-	file_api_cin_admin_v1_auth_proto_rawDescOnce sync.Once
-	file_api_cin_admin_v1_auth_proto_rawDescData []byte
+	file_cin_admin_v1_auth_proto_rawDescOnce sync.Once
+	file_cin_admin_v1_auth_proto_rawDescData []byte
 )
 
-func file_api_cin_admin_v1_auth_proto_rawDescGZIP() []byte {
-	file_api_cin_admin_v1_auth_proto_rawDescOnce.Do(func() {
-		file_api_cin_admin_v1_auth_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_auth_proto_rawDesc), len(file_api_cin_admin_v1_auth_proto_rawDesc)))
+func file_cin_admin_v1_auth_proto_rawDescGZIP() []byte {
+	file_cin_admin_v1_auth_proto_rawDescOnce.Do(func() {
+		file_cin_admin_v1_auth_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_cin_admin_v1_auth_proto_rawDesc), len(file_cin_admin_v1_auth_proto_rawDesc)))
 	})
-	return file_api_cin_admin_v1_auth_proto_rawDescData
+	return file_cin_admin_v1_auth_proto_rawDescData
 }
 
-var file_api_cin_admin_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
-var file_api_cin_admin_v1_auth_proto_goTypes = []any{
+var file_cin_admin_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_cin_admin_v1_auth_proto_goTypes = []any{
 	(*LoginRequest)(nil),           // 0: api.cin.admin.v1.LoginRequest
 	(*LoginReply)(nil),             // 1: api.cin.admin.v1.LoginReply
 	(*LogoutRequest)(nil),          // 2: api.cin.admin.v1.LogoutRequest
@@ -753,7 +753,7 @@ var file_api_cin_admin_v1_auth_proto_goTypes = []any{
 	(*UpdateAdminInfoRequest)(nil), // 9: api.cin.admin.v1.UpdateAdminInfoRequest
 	(*UpdateAdminInfoReply)(nil),   // 10: api.cin.admin.v1.UpdateAdminInfoReply
 }
-var file_api_cin_admin_v1_auth_proto_depIdxs = []int32{
+var file_cin_admin_v1_auth_proto_depIdxs = []int32{
 	6,  // 0: api.cin.admin.v1.LoginReply.admin:type_name -> api.cin.admin.v1.AdminInfo
 	6,  // 1: api.cin.admin.v1.GetAdminInfoReply.admin:type_name -> api.cin.admin.v1.AdminInfo
 	0,  // 2: api.cin.admin.v1.AdminAuth.Login:input_type -> api.cin.admin.v1.LoginRequest
@@ -773,26 +773,26 @@ var file_api_cin_admin_v1_auth_proto_depIdxs = []int32{
 	0,  // [0:2] is the sub-list for field type_name
 }
 
-func init() { file_api_cin_admin_v1_auth_proto_init() }
-func file_api_cin_admin_v1_auth_proto_init() {
-	if File_api_cin_admin_v1_auth_proto != nil {
+func init() { file_cin_admin_v1_auth_proto_init() }
+func file_cin_admin_v1_auth_proto_init() {
+	if File_cin_admin_v1_auth_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_auth_proto_rawDesc), len(file_api_cin_admin_v1_auth_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cin_admin_v1_auth_proto_rawDesc), len(file_cin_admin_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_api_cin_admin_v1_auth_proto_goTypes,
-		DependencyIndexes: file_api_cin_admin_v1_auth_proto_depIdxs,
-		MessageInfos:      file_api_cin_admin_v1_auth_proto_msgTypes,
+		GoTypes:           file_cin_admin_v1_auth_proto_goTypes,
+		DependencyIndexes: file_cin_admin_v1_auth_proto_depIdxs,
+		MessageInfos:      file_cin_admin_v1_auth_proto_msgTypes,
 	}.Build()
-	File_api_cin_admin_v1_auth_proto = out.File
-	file_api_cin_admin_v1_auth_proto_goTypes = nil
-	file_api_cin_admin_v1_auth_proto_depIdxs = nil
+	File_cin_admin_v1_auth_proto = out.File
+	file_cin_admin_v1_auth_proto_goTypes = nil
+	file_cin_admin_v1_auth_proto_depIdxs = nil
 }

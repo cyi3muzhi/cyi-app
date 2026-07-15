@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.9
 // 	protoc        v5.27.2
-// source: api/cin/admin/v1/dashboard.proto
+// source: cin/admin/v1/dashboard.proto
 
 package adminv1
 
@@ -30,7 +30,7 @@ type GetDashboardStatsRequest struct {
 
 func (x *GetDashboardStatsRequest) Reset() {
 	*x = GetDashboardStatsRequest{}
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[0]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -42,7 +42,7 @@ func (x *GetDashboardStatsRequest) String() string {
 func (*GetDashboardStatsRequest) ProtoMessage() {}
 
 func (x *GetDashboardStatsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[0]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55,7 +55,7 @@ func (x *GetDashboardStatsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDashboardStatsRequest.ProtoReflect.Descriptor instead.
 func (*GetDashboardStatsRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{0}
+	return file_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{0}
 }
 
 type GetDashboardStatsReply struct {
@@ -74,7 +74,7 @@ type GetDashboardStatsReply struct {
 
 func (x *GetDashboardStatsReply) Reset() {
 	*x = GetDashboardStatsReply{}
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[1]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -86,7 +86,7 @@ func (x *GetDashboardStatsReply) String() string {
 func (*GetDashboardStatsReply) ProtoMessage() {}
 
 func (x *GetDashboardStatsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[1]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -99,7 +99,7 @@ func (x *GetDashboardStatsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDashboardStatsReply.ProtoReflect.Descriptor instead.
 func (*GetDashboardStatsReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{1}
+	return file_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetDashboardStatsReply) GetTodayOrders() int64 {
@@ -166,7 +166,7 @@ type GetOrderTrendRequest struct {
 
 func (x *GetOrderTrendRequest) Reset() {
 	*x = GetOrderTrendRequest{}
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[2]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -178,7 +178,7 @@ func (x *GetOrderTrendRequest) String() string {
 func (*GetOrderTrendRequest) ProtoMessage() {}
 
 func (x *GetOrderTrendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[2]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -191,7 +191,7 @@ func (x *GetOrderTrendRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrderTrendRequest.ProtoReflect.Descriptor instead.
 func (*GetOrderTrendRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{2}
+	return file_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{2}
 }
 
 type GetOrderTrendReply struct {
@@ -203,7 +203,7 @@ type GetOrderTrendReply struct {
 
 func (x *GetOrderTrendReply) Reset() {
 	*x = GetOrderTrendReply{}
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[3]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -215,7 +215,7 @@ func (x *GetOrderTrendReply) String() string {
 func (*GetOrderTrendReply) ProtoMessage() {}
 
 func (x *GetOrderTrendReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[3]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -228,7 +228,7 @@ func (x *GetOrderTrendReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrderTrendReply.ProtoReflect.Descriptor instead.
 func (*GetOrderTrendReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{3}
+	return file_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetOrderTrendReply) GetItems() []*TrendItem {
@@ -248,7 +248,7 @@ type TrendItem struct {
 
 func (x *TrendItem) Reset() {
 	*x = TrendItem{}
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[4]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -260,7 +260,7 @@ func (x *TrendItem) String() string {
 func (*TrendItem) ProtoMessage() {}
 
 func (x *TrendItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[4]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -273,7 +273,7 @@ func (x *TrendItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrendItem.ProtoReflect.Descriptor instead.
 func (*TrendItem) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{4}
+	return file_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *TrendItem) GetDate() string {
@@ -298,7 +298,7 @@ type GetRevenueCategoriesRequest struct {
 
 func (x *GetRevenueCategoriesRequest) Reset() {
 	*x = GetRevenueCategoriesRequest{}
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[5]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -310,7 +310,7 @@ func (x *GetRevenueCategoriesRequest) String() string {
 func (*GetRevenueCategoriesRequest) ProtoMessage() {}
 
 func (x *GetRevenueCategoriesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[5]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -323,7 +323,7 @@ func (x *GetRevenueCategoriesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRevenueCategoriesRequest.ProtoReflect.Descriptor instead.
 func (*GetRevenueCategoriesRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{5}
+	return file_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{5}
 }
 
 type GetRevenueCategoriesReply struct {
@@ -335,7 +335,7 @@ type GetRevenueCategoriesReply struct {
 
 func (x *GetRevenueCategoriesReply) Reset() {
 	*x = GetRevenueCategoriesReply{}
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[6]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -347,7 +347,7 @@ func (x *GetRevenueCategoriesReply) String() string {
 func (*GetRevenueCategoriesReply) ProtoMessage() {}
 
 func (x *GetRevenueCategoriesReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[6]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -360,7 +360,7 @@ func (x *GetRevenueCategoriesReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRevenueCategoriesReply.ProtoReflect.Descriptor instead.
 func (*GetRevenueCategoriesReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{6}
+	return file_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetRevenueCategoriesReply) GetCategories() []*RevenueCategory {
@@ -381,7 +381,7 @@ type RevenueCategory struct {
 
 func (x *RevenueCategory) Reset() {
 	*x = RevenueCategory{}
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[7]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -393,7 +393,7 @@ func (x *RevenueCategory) String() string {
 func (*RevenueCategory) ProtoMessage() {}
 
 func (x *RevenueCategory) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_dashboard_proto_msgTypes[7]
+	mi := &file_cin_admin_v1_dashboard_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -406,7 +406,7 @@ func (x *RevenueCategory) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevenueCategory.ProtoReflect.Descriptor instead.
 func (*RevenueCategory) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{7}
+	return file_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *RevenueCategory) GetName() string {
@@ -430,11 +430,11 @@ func (x *RevenueCategory) GetColor() string {
 	return ""
 }
 
-var File_api_cin_admin_v1_dashboard_proto protoreflect.FileDescriptor
+var File_cin_admin_v1_dashboard_proto protoreflect.FileDescriptor
 
-const file_api_cin_admin_v1_dashboard_proto_rawDesc = "" +
+const file_cin_admin_v1_dashboard_proto_rawDesc = "" +
 	"\n" +
-	" api/cin/admin/v1/dashboard.proto\x12\x10api.cin.admin.v1\x1a\x1cgoogle/api/annotations.proto\"\x1a\n" +
+	"\x1ccin/admin/v1/dashboard.proto\x12\x10api.cin.admin.v1\x1a\x1cgoogle/api/annotations.proto\"\x1a\n" +
 	"\x18GetDashboardStatsRequest\"\xc0\x02\n" +
 	"\x16GetDashboardStatsReply\x12!\n" +
 	"\ftoday_orders\x18\x01 \x01(\x03R\vtodayOrders\x12#\n" +
@@ -470,19 +470,19 @@ const file_api_cin_admin_v1_dashboard_proto_rawDesc = "" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (
-	file_api_cin_admin_v1_dashboard_proto_rawDescOnce sync.Once
-	file_api_cin_admin_v1_dashboard_proto_rawDescData []byte
+	file_cin_admin_v1_dashboard_proto_rawDescOnce sync.Once
+	file_cin_admin_v1_dashboard_proto_rawDescData []byte
 )
 
-func file_api_cin_admin_v1_dashboard_proto_rawDescGZIP() []byte {
-	file_api_cin_admin_v1_dashboard_proto_rawDescOnce.Do(func() {
-		file_api_cin_admin_v1_dashboard_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_dashboard_proto_rawDesc), len(file_api_cin_admin_v1_dashboard_proto_rawDesc)))
+func file_cin_admin_v1_dashboard_proto_rawDescGZIP() []byte {
+	file_cin_admin_v1_dashboard_proto_rawDescOnce.Do(func() {
+		file_cin_admin_v1_dashboard_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_cin_admin_v1_dashboard_proto_rawDesc), len(file_cin_admin_v1_dashboard_proto_rawDesc)))
 	})
-	return file_api_cin_admin_v1_dashboard_proto_rawDescData
+	return file_cin_admin_v1_dashboard_proto_rawDescData
 }
 
-var file_api_cin_admin_v1_dashboard_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
-var file_api_cin_admin_v1_dashboard_proto_goTypes = []any{
+var file_cin_admin_v1_dashboard_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_cin_admin_v1_dashboard_proto_goTypes = []any{
 	(*GetDashboardStatsRequest)(nil),    // 0: api.cin.admin.v1.GetDashboardStatsRequest
 	(*GetDashboardStatsReply)(nil),      // 1: api.cin.admin.v1.GetDashboardStatsReply
 	(*GetOrderTrendRequest)(nil),        // 2: api.cin.admin.v1.GetOrderTrendRequest
@@ -492,7 +492,7 @@ var file_api_cin_admin_v1_dashboard_proto_goTypes = []any{
 	(*GetRevenueCategoriesReply)(nil),   // 6: api.cin.admin.v1.GetRevenueCategoriesReply
 	(*RevenueCategory)(nil),             // 7: api.cin.admin.v1.RevenueCategory
 }
-var file_api_cin_admin_v1_dashboard_proto_depIdxs = []int32{
+var file_cin_admin_v1_dashboard_proto_depIdxs = []int32{
 	4, // 0: api.cin.admin.v1.GetOrderTrendReply.items:type_name -> api.cin.admin.v1.TrendItem
 	7, // 1: api.cin.admin.v1.GetRevenueCategoriesReply.categories:type_name -> api.cin.admin.v1.RevenueCategory
 	0, // 2: api.cin.admin.v1.Dashboard.GetDashboardStats:input_type -> api.cin.admin.v1.GetDashboardStatsRequest
@@ -508,26 +508,26 @@ var file_api_cin_admin_v1_dashboard_proto_depIdxs = []int32{
 	0, // [0:2] is the sub-list for field type_name
 }
 
-func init() { file_api_cin_admin_v1_dashboard_proto_init() }
-func file_api_cin_admin_v1_dashboard_proto_init() {
-	if File_api_cin_admin_v1_dashboard_proto != nil {
+func init() { file_cin_admin_v1_dashboard_proto_init() }
+func file_cin_admin_v1_dashboard_proto_init() {
+	if File_cin_admin_v1_dashboard_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_dashboard_proto_rawDesc), len(file_api_cin_admin_v1_dashboard_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cin_admin_v1_dashboard_proto_rawDesc), len(file_cin_admin_v1_dashboard_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_api_cin_admin_v1_dashboard_proto_goTypes,
-		DependencyIndexes: file_api_cin_admin_v1_dashboard_proto_depIdxs,
-		MessageInfos:      file_api_cin_admin_v1_dashboard_proto_msgTypes,
+		GoTypes:           file_cin_admin_v1_dashboard_proto_goTypes,
+		DependencyIndexes: file_cin_admin_v1_dashboard_proto_depIdxs,
+		MessageInfos:      file_cin_admin_v1_dashboard_proto_msgTypes,
 	}.Build()
-	File_api_cin_admin_v1_dashboard_proto = out.File
-	file_api_cin_admin_v1_dashboard_proto_goTypes = nil
-	file_api_cin_admin_v1_dashboard_proto_depIdxs = nil
+	File_cin_admin_v1_dashboard_proto = out.File
+	file_cin_admin_v1_dashboard_proto_goTypes = nil
+	file_cin_admin_v1_dashboard_proto_depIdxs = nil
 }

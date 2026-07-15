@@ -1,0 +1,111 @@
+syntax = "proto3";
+
+package api.service.user.v1;
+
+option go_package = "cyi-app/api/service/user/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.service.user.v1";
+
+// 用户服务 - 角色权限管理（Casbin RBAC）
+service AdminRole {
+  // 获取角色列表
+  rpc ListRoles (ListRolesRequest) returns (ListRolesReply);
+  // 创建角色
+  rpc CreateRole (CreateRoleRequest) returns (CreateRoleReply);
+  // 更新角色
+  rpc UpdateRole (UpdateRoleRequest) returns (UpdateRoleReply);
+  // 删除角色
+  rpc DeleteRole (DeleteRoleRequest) returns (DeleteRoleReply);
+  // 获取角色权限
+  rpc GetRolePermissions (GetRolePermissionsRequest) returns (GetRolePermissionsReply);
+  // 更新角色权限
+  rpc UpdateRolePermissions (UpdateRolePermissionsRequest) returns (UpdateRolePermissionsReply);
+  // 获取所有权限模块定义
+  rpc ListAllPermissions (ListAllPermissionsRequest) returns (ListAllPermissionsReply);
+  // 校验权限（供 admin BFF 中间件使用）
+  rpc CheckPermission (CheckPermissionRequest) returns (CheckPermissionReply);
+}
+
+message RoleItem {
+  string name = 1;
+  string slug = 2;
+  string desc = 3;
+  int32 users = 4;
+  bool enabled = 5;
+  bool is_system = 6;
+  string created_at = 7;
+}
+
+message PermItem {
+  string key = 1;
+  string label = 2;
+}
+
+message PermModule {
+  string key = 1;
+  string title = 2;
+  repeated PermItem items = 3;
+}
+
+message PermissionValue {
+  map<string, bool> values = 1;
+}
+
+message ListRolesRequest {}
+message ListRolesReply {
+  repeated RoleItem items = 1;
+}
+
+message CreateRoleRequest {
+  string name = 1;
+  string slug = 2;
+  string desc = 3;
+}
+message CreateRoleReply {
+  bool success = 1;
+}
+
+message UpdateRoleRequest {
+  string slug = 1;
+  string name = 2;
+  string desc = 3;
+}
+message UpdateRoleReply {
+  bool success = 1;
+}
+
+message DeleteRoleRequest {
+  string slug = 1;
+}
+message DeleteRoleReply {
+  bool success = 1;
+}
+
+message GetRolePermissionsRequest {
+  string role = 1;
+}
+message GetRolePermissionsReply {
+  map<string, PermissionValue> permissions = 1;
+}
+
+message UpdateRolePermissionsRequest {
+  string role = 1;
+  map<string, PermissionValue> permissions = 2;
+}
+message UpdateRolePermissionsReply {
+  bool success = 1;
+}
+
+message ListAllPermissionsRequest {}
+message ListAllPermissionsReply {
+  repeated PermModule modules = 1;
+}
+
+message CheckPermissionRequest {
+  string role = 1;
+  string object = 2;
+  string action = 3;
+}
+message CheckPermissionReply {
+  bool allowed = 1;
+}

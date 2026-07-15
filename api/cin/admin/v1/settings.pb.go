@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.9
 // 	protoc        v5.27.2
-// source: api/cin/admin/v1/settings.proto
+// source: cin/admin/v1/settings.proto
 
 package adminv1
 
@@ -30,7 +30,7 @@ type GetSettingsRequest struct {
 
 func (x *GetSettingsRequest) Reset() {
 	*x = GetSettingsRequest{}
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[0]
+	mi := &file_cin_admin_v1_settings_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -42,7 +42,7 @@ func (x *GetSettingsRequest) String() string {
 func (*GetSettingsRequest) ProtoMessage() {}
 
 func (x *GetSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[0]
+	mi := &file_cin_admin_v1_settings_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55,7 +55,7 @@ func (x *GetSettingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSettingsRequest.ProtoReflect.Descriptor instead.
 func (*GetSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_settings_proto_rawDescGZIP(), []int{0}
+	return file_cin_admin_v1_settings_proto_rawDescGZIP(), []int{0}
 }
 
 type GetSettingsReply struct {
@@ -74,7 +74,7 @@ type GetSettingsReply struct {
 
 func (x *GetSettingsReply) Reset() {
 	*x = GetSettingsReply{}
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[1]
+	mi := &file_cin_admin_v1_settings_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -86,7 +86,7 @@ func (x *GetSettingsReply) String() string {
 func (*GetSettingsReply) ProtoMessage() {}
 
 func (x *GetSettingsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[1]
+	mi := &file_cin_admin_v1_settings_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -99,7 +99,7 @@ func (x *GetSettingsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSettingsReply.ProtoReflect.Descriptor instead.
 func (*GetSettingsReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_settings_proto_rawDescGZIP(), []int{1}
+	return file_cin_admin_v1_settings_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetSettingsReply) GetShopName() string {
@@ -174,7 +174,7 @@ type UpdateSettingsRequest struct {
 
 func (x *UpdateSettingsRequest) Reset() {
 	*x = UpdateSettingsRequest{}
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[2]
+	mi := &file_cin_admin_v1_settings_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -186,7 +186,7 @@ func (x *UpdateSettingsRequest) String() string {
 func (*UpdateSettingsRequest) ProtoMessage() {}
 
 func (x *UpdateSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[2]
+	mi := &file_cin_admin_v1_settings_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -199,7 +199,7 @@ func (x *UpdateSettingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSettingsRequest.ProtoReflect.Descriptor instead.
 func (*UpdateSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_settings_proto_rawDescGZIP(), []int{2}
+	return file_cin_admin_v1_settings_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *UpdateSettingsRequest) GetShopName() string {
@@ -267,7 +267,7 @@ type UpdateSettingsReply struct {
 
 func (x *UpdateSettingsReply) Reset() {
 	*x = UpdateSettingsReply{}
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[3]
+	mi := &file_cin_admin_v1_settings_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -279,7 +279,7 @@ func (x *UpdateSettingsReply) String() string {
 func (*UpdateSettingsReply) ProtoMessage() {}
 
 func (x *UpdateSettingsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[3]
+	mi := &file_cin_admin_v1_settings_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -292,7 +292,7 @@ func (x *UpdateSettingsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSettingsReply.ProtoReflect.Descriptor instead.
 func (*UpdateSettingsReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_settings_proto_rawDescGZIP(), []int{3}
+	return file_cin_admin_v1_settings_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *UpdateSettingsReply) GetSuccess() bool {
@@ -313,7 +313,7 @@ type ChangePasswordRequest struct {
 
 func (x *ChangePasswordRequest) Reset() {
 	*x = ChangePasswordRequest{}
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[4]
+	mi := &file_cin_admin_v1_settings_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -325,7 +325,7 @@ func (x *ChangePasswordRequest) String() string {
 func (*ChangePasswordRequest) ProtoMessage() {}
 
 func (x *ChangePasswordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[4]
+	mi := &file_cin_admin_v1_settings_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -338,7 +338,7 @@ func (x *ChangePasswordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChangePasswordRequest.ProtoReflect.Descriptor instead.
 func (*ChangePasswordRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_settings_proto_rawDescGZIP(), []int{4}
+	return file_cin_admin_v1_settings_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ChangePasswordRequest) GetOldPassword() string {
@@ -371,7 +371,7 @@ type ChangePasswordReply struct {
 
 func (x *ChangePasswordReply) Reset() {
 	*x = ChangePasswordReply{}
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[5]
+	mi := &file_cin_admin_v1_settings_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -383,7 +383,7 @@ func (x *ChangePasswordReply) String() string {
 func (*ChangePasswordReply) ProtoMessage() {}
 
 func (x *ChangePasswordReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[5]
+	mi := &file_cin_admin_v1_settings_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -396,7 +396,7 @@ func (x *ChangePasswordReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChangePasswordReply.ProtoReflect.Descriptor instead.
 func (*ChangePasswordReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_settings_proto_rawDescGZIP(), []int{5}
+	return file_cin_admin_v1_settings_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ChangePasswordReply) GetSuccess() bool {
@@ -406,11 +406,11 @@ func (x *ChangePasswordReply) GetSuccess() bool {
 	return false
 }
 
-var File_api_cin_admin_v1_settings_proto protoreflect.FileDescriptor
+var File_cin_admin_v1_settings_proto protoreflect.FileDescriptor
 
-const file_api_cin_admin_v1_settings_proto_rawDesc = "" +
+const file_cin_admin_v1_settings_proto_rawDesc = "" +
 	"\n" +
-	"\x1fapi/cin/admin/v1/settings.proto\x12\x10api.cin.admin.v1\x1a\x1cgoogle/api/annotations.proto\"\x14\n" +
+	"\x1bcin/admin/v1/settings.proto\x12\x10api.cin.admin.v1\x1a\x1cgoogle/api/annotations.proto\"\x14\n" +
 	"\x12GetSettingsRequest\"\xd8\x02\n" +
 	"\x10GetSettingsReply\x12\x1b\n" +
 	"\tshop_name\x18\x01 \x01(\tR\bshopName\x12)\n" +
@@ -447,19 +447,19 @@ const file_api_cin_admin_v1_settings_proto_rawDesc = "" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (
-	file_api_cin_admin_v1_settings_proto_rawDescOnce sync.Once
-	file_api_cin_admin_v1_settings_proto_rawDescData []byte
+	file_cin_admin_v1_settings_proto_rawDescOnce sync.Once
+	file_cin_admin_v1_settings_proto_rawDescData []byte
 )
 
-func file_api_cin_admin_v1_settings_proto_rawDescGZIP() []byte {
-	file_api_cin_admin_v1_settings_proto_rawDescOnce.Do(func() {
-		file_api_cin_admin_v1_settings_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_settings_proto_rawDesc), len(file_api_cin_admin_v1_settings_proto_rawDesc)))
+func file_cin_admin_v1_settings_proto_rawDescGZIP() []byte {
+	file_cin_admin_v1_settings_proto_rawDescOnce.Do(func() {
+		file_cin_admin_v1_settings_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_cin_admin_v1_settings_proto_rawDesc), len(file_cin_admin_v1_settings_proto_rawDesc)))
 	})
-	return file_api_cin_admin_v1_settings_proto_rawDescData
+	return file_cin_admin_v1_settings_proto_rawDescData
 }
 
-var file_api_cin_admin_v1_settings_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
-var file_api_cin_admin_v1_settings_proto_goTypes = []any{
+var file_cin_admin_v1_settings_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_cin_admin_v1_settings_proto_goTypes = []any{
 	(*GetSettingsRequest)(nil),    // 0: api.cin.admin.v1.GetSettingsRequest
 	(*GetSettingsReply)(nil),      // 1: api.cin.admin.v1.GetSettingsReply
 	(*UpdateSettingsRequest)(nil), // 2: api.cin.admin.v1.UpdateSettingsRequest
@@ -467,7 +467,7 @@ var file_api_cin_admin_v1_settings_proto_goTypes = []any{
 	(*ChangePasswordRequest)(nil), // 4: api.cin.admin.v1.ChangePasswordRequest
 	(*ChangePasswordReply)(nil),   // 5: api.cin.admin.v1.ChangePasswordReply
 }
-var file_api_cin_admin_v1_settings_proto_depIdxs = []int32{
+var file_cin_admin_v1_settings_proto_depIdxs = []int32{
 	0, // 0: api.cin.admin.v1.Settings.GetSettings:input_type -> api.cin.admin.v1.GetSettingsRequest
 	2, // 1: api.cin.admin.v1.Settings.UpdateSettings:input_type -> api.cin.admin.v1.UpdateSettingsRequest
 	4, // 2: api.cin.admin.v1.Settings.ChangePassword:input_type -> api.cin.admin.v1.ChangePasswordRequest
@@ -481,26 +481,26 @@ var file_api_cin_admin_v1_settings_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_api_cin_admin_v1_settings_proto_init() }
-func file_api_cin_admin_v1_settings_proto_init() {
-	if File_api_cin_admin_v1_settings_proto != nil {
+func init() { file_cin_admin_v1_settings_proto_init() }
+func file_cin_admin_v1_settings_proto_init() {
+	if File_cin_admin_v1_settings_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_settings_proto_rawDesc), len(file_api_cin_admin_v1_settings_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cin_admin_v1_settings_proto_rawDesc), len(file_cin_admin_v1_settings_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_api_cin_admin_v1_settings_proto_goTypes,
-		DependencyIndexes: file_api_cin_admin_v1_settings_proto_depIdxs,
-		MessageInfos:      file_api_cin_admin_v1_settings_proto_msgTypes,
+		GoTypes:           file_cin_admin_v1_settings_proto_goTypes,
+		DependencyIndexes: file_cin_admin_v1_settings_proto_depIdxs,
+		MessageInfos:      file_cin_admin_v1_settings_proto_msgTypes,
 	}.Build()
-	File_api_cin_admin_v1_settings_proto = out.File
-	file_api_cin_admin_v1_settings_proto_goTypes = nil
-	file_api_cin_admin_v1_settings_proto_depIdxs = nil
+	File_cin_admin_v1_settings_proto = out.File
+	file_cin_admin_v1_settings_proto_goTypes = nil
+	file_cin_admin_v1_settings_proto_depIdxs = nil
 }

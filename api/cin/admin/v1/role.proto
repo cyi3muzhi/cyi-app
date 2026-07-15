@@ -1,0 +1,158 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+option java_multiple_files = true;
+option java_package = "api.cin.admin.v1";
+
+import "google/api/annotations.proto";
+
+// 管理后台 - 角色权限管理服务
+service AdminRole {
+  // 获取角色列表
+  rpc ListRoles (ListRolesRequest) returns (ListRolesReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/roles"
+    };
+  }
+  // 创建角色
+  rpc CreateRole (CreateRoleRequest) returns (CreateRoleReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/roles"
+      body: "*"
+    };
+  }
+  // 更新角色
+  rpc UpdateRole (UpdateRoleRequest) returns (UpdateRoleReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/roles/{slug}"
+      body: "*"
+    };
+  }
+  // 删除角色
+  rpc DeleteRole (DeleteRoleRequest) returns (DeleteRoleReply) {
+    option (google.api.http) = {
+      delete: "/admin/v1/roles/{slug}"
+    };
+  }
+  // 获取角色权限
+  rpc GetRolePermissions (GetRolePermissionsRequest) returns (GetRolePermissionsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/roles/{role}/permissions"
+    };
+  }
+  // 更新角色权限
+  rpc UpdateRolePermissions (UpdateRolePermissionsRequest) returns (UpdateRolePermissionsReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/roles/{role}/permissions"
+      body: "*"
+    };
+  }
+  // 获取所有权限模块定义
+  rpc ListAllPermissions (ListAllPermissionsRequest) returns (ListAllPermissionsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/permissions/modules"
+    };
+  }
+}
+
+// 角色项
+message RoleItem {
+  string name = 1;
+  string slug = 2;
+  string desc = 3;
+  int32 users = 4;
+  bool enabled = 5;
+  bool is_system = 6;
+  string created_at = 7;
+}
+
+// 权限项
+message PermItem {
+  string key = 1;
+  string label = 2;
+}
+
+// 权限模块
+message PermModule {
+  string key = 1;
+  string title = 2;
+  repeated PermItem items = 3;
+}
+
+// 权限值（模块 -> {权限项 -> bool}）
+message PermissionValue {
+  map<string, bool> values = 1;
+}
+
+// --- 列表 ---
+
+message ListRolesRequest {}
+
+message ListRolesReply {
+  repeated RoleItem items = 1;
+}
+
+// --- 创建 ---
+
+message CreateRoleRequest {
+  string name = 1;
+  string slug = 2;
+  string desc = 3;
+}
+
+message CreateRoleReply {
+  bool success = 1;
+}
+
+// --- 更新 ---
+
+message UpdateRoleRequest {
+  string slug = 1;
+  string name = 2;
+  string desc = 3;
+}
+
+message UpdateRoleReply {
+  bool success = 1;
+}
+
+// --- 删除 ---
+
+message DeleteRoleRequest {
+  string slug = 1;
+}
+
+message DeleteRoleReply {
+  bool success = 1;
+}
+
+// --- 获取权限 ---
+
+message GetRolePermissionsRequest {
+  string role = 1;
+}
+
+message GetRolePermissionsReply {
+  map<string, PermissionValue> permissions = 1;
+}
+
+// --- 更新权限 ---
+
+message UpdateRolePermissionsRequest {
+  string role = 1;
+  map<string, PermissionValue> permissions = 2;
+}
+
+message UpdateRolePermissionsReply {
+  bool success = 1;
+}
+
+// --- 权限模块定义 ---
+
+message ListAllPermissionsRequest {}
+
+message ListAllPermissionsReply {
+  repeated PermModule modules = 1;
+}
