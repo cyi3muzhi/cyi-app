@@ -65,18 +65,40 @@ app/cin/interface/
 
 ## 配置说明
 
-主要配置项：
+配置通过 Consul KV 加载，从 `CONSUL_ADDR` 和 `CONSUL_PATHS` 环境变量指定 Consul 地址和路径。
+
+主要配置项（来自 `conf.proto`）：
 
 | 配置项 | 说明 | 默认值 |
 |--------|------|--------|
+| `server.http.network` | HTTP 网络类型 | `tcp` |
+| `server.http.addr` | HTTP 监听地址 | `:8000` |
+| `server.http.timeout` | HTTP 超时时间 | - |
+| `server.grpc.network` | gRPC 网络类型 | `tcp` |
+| `server.grpc.addr` | gRPC 监听地址 | `:9000` |
+| `server.grpc.timeout` | gRPC 超时时间 | - |
+| `data.database.driver` | 数据库驱动 | `mysql` |
+| `data.database.source` | 数据库连接字符串 | - |
+| `data.redis.addr` | Redis 地址 | `localhost:6379` |
+| `data.redis.password` | Redis 密码 | - |
+| `data.redis.read_timeout` | Redis 读取超时 | - |
+| `data.redis.write_timeout` | Redis 写入超时 | - |
 | `auth.service_key` | 服务密钥映射 | - |
-| `auth.api_key` | API 密钥 | - |
-| `auth.white_list` | 认证白名单 | - |
+| `auth.api_key` | JWT 签名密钥 | - |
+| `auth.white_list` | 认证白名单（无需认证的路径） | - |
+| `trace.endpoint` | Jaeger 链路追踪端点 | - |
+| `log.level` | 日志级别（debug/info/warn/error） | `info` |
+| `log.enable_console` | 是否启用控制台日志输出 | `true` |
+| `log.enable_file` | 是否启用文件日志输出 | `false` |
+| `log.log_dir` | 日志文件目录 | - |
 | `blades.api_key` | DeepSeek API 密钥 | - |
-| `blades.model` | 模型名称 | deepseek-chat |
-| `blades.api_endpoint` | API 地址 | https://api.deepseek.com/v1 |
-| `server.http.addr` | HTTP 监听地址 | - |
-| `server.grpc.addr` | gRPC 监听地址 | - |
+| `blades.model` | AI 模型名称 | `deepseek-chat` |
+| `blades.api_endpoint` | API 地址 | `https://api.deepseek.com/v1` |
+| `blades.system_prompt` | 系统提示词 | - |
+| `blades.max_tokens` | 最大令牌数 | `4096` |
+| `blades.temperature` | 温度参数 | `0.7` |
+| `registry.consul.address` | Consul 注册中心地址 | - |
+| `registry.consul.scheme` | Consul 协议 | `http` |
 
 ## 核心业务逻辑
 
@@ -92,25 +114,55 @@ app/cin/interface/
 
 ### 服务接口
 
-| 接口 | 方法 | 说明 |
+#### gRPC/HTTP 接口（通过 Proto 注册）
+
+| 服务 | 接口 | 方法 | 说明 |
+|------|------|------|------|
+| **Auth** | `Login` | gRPC/HTTP | 用户登录 |
+| | `Register` | gRPC/HTTP | 用户注册 |
+| **User** | `GetMyInfo` | gRPC/HTTP | 获取个人信息 |
+| | `GetUserInfo` | gRPC/HTTP | 获取指定用户信息 |
+| | `UpdateUserInfo` | gRPC/HTTP | 更新用户信息 |
+| **Product** | `CreateProduct` | gRPC/HTTP | 创建商品 |
+| | `UpdateProduct` | gRPC/HTTP | 更新商品 |
+| | `ListProduct` | gRPC/HTTP | 商品列表 |
+| | `GetProduct` | gRPC/HTTP | 商品详情 |
+| **Order** | `PlaceOrder` | gRPC/HTTP | 下单 |
+| | `PayOrder` | gRPC/HTTP | 支付订单 |
+| | `CartCheckout` | gRPC/HTTP | 购物车结算 |
+| | `ListOrder` | gRPC/HTTP | 订单列表 |
+| | `GetOrder` | gRPC/HTTP | 订单详情 |
+| **Cart** | `AddCartItem` | gRPC/HTTP | 加入购物车 |
+| | `GetCart` | gRPC/HTTP | 获取购物车 |
+| **Stock** | `UpdateStock` | gRPC/HTTP | 更新库存 |
+| **Blades** | `AiChat` | gRPC/HTTP | AI 聊天（非流式） |
+
+#### 流式路由（通过 HandleFunc 注册）
+
+| 路由 | 协议 | 说明 |
 |------|------|------|
-| `Login` | gRPC/HTTP | 用户登录 |
-| `Register` | gRPC/HTTP | 用户注册 |
-| `CreateOrder` | gRPC/HTTP | 创建订单 |
-| `GetOrder` | gRPC/HTTP | 查询订单 |
-| `ListOrders` | gRPC/HTTP | 订单列表 |
-| `GetProduct` | gRPC/HTTP | 查询商品 |
-| `ListProducts` | gRPC/HTTP | 商品列表 |
-| `GetStock` | gRPC/HTTP | 查询库存 |
-| `Chat` | gRPC/HTTP | AI 聊天 |
+| `POST /ai/v1/chat/stream` | SSE | AI 流式聊天（Server-Sent Events） |
+| `WS /ws/chat` | WebSocket | AI 流式聊天（WebSocket） |
 
 ## 运行方式
+
+> 配置从 Consul KV 加载，需通过环境变量指定 Consul 连接信息。
+
+### 环境变量
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `CONSUL_ADDR` | Consul 服务地址 | `127.0.0.1:8500` |
+| `CONSUL_PATHS` | Consul KV 配置路径（逗号分隔） | - |
+| `SERVICE_ENV` | 环境标识（用于服务名前缀） | - |
 
 ### 本地开发
 
 ```bash
 cd app/cin/interface
-go run cmd/interface/main.go -conf configs/
+$env:CONSUL_ADDR="127.0.0.1:8500"
+$env:CONSUL_PATHS="/develop/cyi-app/cin/interface"
+go run cmd/interface/main.go
 ```
 
 ### 构建部署
@@ -118,7 +170,7 @@ go run cmd/interface/main.go -conf configs/
 ```bash
 cd app/cin/interface
 make build
-./bin/interface -conf configs/
+./bin/interface
 ```
 
 ### Docker 部署

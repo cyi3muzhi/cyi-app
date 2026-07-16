@@ -87,7 +87,7 @@ go run cmd/nats/main.go -conf configs/
 
 ```bash
 cd app/nats
-make build
+go build -o bin/nats cmd/nats/main.go
 ./bin/nats -conf configs/
 ```
 
@@ -105,10 +105,11 @@ make build
 
 | 测试 | 说明 |
 |------|------|
-| `TestNATS_Connect` | 测试 NATS 连接 |
+| `TestNATS_Connection` | 测试 NATS 连接 |
 | `TestNATS_PublishSubscribe` | 测试发布订阅 |
 | `TestNATS_QueueGroup` | 测试队列组 |
-| `TestConsumer_FullCycle` | 测试完整消费链路 |
+| `TestNatsConsumer_Subscribe` | 测试 NatsConsumer 订阅和处理 |
+| `TestConsumer_Full` | 测试 Consumer 编排器到 Service 的全链路 |
 
 ```bash
 cd app/nats

@@ -40,6 +40,9 @@ e:\me\cyi-app\deploy\k8s\
 │   ├── interface/      # 接口服务
 │   │   ├── deployment.yaml
 │   │   └── service.yaml
+│   ├── blades/         # blades 服务
+│   │   ├── deployment.yaml
+│   │   └── service.yaml
 │   ├── job/            # 任务服务
 │   │   ├── deployment.yaml
 │   │   └── service.yaml
@@ -159,6 +162,20 @@ e:\me\cyi-app\deploy\k8s\
 - **作用**：处理用户相关的业务逻辑
 - **访问方式**：ClusterIP，端口9000
 
+#### blades 目录
+- **功能**：部署 blades 服务
+- **内容**：包含 blades 服务的 Deployment、Service 和 HPA 配置
+- **作用**：提供 blades 相关业务功能，仅依赖 Redis 进行会话管理，不依赖 MySQL
+- **镜像**：`go-kratos/blades:0.1.0`
+- **端口**：
+  - 9000：gRPC 服务
+  - 8000：HTTP 服务
+- **访问方式**：ClusterIP，内部通过 `service-blades:9000` 访问 gRPC 服务
+- **资源限制**：
+  - CPU：请求 50m / 限制 150m
+  - 内存：请求 100Mi / 限制 128Mi
+- **自动缩放**：支持 HPA，CPU 目标使用率 70%，内存目标使用率 80%，副本范围 1-5
+
 #### job 目录
 - **功能**：部署任务服务
 - **内容**：包含任务服务的Deployment和Service配置
@@ -238,6 +255,9 @@ kubectl apply -f infrastructure/elk/filebeat/
 # 部署接口服务
 kubectl apply -f microservices/interface/
 
+# 部署 blades 服务
+kubectl apply -f microservices/blades/
+
 # 部署用户服务
 kubectl apply -f microservices/user/
 
@@ -277,6 +297,8 @@ service-interface → service-user → MySQL
           service-job → Redis
                  ↓
           service-task
+
+service-blades → Redis (会话管理)
 
 所有服务 → Consul (服务发现与配置)
 所有服务 → Jaeger (分布式追踪)
