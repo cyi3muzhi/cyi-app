@@ -12,10 +12,13 @@ import (
 )
 
 var (
-	Q        = new(Query)
-	Category *category
-	Product  *product
-	Stock    *stock
+	Q         = new(Query)
+	Category  *category
+	Product   *product
+	Stock     *stock
+	SpecGroup *specGroup
+	SpecValue *specValue
+	Sku       *sku
 )
 
 func SetDefault(db *gorm.DB) {
@@ -23,47 +26,65 @@ func SetDefault(db *gorm.DB) {
 	Category = &Q.Category
 	Product = &Q.Product
 	Stock = &Q.Stock
+	SpecGroup = &Q.SpecGroup
+	SpecValue = &Q.SpecValue
+	Sku = &Q.Sku
 }
 
 func Use(db *gorm.DB) *Query {
 	return &Query{
-		db:       db,
-		Category: newCategory(db),
-		Product:  newProduct(db),
-		Stock:    newStock(db),
+		db:        db,
+		Category:  newCategory(db),
+		Product:   newProduct(db),
+		Stock:     newStock(db),
+		SpecGroup: newSpecGroup(db),
+		SpecValue: newSpecValue(db),
+		Sku:       newSku(db),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	Category category
-	Product  product
-	Stock    stock
+	Category  category
+	Product   product
+	Stock     stock
+	SpecGroup specGroup
+	SpecValue specValue
+	Sku       sku
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:       db,
-		Category: q.Category.clone(db),
-		Product:  q.Product.clone(db),
-		Stock:    q.Stock.clone(db),
+		db:        db,
+		Category:  q.Category.clone(db),
+		Product:   q.Product.clone(db),
+		Stock:     q.Stock.clone(db),
+		SpecGroup: q.SpecGroup.clone(db),
+		SpecValue: q.SpecValue.clone(db),
+		Sku:       q.Sku.clone(db),
 	}
 }
 
 type queryCtx struct {
-	Category categoryDo
-	Product  productDo
-	Stock    stockDo
+	Category  categoryDo
+	Product   productDo
+	Stock     stockDo
+	SpecGroup specGroupDo
+	SpecValue specValueDo
+	Sku       skuDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		Category: *q.Category.WithContext(ctx),
-		Product:  *q.Product.WithContext(ctx),
-		Stock:    *q.Stock.WithContext(ctx),
+		Category:  *q.Category.WithContext(ctx),
+		Product:   *q.Product.WithContext(ctx),
+		Stock:     *q.Stock.WithContext(ctx),
+		SpecGroup: *q.SpecGroup.WithContext(ctx),
+		SpecValue: *q.SpecValue.WithContext(ctx),
+		Sku:       *q.Sku.WithContext(ctx),
 	}
 }
 

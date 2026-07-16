@@ -39,13 +39,13 @@ func (uc *OrderUseCase) Create(ctx context.Context, in *Order) error {
 			uc.log.Errorf("product not found: %v", err)
 			return v1.ErrorProductNotAvailable("product not found")
 		}
-		if product.Status != 1 {
+		if product.Product.Status != 1 {
 			return v1.ErrorProductNotAvailable("product is off shelf")
 		}
 
 		// 从商品服务获取商品名称和价格
-		item.ProductName = product.Name
-		item.Price = product.Price
+		item.ProductName = product.Product.Name
+		item.Price = product.Product.Price
 
 		// 2. 检查库存是否充足
 		stock, err := uc.stockRe.GetStock(ctx, item.ProductID)

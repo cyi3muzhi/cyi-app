@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
 	"strings"
 	"time"
 
@@ -133,6 +134,21 @@ func (r *RustFSClient) DeleteObject(ctx context.Context, bucketName, objectKey s
 
 func (r *RustFSClient) GetPresignedURL(ctx context.Context, bucketName, objectKey string, expiry int) (string, error) {
 	presignedURL, _, err := r.client.Object().PresignGet(ctx, bucketName, objectKey, time.Duration(expiry)*time.Second, nil)
+	if err != nil {
+		return "", err
+	}
+
+	urlStr := presignedURL.String()
+	if r.endpoint != r.publicEndpoint {
+		urlStr = strings.Replace(urlStr, r.endpoint, r.publicEndpoint, 1)
+	}
+
+	return urlStr, nil
+}
+
+// GetPresignedPutURL 生成预签名 PUT URL，前端可直接上传文件到 OSS
+func (r *RustFSClient) GetPresignedPutURL(ctx context.Context, bucketName, objectKey string, expiry int) (string, error) {
+	presignedURL, _, err := r.client.Object().PresignPut(ctx, bucketName, objectKey, time.Duration(expiry)*time.Second, url.Values{})
 	if err != nil {
 		return "", err
 	}

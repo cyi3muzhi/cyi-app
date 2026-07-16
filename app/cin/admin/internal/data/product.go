@@ -1,11 +1,18 @@
 package data
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
+	"fmt"
+	"strings"
 
+	productRpc "cyi-app/api/service/product/v1"
 	"cyi-app/app/cin/admin/internal/biz"
+	"cyi-app/pkg/util/rustfs"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/google/uuid"
 )
 
 type productRepo struct {
@@ -13,7 +20,7 @@ type productRepo struct {
 	data *Data
 }
 
-// NewProductRepo 创建商品管理数据仓库，返回 mock 数据
+// NewProductRepo 创建商品管理数据仓库，通过 gRPC 调用商品服务
 func NewProductRepo(data *Data, logger log.Logger) biz.ProductRepo {
 	return &productRepo{
 		log:  log.NewHelper(logger),
@@ -21,51 +28,279 @@ func NewProductRepo(data *Data, logger log.Logger) biz.ProductRepo {
 	}
 }
 
-// ListProduct 获取商品列表（mock 数据）
-func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*biz.Product, int32, error) {
-	items := []*biz.Product{
-		{ID: 1, Name: "iPhone 15 Pro", Category: "电子产品", Price: 899900, Stock: 128, Sales: 2356, Status: "上架", Image: "https://picsum.photos/200/200?random=1", SKU: "IP15P-256-BK"},
-		{ID: 2, Name: "MacBook Air M3", Category: "电子产品", Price: 1099900, Stock: 56, Sales: 1892, Status: "上架", Image: "https://picsum.photos/200/200?random=2", SKU: "MBA-M3-512-SV"},
-		{ID: 3, Name: "AirPods Pro 2", Category: "电子产品", Price: 189900, Stock: 320, Sales: 4568, Status: "上架", Image: "https://picsum.photos/200/200?random=3", SKU: "APP2-WL"},
-		{ID: 4, Name: "纯棉T恤", Category: "服装鞋帽", Price: 12900, Stock: 500, Sales: 3280, Status: "上架", Image: "https://picsum.photos/200/200?random=4", SKU: "CT-S-WH"},
-		{ID: 5, Name: "运动跑鞋", Category: "服装鞋帽", Price: 45900, Stock: 200, Sales: 1560, Status: "下架", Image: "https://picsum.photos/200/200?random=5", SKU: "RN-BLK-42"},
+// uploadImage 处理图片：base64 上传 OSS，否则补全 bucket 前缀
+func (r *productRepo) uploadImage(ctx context.Context, imagePath string) (string, error) {
+	// 已有完整 URL，无需处理
+	if strings.HasPrefix(imagePath, "http") || strings.HasPrefix(imagePath, "data:image") {
+		if strings.HasPrefix(imagePath, "data:image") {
+			return r.uploadBase64ToOSS(ctx, imagePath)
+		}
+		return imagePath, nil
 	}
-	return items, int32(len(items)), nil
+	// 已经是 bucket/key 格式（包含 "/"），无需处理
+	if strings.Count(imagePath, "/") >= 1 && !strings.HasPrefix(imagePath, string(rustfs.AdminServiceBucket)) {
+		return fmt.Sprintf("%s/%s", string(rustfs.AdminServiceBucket), imagePath), nil
+	}
+	return imagePath, nil
 }
 
-// CreateProduct 创建商品（mock 实现）
+// uploadBase64ToOSS 将 base64 图片上传到 OSS
+func (r *productRepo) uploadBase64ToOSS(ctx context.Context, base64Data string) (string, error) {
+
+	// 提取纯 base64 数据（去掉 data:image/xxx;base64, 前缀）
+	parts := strings.SplitN(base64Data, ",", 2)
+	if len(parts) != 2 {
+		return "", fmt.Errorf("无效的 base64 图片数据")
+	}
+
+	objectKey := fmt.Sprintf("admin/product/%s.jpg", uuid.New().String())
+	bucketName := string(rustfs.AdminServiceBucket)
+
+	exists, err := r.data.oss.BucketExists(ctx, bucketName)
+	if err != nil {
+		return "", fmt.Errorf("检查存储桶失败: %w", err)
+	}
+	if !exists {
+		if err := r.data.oss.CreateBucket(ctx, bucketName); err != nil {
+			return "", fmt.Errorf("创建存储桶失败: %w", err)
+		}
+	}
+
+	data, err := base64.StdEncoding.DecodeString(parts[1])
+	if err != nil {
+		return "", fmt.Errorf("Base64解码失败: %w", err)
+	}
+
+	body := bytes.NewReader(data)
+	if err := r.data.oss.UploadObject(ctx, bucketName, objectKey, body); err != nil {
+		return "", fmt.Errorf("上传到OSS失败: %w", err)
+	}
+
+	// 返回 bucket/key 路径（读取时生成 presigned URL）
+	return fmt.Sprintf("%s/%s", bucketName, objectKey), nil
+}
+
+// resolveImageURL 解析图片路径，如果是 OSS 路径则生成 presigned URL
+func (r *productRepo) resolveImageURL(ctx context.Context, image string) string {
+	if image == "" || strings.HasPrefix(image, "http") {
+		return image
+	}
+	// 格式: bucketName/objectKey
+	parts := strings.SplitN(image, "/", 2)
+	if len(parts) == 2 {
+		presigned, err := r.data.oss.GetPresignedURL(ctx, parts[0], parts[1], 3600*24*30)
+		if err == nil {
+			return presigned
+		}
+	}
+	return image
+}
+
+// ListProduct 通过 gRPC 调用商品服务获取商品列表
+func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*biz.Product, int32, error) {
+	reply, err := r.data.pc.ListProduct(ctx, &productRpc.ListProductRequest{
+		Page:     page,
+		PageSize: pageSize,
+		Keyword:  keyword,
+		Category: category,
+		Status:   status,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	items := make([]*biz.Product, 0, len(reply.Items))
+	for _, item := range reply.Items {
+		p := protoToBizProduct(item)
+		p.Image = r.resolveImageURL(ctx, p.Image)
+		items = append(items, p)
+	}
+	return items, reply.Total, nil
+}
+
+// CreateProduct 通过 gRPC 调用商品服务创建商品
 func (r *productRepo) CreateProduct(ctx context.Context, in *biz.Product) (int64, error) {
-	in.ID = 100
-	return 100, nil
+	imagePath, err := r.uploadImage(ctx, in.Image)
+	if err != nil {
+		return 0, err
+	}
+
+	reply, err := r.data.pc.CreateProduct(ctx, &productRpc.CreateProductRequest{
+		Name:        in.Name,
+		Description: in.Description,
+		Price:       in.Price,
+		Category:    in.Category,
+		Image:       imagePath,
+		Sales:       in.Sales,
+		Specs:       bizToProtoSpecGroups(in.Specs),
+		Skus:        bizToProtoSkus(in.Skus),
+	})
+	if err != nil {
+		return 0, err
+	}
+	return reply.ProductId, nil
 }
 
-// UpdateProduct 更新商品（mock 实现）
+// UpdateProduct 通过 gRPC 调用商品服务更新商品
 func (r *productRepo) UpdateProduct(ctx context.Context, in *biz.Product) error {
-	return nil
+	imagePath, err := r.uploadImage(ctx, in.Image)
+	if err != nil {
+		return err
+	}
+
+	var statusInt int32
+	if in.Status == "上架" || in.Status == "上架中" {
+		statusInt = 1
+	} else {
+		statusInt = 0
+	}
+
+	_, err = r.data.pc.UpdateProduct(ctx, &productRpc.UpdateProductRequest{
+		ProductId:   in.ID,
+		Name:        in.Name,
+		Description: in.Description,
+		Price:       in.Price,
+		Category:    in.Category,
+		Image:       imagePath,
+		Sales:       in.Sales,
+		Status:      statusInt,
+		Specs:       bizToProtoSpecGroups(in.Specs),
+		Skus:        bizToProtoSkus(in.Skus),
+	})
+	return err
 }
 
-// DeleteProduct 删除商品（mock 实现）
+// DeleteProduct 通过 gRPC 调用商品服务删除商品
 func (r *productRepo) DeleteProduct(ctx context.Context, id int64) error {
-	return nil
+	_, err := r.data.pc.DeleteProduct(ctx, &productRpc.DeleteProductRequest{
+		ProductId: id,
+	})
+	return err
 }
 
-// GetProduct 获取商品详情（mock 数据）
-func (r *productRepo) GetProduct(ctx context.Context, id int64) (*biz.Product, error) {
-	return &biz.Product{
-		ID:          id,
-		Name:        "iPhone 15 Pro",
-		Category:    "电子产品",
-		Price:       899900,
-		Stock:       128,
-		Sales:       2356,
-		Status:      "上架",
-		Image:       "https://picsum.photos/200/200?random=1",
-		SKU:         "IP15P-256-BK",
-		Description: "Apple iPhone 15 Pro 256GB 黑色钛金属",
-	}, nil
-}
-
-// BatchOperation 批量操作商品（mock 实现）
+// BatchOperation 批量操作商品（遍历调用 UpdateProduct/DeleteProduct）
 func (r *productRepo) BatchOperation(ctx context.Context, action string, ids []int64) (int32, error) {
-	return int32(len(ids)), nil
+	var affected int32
+	for _, id := range ids {
+		var err error
+		switch action {
+		case "删除":
+			err = r.DeleteProduct(ctx, id)
+		case "上架":
+			err = r.UpdateProduct(ctx, &biz.Product{ID: id, Status: "上架"})
+		case "下架":
+			err = r.UpdateProduct(ctx, &biz.Product{ID: id, Status: "下架"})
+		default:
+			continue
+		}
+		if err != nil {
+			r.log.Errorf("batch operation %s failed for product %d: %v", action, id, err)
+			continue
+		}
+		affected++
+	}
+	return affected, nil
+}
+
+// protoToBizProduct 将 proto ProductItem 转换为 biz Product
+func protoToBizProduct(item *productRpc.ProductItem) *biz.Product {
+	status := "上架"
+	if item.GetStatus() == 0 {
+		status = "下架"
+	}
+	return &biz.Product{
+		ID:          item.GetProductId(),
+		Name:        item.GetName(),
+		Description: item.GetDescription(),
+		Price:       item.GetPrice(),
+		Status:      status,
+		Category:    item.GetCategory(),
+		Image:       item.GetImage(),
+		Sales:       item.GetSales(),
+		Specs:       protoToBizSpecGroups(item.GetSpecs()),
+		Skus:        protoToBizSkus(item.GetSkus()),
+	}
+}
+
+// protoToBizSpecGroups 将 proto SpecGroupInfo 列表转换为 biz SpecGroup 列表
+func protoToBizSpecGroups(specs []*productRpc.SpecGroupInfo) []*biz.SpecGroup {
+	if len(specs) == 0 {
+		return nil
+	}
+	result := make([]*biz.SpecGroup, 0, len(specs))
+	for _, s := range specs {
+		result = append(result, &biz.SpecGroup{
+			ID:     s.GetId(),
+			Name:   s.GetName(),
+			Values: s.GetValues(),
+		})
+	}
+	return result
+}
+
+// protoToBizSkus 将 proto SkuInfo 列表转换为 biz SkuItem 列表
+func protoToBizSkus(skus []*productRpc.SkuInfo) []*biz.SkuItem {
+	if len(skus) == 0 {
+		return nil
+	}
+	result := make([]*biz.SkuItem, 0, len(skus))
+	for _, s := range skus {
+		result = append(result, &biz.SkuItem{
+			ID:      s.GetId(),
+			SkuCode: s.GetSkuCode(),
+			Price:   s.GetPrice(),
+			Stock:   s.GetStock(),
+			Sales:   s.GetSales(),
+			Spec:    s.GetSpec(),
+		})
+	}
+	return result
+}
+
+// bizToProtoSpecGroups 将 biz SpecGroup 列表转换为 proto SpecGroupInfo 列表
+func bizToProtoSpecGroups(specs []*biz.SpecGroup) []*productRpc.SpecGroupInfo {
+	if len(specs) == 0 {
+		return nil
+	}
+	result := make([]*productRpc.SpecGroupInfo, 0, len(specs))
+	for _, s := range specs {
+		result = append(result, &productRpc.SpecGroupInfo{
+			Id:     s.ID,
+			Name:   s.Name,
+			Values: s.Values,
+		})
+	}
+	return result
+}
+
+// bizToProtoSkus 将 biz SkuItem 列表转换为 proto SkuInfo 列表
+func bizToProtoSkus(skus []*biz.SkuItem) []*productRpc.SkuInfo {
+	if len(skus) == 0 {
+		return nil
+	}
+	result := make([]*productRpc.SkuInfo, 0, len(skus))
+	for _, s := range skus {
+		result = append(result, &productRpc.SkuInfo{
+			Id:      s.ID,
+			SkuCode: s.SkuCode,
+			Price:   s.Price,
+			Stock:   s.Stock,
+			Sales:   s.Sales,
+			Spec:    s.Spec,
+		})
+	}
+	return result
+}
+
+// GetProduct 通过 gRPC 调用商品服务获取商品详情
+func (r *productRepo) GetProduct(ctx context.Context, id int64) (*biz.Product, error) {
+	reply, err := r.data.pc.GetProduct(ctx, &productRpc.GetProductRequest{
+		ProductId: id,
+	})
+	if err != nil {
+		return nil, err
+	}
+	p := protoToBizProduct(reply.GetProduct())
+	p.Image = r.resolveImageURL(ctx, p.Image)
+	return p, nil
 }

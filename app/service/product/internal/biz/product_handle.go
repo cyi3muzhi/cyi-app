@@ -7,38 +7,118 @@ import (
 	v1 "cyi-app/api/service/product/v1"
 )
 
+// ProductRepo 商品仓储接口
 type ProductRepo interface {
 	CreateProduct(ctx context.Context, in *Product) error
 	UpdateProduct(ctx context.Context, in *Product) error
+	DeleteProduct(ctx context.Context, productID int64) error
 	GetProduct(ctx context.Context, productID int64) (*Product, error)
+	ListProduct(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*Product, int32, error)
 }
 
+// ProductUseCase 商品用例
 type ProductUseCase struct {
-	repo      ProductRepo
-	stockRepo StockRepo
-	log       *log.Helper
+	repo            ProductRepo
+	stockRepo       StockRepo
+	specGroupRepo   SpecGroupRepo
+	skuRepo         SkuRepo
+	log             *log.Helper
 }
 
-func NewProductUseCase(repo ProductRepo, stockRepo StockRepo, logger log.Logger) *ProductUseCase {
-	return &ProductUseCase{repo: repo, stockRepo: stockRepo, log: log.NewHelper(logger)}
+// NewProductUseCase 创建商品用例
+func NewProductUseCase(repo ProductRepo, stockRepo StockRepo, specGroupRepo SpecGroupRepo, skuRepo SkuRepo, logger log.Logger) *ProductUseCase {
+	return &ProductUseCase{repo: repo, stockRepo: stockRepo, specGroupRepo: specGroupRepo, skuRepo: skuRepo, log: log.NewHelper(logger)}
 }
 
+// CreateProduct 创建商品（含规格组和SKU）
 func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error {
 	if err := uc.repo.CreateProduct(ctx, in); err != nil {
 		return v1.ErrorCreateProductFailed("create product failed")
 	}
-	in.InitStock(0)
-	// 创建商品后初始化库存
-	if err := uc.stockRepo.CreateStock(ctx, in.Stock); err != nil {
+	// 创建规格组
+	if len(in.SpecGroups) > 0 {
+		if err := uc.specGroupRepo.CreateSpecGroups(ctx, in.ID, in.SpecGroups); err != nil {
+			return err
+		}
+	}
+	// 创建SKU
+	if len(in.Skus) > 0 {
+		for _, sku := range in.Skus {
+			sku.ProductID = in.ID
+		}
+		if err := uc.skuRepo.CreateSkus(ctx, in.Skus); err != nil {
+			return err
+		}
+	}
+	// 初始化库存（传统库存方案保留）
+	stock := &Stock{
+		ProductID: in.ID,
+		Total:     0,
+		Available: 0,
+	}
+	if err := uc.stockRepo.CreateStock(ctx, stock); err != nil {
 		return v1.ErrorCreateStockFailed("create stock failed")
 	}
 	return nil
 }
 
+// UpdateProduct 更新商品（含规格组和SKU的替换）
 func (uc *ProductUseCase) UpdateProduct(ctx context.Context, in *Product) error {
-	return uc.repo.UpdateProduct(ctx, in)
+	if err := uc.repo.UpdateProduct(ctx, in); err != nil {
+		return err
+	}
+	// 替换规格组（先删后插）
+	if len(in.SpecGroups) > 0 {
+		if err := uc.specGroupRepo.ReplaceSpecGroups(ctx, in.ID, in.SpecGroups); err != nil {
+			return err
+		}
+	}
+	// 替换SKU（先删后插）
+	if len(in.Skus) > 0 {
+		for _, sku := range in.Skus {
+			sku.ProductID = in.ID
+		}
+		if err := uc.skuRepo.ReplaceSkus(ctx, in.ID, in.Skus); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
+// DeleteProduct 删除商品
+func (uc *ProductUseCase) DeleteProduct(ctx context.Context, productID int64) error {
+	// 先删除关联的规格组和SKU
+	_ = uc.specGroupRepo.DeleteSpecGroupsByProductID(ctx, productID)
+	_ = uc.skuRepo.DeleteSkusByProductID(ctx, productID)
+	return uc.repo.DeleteProduct(ctx, productID)
+}
+
+// GetProduct 获取商品详情
 func (uc *ProductUseCase) GetProduct(ctx context.Context, productID int64) (*Product, error) {
-	return uc.repo.GetProduct(ctx, productID)
+	product, err := uc.repo.GetProduct(ctx, productID)
+	if err != nil {
+		return nil, err
+	}
+	// 加载规格组和SKU
+	specGroups, _ := uc.specGroupRepo.GetSpecGroupsByProductID(ctx, productID)
+	skus, _ := uc.skuRepo.GetSkusByProductID(ctx, productID)
+	product.SpecGroups = specGroups
+	product.Skus = skus
+	return product, nil
+}
+
+// ListProduct 获取商品列表
+func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*Product, int32, error) {
+	products, total, err := uc.repo.ListProduct(ctx, page, pageSize, keyword, category, status)
+	if err != nil {
+		return nil, 0, err
+	}
+	// 加载每个商品的规格组和SKU
+	for _, p := range products {
+		specGroups, _ := uc.specGroupRepo.GetSpecGroupsByProductID(ctx, p.ID)
+		skus, _ := uc.skuRepo.GetSkusByProductID(ctx, p.ID)
+		p.SpecGroups = specGroups
+		p.Skus = skus
+	}
+	return products, total, nil
 }

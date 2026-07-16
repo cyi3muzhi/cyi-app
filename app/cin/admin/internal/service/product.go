@@ -15,17 +15,7 @@ func (s *AdminService) ListProduct(ctx context.Context, req *adminv1.ListProduct
 	}
 	replyItems := make([]*adminv1.ProductItem, 0, len(items))
 	for _, item := range items {
-		replyItems = append(replyItems, &adminv1.ProductItem{
-			Id:       item.ID,
-			Name:     item.Name,
-			Category: item.Category,
-			Price:    item.Price,
-			Stock:    item.Stock,
-			Sales:    item.Sales,
-			Status:   item.Status,
-			Image:    item.Image,
-			Sku:      item.SKU,
-		})
+		replyItems = append(replyItems, bizToAdminProtoProduct(item))
 	}
 	return &adminv1.ListProductReply{
 		Items: replyItems,
@@ -43,6 +33,8 @@ func (s *AdminService) CreateProduct(ctx context.Context, req *adminv1.CreatePro
 		Image:       req.Image,
 		SKU:         req.Sku,
 		Description: req.Description,
+		Specs:       adminProtoToBizSpecGroups(req.Specs),
+		Skus:        adminProtoToBizSkus(req.Skus),
 	})
 	if err != nil {
 		return nil, err
@@ -64,6 +56,8 @@ func (s *AdminService) UpdateProduct(ctx context.Context, req *adminv1.UpdatePro
 		SKU:         req.Sku,
 		Status:      req.Status,
 		Description: req.Description,
+		Specs:       adminProtoToBizSpecGroups(req.Specs),
+		Skus:        adminProtoToBizSkus(req.Skus),
 	})
 	if err != nil {
 		return nil, err
@@ -91,17 +85,7 @@ func (s *AdminService) GetProduct(ctx context.Context, req *adminv1.GetProductRe
 		return nil, err
 	}
 	return &adminv1.GetProductReply{
-		Product: &adminv1.ProductItem{
-			Id:       product.ID,
-			Name:     product.Name,
-			Category: product.Category,
-			Price:    product.Price,
-			Stock:    product.Stock,
-			Sales:    product.Sales,
-			Status:   product.Status,
-			Image:    product.Image,
-			Sku:      product.SKU,
-		},
+		Product: bizToAdminProtoProduct(product),
 	}, nil
 }
 
@@ -115,4 +99,91 @@ func (s *AdminService) BatchOperation(ctx context.Context, req *adminv1.BatchOpe
 		Success:       true,
 		AffectedCount: affected,
 	}, nil
+}
+
+// bizToAdminProtoProduct 将 biz Product 转换为 admin proto ProductItem
+func bizToAdminProtoProduct(product *biz.Product) *adminv1.ProductItem {
+	return &adminv1.ProductItem{
+		Id:       product.ID,
+		Name:     product.Name,
+		Category: product.Category,
+		Price:    product.Price,
+		Stock:    product.Stock,
+		Sales:    product.Sales,
+		Status:   product.Status,
+		Image:    product.Image,
+		Sku:      product.SKU,
+		Specs:    bizToAdminProtoSpecGroups(product.Specs),
+		Skus:     bizToAdminProtoSkus(product.Skus),
+	}
+}
+
+// bizToAdminProtoSpecGroups 将 biz SpecGroup 列表转换为 admin proto SpecGroupItem 列表
+func bizToAdminProtoSpecGroups(specs []*biz.SpecGroup) []*adminv1.SpecGroupItem {
+	if len(specs) == 0 {
+		return nil
+	}
+	result := make([]*adminv1.SpecGroupItem, 0, len(specs))
+	for _, s := range specs {
+		result = append(result, &adminv1.SpecGroupItem{
+			Id:     s.ID,
+			Name:   s.Name,
+			Values: s.Values,
+		})
+	}
+	return result
+}
+
+// bizToAdminProtoSkus 将 biz SkuItem 列表转换为 admin proto SkuItem 列表
+func bizToAdminProtoSkus(skus []*biz.SkuItem) []*adminv1.SkuItem {
+	if len(skus) == 0 {
+		return nil
+	}
+	result := make([]*adminv1.SkuItem, 0, len(skus))
+	for _, s := range skus {
+		result = append(result, &adminv1.SkuItem{
+			Id:      s.ID,
+			SkuCode: s.SkuCode,
+			Price:   s.Price,
+			Stock:   s.Stock,
+			Sales:   s.Sales,
+			Spec:    s.Spec,
+		})
+	}
+	return result
+}
+
+// adminProtoToBizSpecGroups 将 admin proto SpecGroupItem 列表转换为 biz SpecGroup 列表
+func adminProtoToBizSpecGroups(specs []*adminv1.SpecGroupItem) []*biz.SpecGroup {
+	if len(specs) == 0 {
+		return nil
+	}
+	result := make([]*biz.SpecGroup, 0, len(specs))
+	for _, s := range specs {
+		result = append(result, &biz.SpecGroup{
+			ID:     s.Id,
+			Name:   s.Name,
+			Values: s.Values,
+		})
+	}
+	return result
+}
+
+// adminProtoToBizSkus 将 admin proto SkuItem 列表转换为 biz SkuItem 列表
+func adminProtoToBizSkus(skus []*adminv1.SkuItem) []*biz.SkuItem {
+	if len(skus) == 0 {
+		return nil
+	}
+	result := make([]*biz.SkuItem, 0, len(skus))
+	for _, s := range skus {
+		result = append(result, &biz.SkuItem{
+			ID:      s.Id,
+			SkuCode: s.SkuCode,
+			Price:   s.Price,
+			Stock:   s.Stock,
+			Sales:   s.Sales,
+			Spec:    s.Spec,
+		})
+	}
+	return result
 }

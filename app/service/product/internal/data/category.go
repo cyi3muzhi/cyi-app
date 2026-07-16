@@ -88,12 +88,34 @@ func (r *categoryRepo) UpdateCategory(ctx context.Context, in *biz.Category) err
 	return err
 }
 
-// DeleteCategory 删除分类
+// DeleteCategory 删除分类（级联删除所有子分类，防止产生孤儿数据）
 func (r *categoryRepo) DeleteCategory(ctx context.Context, id int64) error {
+	// 递归收集所有需要删除的分类 ID
+	ids := []int64{id}
+	if err := r.collectChildIDs(ctx, id, &ids); err != nil {
+		return err
+	}
 	_, err := curd.Category.WithContext(ctx).
-		Where(curd.Category.ID.Eq(id)).
+		Where(curd.Category.ID.In(ids...)).
 		Delete()
 	return err
+}
+
+// collectChildIDs 递归收集指定父分类下所有子分类 ID
+func (r *categoryRepo) collectChildIDs(ctx context.Context, parentID int64, ids *[]int64) error {
+	children, err := curd.Category.WithContext(ctx).
+		Where(curd.Category.ParentID.Eq(parentID)).
+		Find()
+	if err != nil {
+		return err
+	}
+	for _, child := range children {
+		*ids = append(*ids, child.ID)
+		if err := r.collectChildIDs(ctx, child.ID, ids); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // ListChildCategories 获取直接子分类列表
@@ -143,8 +165,16 @@ func (r *categoryRepo) ToggleCategoryShowcase(ctx context.Context, id int64, sho
 func (r *categoryRepo) BatchOperation(ctx context.Context, action string, ids []int64) (int32, error) {
 	switch action {
 	case "delete":
+		// 级联收集所有子分类 ID，防止产生孤儿数据
+		allIDs := make([]int64, 0, len(ids)*2)
+		for _, id := range ids {
+			allIDs = append(allIDs, id)
+			if err := r.collectChildIDs(ctx, id, &allIDs); err != nil {
+				return 0, err
+			}
+		}
 		result, err := curd.Category.WithContext(ctx).
-			Where(curd.Category.ID.In(ids...)).
+			Where(curd.Category.ID.In(allIDs...)).
 			Delete()
 		if err != nil {
 			return 0, err

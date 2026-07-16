@@ -373,7 +373,8 @@ onMounted(() => { loadTree() })
 .table-empty .empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
 .table-empty .empty-text { font-size: 0.9375rem; font-weight: 600; color: #64748b; margin-bottom: 0.25rem; }
 .table-empty .empty-hint { font-size: 0.75rem; color: #94a3b8; }
-.cat-name { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; }
+.cat-name { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; min-width: 0; }
+.cat-name > span:nth-child(2) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cat-icon {
   width: 2rem;
   height: 2rem;
@@ -394,6 +395,7 @@ onMounted(() => { loadTree() })
   border-radius: 999px;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .child-badge:hover { background: rgba(99,102,241,0.15); }
 .slug-text { font-size: 0.75rem; color: #94a3b8; background: #f8fafc; padding: 0.125rem 0.5rem; border-radius: 4px; }

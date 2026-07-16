@@ -18,6 +18,25 @@ type Product struct {
 	Image       string
 	SKU         string
 	Description string
+	Specs       []*SpecGroup // 规格组列表
+	Skus        []*SkuItem   // SKU 列表
+}
+
+// SpecGroup 规格组领域模型
+type SpecGroup struct {
+	ID     int64
+	Name   string
+	Values []string
+}
+
+// SkuItem SKU 领域模型
+type SkuItem struct {
+	ID      int64
+	SkuCode string
+	Price   int64
+	Stock   int32
+	Sales   int32
+	Spec    map[string]string
 }
 
 // ProductRepo 商品数据仓库接口

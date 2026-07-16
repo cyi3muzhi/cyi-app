@@ -7,4 +7,6 @@ var ProviderSet = wire.NewSet(
 	NewProductUseCase,
 	NewStockUseCase,
 	NewCategoryUseCase,
+	NewSpecGroupUseCase,
+	NewSkuUseCase,
 )

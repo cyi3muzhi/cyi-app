@@ -3,6 +3,7 @@ package service
 import (
 	adminv1 "cyi-app/api/cin/admin/v1"
 	"cyi-app/app/cin/admin/internal/biz"
+	"cyi-app/app/cin/admin/internal/data"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -25,6 +26,7 @@ type AdminService struct {
 	adminv1.UnimplementedAdminRoleServer
 	adminv1.UnimplementedStaffServer
 	adminv1.UnimplementedAdminCategoryServer
+	adminv1.UnimplementedUploadServer
 	log  *log.Helper
 	dc   *biz.DashboardUseCase
 	pc   *biz.ProductUseCase
@@ -32,10 +34,11 @@ type AdminService struct {
 	rc   *biz.RoleUseCase
 	sc   *biz.StaffUseCase
 	cc   *biz.CategoryUseCase
+	ur   *data.UploadRepo
 }
 
 // NewAdminService 创建 AdminService
-func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.AuthUseCase, rc *biz.RoleUseCase, sc *biz.StaffUseCase, cc *biz.CategoryUseCase, logger log.Logger) *AdminService {
+func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.AuthUseCase, rc *biz.RoleUseCase, sc *biz.StaffUseCase, cc *biz.CategoryUseCase, ur *data.UploadRepo, logger log.Logger) *AdminService {
 	return &AdminService{
 		log: log.NewHelper(logger),
 		dc:  dc,
@@ -44,5 +47,6 @@ func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.A
 		rc:  rc,
 		sc:  sc,
 		cc:  cc,
+		ur:  ur,
 	}
 }

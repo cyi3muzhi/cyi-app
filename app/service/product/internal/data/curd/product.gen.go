@@ -32,6 +32,11 @@ func newProduct(db *gorm.DB) product {
 	_product.Description = field.NewString(tableName, "description")
 	_product.Price = field.NewInt64(tableName, "price")
 	_product.Status = field.NewInt32(tableName, "status")
+	_product.Category = field.NewString(tableName, "category")
+	_product.Image = field.NewString(tableName, "image")
+	_product.Sku = field.NewString(tableName, "sku")
+	_product.Stock = field.NewInt32(tableName, "stock")
+	_product.Sales = field.NewInt32(tableName, "sales")
 
 	_product.fillFieldMap()
 
@@ -50,6 +55,11 @@ type product struct {
 	Description field.String
 	Price       field.Int64
 	Status      field.Int32
+	Category    field.String
+	Image       field.String
+	Sku         field.String
+	Stock       field.Int32
+	Sales       field.Int32
 
 	fieldMap map[string]field.Expr
 }
@@ -74,6 +84,11 @@ func (p *product) updateTableName(table string) *product {
 	p.Description = field.NewString(table, "description")
 	p.Price = field.NewInt64(table, "price")
 	p.Status = field.NewInt32(table, "status")
+	p.Category = field.NewString(table, "category")
+	p.Image = field.NewString(table, "image")
+	p.Sku = field.NewString(table, "sku")
+	p.Stock = field.NewInt32(table, "stock")
+	p.Sales = field.NewInt32(table, "sales")
 
 	p.fillFieldMap()
 
@@ -90,7 +105,7 @@ func (p *product) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (p *product) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 8)
+	p.fieldMap = make(map[string]field.Expr, 13)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["create_time"] = p.CreateTime
 	p.fieldMap["update_time"] = p.UpdateTime
@@ -99,6 +114,11 @@ func (p *product) fillFieldMap() {
 	p.fieldMap["description"] = p.Description
 	p.fieldMap["price"] = p.Price
 	p.fieldMap["status"] = p.Status
+	p.fieldMap["category"] = p.Category
+	p.fieldMap["image"] = p.Image
+	p.fieldMap["sku"] = p.Sku
+	p.fieldMap["stock"] = p.Stock
+	p.fieldMap["sales"] = p.Sales
 }
 
 func (p product) clone(db *gorm.DB) product {

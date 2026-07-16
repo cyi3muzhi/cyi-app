@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <!-- 个人信息页面 - 包含概览卡片、基本信息表单、安全设置、角色权限 -->
   <div class="profile">
     <!-- 面包屑导航 -->
@@ -192,7 +192,7 @@
             <el-icon class="section-icon"><UserFilled /></el-icon>
             <span>角色与权限</span>
           </div>
-          <el-tag size="small" effect="dark" color="var(--shop-primary)">超级管理员</el-tag>
+          <el-tag size="small" effect="dark" :color="roleColor" class="color-tag">{{ roleDisplayName }}</el-tag>
         </div>
       </template>
 
@@ -201,25 +201,13 @@
       </p>
 
       <div class="perm-grid">
-        <div class="perm-item" v-for="perm in permissions" :key="perm.label">
-          <div class="perm-check">
-            <svg
-              class="perm-check-icon"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M20 6 9 17l-5-5" />
-            </svg>
+        <div class="perm-card" v-for="mod in permissions" :key="mod.key">
+          <div class="perm-card-header">
+            <el-icon class="perm-card-icon"><Check /></el-icon>
+            <span class="perm-card-title">{{ mod.title }}</span>
           </div>
-          <div class="perm-info">
-            <span class="perm-label">{{ perm.label }}</span>
-            <span class="perm-desc">{{ perm.desc }}</span>
+          <div class="perm-card-items">
+            <el-tag size="small" type="success" effect="plain" v-for="item in mod.items" :key="item.key">{{ item.label }}</el-tag>
           </div>
         </div>
       </div>
@@ -236,11 +224,13 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Message, Iphone, Clock, Timer,
-  EditPen, Lock, UserFilled
+  EditPen, Lock, UserFilled, Check
 } from '@element-plus/icons-vue'
 import { useAppStore } from '../../store/app'
 import { getAdminInfo, changeAvatar, updateAdminInfo } from '../../api/auth'
 import { getRoleNameMap } from '../../api/staff'
+import { getMyPermissions } from '../../api/auth'
+import { listAllPermissions } from '../../api/role'
 
 /** 角色名称映射 */
 const roleNameMap = ref<Record<string, string>>({})
@@ -335,6 +325,8 @@ onMounted(async () => {
   } catch {
     // 忽略
   }
+  // 加载当前角色权限
+  await loadMyPermissions()
 })
 
 /**
@@ -370,13 +362,38 @@ const security = reactive({
 })
 
 /** 角色权限列表 */
-const permissions = [
-  { label: '商品管理', desc: '商品的创建、编辑、上下架及分类管理' },
-  { label: '订单管理', desc: '订单的查询、编辑、退款及物流跟踪' },
-  { label: '用户管理', desc: '用户信息的查看、编辑及账户状态管理' },
-  { label: '系统设置', desc: '系统基本配置、安全策略及通知管理' },
-  { label: '数据查看', desc: '运营数据、财务报表的查看与导出' }
-]
+interface PermModuleInfo {
+  key: string
+  title: string
+  items: { key: string; label: string }[]
+}
+
+/** 当前角色拥有的权限模块列表 */
+const permissions = ref<PermModuleInfo[]>([])
+
+/** 加载当前角色权限 */
+async function loadMyPermissions() {
+  try {
+    const [permRes, modRes] = await Promise.all([
+      getMyPermissions(),
+      listAllPermissions()
+    ])
+    const userPerms = permRes.permissions || {}
+    const moduleDefs = modRes.modules || []
+    const list: PermModuleInfo[] = []
+    for (const mod of moduleDefs) {
+      const modPerms = userPerms[mod.key]?.values
+      if (!modPerms) continue
+      // 只保留有权限的具体项
+      const enabledItems = mod.items.filter(item => modPerms[item.key])
+      if (enabledItems.length === 0) continue
+      list.push({ key: mod.key, title: mod.title, items: enabledItems })
+    }
+    permissions.value = list
+  } catch {
+    // 加载失败不显示
+  }
+}
 
 /**
  * 处理更换头像 - 触发文件选择
@@ -779,54 +796,45 @@ function handleViewActivity() {
   gap: 0.75rem;
 }
 
-.perm-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.875rem 1rem;
+.perm-card {
+  padding: 1rem;
   border: 1px solid var(--shop-border);
   border-radius: var(--shop-radius);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease;
 }
 
-.perm-item:hover {
+.perm-card:hover {
   border-color: var(--shop-primary);
-  box-shadow: 0 2px 8px rgba(79, 110, 247, 0.08);
 }
 
-.perm-check {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
+.perm-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.perm-card-icon {
+  width: 18px;
+  height: 18px;
   border-radius: 999px;
   background: #e8f5e9;
+  color: #2e7d32;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 1px;
 }
 
-.perm-check-icon {
-  color: #2e7d32;
-}
-
-.perm-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.perm-label {
+.perm-card-title {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--shop-foreground);
-  display: block;
-  margin-bottom: 2px;
 }
 
-.perm-desc {
-  font-size: 0.75rem;
-  color: var(--shop-muted-foreground);
-  line-height: 1.4;
+.perm-card-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
 }
 
 /* ---- 响应式 ---- */

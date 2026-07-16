@@ -52,10 +52,10 @@ func (r *productRepo) GetProduct(ctx context.Context, productID int64) (*biz.Pro
 		return nil, err
 	}
 	return &biz.Product{
-		ID:          resp.ProductId,
-		Name:        resp.Name,
-		Description: resp.Description,
-		Price:       resp.Price,
-		Status:      resp.Status,
+		ID:          resp.Product.ProductId,
+		Name:        resp.Product.Name,
+		Description: resp.Product.Description,
+		Price:       resp.Product.Price,
+		Status:      resp.Product.Status,
 	}, nil
 }

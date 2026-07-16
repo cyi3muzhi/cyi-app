@@ -19,5 +19,6 @@ func NewGRPCServer(s *ts.GrpcServer, adminService *service.AdminService) *grpc.S
 	adminv1.RegisterAdminRoleServer(s.GrpcServer, adminService)
 	adminv1.RegisterStaffServer(s.GrpcServer, adminService)
 	adminv1.RegisterAdminCategoryServer(s.GrpcServer, adminService)
+	adminv1.RegisterUploadServer(s.GrpcServer, adminService)
 	return s.GrpcServer
 }

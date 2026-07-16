@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+option java_multiple_files = true;
+option java_package = "api.cin.admin.v1";
+
+import "google/api/annotations.proto";
+
+// 管理后台 - 文件上传服务
+service Upload {
+  // 获取上传凭证（前端直传 OSS）
+  rpc GetUploadToken (GetUploadTokenRequest) returns (GetUploadTokenReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/upload/token"
+      body: "*"
+    };
+  }
+}
+
+message GetUploadTokenRequest {
+  string filename = 1;  // 原始文件名（含扩展名）
+  string directory = 2; // 上传目录，如 "product"、"avatar"
+}
+
+message GetUploadTokenReply {
+  string upload_url = 1;  // 预签名 PUT URL（前端直接 PUT 文件到此地址）
+  string object_key = 2;  // 对象存储路径（提交表单时用此字段）
+  string public_url = 3;  // 文件公开访问 URL（上传完成后可直接使用）
+}

@@ -14,6 +14,12 @@ type Product struct {
 	Price int64 `json:"price" gorm:"not null;default:0;comment:价格，单位分"`
 	// 状态 0-下架 1-上架
 	Status int32 `json:"status" gorm:"not null;default:1;comment:状态 0-下架 1-上架"`
+	// 商品分类
+	Category string `json:"category" gorm:"type:varchar(64);default:'';comment:商品分类"`
+	// 商品图片
+	Image string `json:"image" gorm:"type:varchar(256);default:'';comment:商品图片"`
+	// 销量
+	Sales int32 `json:"sales" gorm:"not null;default:0;comment:销量"`
 }
 
 type IProduct interface {

@@ -24,6 +24,8 @@ var ProviderSet = wire.NewSet(
 	NewProductRepo,
 	NewStockRepo,
 	NewCategoryRepo,
+	NewSpecGroupRepo,
+	NewSkuRepo,
 	NewData,
 	NewDB,
 	NewRedisClient,
@@ -54,7 +56,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-	if err := db.AutoMigrate(&mod.Product{}, &mod.Stock{}, &mod.Category{}); err != nil {
+	if err := db.AutoMigrate(&mod.Product{}, &mod.Stock{}, &mod.Category{}, &mod.SpecGroup{}, &mod.SpecValue{}, &mod.Sku{}); err != nil {
 		panic(err)
 	}
 
@@ -83,10 +85,13 @@ func generateCode(db *gorm.DB) {
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery,
 	})
 	g.UseDB(db)
-	g.ApplyBasic(&mod.Product{}, &mod.Stock{}, &mod.Category{})
+	g.ApplyBasic(&mod.Product{}, &mod.Stock{}, &mod.Category{}, &mod.SpecGroup{}, &mod.SpecValue{}, &mod.Sku{})
 	g.ApplyInterface(func(mod.IProduct) {}, mod.Product{})
 	g.ApplyInterface(func(mod.IStock) {}, mod.Stock{})
 	g.ApplyInterface(func(mod.ICategory) {}, mod.Category{})
+	g.ApplyInterface(func(mod.ISpecGroup) {}, mod.SpecGroup{})
+	g.ApplyInterface(func(mod.ISpecValue) {}, mod.SpecValue{})
+	g.ApplyInterface(func(mod.ISku) {}, mod.Sku{})
 	g.Execute()
 }
 

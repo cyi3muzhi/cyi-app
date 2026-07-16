@@ -6,6 +6,23 @@ option go_package = "cyi-app/api/service/product/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.service.product.v1";
 
+// 规格组信息（如颜色、尺码）
+message SpecGroupInfo {
+	int64 id = 1;           // 规格组ID
+	string name = 2;        // 规格名称（如颜色、尺码）
+	repeated string values = 3; // 规格值列表（如红色、蓝色）
+}
+
+// SKU 信息
+message SkuInfo {
+	int64 id = 1;           // SKU ID
+	string sku_code = 2;    // SKU编码
+	int64 price = 3;        // 价格（单位：分）
+	int32 stock = 4;        // 库存
+	int32 sales = 5;        // 销量
+	map<string, string> spec = 6; // 规格描述，如 {"颜色":"红色","尺码":"XL"}
+}
+
 service Product {
 	rpc CreateProduct (CreateProductRequest) returns (CreateProductReply);
 	rpc UpdateProduct (UpdateProductRequest) returns (UpdateProductReply);
@@ -14,10 +31,29 @@ service Product {
 	rpc ListProduct (ListProductRequest) returns (ListProductReply);
 }
 
+// 商品信息（完整字段）
+message ProductItem {
+	int64 product_id = 1;   // 商品ID
+	string name = 2;        // 商品名称
+	string description = 3;  // 商品描述
+	int64 price = 4;        // 价格（单位：分）
+	int32 status = 5;       // 状态 0-下架 1-上架
+	string category = 6;    // 商品分类
+	string image = 7;       // 商品图片
+	int32 sales = 8;        // 销量
+	repeated SpecGroupInfo specs = 9;  // 规格组列表
+	repeated SkuInfo skus = 10;        // SKU列表
+}
+
 message CreateProductRequest {
 	string name = 1;        // 商品名称
 	string description = 2;  // 商品描述
 	int64 price = 3;        // 价格（单位：分）
+	string category = 4;    // 商品分类
+	string image = 5;       // 商品图片
+	int32 sales = 6;        // 销量
+	repeated SpecGroupInfo specs = 7;  // 规格组列表
+	repeated SkuInfo skus = 8;         // SKU列表
 }
 
 message CreateProductReply {
@@ -29,26 +65,43 @@ message UpdateProductRequest {
 	string name = 2;        // 商品名称
 	string description = 3;  // 商品描述
 	int64 price = 4;        // 价格（单位：分）
+	string category = 5;    // 商品分类
+	string image = 6;       // 商品图片
+	int32 sales = 7;        // 销量
+	int32 status = 8;       // 状态 0-下架 1-上架
+	repeated SpecGroupInfo specs = 9;  // 规格组列表
+	repeated SkuInfo skus = 10;        // SKU列表
 }
 
-message UpdateProductReply {}
+message UpdateProductReply {
+	bool success = 1;       // 是否成功
+}
 
-message DeleteProductRequest {}
+message DeleteProductRequest {
+	int64 product_id = 1;   // 商品ID
+}
 
-message DeleteProductReply {}
+message DeleteProductReply {
+	bool success = 1;       // 是否成功
+}
 
 message GetProductRequest {
 	int64 product_id = 1;   // 商品ID
 }
 
 message GetProductReply {
-	int64 product_id = 1;   // 商品ID
-	string name = 2;        // 商品名称
-	string description = 3;  // 商品描述
-	int64 price = 4;        // 价格（单位：分）
-	int32 status = 5;       // 状态 0-下架 1-上架
+	ProductItem product = 1; // 商品详情（含 specs 和 skus）
 }
 
-message ListProductRequest {}
+message ListProductRequest {
+	int32 page = 1;         // 页码（从1开始）
+	int32 page_size = 2;    // 每页条数
+	string keyword = 3;     // 关键词搜索（匹配名称/描述）
+	string category = 4;    // 分类筛选
+	string status = 5;      // 状态筛选
+}
 
-message ListProductReply {}
+message ListProductReply {
+	repeated ProductItem items = 1; // 商品列表
+	int32 total = 2;                // 总条数
+}

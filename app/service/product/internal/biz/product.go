@@ -1,22 +1,20 @@
 package biz
 
+// Product 商品业务实体
 type Product struct {
 	ID          int64
 	Name        string
 	Description string
 	Price       int64
 	Status      ProductStatus
-	Stock       *Stock
+	Category    string
+	Image       string
+	Sales       int32
+	SpecGroups  []*SpecGroup
+	Skus        []*Sku
 }
 
+// IsValid 校验商品状态是否有效
 func (p *Product) IsValid() bool {
 	return p.Status.IsValid()
-}
-// 初始化库存
-func (p *Product) InitStock(total int32) {
-	p.Stock = &Stock{
-		ProductID: p.ID,
-		Total:     total,
-		Available: total,
-	}
 }

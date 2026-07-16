@@ -65,6 +65,23 @@ message ListProductReply {
   int32 total = 2;
 }
 
+// 规格组项（管理后台用）
+message SpecGroupItem {
+  int64 id = 1;
+  string name = 2;
+  repeated string values = 3;
+}
+
+// SKU 项（管理后台用）
+message SkuItem {
+  int64 id = 1;
+  string sku_code = 2;
+  int64 price = 3;
+  int32 stock = 4;
+  int32 sales = 5;
+  map<string, string> spec = 6;
+}
+
 message ProductItem {
   int64 id = 1;
   string name = 2;
@@ -75,6 +92,8 @@ message ProductItem {
   string status = 7;
   string image = 8;
   string sku = 9;
+  repeated SpecGroupItem specs = 10;
+  repeated SkuItem skus = 11;
 }
 
 message CreateProductRequest {
@@ -85,6 +104,8 @@ message CreateProductRequest {
   string description = 5;
   string image = 6;
   string sku = 7;
+  repeated SpecGroupItem specs = 8;
+  repeated SkuItem skus = 9;
 }
 
 message CreateProductReply {
@@ -101,6 +122,8 @@ message UpdateProductRequest {
   string image = 7;
   string sku = 8;
   string status = 9;
+  repeated SpecGroupItem specs = 10;
+  repeated SkuItem skus = 11;
 }
 
 message UpdateProductReply {

@@ -929,6 +929,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.ToggleStaffStatusReply'
+    /admin/v1/upload/token:
+        post:
+            tags:
+                - Upload
+            description: 获取上传凭证（前端直传 OSS）
+            operationId: Upload_GetUploadToken
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.GetUploadTokenRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetUploadTokenReply'
     /admin/v1/users:
         get:
             tags:
@@ -1663,6 +1682,14 @@ components:
                     type: string
                 sku:
                     type: string
+                specs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.SpecGroupItem'
+                skus:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.SkuItem'
         api.cin.admin.v1.CreateRoleReply:
             type: object
             properties:
@@ -1844,6 +1871,22 @@ components:
                     type: boolean
                 systemNotification:
                     type: boolean
+        api.cin.admin.v1.GetUploadTokenReply:
+            type: object
+            properties:
+                uploadUrl:
+                    type: string
+                objectKey:
+                    type: string
+                publicUrl:
+                    type: string
+        api.cin.admin.v1.GetUploadTokenRequest:
+            type: object
+            properties:
+                filename:
+                    type: string
+                directory:
+                    type: string
         api.cin.admin.v1.GetUserReply:
             type: object
             properties:
@@ -2056,6 +2099,14 @@ components:
                     type: string
                 sku:
                     type: string
+                specs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.SpecGroupItem'
+                skus:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.SkuItem'
         api.cin.admin.v1.RevenueCategory:
             type: object
             properties:
@@ -2101,6 +2152,38 @@ components:
                     type: string
                 logisticsNo:
                     type: string
+        api.cin.admin.v1.SkuItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                skuCode:
+                    type: string
+                price:
+                    type: string
+                stock:
+                    type: integer
+                    format: int32
+                sales:
+                    type: integer
+                    format: int32
+                spec:
+                    type: object
+                    additionalProperties:
+                        type: string
+            description: SKU 项（管理后台用）
+        api.cin.admin.v1.SpecGroupItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                values:
+                    type: array
+                    items:
+                        type: string
+            description: 规格组项（管理后台用）
         api.cin.admin.v1.StaffInfo:
             type: object
             properties:
@@ -2287,6 +2370,14 @@ components:
                     type: string
                 status:
                     type: string
+                specs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.SpecGroupItem'
+                skus:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.SkuItem'
         api.cin.admin.v1.UpdateRolePermissionsReply:
             type: object
             properties:
@@ -2706,5 +2797,7 @@ tags:
       description: 管理后台 - 员工管理服务
     - name: Stock
       description: 库存服务
+    - name: Upload
+      description: 管理后台 - 文件上传服务
     - name: User
       description: 用户信息服务
