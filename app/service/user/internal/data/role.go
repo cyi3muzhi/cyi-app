@@ -120,16 +120,27 @@ func (r *roleRepo) ListRoles(ctx context.Context) ([]*biz.RoleItem, error) {
 		meta, hasMeta := metaMap[name]
 		displayName := name
 		displayDesc := name + "角色"
+		displayColor := ""
 		var createdAt string
 		if hasMeta {
 			displayName = meta.Name
 			displayDesc = meta.Desc
+			displayColor = meta.Color
 			createdAt = meta.CreatedAt.Format("2006-01-02")
+		}
+		// 超级管理员默认使用红色标签
+		if displayColor == "" {
+			if isSystem {
+				displayColor = "#F56C6C"
+			} else {
+				displayColor = "#409EFF"
+			}
 		}
 		roles = append(roles, &biz.RoleItem{
 			Name:      displayName,
 			Slug:      name,
 			Desc:      displayDesc,
+			Color:     displayColor,
 			Users:     userCount[name],
 			Enabled:   true,
 			IsSystem:  isSystem,
@@ -159,20 +170,24 @@ func (r *roleRepo) ListRoles(ctx context.Context) ([]*biz.RoleItem, error) {
 // 注意：新角色默认不分配任何策略，必须通过 UpdateRolePermissions 显式授予权限。
 // 之前的实现会在创建时自动添加 (slug, *, *) 全通配策略，casbin keyMatch
 // 会将 * 匹配到任何 operation 路径，导致新角色瞬间获得所有受保护接口权限。
-func (r *roleRepo) CreateRole(ctx context.Context, name, slug, desc string) error {
+func (r *roleRepo) CreateRole(ctx context.Context, name, slug, desc, color string) error {
 	if slug == "super_admin" {
 		return fmt.Errorf("禁止创建超级管理员角色")
 	}
+	// 如果未指定颜色，使用默认蓝色
+	if color == "" {
+		color = "#409EFF"
+	}
 	// 只保存角色元数据，权限由 UpdateRolePermissions 显式分配
-	return r.db.Create(&mod.RoleMeta{Slug: slug, Name: name, Desc: desc}).Error
+	return r.db.Create(&mod.RoleMeta{Slug: slug, Name: name, Desc: desc, Color: color}).Error
 }
 
 // UpdateRole 更新角色
-func (r *roleRepo) UpdateRole(ctx context.Context, slug, name, desc string) error {
+func (r *roleRepo) UpdateRole(ctx context.Context, slug, name, desc, color string) error {
 	if slug == "super_admin" {
 		return fmt.Errorf("禁止修改超级管理员角色")
 	}
-	return r.db.Where("slug = ?", slug).Assign(mod.RoleMeta{Name: name, Desc: desc}).
+	return r.db.Where("slug = ?", slug).Assign(mod.RoleMeta{Name: name, Desc: desc, Color: color}).
 		FirstOrCreate(&mod.RoleMeta{Slug: slug}).Error
 }
 

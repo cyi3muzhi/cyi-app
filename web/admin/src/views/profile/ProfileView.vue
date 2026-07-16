@@ -28,7 +28,7 @@
         <div class="overview-info">
           <div class="info-top">
             <h2 class="user-name">{{ basicForm.realName }}</h2>
-            <el-tag class="role-badge" size="small" type="primary" effect="dark">{{ roleDisplayName }}</el-tag>
+            <el-tag class="role-badge color-tag" size="small" :color="roleColor" effect="dark">{{ roleDisplayName }}</el-tag>
           </div>
           <p class="user-bio">{{ basicForm.bio }}</p>
         </div>
@@ -244,11 +244,19 @@ import { getRoleNameMap } from '../../api/staff'
 
 /** 角色名称映射 */
 const roleNameMap = ref<Record<string, string>>({})
+/** 角色颜色映射 */
+const roleNameMapColor = ref<Record<string, string>>({})
 
 /** 角色显示名 */
 const roleDisplayName = computed(() => {
   const slug = store.adminInfo?.role || ''
   return roleNameMap.value[slug] || slug
+})
+
+/** 角色标签颜色 */
+const roleColor = computed(() => {
+  const slug = store.adminInfo?.role || ''
+  return roleNameMapColor.value[slug] || '#409EFF'
 })
 
 /** 基本信息表单引用 */
@@ -313,6 +321,17 @@ onMounted(async () => {
   try {
     const res = await getRoleNameMap()
     roleNameMap.value = res.items || {}
+  } catch {
+    // 忽略
+  }
+  // 加载角色颜色映射
+  try {
+    const roleRes = await import('../../api/role').then(m => m.listRoles())
+    const colorMap: Record<string, string> = {}
+    for (const r of roleRes.items || []) {
+      if (r.color) colorMap[r.slug || r.name] = r.color
+    }
+    roleNameMapColor.value = colorMap
   } catch {
     // 忽略
   }
@@ -508,6 +527,10 @@ function handleViewActivity() {
 </script>
 
 <style scoped>
+/* 自定义颜色标签去掉 Element Plus 默认蓝色边框 */
+.color-tag {
+  border: none !important;
+}
 /* ---- 页面容器 ---- */
 .profile {
   width: 100%;

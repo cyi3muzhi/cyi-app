@@ -9,8 +9,8 @@ import (
 // RoleRepo 角色仓库接口
 type RoleRepo interface {
 	ListRoles(ctx context.Context) ([]*RoleItem, error)
-	CreateRole(ctx context.Context, name, slug, desc string) error
-	UpdateRole(ctx context.Context, slug, name, desc string) error
+	CreateRole(ctx context.Context, name, slug, desc, color string) error
+	UpdateRole(ctx context.Context, slug, name, desc, color string) error
 	DeleteRole(ctx context.Context, slug string) error
 	GetRolePermissions(ctx context.Context, role string) (map[string]map[string]bool, error)
 	UpdateRolePermissions(ctx context.Context, role string, permissions map[string]map[string]bool) error
@@ -38,6 +38,7 @@ type RoleItem struct {
 	Name      string `json:"name"`
 	Slug      string `json:"slug"`
 	Desc      string `json:"desc"`
+	Color     string `json:"color"`
 	Users     int    `json:"users"`
 	Enabled   bool   `json:"enabled"`
 	IsSystem  bool   `json:"isSystem"`
@@ -61,12 +62,12 @@ func (uc *RoleUseCase) ListRoles(ctx context.Context) ([]*RoleItem, error) {
 	return uc.repo.ListRoles(ctx)
 }
 
-func (uc *RoleUseCase) CreateRole(ctx context.Context, name, slug, desc string) error {
-	return uc.repo.CreateRole(ctx, name, slug, desc)
+func (uc *RoleUseCase) CreateRole(ctx context.Context, name, slug, desc, color string) error {
+	return uc.repo.CreateRole(ctx, name, slug, desc, color)
 }
 
-func (uc *RoleUseCase) UpdateRole(ctx context.Context, slug, name, desc string) error {
-	return uc.repo.UpdateRole(ctx, slug, name, desc)
+func (uc *RoleUseCase) UpdateRole(ctx context.Context, slug, name, desc, color string) error {
+	return uc.repo.UpdateRole(ctx, slug, name, desc, color)
 }
 
 func (uc *RoleUseCase) DeleteRole(ctx context.Context, slug string) error {

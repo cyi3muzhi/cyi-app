@@ -41,7 +41,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	productService := service.NewProductService(productUseCase, logger)
 	stockUseCase := biz.NewStockUseCase(stockRepo)
 	stockService := service.NewStockService(stockUseCase, logger)
-	server2 := server.NewServer(grpcServer, productService, stockService)
+	categoryRepo := data.NewCategoryRepo(dataData, logger)
+	categoryUseCase := biz.NewCategoryUseCase(categoryRepo, logger)
+	categoryService := service.NewCategoryService(categoryUseCase, logger)
+	server2 := server.NewServer(grpcServer, productService, stockService, categoryService)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, server2, registrar)
 	return app, func() {

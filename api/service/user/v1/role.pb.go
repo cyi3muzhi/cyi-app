@@ -30,6 +30,7 @@ type RoleItem struct {
 	Enabled       bool                   `protobuf:"varint,5,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	IsSystem      bool                   `protobuf:"varint,6,opt,name=is_system,json=isSystem,proto3" json:"is_system,omitempty"`
 	CreatedAt     string                 `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Color         string                 `protobuf:"bytes,8,opt,name=color,proto3" json:"color,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -109,6 +110,13 @@ func (x *RoleItem) GetIsSystem() bool {
 func (x *RoleItem) GetCreatedAt() string {
 	if x != nil {
 		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *RoleItem) GetColor() string {
+	if x != nil {
+		return x.Color
 	}
 	return ""
 }
@@ -354,6 +362,7 @@ type CreateRoleRequest struct {
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Slug          string                 `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
 	Desc          string                 `protobuf:"bytes,3,opt,name=desc,proto3" json:"desc,omitempty"`
+	Color         string                 `protobuf:"bytes,4,opt,name=color,proto3" json:"color,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -409,6 +418,13 @@ func (x *CreateRoleRequest) GetDesc() string {
 	return ""
 }
 
+func (x *CreateRoleRequest) GetColor() string {
+	if x != nil {
+		return x.Color
+	}
+	return ""
+}
+
 type CreateRoleReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
@@ -458,6 +474,7 @@ type UpdateRoleRequest struct {
 	Slug          string                 `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Desc          string                 `protobuf:"bytes,3,opt,name=desc,proto3" json:"desc,omitempty"`
+	Color         string                 `protobuf:"bytes,4,opt,name=color,proto3" json:"color,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -509,6 +526,13 @@ func (x *UpdateRoleRequest) GetName() string {
 func (x *UpdateRoleRequest) GetDesc() string {
 	if x != nil {
 		return x.Desc
+	}
+	return ""
+}
+
+func (x *UpdateRoleRequest) GetColor() string {
+	if x != nil {
+		return x.Color
 	}
 	return ""
 }
@@ -1105,7 +1129,7 @@ var File_api_service_user_v1_role_proto protoreflect.FileDescriptor
 
 const file_api_service_user_v1_role_proto_rawDesc = "" +
 	"\n" +
-	"\x1eapi/service/user/v1/role.proto\x12\x13api.service.user.v1\"\xb2\x01\n" +
+	"\x1eapi/service/user/v1/role.proto\x12\x13api.service.user.v1\"\xc8\x01\n" +
 	"\bRoleItem\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04slug\x18\x02 \x01(\tR\x04slug\x12\x12\n" +
@@ -1114,7 +1138,8 @@ const file_api_service_user_v1_role_proto_rawDesc = "" +
 	"\aenabled\x18\x05 \x01(\bR\aenabled\x12\x1b\n" +
 	"\tis_system\x18\x06 \x01(\bR\bisSystem\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\a \x01(\tR\tcreatedAt\"2\n" +
+	"created_at\x18\a \x01(\tR\tcreatedAt\x12\x14\n" +
+	"\x05color\x18\b \x01(\tR\x05color\"2\n" +
 	"\bPermItem\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05label\x18\x02 \x01(\tR\x05label\"i\n" +
@@ -1130,17 +1155,19 @@ const file_api_service_user_v1_role_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"\x12\n" +
 	"\x10ListRolesRequest\"E\n" +
 	"\x0eListRolesReply\x123\n" +
-	"\x05items\x18\x01 \x03(\v2\x1d.api.service.user.v1.RoleItemR\x05items\"O\n" +
+	"\x05items\x18\x01 \x03(\v2\x1d.api.service.user.v1.RoleItemR\x05items\"e\n" +
 	"\x11CreateRoleRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04slug\x18\x02 \x01(\tR\x04slug\x12\x12\n" +
-	"\x04desc\x18\x03 \x01(\tR\x04desc\"+\n" +
+	"\x04desc\x18\x03 \x01(\tR\x04desc\x12\x14\n" +
+	"\x05color\x18\x04 \x01(\tR\x05color\"+\n" +
 	"\x0fCreateRoleReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"O\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"e\n" +
 	"\x11UpdateRoleRequest\x12\x12\n" +
 	"\x04slug\x18\x01 \x01(\tR\x04slug\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
-	"\x04desc\x18\x03 \x01(\tR\x04desc\"+\n" +
+	"\x04desc\x18\x03 \x01(\tR\x04desc\x12\x14\n" +
+	"\x05color\x18\x04 \x01(\tR\x05color\"+\n" +
 	"\x0fUpdateRoleReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"'\n" +
 	"\x11DeleteRoleRequest\x12\x12\n" +

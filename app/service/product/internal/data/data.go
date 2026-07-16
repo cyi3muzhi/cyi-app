@@ -23,6 +23,7 @@ import (
 var ProviderSet = wire.NewSet(
 	NewProductRepo,
 	NewStockRepo,
+	NewCategoryRepo,
 	NewData,
 	NewDB,
 	NewRedisClient,
@@ -53,7 +54,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-	if err := db.AutoMigrate(&mod.Product{}, &mod.Stock{}); err != nil {
+	if err := db.AutoMigrate(&mod.Product{}, &mod.Stock{}, &mod.Category{}); err != nil {
 		panic(err)
 	}
 
@@ -82,9 +83,10 @@ func generateCode(db *gorm.DB) {
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery,
 	})
 	g.UseDB(db)
-	g.ApplyBasic(&mod.Product{}, &mod.Stock{})
+	g.ApplyBasic(&mod.Product{}, &mod.Stock{}, &mod.Category{})
 	g.ApplyInterface(func(mod.IProduct) {}, mod.Product{})
 	g.ApplyInterface(func(mod.IStock) {}, mod.Stock{})
+	g.ApplyInterface(func(mod.ICategory) {}, mod.Category{})
 	g.Execute()
 }
 

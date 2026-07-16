@@ -91,7 +91,7 @@
         </el-table-column>
         <el-table-column label="所属角色" width="140">
           <template #default="{ row }">
-            <el-tag :type="getRoleTagType(row.role)" size="small" effect="plain">{{ roleDisplayName(row.role) }}</el-tag>
+            <el-tag :color="roleColorMap[row.role] || ''" size="small" :effect="roleColorMap[row.role] ? 'dark' : 'plain'" :class="roleColorMap[row.role] ? 'color-tag' : ''">{{ roleDisplayName(row.role) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="department" label="部门" width="100" />
@@ -231,6 +231,7 @@ const onlineSet = ref<Set<number>>(new Set())
 interface RoleOption { label: string; value: string }
 const roleOptions = ref<RoleOption[]>([])
 const roleMap = ref<Record<string, string>>({}) // slug → name
+const roleColorMap = ref<Record<string, string>>({}) // slug → color
 
 async function loadRoles() {
   try {
@@ -238,14 +239,17 @@ async function loadRoles() {
     const items = res.items || []
     const options: RoleOption[] = []
     const map: Record<string, string> = {}
+    const colorMap: Record<string, string> = {}
     for (const r of items) {
       const slug = r.slug || r.name
       const name = r.name || slug
       options.push({ label: name, value: slug })
       map[slug] = name
+      if (r.color) colorMap[slug] = r.color
     }
     roleOptions.value = options
     roleMap.value = map
+    roleColorMap.value = colorMap
   } catch {
     // 加载失败时保持默认
   }
@@ -484,6 +488,10 @@ async function toggleStaff(id: number) {
 </script>
 
 <style scoped>
+/* 自定义颜色标签去掉 Element Plus 默认蓝色边框 */
+.color-tag {
+  border: none !important;
+}
 .staff-page {
   padding-bottom: 24px;
 }

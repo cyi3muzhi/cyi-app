@@ -22,9 +22,11 @@ var ProviderSet = wire.NewSet(
 	NewData,
 	NewDashboardRepo,
 	NewProductRepo,
+	NewCategoryRepo,
 	NewAuthRepo,
 	NewStaffRepo,
 	NewProductServiceClient,
+	NewCategoryServiceClient,
 	NewAdminUserServiceClient,
 	NewAdminRoleClient,
 	NewTokenValidator,
@@ -38,17 +40,18 @@ var ProviderSet = wire.NewSet(
 // Data 包含所有下游微服务的 gRPC 客户端连接
 type Data struct {
 	pc    productRpc.ProductClient
+	cc    productRpc.CategoryClient
 	auc   userRpc.AdminUserClient
 	oss   *rustfs.RustFSClient
 	redis *redis.Client
 }
 
 // NewData .
-func NewData(pc productRpc.ProductClient, auc userRpc.AdminUserClient, oss *rustfs.RustFSClient, redis *redis.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, auc userRpc.AdminUserClient, oss *rustfs.RustFSClient, redis *redis.Client, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the admin data resources")
 	}
-	return &Data{pc: pc, auc: auc, oss: oss, redis: redis}, cleanup, nil
+	return &Data{pc: pc, cc: cc, auc: auc, oss: oss, redis: redis}, cleanup, nil
 }
 
 // NewOssClient 创建 OSS 客户端

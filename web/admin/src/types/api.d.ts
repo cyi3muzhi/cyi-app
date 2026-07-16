@@ -49,6 +49,7 @@ export interface RoleItem {
   name: string
   slug: string
   desc: string
+  color?: string
   users: number
   enabled: boolean
   is_system: boolean

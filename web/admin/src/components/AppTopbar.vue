@@ -34,7 +34,7 @@
             <el-dropdown-item disabled>
               <div style="text-align: center;">
                 <div style="font-weight:600;">{{ store.adminInfo?.name || '管理员' }}</div>
-                <div style="font-size:12px;color:var(--shop-muted-foreground);">{{ roleDisplayName }}</div>
+                <el-tag size="small" :color="roleTagColor" effect="dark" class="color-tag" style="margin-top:4px;">{{ roleDisplayName }}</el-tag>
               </div>
             </el-dropdown-item>
             <el-dropdown-item divided @click="goProfile">个人信息</el-dropdown-item>
@@ -57,6 +57,7 @@ import { ArrowDown } from '@element-plus/icons-vue'
 import { useAppStore } from '../store/app'
 import { logout as logoutApi } from '../api/auth'
 import { getRoleNameMap } from '../api/staff'
+import { listRoles } from '../api/role'
 
 const route = useRoute()
 const router = useRouter()
@@ -64,10 +65,16 @@ const store = useAppStore()
 
 // 角色标识 → 显示名称映射（从角色管理 API 动态加载）
 const roleNameMap = ref<Record<string, string>>({})
+const roleColorMap = ref<Record<string, string>>({})
 
 const roleDisplayName = computed(() => {
   const slug = store.adminInfo?.role
   return roleNameMap.value[slug || ''] || slug || ''
+})
+
+const roleTagColor = computed(() => {
+  const slug = store.adminInfo?.role || ''
+  return roleColorMap.value[slug] || '#409EFF'
 })
 
 onMounted(async () => {
@@ -76,6 +83,17 @@ onMounted(async () => {
     roleNameMap.value = res.items || {}
   } catch {
     // 加载失败时使用原始值显示
+  }
+  // 加载角色颜色映射
+  try {
+    const roleRes = await listRoles()
+    const colorMap: Record<string, string> = {}
+    for (const r of roleRes.items || []) {
+      if (r.color) colorMap[r.slug || r.name] = r.color
+    }
+    roleColorMap.value = colorMap
+  } catch {
+    // 忽略
   }
 })
 
@@ -134,6 +152,10 @@ function goProfile() {
 </script>
 
 <style scoped>
+/* 自定义颜色标签去掉 Element Plus 默认蓝色边框 */
+.color-tag {
+  border: none !important;
+}
 .topbar {
   height: 64px;
   background: #fff;

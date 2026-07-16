@@ -120,6 +120,210 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.GetOnlineAdminIdsReply'
+    /admin/v1/categories:
+        get:
+            tags:
+                - AdminCategory
+            description: 获取子分类列表（按 parent_id 过滤）
+            operationId: AdminCategory_ListChildCategories
+            parameters:
+                - name: parentId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ListChildCategoriesReply'
+        post:
+            tags:
+                - AdminCategory
+            description: 创建分类
+            operationId: AdminCategory_CreateCategory
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.CreateCategoryRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CreateCategoryReply'
+    /admin/v1/categories/batch:
+        post:
+            tags:
+                - AdminCategory
+            description: 批量操作
+            operationId: AdminCategory_BatchCategoryOperation
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.BatchCategoryOperationRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.BatchCategoryOperationReply'
+    /admin/v1/categories/tree:
+        get:
+            tags:
+                - AdminCategory
+            description: 获取分类树
+            operationId: AdminCategory_ListCategoryTree
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ListCategoryTreeReply'
+    /admin/v1/categories/{id}:
+        get:
+            tags:
+                - AdminCategory
+            description: 获取单个分类
+            operationId: AdminCategory_GetCategory
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetCategoryReply'
+        put:
+            tags:
+                - AdminCategory
+            description: 更新分类
+            operationId: AdminCategory_UpdateCategory
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.UpdateCategoryRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.UpdateCategoryReply'
+        delete:
+            tags:
+                - AdminCategory
+            description: 删除分类
+            operationId: AdminCategory_DeleteCategory
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.DeleteCategoryReply'
+    /admin/v1/categories/{id}/showcase:
+        put:
+            tags:
+                - AdminCategory
+            description: 切换首页展示
+            operationId: AdminCategory_ToggleCategoryShowcase
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.ToggleCategoryShowcaseRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ToggleCategoryShowcaseReply'
+    /admin/v1/categories/{id}/sort:
+        put:
+            tags:
+                - AdminCategory
+            description: 更新排序
+            operationId: AdminCategory_UpdateCategorySort
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.UpdateCategorySortRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.UpdateCategorySortReply'
+    /admin/v1/categories/{id}/status:
+        put:
+            tags:
+                - AdminCategory
+            description: 更新状态
+            operationId: AdminCategory_UpdateCategoryStatus
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.UpdateCategoryStatusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.UpdateCategoryStatusReply'
     /admin/v1/dashboard/order_trend:
         get:
             tags:
@@ -1293,6 +1497,23 @@ components:
                 lastLogin:
                     type: string
             description: 管理员信息
+        api.cin.admin.v1.BatchCategoryOperationReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                affectedCount:
+                    type: integer
+                    format: int32
+        api.cin.admin.v1.BatchCategoryOperationRequest:
+            type: object
+            properties:
+                action:
+                    type: string
+                ids:
+                    type: array
+                    items:
+                        type: string
         api.cin.admin.v1.BatchOperationReply:
             type: object
             properties:
@@ -1322,6 +1543,44 @@ components:
                     type: string
                 reason:
                     type: string
+        api.cin.admin.v1.CategoryTreeItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                slug:
+                    type: string
+                icon:
+                    type: string
+                sort:
+                    type: integer
+                    format: int32
+                status:
+                    type: boolean
+                showcase:
+                    type: boolean
+                count:
+                    type: integer
+                    format: int32
+                image:
+                    type: string
+                seoTitle:
+                    type: string
+                seoKeywords:
+                    type: string
+                seoDesc:
+                    type: string
+                parentId:
+                    type: string
+                createdAt:
+                    type: string
+                children:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.CategoryTreeItem'
+            description: 分类节点（返回前端使用）
         api.cin.admin.v1.ChangeAvatarReply:
             type: object
             properties:
@@ -1349,6 +1608,37 @@ components:
                 newPassword:
                     type: string
                 confirmPassword:
+                    type: string
+        api.cin.admin.v1.CreateCategoryReply:
+            type: object
+            properties:
+                id:
+                    type: string
+        api.cin.admin.v1.CreateCategoryRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                slug:
+                    type: string
+                icon:
+                    type: string
+                sort:
+                    type: integer
+                    format: int32
+                status:
+                    type: boolean
+                showcase:
+                    type: boolean
+                image:
+                    type: string
+                seoTitle:
+                    type: string
+                seoKeywords:
+                    type: string
+                seoDesc:
+                    type: string
+                parentId:
                     type: string
         api.cin.admin.v1.CreateProductReply:
             type: object
@@ -1387,6 +1677,8 @@ components:
                     type: string
                 desc:
                     type: string
+                color:
+                    type: string
         api.cin.admin.v1.CreateStaffReply:
             type: object
             properties:
@@ -1423,6 +1715,11 @@ components:
                     type: string
                 password:
                     type: string
+        api.cin.admin.v1.DeleteCategoryReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
         api.cin.admin.v1.DeleteProductReply:
             type: object
             properties:
@@ -1448,6 +1745,11 @@ components:
             properties:
                 admin:
                     $ref: '#/components/schemas/api.cin.admin.v1.AdminInfo'
+        api.cin.admin.v1.GetCategoryReply:
+            type: object
+            properties:
+                item:
+                    $ref: '#/components/schemas/api.cin.admin.v1.CategoryTreeItem'
         api.cin.admin.v1.GetDashboardStatsReply:
             type: object
             properties:
@@ -1571,6 +1873,26 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.PermModule'
+        api.cin.admin.v1.ListCategoryTreeReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.CategoryTreeItem'
+                total:
+                    type: integer
+                    format: int32
+        api.cin.admin.v1.ListChildCategoriesReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.CategoryTreeItem'
+                total:
+                    type: integer
+                    format: int32
         api.cin.admin.v1.ListOrderReply:
             type: object
             properties:
@@ -1762,6 +2084,8 @@ components:
                     type: boolean
                 createdAt:
                     type: string
+                color:
+                    type: string
             description: 角色项
         api.cin.admin.v1.ShipOrderReply:
             type: object
@@ -1807,6 +2131,18 @@ components:
                     type: string
                 createdAt:
                     type: string
+        api.cin.admin.v1.ToggleCategoryShowcaseReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.ToggleCategoryShowcaseRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                showcase:
+                    type: boolean
         api.cin.admin.v1.ToggleStaffStatusReply:
             type: object
             properties:
@@ -1866,6 +2202,64 @@ components:
                 bio:
                     type: string
                     description: 个人简介
+        api.cin.admin.v1.UpdateCategoryReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.UpdateCategoryRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                slug:
+                    type: string
+                icon:
+                    type: string
+                sort:
+                    type: integer
+                    format: int32
+                status:
+                    type: boolean
+                showcase:
+                    type: boolean
+                image:
+                    type: string
+                seoTitle:
+                    type: string
+                seoKeywords:
+                    type: string
+                seoDesc:
+                    type: string
+                parentId:
+                    type: string
+        api.cin.admin.v1.UpdateCategorySortReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.UpdateCategorySortRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                sort:
+                    type: integer
+                    format: int32
+        api.cin.admin.v1.UpdateCategoryStatusReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.UpdateCategoryStatusRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                status:
+                    type: boolean
         api.cin.admin.v1.UpdateProductReply:
             type: object
             properties:
@@ -1920,6 +2314,8 @@ components:
                 name:
                     type: string
                 desc:
+                    type: string
+                color:
                     type: string
         api.cin.admin.v1.UpdateSettingsReply:
             type: object
@@ -2281,6 +2677,8 @@ components:
 tags:
     - name: AdminAuth
       description: 管理后台 - 认证服务
+    - name: AdminCategory
+      description: 管理后台 - 商品分类管理服务
     - name: AdminOrder
       description: 管理后台 - 订单管理服务
     - name: AdminProduct

@@ -1,0 +1,134 @@
+syntax = "proto3";
+
+package api.service.product.v1;
+
+option go_package = "cyi-app/api/service/product/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.service.product.v1";
+
+// 商品分类服务
+service Category {
+    // 获取分类树（可选按 parent_id 过滤）
+    rpc ListCategoryTree (ListCategoryTreeRequest) returns (ListCategoryTreeReply);
+    // 获取单个分类
+    rpc GetCategory (GetCategoryRequest) returns (GetCategoryReply);
+    // 创建分类
+    rpc CreateCategory (CreateCategoryRequest) returns (CreateCategoryReply);
+    // 更新分类
+    rpc UpdateCategory (UpdateCategoryRequest) returns (UpdateCategoryReply);
+    // 删除分类
+    rpc DeleteCategory (DeleteCategoryRequest) returns (DeleteCategoryReply);
+    // 更新分类排序
+    rpc UpdateCategorySort (UpdateCategorySortRequest) returns (UpdateCategorySortReply);
+    // 更新分类状态
+    rpc UpdateCategoryStatus (UpdateCategoryStatusRequest) returns (UpdateCategoryStatusReply);
+    // 切换首页展示
+    rpc ToggleCategoryShowcase (ToggleCategoryShowcaseRequest) returns (ToggleCategoryShowcaseReply);
+}
+
+// 分类树节点
+message CategoryNode {
+    int64 id = 1;               // 分类 ID
+    string name = 2;            // 分类名称
+    string slug = 3;            // 别名
+    string icon = 4;            // Emoji 图标
+    int32 sort = 5;             // 排序值
+    bool status = 6;            // 状态：true-启用 false-禁用
+    bool showcase = 7;          // 首页展示
+    int32 count = 8;            // 商品数量
+    string image = 9;           // 分类图片
+    string seo_title = 10;      // SEO 页面标题
+    string seo_keywords = 11;   // SEO 关键词
+    string seo_desc = 12;       // SEO 描述
+    int64 parent_id = 13;       // 父分类 ID
+    repeated CategoryNode children = 14;  // 子分类列表
+}
+
+message ListCategoryTreeRequest {
+    int64 parent_id = 1;  // 父分类 ID，不传则返回全量树
+}
+
+message ListCategoryTreeReply {
+    repeated CategoryNode items = 1;
+    int32 total = 2;
+}
+
+message GetCategoryRequest {
+    int64 id = 1;  // 分类 ID
+}
+
+message GetCategoryReply {
+    CategoryNode item = 1;
+}
+
+message CreateCategoryRequest {
+    string name = 1;            // 分类名称
+    string slug = 2;            // 别名
+    string icon = 3;            // Emoji 图标
+    int32 sort = 4;             // 排序值
+    bool status = 5;            // 状态
+    bool showcase = 6;          // 首页展示
+    string image = 7;           // 分类图片
+    string seo_title = 8;       // SEO 页面标题
+    string seo_keywords = 9;    // SEO 关键词
+    string seo_desc = 10;       // SEO 描述
+    int64 parent_id = 11;       // 父分类 ID，0 表示顶级分类
+}
+
+message CreateCategoryReply {
+    int64 id = 1;  // 创建后的分类 ID
+}
+
+message UpdateCategoryRequest {
+    int64 id = 1;               // 分类 ID
+    string name = 2;            // 分类名称
+    string slug = 3;            // 别名
+    string icon = 4;            // Emoji 图标
+    int32 sort = 5;             // 排序值
+    bool status = 6;            // 状态
+    bool showcase = 7;          // 首页展示
+    string image = 8;           // 分类图片
+    string seo_title = 9;       // SEO 页面标题
+    string seo_keywords = 10;   // SEO 关键词
+    string seo_desc = 11;       // SEO 描述
+    int64 parent_id = 12;       // 父分类 ID
+}
+
+message UpdateCategoryReply {
+    bool success = 1;
+}
+
+message DeleteCategoryRequest {
+    int64 id = 1;  // 分类 ID
+}
+
+message DeleteCategoryReply {
+    bool success = 1;
+}
+
+message UpdateCategorySortRequest {
+    int64 id = 1;    // 分类 ID
+    int32 sort = 2;  // 新的排序值
+}
+
+message UpdateCategorySortReply {
+    bool success = 1;
+}
+
+message UpdateCategoryStatusRequest {
+    int64 id = 1;      // 分类 ID
+    bool status = 2;   // 新的状态
+}
+
+message UpdateCategoryStatusReply {
+    bool success = 1;
+}
+
+message ToggleCategoryShowcaseRequest {
+    int64 id = 1;         // 分类 ID
+    bool showcase = 2;    // 是否首页展示
+}
+
+message ToggleCategoryShowcaseReply {
+    bool success = 1;
+}

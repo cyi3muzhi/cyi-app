@@ -32,6 +32,7 @@ func newRoleMeta(db *gorm.DB) roleMeta {
 	_roleMeta.Slug = field.NewString(tableName, "slug")
 	_roleMeta.Name = field.NewString(tableName, "name")
 	_roleMeta.Desc = field.NewString(tableName, "desc")
+	_roleMeta.Color = field.NewString(tableName, "color")
 
 	_roleMeta.fillFieldMap()
 
@@ -49,6 +50,7 @@ type roleMeta struct {
 	Slug      field.String
 	Name      field.String
 	Desc      field.String
+	Color     field.String
 
 	fieldMap map[string]field.Expr
 }
@@ -72,6 +74,7 @@ func (r *roleMeta) updateTableName(table string) *roleMeta {
 	r.Slug = field.NewString(table, "slug")
 	r.Name = field.NewString(table, "name")
 	r.Desc = field.NewString(table, "desc")
+	r.Color = field.NewString(table, "color")
 
 	r.fillFieldMap()
 
@@ -88,7 +91,7 @@ func (r *roleMeta) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (r *roleMeta) fillFieldMap() {
-	r.fieldMap = make(map[string]field.Expr, 7)
+	r.fieldMap = make(map[string]field.Expr, 8)
 	r.fieldMap["id"] = r.ID
 	r.fieldMap["created_at"] = r.CreatedAt
 	r.fieldMap["updated_at"] = r.UpdatedAt
@@ -96,6 +99,7 @@ func (r *roleMeta) fillFieldMap() {
 	r.fieldMap["slug"] = r.Slug
 	r.fieldMap["name"] = r.Name
 	r.fieldMap["desc"] = r.Desc
+	r.fieldMap["color"] = r.Color
 }
 
 func (r roleMeta) clone(db *gorm.DB) roleMeta {

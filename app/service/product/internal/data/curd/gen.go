@@ -12,51 +12,58 @@ import (
 )
 
 var (
-	Q       = new(Query)
-	Product *product
-	Stock   *stock
+	Q        = new(Query)
+	Category *category
+	Product  *product
+	Stock    *stock
 )
 
 func SetDefault(db *gorm.DB) {
 	*Q = *Use(db)
+	Category = &Q.Category
 	Product = &Q.Product
 	Stock = &Q.Stock
 }
 
 func Use(db *gorm.DB) *Query {
 	return &Query{
-		db:      db,
-		Product: newProduct(db),
-		Stock:   newStock(db),
+		db:       db,
+		Category: newCategory(db),
+		Product:  newProduct(db),
+		Stock:    newStock(db),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	Product product
-	Stock   stock
+	Category category
+	Product  product
+	Stock    stock
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:      db,
-		Product: q.Product.clone(db),
-		Stock:   q.Stock.clone(db),
+		db:       db,
+		Category: q.Category.clone(db),
+		Product:  q.Product.clone(db),
+		Stock:    q.Stock.clone(db),
 	}
 }
 
 type queryCtx struct {
-	Product productDo
-	Stock   stockDo
+	Category categoryDo
+	Product  productDo
+	Stock    stockDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		Product: *q.Product.WithContext(ctx),
-		Stock:   *q.Stock.WithContext(ctx),
+		Category: *q.Category.WithContext(ctx),
+		Product:  *q.Product.WithContext(ctx),
+		Stock:    *q.Stock.WithContext(ctx),
 	}
 }
 

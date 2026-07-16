@@ -57,7 +57,7 @@
         <el-table :data="roles" stripe highlight-current-row>
           <el-table-column prop="name" label="角色名称" min-width="120">
             <template #default="{ row }">
-              <span class="role-name">{{ row.name }}</span>
+              <el-tag :color="row.color" effect="dark" size="small" class="color-tag">{{ row.name }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="slug" label="角色标识" min-width="140">
@@ -163,6 +163,9 @@
         <el-form-item label="角色描述">
           <el-input v-model="roleForm.desc" type="textarea" :rows="3" placeholder="请输入角色描述" />
         </el-form-item>
+        <el-form-item label="标签颜色">
+          <el-color-picker v-model="roleForm.color" show-alpha :predefine="predefineColors" />
+        </el-form-item>
         <el-form-item label="状态">
           <el-switch v-model="roleForm.enabled" active-text="启用" inactive-text="停用" :disabled="isEditingSuperAdmin" />
           <span v-if="isEditingSuperAdmin" class="form-hint">系统角色状态不可修改</span>
@@ -222,6 +225,7 @@ interface Role {
   name: string
   slug: string
   desc: string
+  color?: string
   users: number
   enabled: boolean
   is_system: boolean
@@ -266,6 +270,7 @@ async function loadData() {
       name: r.name,
       slug: r.slug || r.name,
       desc: r.desc || '',
+      color: r.color || '',
       users: r.users || 0,
       enabled: r.enabled !== false,
       is_system: r.is_system === true,
@@ -407,6 +412,13 @@ async function editPermission(index: number) {
   activeTab.value = 'permission'
 }
 
+// ---------- 颜色预定义 ----------
+const predefineColors = [
+  '#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399',
+  '#9b59b6', '#2ecc71', '#e74c3c', '#3498db', '#1abc9c',
+  '#f39c12', '#8e44ad', '#2c3e50', '#d35400', '#16a085'
+]
+
 // ---------- 角色表单 ----------
 const roleDialogVisible = ref(false)
 const deleteDialogVisible = ref(false)
@@ -419,7 +431,8 @@ const roleForm = reactive({
   name: '',
   slug: '',
   desc: '',
-  enabled: true
+  enabled: true,
+  color: '#409EFF'
 })
 
 const roleFormRules: FormRules = {
@@ -433,6 +446,7 @@ function openAddModal() {
   roleForm.slug = ''
   roleForm.desc = ''
   roleForm.enabled = true
+  roleForm.color = '#409EFF'
   roleDialogVisible.value = true
 }
 
@@ -443,6 +457,7 @@ function openEditModal(index: number) {
   roleForm.slug = role.slug
   roleForm.desc = role.desc
   roleForm.enabled = role.enabled !== false
+  roleForm.color = role.color || '#409EFF'
   roleDialogVisible.value = true
 }
 
@@ -462,13 +477,14 @@ async function saveRole() {
     if (!valid) return
     try {
       if (editingIndex.value >= 0) {
-        await updateRole(roleForm.slug, { name: roleForm.name, desc: roleForm.desc })
+        await updateRole(roleForm.slug, { name: roleForm.name, desc: roleForm.desc, color: roleForm.color })
         const role = roles.value[editingIndex.value]
         role.name = roleForm.name
         role.desc = roleForm.desc
+        role.color = roleForm.color
         ElMessage.success('角色已更新')
       } else {
-        await createRole({ name: roleForm.name, slug: roleForm.slug, desc: roleForm.desc })
+        await createRole({ name: roleForm.name, slug: roleForm.slug, desc: roleForm.desc, color: roleForm.color })
         // 重新加载列表
         await loadData()
         ElMessage.success('角色已添加')
@@ -504,6 +520,10 @@ async function confirmDelete() {
 </script>
 
 <style scoped>
+/* 自定义颜色标签去掉 Element Plus 默认蓝色边框 */
+.color-tag {
+  border: none !important;
+}
 .roles-page {
   padding-bottom: 24px;
 }

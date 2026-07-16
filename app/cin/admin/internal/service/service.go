@@ -24,16 +24,18 @@ type AdminService struct {
 	adminv1.UnimplementedAdminAuthServer
 	adminv1.UnimplementedAdminRoleServer
 	adminv1.UnimplementedStaffServer
+	adminv1.UnimplementedAdminCategoryServer
 	log  *log.Helper
 	dc   *biz.DashboardUseCase
 	pc   *biz.ProductUseCase
 	ac   *biz.AuthUseCase
 	rc   *biz.RoleUseCase
 	sc   *biz.StaffUseCase
+	cc   *biz.CategoryUseCase
 }
 
 // NewAdminService 创建 AdminService
-func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.AuthUseCase, rc *biz.RoleUseCase, sc *biz.StaffUseCase, logger log.Logger) *AdminService {
+func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.AuthUseCase, rc *biz.RoleUseCase, sc *biz.StaffUseCase, cc *biz.CategoryUseCase, logger log.Logger) *AdminService {
 	return &AdminService{
 		log: log.NewHelper(logger),
 		dc:  dc,
@@ -41,5 +43,6 @@ func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.A
 		ac:  ac,
 		rc:  rc,
 		sc:  sc,
+		cc:  cc,
 	}
 }

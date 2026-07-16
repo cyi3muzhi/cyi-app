@@ -32,6 +32,7 @@ func (r *roleRepo) ListRoles(ctx context.Context) ([]*biz.RoleItem, error) {
 			Name:      item.Name,
 			Slug:      item.Slug,
 			Desc:      item.Desc,
+			Color:     item.Color,
 			Users:     int(item.Users),
 			Enabled:   item.Enabled,
 			IsSystem:  item.IsSystem,
@@ -42,14 +43,14 @@ func (r *roleRepo) ListRoles(ctx context.Context) ([]*biz.RoleItem, error) {
 }
 
 // CreateRole 创建角色
-func (r *roleRepo) CreateRole(ctx context.Context, name, slug, desc string) error {
-	_, err := r.client.CreateRole(ctx, &userV1.CreateRoleRequest{Name: name, Slug: slug, Desc: desc})
+func (r *roleRepo) CreateRole(ctx context.Context, name, slug, desc, color string) error {
+	_, err := r.client.CreateRole(ctx, &userV1.CreateRoleRequest{Name: name, Slug: slug, Desc: desc, Color: color})
 	return err
 }
 
 // UpdateRole 更新角色
-func (r *roleRepo) UpdateRole(ctx context.Context, slug, name, desc string) error {
-	_, err := r.client.UpdateRole(ctx, &userV1.UpdateRoleRequest{Slug: slug, Name: name, Desc: desc})
+func (r *roleRepo) UpdateRole(ctx context.Context, slug, name, desc, color string) error {
+	_, err := r.client.UpdateRole(ctx, &userV1.UpdateRoleRequest{Slug: slug, Name: name, Desc: desc, Color: color})
 	return err
 }
 

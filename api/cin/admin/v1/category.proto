@@ -1,0 +1,205 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+option java_multiple_files = true;
+option java_package = "api.cin.admin.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+// 管理后台 - 商品分类管理服务
+service AdminCategory {
+  // 获取分类树
+  rpc ListCategoryTree (ListCategoryTreeRequest) returns (ListCategoryTreeReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/categories/tree"
+    };
+  }
+  // 获取子分类列表（按 parent_id 过滤）
+  rpc ListChildCategories (ListChildCategoriesRequest) returns (ListChildCategoriesReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/categories"
+    };
+  }
+  // 获取单个分类
+  rpc GetCategory (GetCategoryRequest) returns (GetCategoryReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/categories/{id}"
+    };
+  }
+  // 创建分类
+  rpc CreateCategory (CreateCategoryRequest) returns (CreateCategoryReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/categories"
+      body: "*"
+    };
+  }
+  // 更新分类
+  rpc UpdateCategory (UpdateCategoryRequest) returns (UpdateCategoryReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/categories/{id}"
+      body: "*"
+    };
+  }
+  // 删除分类
+  rpc DeleteCategory (DeleteCategoryRequest) returns (DeleteCategoryReply) {
+    option (google.api.http) = {
+      delete: "/admin/v1/categories/{id}"
+    };
+  }
+  // 更新排序
+  rpc UpdateCategorySort (UpdateCategorySortRequest) returns (UpdateCategorySortReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/categories/{id}/sort"
+      body: "*"
+    };
+  }
+  // 更新状态
+  rpc UpdateCategoryStatus (UpdateCategoryStatusRequest) returns (UpdateCategoryStatusReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/categories/{id}/status"
+      body: "*"
+    };
+  }
+  // 切换首页展示
+  rpc ToggleCategoryShowcase (ToggleCategoryShowcaseRequest) returns (ToggleCategoryShowcaseReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/categories/{id}/showcase"
+      body: "*"
+    };
+  }
+  // 批量操作
+  rpc BatchCategoryOperation (BatchCategoryOperationRequest) returns (BatchCategoryOperationReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/categories/batch"
+      body: "*"
+    };
+  }
+}
+
+// 分类节点（返回前端使用）
+message CategoryTreeItem {
+  int64 id = 1;
+  string name = 2;
+  string slug = 3;
+  string icon = 4;
+  int32 sort = 5;
+  bool status = 6;
+  bool showcase = 7;
+  int32 count = 8;
+  string image = 9;
+  string seo_title = 10;
+  string seo_keywords = 11;
+  string seo_desc = 12;
+  int64 parent_id = 13;
+  int64 created_at = 14;
+  repeated CategoryTreeItem children = 15;
+}
+
+message ListCategoryTreeRequest {}
+
+message ListCategoryTreeReply {
+  repeated CategoryTreeItem items = 1;
+  int32 total = 2;
+}
+
+message ListChildCategoriesRequest {
+  int64 parent_id = 1 [(validate.rules).int64 = {gte: 0}];  // 父分类 ID，0 查顶级
+}
+
+message ListChildCategoriesReply {
+  repeated CategoryTreeItem items = 1;
+  int32 total = 2;
+}
+
+message GetCategoryRequest {
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message GetCategoryReply {
+  CategoryTreeItem item = 1;
+}
+
+message CreateCategoryRequest {
+  string name = 1 [(validate.rules).string = {min_len: 1, max_len: 20}];
+  string slug = 2;
+  string icon = 3;
+  int32 sort = 4;
+  bool status = 5;
+  bool showcase = 6;
+  string image = 7;
+  string seo_title = 8;
+  string seo_keywords = 9;
+  string seo_desc = 10;
+  int64 parent_id = 11;
+}
+
+message CreateCategoryReply {
+  int64 id = 1;
+}
+
+message UpdateCategoryRequest {
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+  string name = 2;
+  string slug = 3;
+  string icon = 4;
+  int32 sort = 5;
+  bool status = 6;
+  bool showcase = 7;
+  string image = 8;
+  string seo_title = 9;
+  string seo_keywords = 10;
+  string seo_desc = 11;
+  int64 parent_id = 12;
+}
+
+message UpdateCategoryReply {
+  bool success = 1;
+}
+
+message DeleteCategoryRequest {
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message DeleteCategoryReply {
+  bool success = 1;
+}
+
+message UpdateCategorySortRequest {
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 sort = 2;
+}
+
+message UpdateCategorySortReply {
+  bool success = 1;
+}
+
+message UpdateCategoryStatusRequest {
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+  bool status = 2;
+}
+
+message UpdateCategoryStatusReply {
+  bool success = 1;
+}
+
+message ToggleCategoryShowcaseRequest {
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+  bool showcase = 2;
+}
+
+message ToggleCategoryShowcaseReply {
+  bool success = 1;
+}
+
+message BatchCategoryOperationRequest {
+  string action = 1 [(validate.rules).string = {in: ["启用", "禁用", "删除"]}];
+  repeated int64 ids = 2 [(validate.rules).repeated = {min_items: 1}];
+}
+
+message BatchCategoryOperationReply {
+  bool success = 1;
+  int32 affected_count = 2;
+}

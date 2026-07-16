@@ -10,12 +10,12 @@ export function listRoles(): Promise<{ items: RoleItem[] }> {
 }
 
 /** 创建角色 */
-export function createRole(data: { name: string; slug: string; desc: string }): Promise<{ success: boolean }> {
+export function createRole(data: { name: string; slug: string; desc: string; color?: string }): Promise<{ success: boolean }> {
   return request.post('/admin/v1/roles', data)
 }
 
 /** 更新角色 */
-export function updateRole(slug: string, data: { name: string; desc: string }): Promise<{ success: boolean }> {
+export function updateRole(slug: string, data: { name: string; desc: string; color?: string }): Promise<{ success: boolean }> {
   return request.put(`/admin/v1/roles/${slug}`, { slug, ...data })
 }
 

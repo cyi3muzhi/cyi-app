@@ -1,27 +1,32 @@
 # Makefile - 项目构建配置文件
 # 提供项目级别的构建、部署和代码生成目标
 
-# 系统和环境变�?
-GOHOSTOS:=$(shell go env GOHOSTOS) # 判断当前系统是否�?Windows
-GOPATH:=$(shell go env GOPATH)    # 获取 GOPATH 环境变量
-VERSION=$(shell git describe --tags --always 2>/dev/null || echo "dev") # 获取当前 Git 仓库的版本标�?
+# 系统和环境变量
+GOHOSTOS:=$(shell go env GOHOSTOS)
 
+# 判断当前系统是否是 Windows
+GOPATH:=$(shell go env GOPATH)
+
+# 获取 GOPATH 环境变量
+VERSION=$(shell git describe --tags --always 2>/dev/null || echo "dev")
+
+# 获取当前 Git 仓库的版本标签
 
 
 # 应用相对路径
 APP_RELATIVE_PATH=$(notdir $(patsubst %/,%,$(dir $(CURDIR))))/$(notdir $(CURDIR))
 
-# 跨平�?proto 文件查找
-# 直接硬编�?API_PROTO_FILES �?INTERNAL_PROTO_FILES 的�?
-# 这样可以确保路径格式正确，避�?PowerShell 命令执行错误
+# 跨平台 proto 文件查找
+# 直接硬编码 API_PROTO_FILES 和 INTERNAL_PROTO_FILES 的值
+# 这样可以确保路径格式正确，避免 PowerShell 命令执行错误
 INTERNAL_PROTO_FILES=
-API_PROTO_FILES=api/blades/v1/blades.proto api/cin/admin/v1/auth.proto api/cin/admin/v1/dashboard.proto api/cin/admin/v1/errors.proto api/cin/admin/v1/order.proto api/cin/admin/v1/product.proto api/cin/admin/v1/staff.proto api/cin/admin/v1/role.proto api/cin/admin/v1/settings.proto api/cin/admin/v1/user.proto api/cin/interface/v1/auth.proto api/cin/interface/v1/blades.proto api/cin/interface/v1/cart.proto api/cin/interface/v1/errors.proto api/cin/interface/v1/order.proto api/cin/interface/v1/product.proto api/cin/interface/v1/stock.proto api/cin/interface/v1/user.proto api/job/v1/job.proto api/service/order/v1/order.proto api/service/product/v1/product.proto api/service/user/v1/user.proto api/service/user/v1/user_error.proto api/service/user/v1/admin_user.proto api/service/user/v1/role.proto api/task/v1/task.proto
+API_PROTO_FILES=api/blades/v1/blades.proto api/cin/admin/v1/auth.proto api/cin/admin/v1/category.proto api/cin/admin/v1/dashboard.proto api/cin/admin/v1/errors.proto api/cin/admin/v1/order.proto api/cin/admin/v1/product.proto api/cin/admin/v1/staff.proto api/cin/admin/v1/role.proto api/cin/admin/v1/settings.proto api/cin/admin/v1/user.proto api/cin/interface/v1/auth.proto api/cin/interface/v1/blades.proto api/cin/interface/v1/cart.proto api/cin/interface/v1/errors.proto api/cin/interface/v1/order.proto api/cin/interface/v1/product.proto api/cin/interface/v1/stock.proto api/cin/interface/v1/user.proto api/job/v1/job.proto api/service/order/v1/order.proto api/service/product/v1/category.proto api/service/product/v1/product.proto api/service/user/v1/user.proto api/service/user/v1/user_error.proto api/service/user/v1/admin_user.proto api/service/user/v1/role.proto api/task/v1/task.proto
 
 # 服务发现
-SERVICE_CMD_DIRS := $(wildcard app/*/*/cmd/* app/*/cmd/*) # 查找所有服务的 cmd 目录
-SERVICE_NAMES := $(foreach dir,$(SERVICE_CMD_DIRS),$(notdir $(dir))) # �?cmd 目录中提取服务名�?
+SERVICE_CMD_DIRS := $(wildcard app/*/*/cmd/* app/*/cmd/*)
+SERVICE_NAMES := $(foreach dir,$(SERVICE_CMD_DIRS),$(notdir $(dir)))
 
-# 为每个服务生�?wire 代码
+# 为每个服务生成 wire 代码
 ifeq ($(OS),Windows_NT)
     # Windows PowerShell 语法
     $(foreach service,$(SERVICE_NAMES),$(eval .PHONY: wire-$(service)))
@@ -106,7 +111,7 @@ generate:
 	go mod tidy
 
 .PHONY: all
-# 生成所�?proto 文件并构建项�?
+# 生成所有 proto 文件并构建项目
 all:
 	@$(MAKE) api
 	@$(MAKE) config
@@ -125,7 +130,7 @@ wire:
 	$(foreach service,$(SERVICE_NAMES),wire-$(service))
 
 .PHONY: docker-up
-# 运行所�?docker 容器（先启动基础设施，再启动应用�?
+# 运行所有 docker 容器（先启动基础设施，再启动应用）
 docker-up: docker-up-infra docker-up-app
 
 .PHONY: docker-up-infra
@@ -139,7 +144,7 @@ docker-up-app:
 	cd deploy/docker-compose && docker-compose -f docker-compose.app.yml -p cyi-app up -d
 
 .PHONY: docker-down
-# 停止所�?docker 容器
+# 停止所有 docker 容器
 docker-down: docker-down-app docker-down-infra
 
 .PHONY: docker-down-infra
@@ -152,7 +157,7 @@ docker-down-infra:
 docker-down-app:
 	cd deploy/docker-compose && docker-compose -f docker-compose.app.yml -p cyi-app down
 
-# 为每个服务生�?docker-build 目标
+# 为每个服务生成 docker-build 目标
 $(foreach service,$(SERVICE_NAMES),$(eval docker-build-$(service):; cd $(patsubst %/cmd/$(service),%,$(filter %/cmd/$(service),$(SERVICE_CMD_DIRS))) && make docker))
 
 .PHONY: docker-build
@@ -176,7 +181,6 @@ k8s-down:
 # 清理 Kubernetes 资源
 k8s-clean:
 	kubectl delete deployment --all
-	kubectl delete service --all
 	kubectl delete pvc --all
 	kubectl delete configmap --all
 	kubectl delete secret --all
@@ -222,6 +226,6 @@ debug:
 
 .DEFAULT_GOAL := help
 
-# 忽略传递给 service 目标的参�?
+# 忽略传递给 service 目标的参数
 %:
 	@:

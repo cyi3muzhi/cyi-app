@@ -66,6 +66,7 @@ message RoleItem {
   bool enabled = 5;
   bool is_system = 6;
   string created_at = 7;
+  string color = 8;
 }
 
 // 权限项
@@ -100,6 +101,7 @@ message CreateRoleRequest {
   string name = 1;
   string slug = 2;
   string desc = 3;
+  string color = 4;
 }
 
 message CreateRoleReply {
@@ -112,6 +114,7 @@ message UpdateRoleRequest {
   string slug = 1;
   string name = 2;
   string desc = 3;
+  string color = 4;
 }
 
 message UpdateRoleReply {

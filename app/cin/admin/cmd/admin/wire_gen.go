@@ -34,13 +34,14 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	enforcerProvider := data.ProvideEnforcerProvider(remoteEnforcer)
 	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth, enforcerProvider)
 	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	categoryClient := data.NewCategoryServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	adminUserClient := data.NewAdminUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	rustFSClient, err := data.NewOssClient(confData)
 	if err != nil {
 		return nil, nil, err
 	}
 	client := data.NewRedisClient(confData)
-	dataData, cleanup, err := data.NewData(productClient, adminUserClient, rustFSClient, client, logger)
+	dataData, cleanup, err := data.NewData(productClient, categoryClient, adminUserClient, rustFSClient, client, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -54,7 +55,9 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	roleUseCase := biz.NewRoleUseCase(roleRepo, logger)
 	staffRepo := data.NewStaffRepo(dataData, logger)
 	staffUseCase := biz.NewStaffUseCase(staffRepo, logger)
-	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, staffUseCase, logger)
+	categoryRepo := data.NewCategoryRepo(dataData, logger)
+	categoryUseCase := biz.NewCategoryUseCase(categoryRepo, logger)
+	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, staffUseCase, categoryUseCase, logger)
 	server2 := server.NewGRPCServer(grpcServer, adminService)
 	tokenValidator := data.NewTokenValidator(client)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth, tokenValidator, enforcerProvider)

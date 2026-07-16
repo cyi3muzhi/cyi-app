@@ -33,6 +33,7 @@ func (s *AdminRoleService) ListRoles(ctx context.Context, req *v1.ListRolesReque
 			Name:      r.Name,
 			Slug:      r.Slug,
 			Desc:      r.Desc,
+			Color:     r.Color,
 			Users:     int32(r.Users),
 			Enabled:   r.Enabled,
 			IsSystem:  r.IsSystem,
@@ -44,7 +45,7 @@ func (s *AdminRoleService) ListRoles(ctx context.Context, req *v1.ListRolesReque
 
 // CreateRole 创建角色
 func (s *AdminRoleService) CreateRole(ctx context.Context, req *v1.CreateRoleRequest) (*v1.CreateRoleReply, error) {
-	if err := s.uc.CreateRole(ctx, req.Name, req.Slug, req.Desc); err != nil {
+	if err := s.uc.CreateRole(ctx, req.Name, req.Slug, req.Desc, req.Color); err != nil {
 		return nil, err
 	}
 	return &v1.CreateRoleReply{Success: true}, nil
@@ -52,7 +53,7 @@ func (s *AdminRoleService) CreateRole(ctx context.Context, req *v1.CreateRoleReq
 
 // UpdateRole 更新角色
 func (s *AdminRoleService) UpdateRole(ctx context.Context, req *v1.UpdateRoleRequest) (*v1.UpdateRoleReply, error) {
-	if err := s.uc.UpdateRole(ctx, req.Slug, req.Name, req.Desc); err != nil {
+	if err := s.uc.UpdateRole(ctx, req.Slug, req.Name, req.Desc, req.Color); err != nil {
 		return nil, err
 	}
 	return &v1.UpdateRoleReply{Success: true}, nil
