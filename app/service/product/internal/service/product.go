@@ -30,8 +30,10 @@ func NewProductService(uc *biz.ProductUseCase, logger log.Logger) *ProductServic
 func (s *ProductService) CreateProduct(ctx context.Context, req *v1.CreateProductRequest) (*v1.CreateProductReply, error) {
 	in := &biz.Product{}
 	convert.Convert(req, in)
+	in.Description = req.Description // Convert 忽略 error 时可能未映射，显式赋值
 	in.CategoryID = req.GetCategoryId()
 	in.Image = req.Image
+	in.Images = req.GetImages()
 	in.Sales = req.Sales
 	// 转换规格组
 	in.SpecGroups = specGroupInfoListToBiz(req.Specs)
@@ -55,6 +57,7 @@ func (s *ProductService) UpdateProduct(ctx context.Context, req *v1.UpdateProduc
 		Price:       req.Price,
 		CategoryID:  req.GetCategoryId(),
 		Image:       req.Image,
+		Images:      req.GetImages(),
 		Sales:       req.Sales,
 		Status:      biz.ProductStatus(req.Status),
 		SpecGroups:  specGroupInfoListToBiz(req.Specs),
@@ -91,7 +94,12 @@ func (s *ProductService) GetProduct(ctx context.Context, req *v1.GetProductReque
 
 // ListProduct 获取商品列表
 func (s *ProductService) ListProduct(ctx context.Context, req *v1.ListProductRequest) (*v1.ListProductReply, error) {
-	items, total, err := s.uc.ListProduct(ctx, req.Page, req.PageSize, req.Keyword, req.GetCategoryId(), req.Status)
+	// 解包 Int32Value：nil 表示未设置（不筛选），否则取实际值
+	var stockEQ int32 = -1
+	if sw := req.GetStockEq(); sw != nil {
+		stockEQ = sw.GetValue()
+	}
+	items, total, err := s.uc.ListProduct(ctx, req.Page, req.PageSize, req.Keyword, req.GetCategoryId(), req.Status, stockEQ)
 	if err != nil {
 		return nil, err
 	}
@@ -157,6 +165,7 @@ func skuInfoListToBiz(skus []*v1.SkuInfo) []*biz.Sku {
 			Price:   s.Price,
 			Stock:   s.Stock,
 			Spec:    s.Spec,
+			Image:   s.GetImage(),
 		})
 	}
 	return result
@@ -170,6 +179,7 @@ func skuToProto(s *biz.Sku) *v1.SkuInfo {
 		Price:   s.Price,
 		Stock:   s.Stock,
 		Spec:    s.Spec,
+		Image:   s.Image,
 	}
 }
 
@@ -195,6 +205,7 @@ func bizProductToProductItem(p *biz.Product) *v1.ProductItem {
 		Status:      p.Status.Value(),
 		CategoryId:   p.CategoryID,
 		Image:       p.Image,
+		Images:      p.Images,
 		Sales:       p.Sales,
 		Specs:       specGroupListToProto(p.SpecGroups),
 		Skus:        skuListToProto(p.Skus),

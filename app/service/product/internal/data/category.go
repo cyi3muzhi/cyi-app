@@ -23,7 +23,7 @@ func NewCategoryRepo(data *Data, logger log.Logger) biz.CategoryRepo {
 	return &categoryRepo{data: data, log: log.NewHelper(logger)}
 }
 
-// ListCategoryTree 获取全量扁平分类列表，按排序值升序
+// ListCategoryTree 获取全量扁平分类列表，按排序值升序，并统计每个分类下的商品数
 func (r *categoryRepo) ListCategoryTree(ctx context.Context, parentID int64) ([]*biz.Category, error) {
 	categories, err := curd.Category.WithContext(ctx).
 		Order(curd.Category.Sort).
@@ -31,11 +31,33 @@ func (r *categoryRepo) ListCategoryTree(ctx context.Context, parentID int64) ([]
 	if err != nil {
 		return nil, err
 	}
+
+	// 统计每个分类下的商品数（不含已软删除的商品）
+	categoryIDs := make([]int64, 0, len(categories))
+	for _, cat := range categories {
+		categoryIDs = append(categoryIDs, cat.ID)
+	}
+	type CatCount struct {
+		CategoryID int64
+		Count      int64
+	}
+	var counts []CatCount
+	curd.Product.WithContext(ctx).UnderlyingDB().Model(&mod.Product{}).
+		Select("category_id, COUNT(*) as count").
+		Where("category_id IN ?", categoryIDs).
+		Group("category_id").
+		Scan(&counts) // GORM Model() 会自动处理软删除条件
+	countMap := make(map[int64]int64, len(counts))
+	for _, c := range counts {
+		countMap[c.CategoryID] = c.Count
+	}
+
 	out := make([]*biz.Category, 0, len(categories))
 	for _, cat := range categories {
 		bizCat := &biz.Category{}
 		convert.Convert(cat, bizCat)
 		bizCat.ID = cat.ID
+		bizCat.Count = int32(countMap[cat.ID])
 		out = append(out, bizCat)
 	}
 	return out, nil

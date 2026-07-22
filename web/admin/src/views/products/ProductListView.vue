@@ -9,7 +9,7 @@
       <div class="search-input-wrap">
         <el-icon class="search-icon"><Search /></el-icon>
         <input v-model="filters.keyword" type="text" placeholder="搜索商品名称..."
-          class="search-input" @input="handleFilter" />
+          class="search-input" @input="onSearchInput" />
       </div>
       <el-cascader v-model="filters.category_id" :options="categoryTree"
         :props="{ value: 'id', label: 'name', children: 'children', expandTrigger: 'hover', emitPath: false }"
@@ -38,14 +38,16 @@
     </div>
 
     <!-- Table -->
-    <el-table :data="displayProducts" v-loading="loading" @selection-change="onSelectionChange" stripe style="width:100%">
+    <el-table :data="products" v-loading="loading" @selection-change="onSelectionChange" stripe style="width:100%">
+      <template #empty>
+        <el-empty :description="loading ? '加载中...' : '暂无商品'" />
+      </template>
       <el-table-column type="selection" width="50" />
       <el-table-column label="图片" width="80">
         <template #default="{ row }">
-          <div style="width:60px;height:60px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:4px;">
-            <img :src="row.image" style="max-width:100%;max-height:100%;cursor:pointer;object-fit:cover;" 
-              @click="previewImage(row.image)"
-              @error="($event.target as HTMLImageElement).style.display='none'" />
+          <div class="product-img-cell">
+            <img :src="row.image" class="product-img" @click="previewImage(row.image)"
+              @error="onImgError($event)" />
           </div>
         </template>
       </el-table-column>
@@ -65,11 +67,11 @@
       </el-table-column>
       <el-table-column label="状态" width="100">
         <template #default="{ row }">
-          <el-tooltip :content="row.stock === 0 ? '库存为0，建议先补货再上架' : ''" placement="top">
-            <el-switch :model-value="row.status === '上架'"
-              :disabled="row.stock === 0"
-              @change="handleToggleStatus(row.id, row.status)" />
+          <el-tooltip v-if="row.stock === 0" content="库存为0，建议先补货再上架" placement="top">
+            <el-switch :model-value="row.status === '上架'" disabled />
           </el-tooltip>
+          <el-switch v-else :model-value="row.status === '上架'"
+            @change="handleToggleStatus(row.id, row.status)" />
         </template>
       </el-table-column>
       <el-table-column label="操作" width="160" fixed="right">
@@ -87,7 +89,7 @@
     <!-- Pagination -->
     <div class="pagination-wrap">
       <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
-        :total="displayTotal" :page-sizes="[10, 20, 50]"
+        :total="totalCount" :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next"
         @current-change="loadProducts" @size-change="loadProducts" />
     </div>
@@ -129,30 +131,36 @@ const tabItems = [
 
 const currentTab = ref('')
 
-/** 缺货商品列表（前端过滤） */
-const outOfStockProducts = computed(() =>
-  products.value.filter(p => p.stock === 0)
-)
-
-/** 当前展示的商品（缺货 tab 走前端过滤，其他 tab 由 API 返回） */
-const displayProducts = computed(() =>
-  currentTab.value === '缺货' ? outOfStockProducts.value : products.value
-)
-
-/** 当前总记录数（缺货 tab 用前端过滤后的长度） */
-const displayTotal = computed(() =>
-  currentTab.value === '缺货' ? outOfStockProducts.value.length : totalCount.value
-)
-
 function switchTab(tab: string) {
   currentTab.value = tab
   if (tab === '缺货') {
-    // 缺货走前端过滤，先加载全部商品
     filters.value.status = ''
+    filters.value.stock_eq = 0  // 后端按库存筛选
   } else {
     filters.value.status = tab
+    filters.value.stock_eq = -1  // -1 表示不按库存筛选
   }
   handleFilter()
+}
+
+/** 搜索防抖 */
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+function onSearchInput() {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => handleFilter(), 300)
+}
+
+/** 图片加载失败时显示 N/A 占位 */
+function onImgError(e: Event) {
+  const el = e.target as HTMLElement
+  el.style.display = 'none'
+  const parent = el.parentElement
+  if (parent && !parent.querySelector('.img-placeholder-text')) {
+    const span = document.createElement('span')
+    span.className = 'img-placeholder-text'
+    span.textContent = 'N/A'
+    parent.appendChild(span)
+  }
 }
 
 function onSelectionChange(rows: any[]) {
@@ -187,7 +195,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.product-list { padding: 24px; max-width: 1400px; margin: 0 auto; }
+.product-list { padding: 24px; }
 .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 .search-input-wrap { position: relative; flex: 1; max-width: 320px; }
 .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
@@ -205,6 +213,9 @@ onMounted(async () => {
 .pagination-wrap { display: flex; justify-content: flex-end; padding: 16px 0; }
 .img-placeholder { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; color: #ccc; font-size: 12px; border-radius: 4px; }
 .stock-warning { color: #f56c6c; font-weight: 600; }
+.product-img-cell { width:60px; height:60px; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:4px; background:#f5f5f5; position:relative; }
+.product-img { max-width:100%; max-height:100%; cursor:pointer; object-fit:cover; }
+.img-placeholder-text { color:#ccc; font-size:12px; }
 </style>
 
 <!-- 图片预览样式（全局，因为 teleport 到 body） -->

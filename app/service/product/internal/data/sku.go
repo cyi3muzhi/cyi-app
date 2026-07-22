@@ -6,6 +6,7 @@ import (
 	"cyi-app/app/service/product/internal/biz"
 	"cyi-app/app/service/product/internal/data/curd"
 	mod "cyi-app/app/service/product/internal/data/models"
+	"cyi-app/pkg/util/gorm"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -30,6 +31,7 @@ func (r *skuRepo) CreateSkus(ctx context.Context, skus []*biz.Sku) error {
 			SkuCode:   sku.SkuCode,
 			Price:     sku.Price,
 			SpecDesc:  marshalSpec(sku.Spec),
+			Image:     sku.Image,
 		})
 	}
 	if len(models) == 0 {
@@ -51,18 +53,20 @@ func (r *skuRepo) CreateSkus(ctx context.Context, skus []*biz.Sku) error {
 // 在事务内使用批量 INSERT 提升性能
 func (r *skuRepo) ReplaceSkus(ctx context.Context, productID int64, skus []*biz.Sku) error {
 	return curd.Q.Transaction(func(tx *curd.Query) error {
-		// 删除旧的SKU
-		if _, err := tx.Sku.WithContext(ctx).Where(tx.Sku.ProductID.Eq(productID)).Delete(); err != nil {
+		// 物理删除旧的SKU（模型含 DeletedAt，不加 Unscoped 会软删除导致主键冲突）
+		if _, err := tx.Sku.WithContext(ctx).Unscoped().Where(tx.Sku.ProductID.Eq(productID)).Delete(); err != nil {
 			return err
 		}
 		// 批量创建新的SKU
 		models := make([]*mod.Sku, 0, len(skus))
 		for _, sku := range skus {
 			models = append(models, &mod.Sku{
+				Model:     gorm.Model{ID: sku.ID}, // 复用旧 ID（0=新建）
 				ProductID: productID,
 				SkuCode:   sku.SkuCode,
 				Price:     sku.Price,
 				SpecDesc:  marshalSpec(sku.Spec),
+				Image:     sku.Image,
 			})
 		}
 		if len(models) > 0 {
@@ -88,6 +92,7 @@ func skuModelToBiz(m *mod.Sku) *biz.Sku {
 		SkuCode:   m.SkuCode,
 		Price:     m.Price,
 		Spec:      unmarshalSpec(m.SpecDesc),
+		Image:     m.Image,
 	}
 }
 

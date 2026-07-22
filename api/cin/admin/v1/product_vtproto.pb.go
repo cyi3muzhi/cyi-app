@@ -7,7 +7,9 @@ package adminv1
 import (
 	fmt "fmt"
 	protohelpers "github.com/planetscale/vtprotobuf/protohelpers"
+	wrapperspb "github.com/planetscale/vtprotobuf/types/known/wrapperspb"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	wrapperspb1 "google.golang.org/protobuf/types/known/wrapperspb"
 	io "io"
 )
 
@@ -47,6 +49,16 @@ func (m *ListProductRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.StockEq != nil {
+		size, err := (*wrapperspb.Int32Value)(m.StockEq).MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x3a
 	}
 	if m.CategoryId != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.CategoryId))
@@ -221,6 +233,13 @@ func (m *SkuItem) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if len(m.Image) > 0 {
+		i -= len(m.Image)
+		copy(dAtA[i:], m.Image)
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Image)))
+		i--
+		dAtA[i] = 0x3a
+	}
 	if len(m.Spec) > 0 {
 		for k := range m.Spec {
 			v := m.Spec[k]
@@ -299,6 +318,15 @@ func (m *ProductItem) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.Images) > 0 {
+		for iNdEx := len(m.Images) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Images[iNdEx])
+			copy(dAtA[i:], m.Images[iNdEx])
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Images[iNdEx])))
+			i--
+			dAtA[i] = 0x72
+		}
 	}
 	if m.CategoryId != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.CategoryId))
@@ -423,6 +451,15 @@ func (m *CreateProductRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) 
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.Images) > 0 {
+		for iNdEx := len(m.Images) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Images[iNdEx])
+			copy(dAtA[i:], m.Images[iNdEx])
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Images[iNdEx])))
+			i--
+			dAtA[i] = 0x5a
+		}
 	}
 	if m.CategoryId != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.CategoryId))
@@ -568,6 +605,15 @@ func (m *UpdateProductRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) 
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.Images) > 0 {
+		for iNdEx := len(m.Images) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Images[iNdEx])
+			copy(dAtA[i:], m.Images[iNdEx])
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(m.Images[iNdEx])))
+			i--
+			dAtA[i] = 0x6a
+		}
 	}
 	if m.CategoryId != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.CategoryId))
@@ -999,6 +1045,10 @@ func (m *ListProductRequest) SizeVT() (n int) {
 	if m.CategoryId != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.CategoryId))
 	}
+	if m.StockEq != nil {
+		l = (*wrapperspb.Int32Value)(m.StockEq).SizeVT()
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -1075,6 +1125,10 @@ func (m *SkuItem) SizeVT() (n int) {
 			n += mapEntrySize + 1 + protohelpers.SizeOfVarint(uint64(mapEntrySize))
 		}
 	}
+	l = len(m.Image)
+	if l > 0 {
+		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -1136,6 +1190,12 @@ func (m *ProductItem) SizeVT() (n int) {
 	if m.CategoryId != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.CategoryId))
 	}
+	if len(m.Images) > 0 {
+		for _, s := range m.Images {
+			l = len(s)
+			n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+		}
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -1186,6 +1246,12 @@ func (m *CreateProductRequest) SizeVT() (n int) {
 	}
 	if m.CategoryId != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.CategoryId))
+	}
+	if len(m.Images) > 0 {
+		for _, s := range m.Images {
+			l = len(s)
+			n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+		}
 	}
 	n += len(m.unknownFields)
 	return n
@@ -1257,6 +1323,12 @@ func (m *UpdateProductRequest) SizeVT() (n int) {
 	}
 	if m.CategoryId != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.CategoryId))
+	}
+	if len(m.Images) > 0 {
+		for _, s := range m.Images {
+			l = len(s)
+			n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+		}
 	}
 	n += len(m.unknownFields)
 	return n
@@ -1547,6 +1619,42 @@ func (m *ListProductRequest) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field StockEq", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.StockEq == nil {
+				m.StockEq = &wrapperspb1.Int32Value{}
+			}
+			if err := (*wrapperspb.Int32Value)(m.StockEq).UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -2071,6 +2179,38 @@ func (m *SkuItem) UnmarshalVT(dAtA []byte) error {
 			}
 			m.Spec[mapkey] = mapvalue
 			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Image", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Image = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -2477,6 +2617,38 @@ func (m *ProductItem) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
+		case 14:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Images", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Images = append(m.Images, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -2813,6 +2985,38 @@ func (m *CreateProductRequest) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
+		case 11:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Images", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Images = append(m.Images, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -3270,6 +3474,38 @@ func (m *UpdateProductRequest) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
+		case 13:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Images", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Images = append(m.Images, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])

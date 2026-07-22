@@ -18,6 +18,8 @@ type Product struct {
 	CategoryID int64 `json:"category_id" gorm:"index;not null;default:0;comment:商品分类ID"`
 	// 商品图片
 	Image string `json:"image" gorm:"type:varchar(1024);default:'';comment:商品图片（支持完整 URL 和 OSS 路径）"`
+	// 轮播图JSON数组
+	Images string `json:"images" gorm:"type:text;comment:轮播图JSON数组" mapstructure:"-"`
 	// 销量
 	Sales int32 `json:"sales" gorm:"not null;default:0;comment:销量"`
 }

@@ -3,6 +3,7 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { listProducts } from '../api/product'
 import type { AdminInfo } from '../types/api'
 
 /** localStorage 中保存的管理员信息 */
@@ -29,6 +30,19 @@ export const useAppStore = defineStore('app', () => {
 
   // 通知数量
   const notificationCount = ref(3)
+
+  // 已上架商品数量
+  const productOnlineCount = ref('')
+
+  /** 刷新已上架商品数量 */
+  async function fetchProductOnlineCount() {
+    try {
+      const res = await listProducts({ page: 1, page_size: 1, status: '1' })
+      productOnlineCount.value = res.total.toLocaleString()
+    } catch {
+      productOnlineCount.value = ''
+    }
+  }
 
   // 计算侧边栏宽度
   const sidebarWidth = computed(() => sidebarCollapsed.value ? '64px' : '240px')
@@ -103,12 +117,14 @@ export const useAppStore = defineStore('app', () => {
     adminInfo,
     userPermissions,
     notificationCount,
+    productOnlineCount,
     sidebarWidth,
     isLoggedIn,
     toggleSidebar() { sidebarCollapsed.value = !sidebarCollapsed.value },
     login,
     setPermissions,
     hasPerm,
-    logout
+    logout,
+    fetchProductOnlineCount
   }
 })

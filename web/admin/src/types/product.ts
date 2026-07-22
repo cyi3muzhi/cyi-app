@@ -15,6 +15,7 @@ export interface SkuInfo {
   price: number    // 分
   stock: number
   sales: number
+  image: string    // SKU 图片 URL
   spec: Record<string, string>  // {"颜色":"红色","尺寸":"M"}
 }
 
@@ -28,6 +29,7 @@ export interface ProductItem {
   sales: number
   status: string   // "上架" | "下架"
   image: string
+  images: string[] // 轮播图列表
   description: string
   specs: SpecGroup[]
   skus: SkuInfo[]
@@ -40,6 +42,7 @@ export interface ProductListParams {
   keyword?: string
   category_id?: number
   status?: string
+  stock_eq?: number  // 按库存数量筛选（0=缺货）
 }
 
 /** 规格组提交格式 */
@@ -53,6 +56,7 @@ export interface SkuInput {
   sku_code: string
   price: number     // 分
   stock: number     // 库存
+  image?: string    // SKU 图片 objectKey
   spec: Record<string, string>
 }
 
@@ -63,6 +67,7 @@ export interface CreateProductData {
   price: number
   description?: string
   image?: string
+  images?: string[]   // 轮播图 objectKey 列表
   specs?: SpecGroupInput[]
   skus?: SkuInput[]
 }
@@ -74,6 +79,7 @@ export interface UpdateProductData {
   price?: number
   description?: string
   image?: string
+  images?: string[]   // 轮播图 objectKey 列表
   status?: string
   specs?: SpecGroupInput[]
   skus?: SkuInput[]

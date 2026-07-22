@@ -11,6 +11,7 @@ type Sku struct {
 	Price     int64
 	Stock     int32 // 库存数量（从 inventory_stock 表加载，不持久化在 sku 表）
 	Spec      map[string]string // 规格描述，如 {"颜色":"红色","尺码":"XL"}
+	Image     string // SKU图片
 }
 
 // SkuRepo SKU 仓储接口

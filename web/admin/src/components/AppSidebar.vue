@@ -42,12 +42,23 @@
 /**
  * 侧边栏导航组件
  */
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '../store/app'
 
 const route = useRoute()
 const store = useAppStore()
+
+/** 侧边栏从 store 读取已上架商品数量，无需自己发起请求 */
+const productBadge = computed(() => store.productOnlineCount)
+
+/** 监听商品变更事件，刷新 store 中的计数 */
+function onProductChanged() { store.fetchProductOnlineCount() }
+window.addEventListener('product-changed', onProductChanged)
+onUnmounted(() => window.removeEventListener('product-changed', onProductChanged))
+
+/** 初始化时加载一次计数 */
+onMounted(() => store.fetchProductOnlineCount())
 
 // 菜单项定义（perm 为可选的权限标识 ×××.view）
 const allMenuItems = [
@@ -115,14 +126,21 @@ const allMenuItems = [
   }
 ]
 
-// 根据权限过滤菜单
+// 根据权限过滤菜单，注入动态 badge
 const menuItems = computed(() => {
-  return allMenuItems.filter(item => {
+  return allMenuItems.map(item => {
+    if (item.path === '/products') {
+      return { ...item, badge: productBadge.value || undefined }
+    }
+    return item
+  }).filter(item => {
     if (!item.perm) return true
     const [mod, act] = item.perm.split('.')
     return store.hasPerm(mod, act)
   })
-})/**
+})
+
+/**
  * 判断菜单项是否活跃
  */
 function isActive(path) {

@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package api.service.product.v1;
 
+import "google/protobuf/wrappers.proto";
+
 option go_package = "cyi-app/api/service/product/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.service.product.v1";
@@ -21,6 +23,7 @@ message SkuInfo {
 	int32 stock = 4;        // 库存
 	int32 sales = 5;        // 销量
 	map<string, string> spec = 6; // 规格描述，如 {"颜色":"红色","尺码":"XL"}
+	string image = 7;       // SKU图片
 }
 
 service Product {
@@ -44,6 +47,7 @@ message ProductItem {
 	repeated SpecGroupInfo specs = 9;  // 规格组列表
 	repeated SkuInfo skus = 10;        // SKU列表
 	int64 category_id = 11;  // 商品分类ID，关联 category 表
+	repeated string images = 12; // 轮播图列表
 }
 
 message CreateProductRequest {
@@ -56,6 +60,7 @@ message CreateProductRequest {
 	repeated SpecGroupInfo specs = 7;  // 规格组列表
 	repeated SkuInfo skus = 8;         // SKU列表
 	int64 category_id = 9;   // 商品分类ID
+	repeated string images = 10; // 轮播图列表
 }
 
 message CreateProductReply {
@@ -74,6 +79,7 @@ message UpdateProductRequest {
 	repeated SpecGroupInfo specs = 9;  // 规格组列表
 	repeated SkuInfo skus = 10;        // SKU列表
 	int64 category_id = 11;  // 商品分类ID
+	repeated string images = 12; // 轮播图列表
 }
 
 message UpdateProductReply {
@@ -103,6 +109,7 @@ message ListProductRequest {
 	string category = 4 [deprecated = true];  // 已废弃，改用 category_id
 	string status = 5;      // 状态筛选
 	int64 category_id = 6;   // 分类ID筛选
+	google.protobuf.Int32Value stock_eq = 7; // 按可用库存数量筛选（如 {value: 0}=缺货，不传=不筛选）
 }
 
 message ListProductReply {

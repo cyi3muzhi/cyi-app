@@ -9,6 +9,7 @@ export interface FilterState {
   keyword: string
   category_id: number | undefined
   status: string
+  stock_eq: number | undefined  // 0=缺货
 }
 
 export function useProductList() {
@@ -18,7 +19,7 @@ export function useProductList() {
   const pageSize = ref(10)
   const loading = ref(false)
   const selectedIds = ref<number[]>([])
-  const filters = ref<FilterState>({ keyword: '', category_id: undefined, status: '' })
+  const filters = ref<FilterState>({ keyword: '', category_id: undefined, status: '', stock_eq: undefined })
 
   const totalPages = computed(() =>
     Math.ceil(totalCount.value / pageSize.value) || 1
@@ -37,10 +38,12 @@ export function useProductList() {
         keyword: filters.value.keyword || undefined,
         category_id: filters.value.category_id || undefined,
         status: filters.value.status || undefined,
+        stock_eq: filters.value.stock_eq,
       })
       totalCount.value = res.total
       products.value = res.items || []
     } catch {
+      ElMessage.error('加载商品列表失败')
       products.value = []
       totalCount.value = 0
     } finally {
@@ -78,6 +81,7 @@ export function useProductList() {
       const res = await batchProductOperation(action, selectedIds.value)
       ElMessage.success(`${action}成功 ${res.affected_count} 项`)
       selectedIds.value = []
+      window.dispatchEvent(new CustomEvent('product-changed'))
       loadProducts()
     } catch {
       ElMessage.error(`${action}失败`)
@@ -88,6 +92,7 @@ export function useProductList() {
     try {
       await deleteProduct(id)
       ElMessage.success('删除成功')
+      window.dispatchEvent(new CustomEvent('product-changed'))
       loadProducts()
     } catch {
       ElMessage.error('删除失败')
@@ -99,6 +104,7 @@ export function useProductList() {
     try {
       await batchProductOperation(newStatus as any, [id])
       ElMessage.success(`已${newStatus}`)
+      window.dispatchEvent(new CustomEvent('product-changed'))
       loadProducts()
     } catch {
       ElMessage.error('操作失败')

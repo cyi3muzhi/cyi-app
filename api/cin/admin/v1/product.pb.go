@@ -11,6 +11,7 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -29,9 +30,10 @@ type ListProductRequest struct {
 	PageSize int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	Keyword  string                 `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`
 	// Deprecated: Marked as deprecated in api/cin/admin/v1/product.proto.
-	Category      string `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
-	Status        string `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
-	CategoryId    int64  `protobuf:"varint,6,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	Category      string                 `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
+	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
+	CategoryId    int64                  `protobuf:"varint,6,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	StockEq       *wrapperspb.Int32Value `protobuf:"bytes,7,opt,name=stock_eq,json=stockEq,proto3" json:"stock_eq,omitempty"` // 按库存数量筛选（如 {value: 0}=缺货，不传=不筛选）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -107,6 +109,13 @@ func (x *ListProductRequest) GetCategoryId() int64 {
 		return x.CategoryId
 	}
 	return 0
+}
+
+func (x *ListProductRequest) GetStockEq() *wrapperspb.Int32Value {
+	if x != nil {
+		return x.StockEq
+	}
+	return nil
 }
 
 type ListProductReply struct {
@@ -231,6 +240,7 @@ type SkuItem struct {
 	Stock         int32                  `protobuf:"varint,4,opt,name=stock,proto3" json:"stock,omitempty"`
 	Sales         int32                  `protobuf:"varint,5,opt,name=sales,proto3" json:"sales,omitempty"`
 	Spec          map[string]string      `protobuf:"bytes,6,rep,name=spec,proto3" json:"spec,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Image         string                 `protobuf:"bytes,7,opt,name=image,proto3" json:"image,omitempty"` // SKU图片
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -307,6 +317,13 @@ func (x *SkuItem) GetSpec() map[string]string {
 	return nil
 }
 
+func (x *SkuItem) GetImage() string {
+	if x != nil {
+		return x.Image
+	}
+	return ""
+}
+
 type ProductItem struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -323,6 +340,7 @@ type ProductItem struct {
 	Skus          []*SkuItem       `protobuf:"bytes,11,rep,name=skus,proto3" json:"skus,omitempty"`
 	Description   string           `protobuf:"bytes,12,opt,name=description,proto3" json:"description,omitempty"`
 	CategoryId    int64            `protobuf:"varint,13,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"` // 商品分类ID
+	Images        []string         `protobuf:"bytes,14,rep,name=images,proto3" json:"images,omitempty"`                            // 轮播图列表
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -449,6 +467,13 @@ func (x *ProductItem) GetCategoryId() int64 {
 	return 0
 }
 
+func (x *ProductItem) GetImages() []string {
+	if x != nil {
+		return x.Images
+	}
+	return nil
+}
+
 type CreateProductRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -462,6 +487,7 @@ type CreateProductRequest struct {
 	Specs         []*SpecGroupItem `protobuf:"bytes,8,rep,name=specs,proto3" json:"specs,omitempty"`
 	Skus          []*SkuItem       `protobuf:"bytes,9,rep,name=skus,proto3" json:"skus,omitempty"`
 	CategoryId    int64            `protobuf:"varint,10,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"` // 商品分类ID
+	Images        []string         `protobuf:"bytes,11,rep,name=images,proto3" json:"images,omitempty"`                            // 轮播图列表
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -567,6 +593,13 @@ func (x *CreateProductRequest) GetCategoryId() int64 {
 	return 0
 }
 
+func (x *CreateProductRequest) GetImages() []string {
+	if x != nil {
+		return x.Images
+	}
+	return nil
+}
+
 type CreateProductReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -626,6 +659,7 @@ type UpdateProductRequest struct {
 	Specs         []*SpecGroupItem `protobuf:"bytes,10,rep,name=specs,proto3" json:"specs,omitempty"`
 	Skus          []*SkuItem       `protobuf:"bytes,11,rep,name=skus,proto3" json:"skus,omitempty"`
 	CategoryId    int64            `protobuf:"varint,12,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"` // 商品分类ID
+	Images        []string         `protobuf:"bytes,13,rep,name=images,proto3" json:"images,omitempty"`                            // 轮播图列表
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -743,6 +777,13 @@ func (x *UpdateProductRequest) GetCategoryId() int64 {
 		return x.CategoryId
 	}
 	return 0
+}
+
+func (x *UpdateProductRequest) GetImages() []string {
+	if x != nil {
+		return x.Images
+	}
+	return nil
 }
 
 type UpdateProductReply struct {
@@ -1073,7 +1114,7 @@ var File_api_cin_admin_v1_product_proto protoreflect.FileDescriptor
 
 const file_api_cin_admin_v1_product_proto_rawDesc = "" +
 	"\n" +
-	"\x1eapi/cin/admin/v1/product.proto\x12\x10api.cin.admin.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\xb8\x01\n" +
+	"\x1eapi/cin/admin/v1/product.proto\x12\x10api.cin.admin.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1egoogle/protobuf/wrappers.proto\"\xf0\x01\n" +
 	"\x12ListProductRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x18\n" +
@@ -1081,24 +1122,26 @@ const file_api_cin_admin_v1_product_proto_rawDesc = "" +
 	"\bcategory\x18\x04 \x01(\tB\x02\x18\x01R\bcategory\x12\x16\n" +
 	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1f\n" +
 	"\vcategory_id\x18\x06 \x01(\x03R\n" +
-	"categoryId\"]\n" +
+	"categoryId\x126\n" +
+	"\bstock_eq\x18\a \x01(\v2\x1b.google.protobuf.Int32ValueR\astockEq\"]\n" +
 	"\x10ListProductReply\x123\n" +
 	"\x05items\x18\x01 \x03(\v2\x1d.api.cin.admin.v1.ProductItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\"K\n" +
 	"\rSpecGroupItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
-	"\x06values\x18\x03 \x03(\tR\x06values\"\xe8\x01\n" +
+	"\x06values\x18\x03 \x03(\tR\x06values\"\xfe\x01\n" +
 	"\aSkuItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x19\n" +
 	"\bsku_code\x18\x02 \x01(\tR\askuCode\x12\x14\n" +
 	"\x05price\x18\x03 \x01(\x03R\x05price\x12\x14\n" +
 	"\x05stock\x18\x04 \x01(\x05R\x05stock\x12\x14\n" +
 	"\x05sales\x18\x05 \x01(\x05R\x05sales\x127\n" +
-	"\x04spec\x18\x06 \x03(\v2#.api.cin.admin.v1.SkuItem.SpecEntryR\x04spec\x1a7\n" +
+	"\x04spec\x18\x06 \x03(\v2#.api.cin.admin.v1.SkuItem.SpecEntryR\x04spec\x12\x14\n" +
+	"\x05image\x18\a \x01(\tR\x05image\x1a7\n" +
 	"\tSpecEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xfc\x02\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x94\x03\n" +
 	"\vProductItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1e\n" +
@@ -1114,7 +1157,8 @@ const file_api_cin_admin_v1_product_proto_rawDesc = "" +
 	"\x04skus\x18\v \x03(\v2\x19.api.cin.admin.v1.SkuItemR\x04skus\x12 \n" +
 	"\vdescription\x18\f \x01(\tR\vdescription\x12\x1f\n" +
 	"\vcategory_id\x18\r \x01(\x03R\n" +
-	"categoryId\"\xe5\x02\n" +
+	"categoryId\x12\x16\n" +
+	"\x06images\x18\x0e \x03(\tR\x06images\"\xfd\x02\n" +
 	"\x14CreateProductRequest\x12\x1e\n" +
 	"\x04name\x18\x01 \x01(\tB\n" +
 	"\xfaB\ar\x05\x10\x01\x18\x80\x01R\x04name\x12\x1e\n" +
@@ -1128,9 +1172,10 @@ const file_api_cin_admin_v1_product_proto_rawDesc = "" +
 	"\x04skus\x18\t \x03(\v2\x19.api.cin.admin.v1.SkuItemR\x04skus\x12\x1f\n" +
 	"\vcategory_id\x18\n" +
 	" \x01(\x03R\n" +
-	"categoryId\"$\n" +
+	"categoryId\x12\x16\n" +
+	"\x06images\x18\v \x03(\tR\x06images\"$\n" +
 	"\x12CreateProductReply\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"\xf8\x02\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\x90\x03\n" +
 	"\x14UpdateProductRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1e\n" +
@@ -1145,7 +1190,8 @@ const file_api_cin_admin_v1_product_proto_rawDesc = "" +
 	" \x03(\v2\x1f.api.cin.admin.v1.SpecGroupItemR\x05specs\x12-\n" +
 	"\x04skus\x18\v \x03(\v2\x19.api.cin.admin.v1.SkuItemR\x04skus\x12\x1f\n" +
 	"\vcategory_id\x18\f \x01(\x03R\n" +
-	"categoryId\".\n" +
+	"categoryId\x12\x16\n" +
+	"\x06images\x18\r \x03(\tR\x06images\".\n" +
 	"\x12UpdateProductReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"/\n" +
 	"\x14DeleteProductRequest\x12\x17\n" +
@@ -1202,34 +1248,36 @@ var file_api_cin_admin_v1_product_proto_goTypes = []any{
 	(*BatchOperationRequest)(nil), // 13: api.cin.admin.v1.BatchOperationRequest
 	(*BatchOperationReply)(nil),   // 14: api.cin.admin.v1.BatchOperationReply
 	nil,                           // 15: api.cin.admin.v1.SkuItem.SpecEntry
+	(*wrapperspb.Int32Value)(nil), // 16: google.protobuf.Int32Value
 }
 var file_api_cin_admin_v1_product_proto_depIdxs = []int32{
-	4,  // 0: api.cin.admin.v1.ListProductReply.items:type_name -> api.cin.admin.v1.ProductItem
-	15, // 1: api.cin.admin.v1.SkuItem.spec:type_name -> api.cin.admin.v1.SkuItem.SpecEntry
-	2,  // 2: api.cin.admin.v1.ProductItem.specs:type_name -> api.cin.admin.v1.SpecGroupItem
-	3,  // 3: api.cin.admin.v1.ProductItem.skus:type_name -> api.cin.admin.v1.SkuItem
-	2,  // 4: api.cin.admin.v1.CreateProductRequest.specs:type_name -> api.cin.admin.v1.SpecGroupItem
-	3,  // 5: api.cin.admin.v1.CreateProductRequest.skus:type_name -> api.cin.admin.v1.SkuItem
-	2,  // 6: api.cin.admin.v1.UpdateProductRequest.specs:type_name -> api.cin.admin.v1.SpecGroupItem
-	3,  // 7: api.cin.admin.v1.UpdateProductRequest.skus:type_name -> api.cin.admin.v1.SkuItem
-	4,  // 8: api.cin.admin.v1.GetProductReply.product:type_name -> api.cin.admin.v1.ProductItem
-	0,  // 9: api.cin.admin.v1.AdminProduct.ListProduct:input_type -> api.cin.admin.v1.ListProductRequest
-	5,  // 10: api.cin.admin.v1.AdminProduct.CreateProduct:input_type -> api.cin.admin.v1.CreateProductRequest
-	7,  // 11: api.cin.admin.v1.AdminProduct.UpdateProduct:input_type -> api.cin.admin.v1.UpdateProductRequest
-	9,  // 12: api.cin.admin.v1.AdminProduct.DeleteProduct:input_type -> api.cin.admin.v1.DeleteProductRequest
-	11, // 13: api.cin.admin.v1.AdminProduct.GetProduct:input_type -> api.cin.admin.v1.GetProductRequest
-	13, // 14: api.cin.admin.v1.AdminProduct.BatchOperation:input_type -> api.cin.admin.v1.BatchOperationRequest
-	1,  // 15: api.cin.admin.v1.AdminProduct.ListProduct:output_type -> api.cin.admin.v1.ListProductReply
-	6,  // 16: api.cin.admin.v1.AdminProduct.CreateProduct:output_type -> api.cin.admin.v1.CreateProductReply
-	8,  // 17: api.cin.admin.v1.AdminProduct.UpdateProduct:output_type -> api.cin.admin.v1.UpdateProductReply
-	10, // 18: api.cin.admin.v1.AdminProduct.DeleteProduct:output_type -> api.cin.admin.v1.DeleteProductReply
-	12, // 19: api.cin.admin.v1.AdminProduct.GetProduct:output_type -> api.cin.admin.v1.GetProductReply
-	14, // 20: api.cin.admin.v1.AdminProduct.BatchOperation:output_type -> api.cin.admin.v1.BatchOperationReply
-	15, // [15:21] is the sub-list for method output_type
-	9,  // [9:15] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	16, // 0: api.cin.admin.v1.ListProductRequest.stock_eq:type_name -> google.protobuf.Int32Value
+	4,  // 1: api.cin.admin.v1.ListProductReply.items:type_name -> api.cin.admin.v1.ProductItem
+	15, // 2: api.cin.admin.v1.SkuItem.spec:type_name -> api.cin.admin.v1.SkuItem.SpecEntry
+	2,  // 3: api.cin.admin.v1.ProductItem.specs:type_name -> api.cin.admin.v1.SpecGroupItem
+	3,  // 4: api.cin.admin.v1.ProductItem.skus:type_name -> api.cin.admin.v1.SkuItem
+	2,  // 5: api.cin.admin.v1.CreateProductRequest.specs:type_name -> api.cin.admin.v1.SpecGroupItem
+	3,  // 6: api.cin.admin.v1.CreateProductRequest.skus:type_name -> api.cin.admin.v1.SkuItem
+	2,  // 7: api.cin.admin.v1.UpdateProductRequest.specs:type_name -> api.cin.admin.v1.SpecGroupItem
+	3,  // 8: api.cin.admin.v1.UpdateProductRequest.skus:type_name -> api.cin.admin.v1.SkuItem
+	4,  // 9: api.cin.admin.v1.GetProductReply.product:type_name -> api.cin.admin.v1.ProductItem
+	0,  // 10: api.cin.admin.v1.AdminProduct.ListProduct:input_type -> api.cin.admin.v1.ListProductRequest
+	5,  // 11: api.cin.admin.v1.AdminProduct.CreateProduct:input_type -> api.cin.admin.v1.CreateProductRequest
+	7,  // 12: api.cin.admin.v1.AdminProduct.UpdateProduct:input_type -> api.cin.admin.v1.UpdateProductRequest
+	9,  // 13: api.cin.admin.v1.AdminProduct.DeleteProduct:input_type -> api.cin.admin.v1.DeleteProductRequest
+	11, // 14: api.cin.admin.v1.AdminProduct.GetProduct:input_type -> api.cin.admin.v1.GetProductRequest
+	13, // 15: api.cin.admin.v1.AdminProduct.BatchOperation:input_type -> api.cin.admin.v1.BatchOperationRequest
+	1,  // 16: api.cin.admin.v1.AdminProduct.ListProduct:output_type -> api.cin.admin.v1.ListProductReply
+	6,  // 17: api.cin.admin.v1.AdminProduct.CreateProduct:output_type -> api.cin.admin.v1.CreateProductReply
+	8,  // 18: api.cin.admin.v1.AdminProduct.UpdateProduct:output_type -> api.cin.admin.v1.UpdateProductReply
+	10, // 19: api.cin.admin.v1.AdminProduct.DeleteProduct:output_type -> api.cin.admin.v1.DeleteProductReply
+	12, // 20: api.cin.admin.v1.AdminProduct.GetProduct:output_type -> api.cin.admin.v1.GetProductReply
+	14, // 21: api.cin.admin.v1.AdminProduct.BatchOperation:output_type -> api.cin.admin.v1.BatchOperationReply
+	16, // [16:22] is the sub-list for method output_type
+	10, // [10:16] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_api_cin_admin_v1_product_proto_init() }

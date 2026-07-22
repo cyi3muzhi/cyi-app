@@ -12,7 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
 // newProductTestRepo 创建测试用的 productRepo
 func newProductTestRepo(t *testing.T, db *gorm.DB) *productRepo {
 	return &productRepo{data: &Data{}, log: log.NewHelper(log.NewStdLogger(nil))}
@@ -29,7 +28,7 @@ func TestListProduct_StatusFilterOnSale(t *testing.T) {
 	requireNoError(t, db.Create(onSale).Error)
 	requireNoError(t, db.Create(offSale).Error)
 
-	products, total, err := repo.ListProduct(ctx, 1, 10, "", 0, "上架")
+	products, total, err := repo.ListProduct(ctx, 1, 10, "", 0, "上架", -1)
 	assert.NoError(t, err)
 	assert.Equal(t, int32(1), total)
 	assert.Len(t, products, 1)
@@ -45,7 +44,7 @@ func TestListProduct_StatusFilterNumericOne(t *testing.T) {
 	onSale := &mod.Product{Name: "上架商品", Status: 1}
 	requireNoError(t, db.Create(onSale).Error)
 
-	products, total, err := repo.ListProduct(ctx, 1, 10, "", 0, "1")
+	products, total, err := repo.ListProduct(ctx, 1, 10, "", 0, "1", -1)
 	assert.NoError(t, err)
 	assert.Equal(t, int32(1), total)
 	assert.Len(t, products, 1)
@@ -62,7 +61,7 @@ func TestListProduct_StatusFilterOffSale(t *testing.T) {
 	requireNoError(t, db.Create(onSale).Error)
 	requireNoError(t, db.Create(offSale).Error)
 
-	products, total, err := repo.ListProduct(ctx, 1, 10, "", 0, "下架")
+	products, total, err := repo.ListProduct(ctx, 1, 10, "", 0, "下架", -1)
 	assert.NoError(t, err)
 	assert.Equal(t, int32(1), total)
 	assert.Equal(t, "下架商品", products[0].Name)
@@ -81,7 +80,7 @@ func TestListProduct_KeywordSearch(t *testing.T) {
 	requireNoError(t, db.Create(p2).Error)
 	requireNoError(t, db.Create(p3).Error)
 
-	products, total, err := repo.ListProduct(ctx, 1, 10, "智能", 0, "")
+	products, total, err := repo.ListProduct(ctx, 1, 10, "智能", 0, "", -1)
 	assert.NoError(t, err)
 	assert.Equal(t, int32(2), total)
 	assert.Len(t, products, 2)
@@ -100,7 +99,7 @@ func TestListProduct_CategoryFilter(t *testing.T) {
 	requireNoError(t, db.Create(p2).Error)
 	requireNoError(t, db.Create(p3).Error)
 
-	products, total, err := repo.ListProduct(ctx, 1, 10, "", 1, "")
+	products, total, err := repo.ListProduct(ctx, 1, 10, "", 1, "", -1)
 	assert.NoError(t, err)
 	assert.Equal(t, int32(2), total)
 	assert.Len(t, products, 2)
@@ -116,7 +115,7 @@ func TestListProduct_Pagination(t *testing.T) {
 		requireNoError(t, db.Create(&mod.Product{Name: "商品"}).Error)
 	}
 
-	products, total, err := repo.ListProduct(ctx, 2, 2, "", 0, "")
+	products, total, err := repo.ListProduct(ctx, 2, 2, "", 0, "", -1)
 	assert.NoError(t, err)
 	assert.Equal(t, int32(5), total)
 	assert.Len(t, products, 2)

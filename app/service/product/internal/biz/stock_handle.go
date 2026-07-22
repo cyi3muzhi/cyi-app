@@ -10,6 +10,8 @@ type StockRepo interface {
 	UpdateStock(ctx context.Context, in *Stock) error
 	// DeleteStockByProductID 按商品ID批量删除库存记录
 	DeleteStockByProductID(ctx context.Context, productID int64) error
+	// DeleteStockBySkuID 按 SKU ID 删除库存记录
+	DeleteStockBySkuID(ctx context.Context, skuID int64) error
 	// ReserveStock 按 SKU ID 预留库存
 	ReserveStock(ctx context.Context, skuID int64, count int32, version int32) (int32, error)
 	// DeductStock 按 SKU ID 确认扣减库存

@@ -544,6 +544,11 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: stockEq
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
             responses:
                 "200":
                     description: OK
@@ -1696,6 +1701,10 @@ components:
                         $ref: '#/components/schemas/api.cin.admin.v1.SkuItem'
                 categoryId:
                     type: string
+                images:
+                    type: array
+                    items:
+                        type: string
         api.cin.admin.v1.CreateRoleReply:
             type: object
             properties:
@@ -2117,6 +2126,10 @@ components:
                     type: string
                 categoryId:
                     type: string
+                images:
+                    type: array
+                    items:
+                        type: string
         api.cin.admin.v1.RevenueCategory:
             type: object
             properties:
@@ -2181,6 +2194,8 @@ components:
                     type: object
                     additionalProperties:
                         type: string
+                image:
+                    type: string
             description: SKU 项（管理后台用）
         api.cin.admin.v1.SpecGroupItem:
             type: object
@@ -2390,6 +2405,10 @@ components:
                         $ref: '#/components/schemas/api.cin.admin.v1.SkuItem'
                 categoryId:
                     type: string
+                images:
+                    type: array
+                    items:
+                        type: string
         api.cin.admin.v1.UpdateRolePermissionsReply:
             type: object
             properties:

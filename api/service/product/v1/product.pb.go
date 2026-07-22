@@ -9,6 +9,7 @@ package v1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -91,6 +92,7 @@ type SkuInfo struct {
 	Stock         int32                  `protobuf:"varint,4,opt,name=stock,proto3" json:"stock,omitempty"`                                                                        // 库存
 	Sales         int32                  `protobuf:"varint,5,opt,name=sales,proto3" json:"sales,omitempty"`                                                                        // 销量
 	Spec          map[string]string      `protobuf:"bytes,6,rep,name=spec,proto3" json:"spec,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // 规格描述，如 {"颜色":"红色","尺码":"XL"}
+	Image         string                 `protobuf:"bytes,7,opt,name=image,proto3" json:"image,omitempty"`                                                                         // SKU图片
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -167,6 +169,13 @@ func (x *SkuInfo) GetSpec() map[string]string {
 	return nil
 }
 
+func (x *SkuInfo) GetImage() string {
+	if x != nil {
+		return x.Image
+	}
+	return ""
+}
+
 // 商品信息（完整字段）
 type ProductItem struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
@@ -182,6 +191,7 @@ type ProductItem struct {
 	Specs         []*SpecGroupInfo `protobuf:"bytes,9,rep,name=specs,proto3" json:"specs,omitempty"`                               // 规格组列表
 	Skus          []*SkuInfo       `protobuf:"bytes,10,rep,name=skus,proto3" json:"skus,omitempty"`                                // SKU列表
 	CategoryId    int64            `protobuf:"varint,11,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"` // 商品分类ID，关联 category 表
+	Images        []string         `protobuf:"bytes,12,rep,name=images,proto3" json:"images,omitempty"`                            // 轮播图列表
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -294,6 +304,13 @@ func (x *ProductItem) GetCategoryId() int64 {
 	return 0
 }
 
+func (x *ProductItem) GetImages() []string {
+	if x != nil {
+		return x.Images
+	}
+	return nil
+}
+
 type CreateProductRequest struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
 	Name        string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`               // 商品名称
@@ -306,6 +323,7 @@ type CreateProductRequest struct {
 	Specs         []*SpecGroupInfo `protobuf:"bytes,7,rep,name=specs,proto3" json:"specs,omitempty"`                              // 规格组列表
 	Skus          []*SkuInfo       `protobuf:"bytes,8,rep,name=skus,proto3" json:"skus,omitempty"`                                // SKU列表
 	CategoryId    int64            `protobuf:"varint,9,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"` // 商品分类ID
+	Images        []string         `protobuf:"bytes,10,rep,name=images,proto3" json:"images,omitempty"`                           // 轮播图列表
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -404,6 +422,13 @@ func (x *CreateProductRequest) GetCategoryId() int64 {
 	return 0
 }
 
+func (x *CreateProductRequest) GetImages() []string {
+	if x != nil {
+		return x.Images
+	}
+	return nil
+}
+
 type CreateProductReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 创建后返回的商品ID
@@ -462,6 +487,7 @@ type UpdateProductRequest struct {
 	Specs         []*SpecGroupInfo `protobuf:"bytes,9,rep,name=specs,proto3" json:"specs,omitempty"`                               // 规格组列表
 	Skus          []*SkuInfo       `protobuf:"bytes,10,rep,name=skus,proto3" json:"skus,omitempty"`                                // SKU列表
 	CategoryId    int64            `protobuf:"varint,11,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"` // 商品分类ID
+	Images        []string         `protobuf:"bytes,12,rep,name=images,proto3" json:"images,omitempty"`                            // 轮播图列表
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -572,6 +598,13 @@ func (x *UpdateProductRequest) GetCategoryId() int64 {
 		return x.CategoryId
 	}
 	return 0
+}
+
+func (x *UpdateProductRequest) GetImages() []string {
+	if x != nil {
+		return x.Images
+	}
+	return nil
 }
 
 type UpdateProductReply struct {
@@ -800,9 +833,10 @@ type ListProductRequest struct {
 	PageSize int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"` // 每页条数
 	Keyword  string                 `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`                    // 关键词搜索（匹配名称/描述）
 	// Deprecated: Marked as deprecated in api/service/product/v1/product.proto.
-	Category      string `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`                        // 已废弃，改用 category_id
-	Status        string `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`                            // 状态筛选
-	CategoryId    int64  `protobuf:"varint,6,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"` // 分类ID筛选
+	Category      string                 `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`                        // 已废弃，改用 category_id
+	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`                            // 状态筛选
+	CategoryId    int64                  `protobuf:"varint,6,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"` // 分类ID筛选
+	StockEq       *wrapperspb.Int32Value `protobuf:"bytes,7,opt,name=stock_eq,json=stockEq,proto3" json:"stock_eq,omitempty"`           // 按可用库存数量筛选（如 {value: 0}=缺货，不传=不筛选）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -880,6 +914,13 @@ func (x *ListProductRequest) GetCategoryId() int64 {
 	return 0
 }
 
+func (x *ListProductRequest) GetStockEq() *wrapperspb.Int32Value {
+	if x != nil {
+		return x.StockEq
+	}
+	return nil
+}
+
 type ListProductReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*ProductItem         `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`  // 商品列表
@@ -936,21 +977,22 @@ var File_api_service_product_v1_product_proto protoreflect.FileDescriptor
 
 const file_api_service_product_v1_product_proto_rawDesc = "" +
 	"\n" +
-	"$api/service/product/v1/product.proto\x12\x16api.service.product.v1\"K\n" +
+	"$api/service/product/v1/product.proto\x12\x16api.service.product.v1\x1a\x1egoogle/protobuf/wrappers.proto\"K\n" +
 	"\rSpecGroupInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
-	"\x06values\x18\x03 \x03(\tR\x06values\"\xee\x01\n" +
+	"\x06values\x18\x03 \x03(\tR\x06values\"\x84\x02\n" +
 	"\aSkuInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x19\n" +
 	"\bsku_code\x18\x02 \x01(\tR\askuCode\x12\x14\n" +
 	"\x05price\x18\x03 \x01(\x03R\x05price\x12\x14\n" +
 	"\x05stock\x18\x04 \x01(\x05R\x05stock\x12\x14\n" +
 	"\x05sales\x18\x05 \x01(\x05R\x05sales\x12=\n" +
-	"\x04spec\x18\x06 \x03(\v2).api.service.product.v1.SkuInfo.SpecEntryR\x04spec\x1a7\n" +
+	"\x04spec\x18\x06 \x03(\v2).api.service.product.v1.SkuInfo.SpecEntryR\x04spec\x12\x14\n" +
+	"\x05image\x18\a \x01(\tR\x05image\x1a7\n" +
 	"\tSpecEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xef\x02\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x87\x03\n" +
 	"\vProductItem\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03R\tproductId\x12\x12\n" +
@@ -965,7 +1007,8 @@ const file_api_service_product_v1_product_proto_rawDesc = "" +
 	"\x04skus\x18\n" +
 	" \x03(\v2\x1f.api.service.product.v1.SkuInfoR\x04skus\x12\x1f\n" +
 	"\vcategory_id\x18\v \x01(\x03R\n" +
-	"categoryId\"\xc1\x02\n" +
+	"categoryId\x12\x16\n" +
+	"\x06images\x18\f \x03(\tR\x06images\"\xd9\x02\n" +
 	"\x14CreateProductRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x14\n" +
@@ -976,10 +1019,12 @@ const file_api_service_product_v1_product_proto_rawDesc = "" +
 	"\x05specs\x18\a \x03(\v2%.api.service.product.v1.SpecGroupInfoR\x05specs\x123\n" +
 	"\x04skus\x18\b \x03(\v2\x1f.api.service.product.v1.SkuInfoR\x04skus\x12\x1f\n" +
 	"\vcategory_id\x18\t \x01(\x03R\n" +
-	"categoryId\"3\n" +
+	"categoryId\x12\x16\n" +
+	"\x06images\x18\n" +
+	" \x03(\tR\x06images\"3\n" +
 	"\x12CreateProductReply\x12\x1d\n" +
 	"\n" +
-	"product_id\x18\x01 \x01(\x03R\tproductId\"\xf8\x02\n" +
+	"product_id\x18\x01 \x01(\x03R\tproductId\"\x90\x03\n" +
 	"\x14UpdateProductRequest\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03R\tproductId\x12\x12\n" +
@@ -994,7 +1039,8 @@ const file_api_service_product_v1_product_proto_rawDesc = "" +
 	"\x04skus\x18\n" +
 	" \x03(\v2\x1f.api.service.product.v1.SkuInfoR\x04skus\x12\x1f\n" +
 	"\vcategory_id\x18\v \x01(\x03R\n" +
-	"categoryId\".\n" +
+	"categoryId\x12\x16\n" +
+	"\x06images\x18\f \x03(\tR\x06images\".\n" +
 	"\x12UpdateProductReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"5\n" +
 	"\x14DeleteProductRequest\x12\x1d\n" +
@@ -1006,7 +1052,7 @@ const file_api_service_product_v1_product_proto_rawDesc = "" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03R\tproductId\"P\n" +
 	"\x0fGetProductReply\x12=\n" +
-	"\aproduct\x18\x01 \x01(\v2#.api.service.product.v1.ProductItemR\aproduct\"\xb8\x01\n" +
+	"\aproduct\x18\x01 \x01(\v2#.api.service.product.v1.ProductItemR\aproduct\"\xf0\x01\n" +
 	"\x12ListProductRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x18\n" +
@@ -1014,7 +1060,8 @@ const file_api_service_product_v1_product_proto_rawDesc = "" +
 	"\bcategory\x18\x04 \x01(\tB\x02\x18\x01R\bcategory\x12\x16\n" +
 	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1f\n" +
 	"\vcategory_id\x18\x06 \x01(\x03R\n" +
-	"categoryId\"c\n" +
+	"categoryId\x126\n" +
+	"\bstock_eq\x18\a \x01(\v2\x1b.google.protobuf.Int32ValueR\astockEq\"c\n" +
 	"\x10ListProductReply\x129\n" +
 	"\x05items\x18\x01 \x03(\v2#.api.service.product.v1.ProductItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total2\x91\x04\n" +
@@ -1041,20 +1088,21 @@ func file_api_service_product_v1_product_proto_rawDescGZIP() []byte {
 
 var file_api_service_product_v1_product_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_api_service_product_v1_product_proto_goTypes = []any{
-	(*SpecGroupInfo)(nil),        // 0: api.service.product.v1.SpecGroupInfo
-	(*SkuInfo)(nil),              // 1: api.service.product.v1.SkuInfo
-	(*ProductItem)(nil),          // 2: api.service.product.v1.ProductItem
-	(*CreateProductRequest)(nil), // 3: api.service.product.v1.CreateProductRequest
-	(*CreateProductReply)(nil),   // 4: api.service.product.v1.CreateProductReply
-	(*UpdateProductRequest)(nil), // 5: api.service.product.v1.UpdateProductRequest
-	(*UpdateProductReply)(nil),   // 6: api.service.product.v1.UpdateProductReply
-	(*DeleteProductRequest)(nil), // 7: api.service.product.v1.DeleteProductRequest
-	(*DeleteProductReply)(nil),   // 8: api.service.product.v1.DeleteProductReply
-	(*GetProductRequest)(nil),    // 9: api.service.product.v1.GetProductRequest
-	(*GetProductReply)(nil),      // 10: api.service.product.v1.GetProductReply
-	(*ListProductRequest)(nil),   // 11: api.service.product.v1.ListProductRequest
-	(*ListProductReply)(nil),     // 12: api.service.product.v1.ListProductReply
-	nil,                          // 13: api.service.product.v1.SkuInfo.SpecEntry
+	(*SpecGroupInfo)(nil),         // 0: api.service.product.v1.SpecGroupInfo
+	(*SkuInfo)(nil),               // 1: api.service.product.v1.SkuInfo
+	(*ProductItem)(nil),           // 2: api.service.product.v1.ProductItem
+	(*CreateProductRequest)(nil),  // 3: api.service.product.v1.CreateProductRequest
+	(*CreateProductReply)(nil),    // 4: api.service.product.v1.CreateProductReply
+	(*UpdateProductRequest)(nil),  // 5: api.service.product.v1.UpdateProductRequest
+	(*UpdateProductReply)(nil),    // 6: api.service.product.v1.UpdateProductReply
+	(*DeleteProductRequest)(nil),  // 7: api.service.product.v1.DeleteProductRequest
+	(*DeleteProductReply)(nil),    // 8: api.service.product.v1.DeleteProductReply
+	(*GetProductRequest)(nil),     // 9: api.service.product.v1.GetProductRequest
+	(*GetProductReply)(nil),       // 10: api.service.product.v1.GetProductReply
+	(*ListProductRequest)(nil),    // 11: api.service.product.v1.ListProductRequest
+	(*ListProductReply)(nil),      // 12: api.service.product.v1.ListProductReply
+	nil,                           // 13: api.service.product.v1.SkuInfo.SpecEntry
+	(*wrapperspb.Int32Value)(nil), // 14: google.protobuf.Int32Value
 }
 var file_api_service_product_v1_product_proto_depIdxs = []int32{
 	13, // 0: api.service.product.v1.SkuInfo.spec:type_name -> api.service.product.v1.SkuInfo.SpecEntry
@@ -1065,22 +1113,23 @@ var file_api_service_product_v1_product_proto_depIdxs = []int32{
 	0,  // 5: api.service.product.v1.UpdateProductRequest.specs:type_name -> api.service.product.v1.SpecGroupInfo
 	1,  // 6: api.service.product.v1.UpdateProductRequest.skus:type_name -> api.service.product.v1.SkuInfo
 	2,  // 7: api.service.product.v1.GetProductReply.product:type_name -> api.service.product.v1.ProductItem
-	2,  // 8: api.service.product.v1.ListProductReply.items:type_name -> api.service.product.v1.ProductItem
-	3,  // 9: api.service.product.v1.Product.CreateProduct:input_type -> api.service.product.v1.CreateProductRequest
-	5,  // 10: api.service.product.v1.Product.UpdateProduct:input_type -> api.service.product.v1.UpdateProductRequest
-	7,  // 11: api.service.product.v1.Product.DeleteProduct:input_type -> api.service.product.v1.DeleteProductRequest
-	9,  // 12: api.service.product.v1.Product.GetProduct:input_type -> api.service.product.v1.GetProductRequest
-	11, // 13: api.service.product.v1.Product.ListProduct:input_type -> api.service.product.v1.ListProductRequest
-	4,  // 14: api.service.product.v1.Product.CreateProduct:output_type -> api.service.product.v1.CreateProductReply
-	6,  // 15: api.service.product.v1.Product.UpdateProduct:output_type -> api.service.product.v1.UpdateProductReply
-	8,  // 16: api.service.product.v1.Product.DeleteProduct:output_type -> api.service.product.v1.DeleteProductReply
-	10, // 17: api.service.product.v1.Product.GetProduct:output_type -> api.service.product.v1.GetProductReply
-	12, // 18: api.service.product.v1.Product.ListProduct:output_type -> api.service.product.v1.ListProductReply
-	14, // [14:19] is the sub-list for method output_type
-	9,  // [9:14] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	14, // 8: api.service.product.v1.ListProductRequest.stock_eq:type_name -> google.protobuf.Int32Value
+	2,  // 9: api.service.product.v1.ListProductReply.items:type_name -> api.service.product.v1.ProductItem
+	3,  // 10: api.service.product.v1.Product.CreateProduct:input_type -> api.service.product.v1.CreateProductRequest
+	5,  // 11: api.service.product.v1.Product.UpdateProduct:input_type -> api.service.product.v1.UpdateProductRequest
+	7,  // 12: api.service.product.v1.Product.DeleteProduct:input_type -> api.service.product.v1.DeleteProductRequest
+	9,  // 13: api.service.product.v1.Product.GetProduct:input_type -> api.service.product.v1.GetProductRequest
+	11, // 14: api.service.product.v1.Product.ListProduct:input_type -> api.service.product.v1.ListProductRequest
+	4,  // 15: api.service.product.v1.Product.CreateProduct:output_type -> api.service.product.v1.CreateProductReply
+	6,  // 16: api.service.product.v1.Product.UpdateProduct:output_type -> api.service.product.v1.UpdateProductReply
+	8,  // 17: api.service.product.v1.Product.DeleteProduct:output_type -> api.service.product.v1.DeleteProductReply
+	10, // 18: api.service.product.v1.Product.GetProduct:output_type -> api.service.product.v1.GetProductReply
+	12, // 19: api.service.product.v1.Product.ListProduct:output_type -> api.service.product.v1.ListProductReply
+	15, // [15:20] is the sub-list for method output_type
+	10, // [10:15] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_api_service_product_v1_product_proto_init() }

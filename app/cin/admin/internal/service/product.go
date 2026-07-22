@@ -9,7 +9,12 @@ import (
 
 // ListProduct 获取商品列表
 func (s *AdminService) ListProduct(ctx context.Context, req *adminv1.ListProductRequest) (*adminv1.ListProductReply, error) {
-	items, total, err := s.pc.ListProduct(ctx, req.Page, req.PageSize, req.Keyword, req.CategoryId, req.Status)
+	// 解包 Int32Value：nil 表示未设置（不筛选），否则取实际值
+	var stockEQ int32 = -1
+	if sw := req.GetStockEq(); sw != nil {
+		stockEQ = sw.GetValue()
+	}
+	items, total, err := s.pc.ListProduct(ctx, req.Page, req.PageSize, req.Keyword, req.CategoryId, req.Status, stockEQ)
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +36,7 @@ func (s *AdminService) CreateProduct(ctx context.Context, req *adminv1.CreatePro
 		Price:       req.Price,
 		Stock:       req.Stock,
 		Image:       req.Image,
+		Images:      req.GetImages(),
 		SKU:         req.Sku,
 		Description: req.Description,
 		Specs:       adminProtoToBizSpecGroups(req.Specs),
@@ -53,6 +59,7 @@ func (s *AdminService) UpdateProduct(ctx context.Context, req *adminv1.UpdatePro
 		Price:       req.Price,
 		Stock:       req.Stock,
 		Image:       req.Image,
+		Images:      req.GetImages(),
 		SKU:         req.Sku,
 		Status:      req.Status,
 		Description: req.Description,
@@ -112,6 +119,7 @@ func bizToAdminProtoProduct(product *biz.Product) *adminv1.ProductItem {
 		Sales:       product.Sales,
 		Status:      product.Status,
 		Image:       product.Image,
+		Images:      product.Images,
 		Sku:         product.SKU,
 		Specs:       bizToAdminProtoSpecGroups(product.Specs),
 		Skus:        bizToAdminProtoSkus(product.Skus),
@@ -147,6 +155,7 @@ func bizToAdminProtoSkus(skus []*biz.SkuItem) []*adminv1.SkuItem {
 			SkuCode: s.SkuCode,
 			Price:   s.Price,
 			Stock:   s.Stock,
+			Image:   s.Image,
 			Spec:    s.Spec,
 		})
 	}
@@ -181,6 +190,7 @@ func adminProtoToBizSkus(skus []*adminv1.SkuItem) []*biz.SkuItem {
 			SkuCode: s.SkuCode,
 			Price:   s.Price,
 			Stock:   s.Stock,
+			Image:   s.GetImage(),
 			Spec:    s.Spec,
 		})
 	}

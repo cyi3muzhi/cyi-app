@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type productRepo struct {
@@ -97,14 +98,19 @@ func (r *productRepo) resolveImageURL(ctx context.Context, image string) string 
 }
 
 // ListProduct 通过 gRPC 调用商品服务获取商品列表
-func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string) ([]*biz.Product, int32, error) {
-	reply, err := r.data.pc.ListProduct(ctx, &productRpc.ListProductRequest{
+func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*biz.Product, int32, error) {
+	gRPCReq := &productRpc.ListProductRequest{
 		Page:       page,
 		PageSize:   pageSize,
 		Keyword:    keyword,
 		CategoryId: categoryID,
 		Status:     status,
-	})
+	}
+	// 只在明确设置了库存筛选时传值（-1 表示未设置）
+	if stockEQ >= 0 {
+		gRPCReq.StockEq = wrapperspb.Int32(stockEQ)
+	}
+	reply, err := r.data.pc.ListProduct(ctx, gRPCReq)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -113,9 +119,13 @@ func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, key
 	for _, item := range reply.Items {
 		p := protoToBizProduct(item)
 		p.Image = r.resolveImageURL(ctx, p.Image)
+		// 列表页不需要规格组、SKU 详情和描述，减少响应体积
+		p.Specs = nil
+		p.Skus = nil
+		p.Description = ""
 		items = append(items, p)
 	}
-	return items, reply.Total, nil
+	return items, reply.GetTotal(), nil
 }
 
 // CreateProduct 通过 gRPC 调用商品服务创建商品
@@ -131,6 +141,7 @@ func (r *productRepo) CreateProduct(ctx context.Context, in *biz.Product) (int64
 		Price:       in.Price,
 		CategoryId:  in.CategoryID,
 		Image:       imagePath,
+		Images:      in.Images,
 		Sales:       in.Sales,
 		Specs:       bizToProtoSpecGroups(in.Specs),
 		Skus:        bizToProtoSkus(in.Skus),
@@ -162,6 +173,7 @@ func (r *productRepo) UpdateProduct(ctx context.Context, in *biz.Product) error 
 		Price:       in.Price,
 		CategoryId:  in.CategoryID,
 		Image:       imagePath,
+		Images:      in.Images,
 		Sales:       in.Sales,
 		Status:      statusInt,
 		Specs:       bizToProtoSpecGroups(in.Specs),
@@ -244,6 +256,7 @@ func protoToBizProduct(item *productRpc.ProductItem) *biz.Product {
 		Status:      status,
 		CategoryID:  item.GetCategoryId(),
 		Image:       item.GetImage(),
+		Images:      item.GetImages(),
 		Sales:       item.GetSales(),
 		Specs:       protoToBizSpecGroups(item.GetSpecs()),
 		Skus:        protoToBizSkus(item.GetSkus()),
@@ -278,6 +291,7 @@ func protoToBizSkus(skus []*productRpc.SkuInfo) []*biz.SkuItem {
 			SkuCode: s.GetSkuCode(),
 			Price:   s.GetPrice(),
 			Stock:   s.GetStock(),
+			Image:   s.GetImage(),
 			Spec:    s.GetSpec(),
 		})
 	}
@@ -312,6 +326,7 @@ func bizToProtoSkus(skus []*biz.SkuItem) []*productRpc.SkuInfo {
 			SkuCode: s.SkuCode,
 			Price:   s.Price,
 			Stock:   s.Stock,
+			Image:   s.Image,
 			Spec:    s.Spec,
 		})
 	}

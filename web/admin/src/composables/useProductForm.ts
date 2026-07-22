@@ -15,6 +15,7 @@ interface SkuForm {
   spec: Record<string, string>
   price: number   // 元
   stock: number   // 库存
+  image?: string  // SKU 图片 URL
 }
 
 export interface ProductFormState {
@@ -22,6 +23,7 @@ export interface ProductFormState {
   category_id: number
   image: string
   _imageKey?: string  // 直传 OSS 后的 objectKey，提交时使用
+  images: string[]    // 轮播图 URL 列表
   description: string
 }
 
@@ -45,7 +47,7 @@ export function cartesianProduct(groups: SpecGroupForm[]): Record<string, string
 
 export function useProductForm() {
   const form = reactive<ProductFormState>({
-    name: '', category_id: 0, image: '', description: '',
+    name: '', category_id: 0, image: '', images: [], description: '',
   })
   const specGroups = ref<SpecGroupForm[]>([])
   const skus = ref<SkuForm[]>([])
@@ -88,6 +90,7 @@ export function useProductForm() {
         spec,
         price: existing?.price ?? 0,
         stock: existing?.stock ?? 0,
+        image: existing?.image || undefined,
       }
     })
   }
@@ -102,6 +105,7 @@ export function useProductForm() {
       form.name = p.name
       form.category_id = (p as any).categoryId
       form.image = p.image || ''
+      form.images = p.images || []
       form.description = p.description || ''
       // specs
       specGroups.value = (p.specs || []).map(s => ({ id: ++specIdCounter.value, name: s.name, values: [...s.values] }))
@@ -111,7 +115,10 @@ export function useProductForm() {
         spec: s.spec,
         price: s.price / 100,
         stock: s.stock || 0,
+        image: s.image || undefined,
       }))
+    } catch {
+      ElMessage.error('加载商品信息失败')
     } finally {
       loading.value = false
     }
@@ -131,12 +138,14 @@ export function useProductForm() {
       sku_code: Object.values(s.spec).join('-'),
       price: Math.round(s.price * 100),  // 元 → 分
       stock: s.stock,
+      image: s.image || undefined,
       spec: s.spec,
     }))
     return {
       name: form.name,
       category_id: form.category_id,
       image: form._imageKey || form.image || undefined,
+      images: form.images.length > 0 ? form.images : undefined,
       price: formedSkus.length > 0 ? formedSkus[0].price : 0,
       specs: specs.map(g => ({ name: g.name, values: g.values })),
       skus: formedSkus,
@@ -158,6 +167,7 @@ export function useProductForm() {
         await createProduct(data as any)
         ElMessage.success('创建成功')
       }
+      window.dispatchEvent(new CustomEvent('product-changed'))
       return true
     } catch {
       ElMessage.error('保存失败')

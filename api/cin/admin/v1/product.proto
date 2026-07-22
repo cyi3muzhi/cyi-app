@@ -8,6 +8,7 @@ option java_package = "api.cin.admin.v1";
 
 import "validate/validate.proto";
 import "google/api/annotations.proto";
+import "google/protobuf/wrappers.proto";
 
 // 管理后台 - 商品管理服务
 service AdminProduct {
@@ -59,6 +60,7 @@ message ListProductRequest {
   string category = 4 [deprecated = true];
   string status = 5;
   int64 category_id = 6;
+  google.protobuf.Int32Value stock_eq = 7; // 按库存数量筛选（如 {value: 0}=缺货，不传=不筛选）
 }
 
 message ListProductReply {
@@ -81,6 +83,7 @@ message SkuItem {
   int32 stock = 4;
   int32 sales = 5;
   map<string, string> spec = 6;
+  string image = 7; // SKU图片
 }
 
 message ProductItem {
@@ -97,6 +100,7 @@ message ProductItem {
   repeated SkuItem skus = 11;
   string description = 12;
   int64 category_id = 13; // 商品分类ID
+  repeated string images = 14; // 轮播图列表
 }
 
 message CreateProductRequest {
@@ -110,6 +114,7 @@ message CreateProductRequest {
   repeated SpecGroupItem specs = 8;
   repeated SkuItem skus = 9;
   int64 category_id = 10; // 商品分类ID
+  repeated string images = 11; // 轮播图列表
 }
 
 message CreateProductReply {
@@ -129,6 +134,7 @@ message UpdateProductRequest {
   repeated SpecGroupItem specs = 10;
   repeated SkuItem skus = 11;
   int64 category_id = 12; // 商品分类ID
+  repeated string images = 13; // 轮播图列表
 }
 
 message UpdateProductReply {

@@ -14,6 +14,8 @@ type Sku struct {
 	Price int64 `json:"price" gorm:"not null;default:0;comment:价格(分)"`
 	// 规格描述 JSON，如 {"颜色":"红色","尺码":"XL"}
 	SpecDesc string `json:"spec_desc" gorm:"type:varchar(256);default:'';comment:规格描述JSON"`
+	// SKU图片
+	Image string `json:"image" gorm:"type:varchar(1024);default:'';comment:SKU图片"`
 }
 
 // ISku GORM gen 接口标记

@@ -36,7 +36,7 @@ func (r *stockRepo) CreateStock(ctx context.Context, in *biz.Stock) error {
 func (r *stockRepo) UpdateStock(ctx context.Context, in *biz.Stock) error {
 	stock := &mod.Stock{}
 	convert.Convert(in, stock)
-	_, err := curd.Stock.Debug().WithContext(ctx).
+	_, err := curd.Stock.WithContext(ctx).
 		Where(curd.Stock.ID.Eq(in.ID)).
 		UpdateSimple(
 			curd.Stock.Total.Value(in.Total),
@@ -170,8 +170,11 @@ func (r *stockRepo) GetStocksBySkuIDs(ctx context.Context, skuIDs []int64) (map[
 // DeleteStockByProductID 根据商品 ID 批量删除库存记录
 func (r *stockRepo) DeleteStockByProductID(ctx context.Context, productID int64) error {
 	_, err := curd.Stock.WithContext(ctx).Where(curd.Stock.ProductID.Eq(productID)).Delete()
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
+}
+
+// DeleteStockBySkuID 按 SKU ID 删除库存记录
+func (r *stockRepo) DeleteStockBySkuID(ctx context.Context, skuID int64) error {
+	_, err := curd.Stock.WithContext(ctx).Where(curd.Stock.SkuID.Eq(skuID)).Delete()
+	return err
 }

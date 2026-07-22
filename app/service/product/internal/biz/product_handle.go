@@ -2,6 +2,8 @@ package biz
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	v1 "cyi-app/api/service/product/v1"
 
@@ -14,7 +16,7 @@ type ProductRepo interface {
 	UpdateProduct(ctx context.Context, in *Product) error
 	DeleteProduct(ctx context.Context, productID int64) error
 	GetProduct(ctx context.Context, productID int64) (*Product, error)
-	ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string) ([]*Product, int32, error)
+	ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*Product, int32, error)
 }
 
 // ProductUseCase 商品用例
@@ -97,40 +99,95 @@ func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error 
 	return nil
 }
 
-// UpdateProduct 更新商品（含规格组、SKU和库存的替换）
+// UpdateProduct 更新商品（含规格组、SKU和库存）
+// 按规格组合匹配 SKU：匹配上的复用旧 ID（库存不重建），新增的创建，移除的清除
 func (uc *ProductUseCase) UpdateProduct(ctx context.Context, in *Product) error {
 	if err := uc.repo.UpdateProduct(ctx, in); err != nil {
 		return err
 	}
+
 	// 替换规格组（先删后插），始终执行以支持清空规格
 	if err := uc.specGroupRepo.ReplaceSpecGroups(ctx, in.ID, in.SpecGroups); err != nil {
 		return err
 	}
-	// 替换SKU（先删后插），始终执行以支持清空SKU
+
+	// 1. 加载旧 SKU 和库存，建立 spec → SKU 映射
+	oldSkus, _ := uc.skuRepo.GetSkusByProductID(ctx, in.ID)
+	oldSkuBySpec := make(map[string]*Sku, len(oldSkus))
+	oldSkuIDs := make([]int64, 0, len(oldSkus))
+	for _, s := range oldSkus {
+		key := specKey(s.Spec)
+		oldSkuBySpec[key] = s
+		oldSkuIDs = append(oldSkuIDs, s.ID)
+	}
+	// 加载旧库存
+	oldStockBySkuID := make(map[int64]*Stock)
+	if len(oldSkuIDs) > 0 {
+		if stocks, err := uc.stockRepo.GetStocksBySkuIDs(ctx, oldSkuIDs); err == nil {
+			oldStockBySkuID = stocks
+		}
+	}
+
+	// 2. 为新 SKU 匹配旧 ID：spec 相同则复用旧 ID（ReplaceSkus 会带 ID 插入，保留主键）
+	newSkuSpecSet := make(map[string]bool, len(in.Skus))
 	for _, sku := range in.Skus {
 		sku.ProductID = in.ID
+		key := specKey(sku.Spec)
+		newSkuSpecSet[key] = true
+		if old, ok := oldSkuBySpec[key]; ok {
+			sku.ID = old.ID // 复用旧 ID，库存记录不丢失
+		}
 	}
+
+	// 3. 替换 SKU（先删后插，已匹配的 SKU 用旧 ID 插入，库存链接保留）
 	if err := uc.skuRepo.ReplaceSkus(ctx, in.ID, in.Skus); err != nil {
 		return err
 	}
-	// 替换库存：先删旧库存，为每个 SKU 创建新库存
-	_ = uc.stockRepo.DeleteStockByProductID(ctx, in.ID)
+
+	// 4. 处理库存：匹配的更新总数，新增的创建，移除的删除
 	skus := in.Skus
 	if len(skus) == 0 {
 		skus = []*Sku{{Stock: 0}}
 	}
 	for _, sku := range skus {
-		stock := &Stock{
-			ProductID: in.ID,
-			SkuID:     sku.ID,
-			Total:     sku.Stock,
-			Available: sku.Stock,
-		}
-		if err := uc.stockRepo.CreateStock(ctx, stock); err != nil {
-			return err
+		if stock, ok := oldStockBySkuID[sku.ID]; ok {
+			// 更新现有库存（只改 total/available，保留 reserved/version）
+			stock.Total = sku.Stock
+			stock.Available = sku.Stock
+			if err := uc.stockRepo.UpdateStock(ctx, stock); err != nil {
+				return fmt.Errorf("update stock for sku %d failed: %w", sku.ID, err)
+			}
+		} else {
+			// 新 SKU，创建库存
+			if err := uc.stockRepo.CreateStock(ctx, &Stock{
+				ProductID: in.ID,
+				SkuID:     sku.ID,
+				Total:     sku.Stock,
+				Available: sku.Stock,
+			}); err != nil {
+				return fmt.Errorf("create stock for sku %d failed: %w", sku.ID, err)
+			}
 		}
 	}
+
+	// 5. 删除被移除 SKU 的库存记录
+	for _, old := range oldSkus {
+		key := specKey(old.Spec)
+		if !newSkuSpecSet[key] {
+			_ = uc.stockRepo.DeleteStockBySkuID(ctx, old.ID)
+		}
+	}
+
 	return nil
+}
+
+// specKey 将 spec map 转为可比较的字符串键（JSON 序列化后 key 有序，保证确定性）
+func specKey(spec map[string]string) string {
+	if len(spec) == 0 {
+		return "{}"
+	}
+	data, _ := json.Marshal(spec)
+	return string(data)
 }
 
 // DeleteProduct 删除商品（含关联的规格组、SKU、库存）
@@ -170,8 +227,8 @@ func (uc *ProductUseCase) GetProduct(ctx context.Context, productID int64) (*Pro
 }
 
 // ListProduct 获取商品列表（使用批量加载避免 N+1 查询）
-func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string) ([]*Product, int32, error) {
-	products, total, err := uc.repo.ListProduct(ctx, page, pageSize, keyword, categoryID, status)
+func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*Product, int32, error) {
+	products, total, err := uc.repo.ListProduct(ctx, page, pageSize, keyword, categoryID, status, stockEQ)
 	if err != nil {
 		return nil, 0, err
 	}

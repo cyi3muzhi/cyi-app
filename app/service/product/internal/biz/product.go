@@ -9,6 +9,7 @@ type Product struct {
 	Status      ProductStatus
 	CategoryID  int64
 	Image       string
+	Images      []string `mapstructure:"-"` // 轮播图列表（手动序列化）
 	Sales       int32
 	SpecGroups  []*SpecGroup
 	Skus        []*Sku
