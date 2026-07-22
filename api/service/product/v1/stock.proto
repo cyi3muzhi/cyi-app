@@ -34,7 +34,8 @@ message DeleteStockRequest {}
 message DeleteStockReply {}
 
 message GetStockRequest {
-	int64 product_id = 1;   // 商品ID
+	int64 product_id = 1 [deprecated = true];   // 已废弃，改用 sku_id
+	int64 sku_id = 2;                           // SKU ID
 }
 
 message GetStockReply {
@@ -46,9 +47,10 @@ message GetStockReply {
 }
 
 message ReserveStockRequest {
-	int64 product_id = 1;   // 商品ID
-	int32 count = 2;        // 预留数量
-	int32 version = 3;      // 乐观锁版本号
+	int64 product_id = 1 [deprecated = true];   // 已废弃，改用 sku_id
+	int32 count = 2;                            // 预留数量
+	int32 version = 3;                          // 乐观锁版本号
+	int64 sku_id = 4;                           // SKU ID
 }
 
 message ReserveStockReply {
@@ -58,9 +60,10 @@ message ReserveStockReply {
 
 // 确认扣减库存（支付后实际扣减总数和预留）
 message DeductStockRequest {
-	int64 product_id = 1;   // 商品ID
-	int32 count = 2;        // 扣减数量
-	int32 version = 3;      // 乐观锁版本号
+	int64 product_id = 1 [deprecated = true];   // 已废弃，改用 sku_id
+	int32 count = 2;                            // 扣减数量
+	int32 version = 3;                          // 乐观锁版本号
+	int64 sku_id = 4;                           // SKU ID
 }
 
 message DeductStockReply {
@@ -72,9 +75,10 @@ message DeductStockReply {
 // reserved- , available+ , version++
 // 条件: version 匹配 且 reserved >= count
 message ReleaseStockRequest {
-	int64 product_id = 1;   // 商品ID
-	int32 count = 2;        // 释放数量
-	int32 version = 3;      // 乐观锁版本号
+	int64 product_id = 1 [deprecated = true];   // 已废弃，改用 sku_id
+	int32 count = 2;                            // 释放数量
+	int32 version = 3;                          // 乐观锁版本号
+	int64 sku_id = 4;                           // SKU ID
 }
 
 message ReleaseStockReply {
@@ -86,9 +90,10 @@ message ReleaseStockReply {
 // total+ , available+ , version++
 // 条件: version 匹配
 message AddStockRequest {
-	int64 product_id = 1;   // 商品ID
-	int32 count = 2;        // 增加数量
-	int32 version = 3;      // 乐观锁版本号
+	int64 product_id = 1 [deprecated = true];   // 已废弃，改用 sku_id
+	int32 count = 2;                            // 增加数量
+	int32 version = 3;                          // 乐观锁版本号
+	int64 sku_id = 4;                           // SKU ID
 }
 
 message AddStockReply {

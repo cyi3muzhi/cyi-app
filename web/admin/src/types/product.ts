@@ -52,6 +52,7 @@ export interface SpecGroupInput {
 export interface SkuInput {
   sku_code: string
   price: number     // 分
+  stock: number     // 库存
   spec: Record<string, string>
 }
 

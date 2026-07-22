@@ -155,6 +155,7 @@ func skuInfoListToBiz(skus []*v1.SkuInfo) []*biz.Sku {
 			ID:      s.Id,
 			SkuCode: s.SkuCode,
 			Price:   s.Price,
+			Stock:   s.Stock,
 			Spec:    s.Spec,
 		})
 	}
@@ -167,6 +168,7 @@ func skuToProto(s *biz.Sku) *v1.SkuInfo {
 		Id:      s.ID,
 		SkuCode: s.SkuCode,
 		Price:   s.Price,
+		Stock:   s.Stock,
 		Spec:    s.Spec,
 	}
 }

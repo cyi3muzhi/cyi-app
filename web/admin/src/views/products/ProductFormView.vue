@@ -60,6 +60,7 @@
             <tr>
               <th v-for="key of Object.keys(skus[0].spec)" :key="key">{{ key }}</th>
               <th>价格 (元)</th>
+              <th>库存</th>
             </tr>
           </thead>
           <tbody>
@@ -67,6 +68,9 @@
               <td v-for="v of Object.values(sku.spec)" :key="v">{{ v }}</td>
               <td>
                 <el-input-number v-model="sku.price" :min="0" :precision="2" size="small" controls-position="right" style="width:130px" />
+              </td>
+              <td>
+                <el-input-number v-model="sku.stock" :min="0" size="small" controls-position="right" style="width:130px" />
               </td>
             </tr>
           </tbody>

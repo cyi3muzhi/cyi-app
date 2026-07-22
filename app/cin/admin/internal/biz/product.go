@@ -30,11 +30,11 @@ type SpecGroup struct {
 }
 
 // SkuItem SKU 领域模型
-// 注意：Stock（库存）和 Sales（销量）已迁移至独立的 inventory_stock 表管理，不再在此处维护
 type SkuItem struct {
 	ID      int64
 	SkuCode string
 	Price   int64
+	Stock   int32
 	Spec    map[string]string
 }
 

@@ -20,46 +20,75 @@ func NewSkuRepo(data *Data, logger log.Logger) biz.SkuRepo {
 	return &skuRepo{data: data, log: log.NewHelper(logger)}
 }
 
-// CreateSkus 批量创建SKU
+// CreateSkus 批量创建SKU（使用 GORM 批量 INSERT）
 func (r *skuRepo) CreateSkus(ctx context.Context, skus []*biz.Sku) error {
+	// 构建模型切片，GORM 的 Create 方法接受切片时会执行批量插入
+	models := make([]*mod.Sku, 0, len(skus))
 	for _, sku := range skus {
-		model := &mod.Sku{
+		models = append(models, &mod.Sku{
 			ProductID: sku.ProductID,
 			SkuCode:   sku.SkuCode,
 			Price:     sku.Price,
 			SpecDesc:  marshalSpec(sku.Spec),
-		}
-		if err := curd.Sku.WithContext(ctx).Create(model); err != nil {
-			return err
-		}
-		sku.ID = model.ID
+		})
+	}
+	if len(models) == 0 {
+		return nil
+	}
+	// 批量插入，GORM 会在一条 INSERT 语句中插入所有记录
+	// 使用 ... 展开切片为变参，以确保 ID 回填的正确性
+	if err := curd.Sku.WithContext(ctx).Create(models...); err != nil {
+		return err
+	}
+	// 回写 ID（GORM 批量插入后会自动回填主键）
+	for i, sku := range skus {
+		sku.ID = models[i].ID
 	}
 	return nil
 }
 
 // ReplaceSkus 替换SKU（事务保证原子性：先删后插）
+// 在事务内使用批量 INSERT 提升性能
 func (r *skuRepo) ReplaceSkus(ctx context.Context, productID int64, skus []*biz.Sku) error {
 	return curd.Q.Transaction(func(tx *curd.Query) error {
 		// 删除旧的SKU
 		if _, err := tx.Sku.WithContext(ctx).Where(tx.Sku.ProductID.Eq(productID)).Delete(); err != nil {
 			return err
 		}
-		// 创建新的SKU
+		// 批量创建新的SKU
+		models := make([]*mod.Sku, 0, len(skus))
 		for _, sku := range skus {
-			model := &mod.Sku{
+			models = append(models, &mod.Sku{
 				ProductID: productID,
 				SkuCode:   sku.SkuCode,
 				Price:     sku.Price,
 				SpecDesc:  marshalSpec(sku.Spec),
-			}
-			if err := tx.Sku.WithContext(ctx).Create(model); err != nil {
+			})
+		}
+		if len(models) > 0 {
+			// 使用 ... 展开切片为变参，GORM 会执行批量 INSERT
+			if err := tx.Sku.WithContext(ctx).Create(models...); err != nil {
 				return err
 			}
-			sku.ID = model.ID
+		}
+		// 回写 ID
+		for i, sku := range skus {
+			sku.ID = models[i].ID
 			sku.ProductID = productID
 		}
 		return nil
 	})
+}
+
+// skuModelToBiz 将数据层的SKU模型转换为业务层的SKU实体
+func skuModelToBiz(m *mod.Sku) *biz.Sku {
+	return &biz.Sku{
+		ID:        m.ID,
+		ProductID: m.ProductID,
+		SkuCode:   m.SkuCode,
+		Price:     m.Price,
+		Spec:      unmarshalSpec(m.SpecDesc),
+	}
 }
 
 // GetSkusByProductID 获取商品的所有SKU
@@ -70,13 +99,23 @@ func (r *skuRepo) GetSkusByProductID(ctx context.Context, productID int64) ([]*b
 	}
 	result := make([]*biz.Sku, 0, len(models))
 	for _, m := range models {
-		result = append(result, &biz.Sku{
-			ID:        m.ID,
-			ProductID: m.ProductID,
-			SkuCode:   m.SkuCode,
-			Price:     m.Price,
-			Spec:      unmarshalSpec(m.SpecDesc),
-		})
+		result = append(result, skuModelToBiz(m))
+	}
+	return result, nil
+}
+
+// GetSkusByProductIDs 批量获取多个商品的SKU，返回 map[productID][]*Sku
+func (r *skuRepo) GetSkusByProductIDs(ctx context.Context, productIDs []int64) (map[int64][]*biz.Sku, error) {
+	if len(productIDs) == 0 {
+		return nil, nil
+	}
+	models, err := curd.Sku.WithContext(ctx).Where(curd.Sku.ProductID.In(productIDs...)).Find()
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[int64][]*biz.Sku)
+	for _, m := range models {
+		result[m.ProductID] = append(result[m.ProductID], skuModelToBiz(m))
 	}
 	return result, nil
 }

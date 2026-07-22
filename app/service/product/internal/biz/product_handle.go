@@ -3,8 +3,9 @@ package biz
 import (
 	"context"
 
-	"github.com/go-kratos/kratos/v2/log"
 	v1 "cyi-app/api/service/product/v1"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 // ProductRepo 商品仓储接口
@@ -18,11 +19,11 @@ type ProductRepo interface {
 
 // ProductUseCase 商品用例
 type ProductUseCase struct {
-	repo            ProductRepo
-	stockRepo       StockRepo
-	specGroupRepo   SpecGroupRepo
-	skuRepo         SkuRepo
-	log             *log.Helper
+	repo          ProductRepo
+	stockRepo     StockRepo
+	specGroupRepo SpecGroupRepo
+	skuRepo       SkuRepo
+	log           *log.Helper
 }
 
 // NewProductUseCase 创建商品用例
@@ -31,7 +32,7 @@ func NewProductUseCase(repo ProductRepo, stockRepo StockRepo, specGroupRepo Spec
 }
 
 // CreateProduct 创建商品（含规格组和SKU）
-// 若后续步骤失败，会回滚已创建的商品，保证数据一致性
+// TODO: 后续应改为数据库事务（curd.Q.Transaction），当前使用补偿回滚机制
 func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error {
 	if err := uc.repo.CreateProduct(ctx, in); err != nil {
 		return v1.ErrorCreateProductFailed("create product failed")
@@ -41,10 +42,20 @@ func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error 
 	needRollback := true
 	defer func() {
 		if needRollback {
-			// 回滚：删除已创建的商品及其关联数据
-			_ = uc.specGroupRepo.DeleteSpecGroupsByProductID(ctx, in.ID)
-			_ = uc.skuRepo.DeleteSkusByProductID(ctx, in.ID)
-			_ = uc.repo.DeleteProduct(ctx, in.ID)
+			uc.log.Warnf("CreateProduct rollback: product_id=%d", in.ID)
+			// 依次删除已创建的关联数据和商品主体，各自记录错误但不中断回滚流程
+			if err := uc.specGroupRepo.DeleteSpecGroupsByProductID(ctx, in.ID); err != nil {
+				uc.log.Errorf("rollback delete spec groups failed: %v", err)
+			}
+			if err := uc.skuRepo.DeleteSkusByProductID(ctx, in.ID); err != nil {
+				uc.log.Errorf("rollback delete skus failed: %v", err)
+			}
+			if err := uc.stockRepo.DeleteStockByProductID(ctx, in.ID); err != nil {
+				uc.log.Errorf("rollback delete stock failed: %v", err)
+			}
+			if err := uc.repo.DeleteProduct(ctx, in.ID); err != nil {
+				uc.log.Errorf("rollback delete product failed: %v", err)
+			}
 		}
 	}()
 
@@ -63,14 +74,22 @@ func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error 
 			return err
 		}
 	}
-	// 初始化库存（传统库存方案保留）
-	stock := &Stock{
-		ProductID: in.ID,
-		Total:     0,
-		Available: 0,
+	// 初始化库存（每个 SKU 一条库存记录；无 SKU 时创建 product 级记录 sku_id=0）
+	skus := in.Skus
+	if len(skus) == 0 {
+		// 无 SKU 时创建一条空库存占位
+		skus = []*Sku{{Stock: 0}}
 	}
-	if err := uc.stockRepo.CreateStock(ctx, stock); err != nil {
-		return v1.ErrorCreateStockFailed("create stock failed")
+	for _, sku := range skus {
+		stock := &Stock{
+			ProductID: in.ID,
+			SkuID:     sku.ID,
+			Total:     sku.Stock,
+			Available: sku.Stock,
+		}
+		if err := uc.stockRepo.CreateStock(ctx, stock); err != nil {
+			return v1.ErrorCreateStockFailed("create stock failed")
+		}
 	}
 
 	// 所有步骤成功，取消回滚
@@ -78,9 +97,7 @@ func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error 
 	return nil
 }
 
-// UpdateProduct 更新商品（含规格组和SKU的替换）
-// 注意：规格组和SKU替换各自有独立的事务，若商品更新成功后规格组/SKU更新失败，
-// 商品表的字段已更新但关联数据未被替换，需要手动重试。后续可引入跨仓储事务。
+// UpdateProduct 更新商品（含规格组、SKU和库存的替换）
 func (uc *ProductUseCase) UpdateProduct(ctx context.Context, in *Product) error {
 	if err := uc.repo.UpdateProduct(ctx, in); err != nil {
 		return err
@@ -96,16 +113,38 @@ func (uc *ProductUseCase) UpdateProduct(ctx context.Context, in *Product) error 
 	if err := uc.skuRepo.ReplaceSkus(ctx, in.ID, in.Skus); err != nil {
 		return err
 	}
+	// 替换库存：先删旧库存，为每个 SKU 创建新库存
+	_ = uc.stockRepo.DeleteStockByProductID(ctx, in.ID)
+	skus := in.Skus
+	if len(skus) == 0 {
+		skus = []*Sku{{Stock: 0}}
+	}
+	for _, sku := range skus {
+		stock := &Stock{
+			ProductID: in.ID,
+			SkuID:     sku.ID,
+			Total:     sku.Stock,
+			Available: sku.Stock,
+		}
+		if err := uc.stockRepo.CreateStock(ctx, stock); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 // DeleteProduct 删除商品（含关联的规格组、SKU、库存）
+// 关联删除失败时记录警告日志，不阻塞主流程
 func (uc *ProductUseCase) DeleteProduct(ctx context.Context, productID int64) error {
-	// 先删除关联的规格组和SKU
-	_ = uc.specGroupRepo.DeleteSpecGroupsByProductID(ctx, productID)
-	_ = uc.skuRepo.DeleteSkusByProductID(ctx, productID)
-	// 删除库存记录
-	_ = uc.stockRepo.DeleteStockByProductID(ctx, productID)
+	if err := uc.specGroupRepo.DeleteSpecGroupsByProductID(ctx, productID); err != nil {
+		uc.log.Warnf("delete spec groups for product %d: %v", productID, err)
+	}
+	if err := uc.skuRepo.DeleteSkusByProductID(ctx, productID); err != nil {
+		uc.log.Warnf("delete skus for product %d: %v", productID, err)
+	}
+	if err := uc.stockRepo.DeleteStockByProductID(ctx, productID); err != nil {
+		uc.log.Warnf("delete stock for product %d: %v", productID, err)
+	}
 	return uc.repo.DeleteProduct(ctx, productID)
 }
 
@@ -120,21 +159,62 @@ func (uc *ProductUseCase) GetProduct(ctx context.Context, productID int64) (*Pro
 	skus, _ := uc.skuRepo.GetSkusByProductID(ctx, productID)
 	product.SpecGroups = specGroups
 	product.Skus = skus
+	// 加载每个 SKU 的库存
+	for _, sku := range product.Skus {
+		stock, err := uc.stockRepo.GetStock(ctx, sku.ID)
+		if err == nil && stock != nil {
+			sku.Stock = stock.Available
+		}
+	}
 	return product, nil
 }
 
-// ListProduct 获取商品列表
+// ListProduct 获取商品列表（使用批量加载避免 N+1 查询）
 func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string) ([]*Product, int32, error) {
 	products, total, err := uc.repo.ListProduct(ctx, page, pageSize, keyword, categoryID, status)
 	if err != nil {
 		return nil, 0, err
 	}
-	// 加载每个商品的规格组和SKU
-	for _, p := range products {
-		specGroups, _ := uc.specGroupRepo.GetSpecGroupsByProductID(ctx, p.ID)
-		skus, _ := uc.skuRepo.GetSkusByProductID(ctx, p.ID)
-		p.SpecGroups = specGroups
-		p.Skus = skus
+	if len(products) == 0 {
+		return products, total, nil
 	}
+
+	// 收集所有商品ID
+	productIDs := make([]int64, len(products))
+	for i, p := range products {
+		productIDs[i] = p.ID
+	}
+
+	// 批量加载规格组
+	specGroupMap, _ := uc.specGroupRepo.GetSpecGroupsByProductIDs(ctx, productIDs)
+	// 批量加载SKU
+	skuMap, _ := uc.skuRepo.GetSkusByProductIDs(ctx, productIDs)
+
+	// 收集所有SKU ID并回填规格组和SKU
+	var allSkuIDs []int64
+	for _, p := range products {
+		if skus, ok := skuMap[p.ID]; ok {
+			p.Skus = skus
+			for _, sku := range skus {
+				allSkuIDs = append(allSkuIDs, sku.ID)
+			}
+		}
+		if groups, ok := specGroupMap[p.ID]; ok {
+			p.SpecGroups = groups
+		}
+	}
+
+	// 批量加载库存
+	if len(allSkuIDs) > 0 {
+		stockMap, _ := uc.stockRepo.GetStocksBySkuIDs(ctx, allSkuIDs)
+		for _, p := range products {
+			for _, sku := range p.Skus {
+				if s, ok := stockMap[sku.ID]; ok {
+					sku.Stock = s.Available
+				}
+			}
+		}
+	}
+
 	return products, total, nil
 }

@@ -4,12 +4,12 @@ import "context"
 
 // Sku SKU 业务实体
 // 每个SKU对应一个具体的规格组合，如"颜色:红色,尺码:XL"
-// 注意：Stock（库存）和 Sales（销量）已迁移至独立的 inventory_stock 表管理，不再在此处维护
 type Sku struct {
 	ID        int64
 	ProductID int64
 	SkuCode   string
 	Price     int64
+	Stock     int32 // 库存数量（从 inventory_stock 表加载，不持久化在 sku 表）
 	Spec      map[string]string // 规格描述，如 {"颜色":"红色","尺码":"XL"}
 }
 
@@ -21,6 +21,8 @@ type SkuRepo interface {
 	ReplaceSkus(ctx context.Context, productID int64, skus []*Sku) error
 	// GetSkusByProductID 获取商品的所有SKU
 	GetSkusByProductID(ctx context.Context, productID int64) ([]*Sku, error)
+	// GetSkusByProductIDs 批量获取多个商品的SKU，返回 map[productID][]*Sku
+	GetSkusByProductIDs(ctx context.Context, productIDs []int64) (map[int64][]*Sku, error)
 	// DeleteSkusByProductID 删除商品的所有SKU
 	DeleteSkusByProductID(ctx context.Context, productID int64) error
 }

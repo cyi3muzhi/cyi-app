@@ -262,8 +262,10 @@ func (*DeleteStockReply) Descriptor() ([]byte, []int) {
 }
 
 type GetStockRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 商品ID
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
+	ProductId     int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 已废弃，改用 sku_id
+	SkuId         int64 `protobuf:"varint,2,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`             // SKU ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -298,9 +300,17 @@ func (*GetStockRequest) Descriptor() ([]byte, []int) {
 	return file_api_service_product_v1_stock_proto_rawDescGZIP(), []int{6}
 }
 
+// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
 func (x *GetStockRequest) GetProductId() int64 {
 	if x != nil {
 		return x.ProductId
+	}
+	return 0
+}
+
+func (x *GetStockRequest) GetSkuId() int64 {
+	if x != nil {
+		return x.SkuId
 	}
 	return 0
 }
@@ -382,10 +392,12 @@ func (x *GetStockReply) GetVersion() int32 {
 }
 
 type ReserveStockRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 商品ID
-	Count         int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`                          // 预留数量
-	Version       int32                  `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
+	ProductId     int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 已废弃，改用 sku_id
+	Count         int32 `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`                          // 预留数量
+	Version       int32 `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
+	SkuId         int64 `protobuf:"varint,4,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`             // SKU ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -420,6 +432,7 @@ func (*ReserveStockRequest) Descriptor() ([]byte, []int) {
 	return file_api_service_product_v1_stock_proto_rawDescGZIP(), []int{8}
 }
 
+// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
 func (x *ReserveStockRequest) GetProductId() int64 {
 	if x != nil {
 		return x.ProductId
@@ -437,6 +450,13 @@ func (x *ReserveStockRequest) GetCount() int32 {
 func (x *ReserveStockRequest) GetVersion() int32 {
 	if x != nil {
 		return x.Version
+	}
+	return 0
+}
+
+func (x *ReserveStockRequest) GetSkuId() int64 {
+	if x != nil {
+		return x.SkuId
 	}
 	return 0
 }
@@ -495,10 +515,12 @@ func (x *ReserveStockReply) GetNewVersion() int32 {
 
 // 确认扣减库存（支付后实际扣减总数和预留）
 type DeductStockRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 商品ID
-	Count         int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`                          // 扣减数量
-	Version       int32                  `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
+	ProductId     int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 已废弃，改用 sku_id
+	Count         int32 `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`                          // 扣减数量
+	Version       int32 `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
+	SkuId         int64 `protobuf:"varint,4,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`             // SKU ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -533,6 +555,7 @@ func (*DeductStockRequest) Descriptor() ([]byte, []int) {
 	return file_api_service_product_v1_stock_proto_rawDescGZIP(), []int{10}
 }
 
+// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
 func (x *DeductStockRequest) GetProductId() int64 {
 	if x != nil {
 		return x.ProductId
@@ -550,6 +573,13 @@ func (x *DeductStockRequest) GetCount() int32 {
 func (x *DeductStockRequest) GetVersion() int32 {
 	if x != nil {
 		return x.Version
+	}
+	return 0
+}
+
+func (x *DeductStockRequest) GetSkuId() int64 {
+	if x != nil {
+		return x.SkuId
 	}
 	return 0
 }
@@ -610,10 +640,12 @@ func (x *DeductStockReply) GetNewVersion() int32 {
 // reserved- , available+ , version++
 // 条件: version 匹配 且 reserved >= count
 type ReleaseStockRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 商品ID
-	Count         int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`                          // 释放数量
-	Version       int32                  `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
+	ProductId     int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 已废弃，改用 sku_id
+	Count         int32 `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`                          // 释放数量
+	Version       int32 `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
+	SkuId         int64 `protobuf:"varint,4,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`             // SKU ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -648,6 +680,7 @@ func (*ReleaseStockRequest) Descriptor() ([]byte, []int) {
 	return file_api_service_product_v1_stock_proto_rawDescGZIP(), []int{12}
 }
 
+// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
 func (x *ReleaseStockRequest) GetProductId() int64 {
 	if x != nil {
 		return x.ProductId
@@ -665,6 +698,13 @@ func (x *ReleaseStockRequest) GetCount() int32 {
 func (x *ReleaseStockRequest) GetVersion() int32 {
 	if x != nil {
 		return x.Version
+	}
+	return 0
+}
+
+func (x *ReleaseStockRequest) GetSkuId() int64 {
+	if x != nil {
+		return x.SkuId
 	}
 	return 0
 }
@@ -725,10 +765,12 @@ func (x *ReleaseStockReply) GetNewVersion() int32 {
 // total+ , available+ , version++
 // 条件: version 匹配
 type AddStockRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 商品ID
-	Count         int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`                          // 增加数量
-	Version       int32                  `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
+	ProductId     int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 已废弃，改用 sku_id
+	Count         int32 `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`                          // 增加数量
+	Version       int32 `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
+	SkuId         int64 `protobuf:"varint,4,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`             // SKU ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -763,6 +805,7 @@ func (*AddStockRequest) Descriptor() ([]byte, []int) {
 	return file_api_service_product_v1_stock_proto_rawDescGZIP(), []int{14}
 }
 
+// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
 func (x *AddStockRequest) GetProductId() int64 {
 	if x != nil {
 		return x.ProductId
@@ -780,6 +823,13 @@ func (x *AddStockRequest) GetCount() int32 {
 func (x *AddStockRequest) GetVersion() int32 {
 	if x != nil {
 		return x.Version
+	}
+	return 0
+}
+
+func (x *AddStockRequest) GetSkuId() int64 {
+	if x != nil {
+		return x.SkuId
 	}
 	return 0
 }
@@ -922,49 +972,54 @@ const file_api_service_product_v1_stock_proto_rawDesc = "" +
 	"\x10UpdateStockReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x14\n" +
 	"\x12DeleteStockRequest\"\x12\n" +
-	"\x10DeleteStockReply\"0\n" +
-	"\x0fGetStockRequest\x12\x1d\n" +
+	"\x10DeleteStockReply\"K\n" +
+	"\x0fGetStockRequest\x12!\n" +
 	"\n" +
-	"product_id\x18\x01 \x01(\x03R\tproductId\"\x98\x01\n" +
+	"product_id\x18\x01 \x01(\x03B\x02\x18\x01R\tproductId\x12\x15\n" +
+	"\x06sku_id\x18\x02 \x01(\x03R\x05skuId\"\x98\x01\n" +
 	"\rGetStockReply\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03R\tproductId\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x1c\n" +
 	"\tavailable\x18\x03 \x01(\x05R\tavailable\x12\x1a\n" +
 	"\breserved\x18\x04 \x01(\x05R\breserved\x12\x18\n" +
-	"\aversion\x18\x05 \x01(\x05R\aversion\"d\n" +
-	"\x13ReserveStockRequest\x12\x1d\n" +
+	"\aversion\x18\x05 \x01(\x05R\aversion\"\x7f\n" +
+	"\x13ReserveStockRequest\x12!\n" +
 	"\n" +
-	"product_id\x18\x01 \x01(\x03R\tproductId\x12\x14\n" +
+	"product_id\x18\x01 \x01(\x03B\x02\x18\x01R\tproductId\x12\x14\n" +
 	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\x05R\aversion\"N\n" +
+	"\aversion\x18\x03 \x01(\x05R\aversion\x12\x15\n" +
+	"\x06sku_id\x18\x04 \x01(\x03R\x05skuId\"N\n" +
 	"\x11ReserveStockReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
 	"\vnew_version\x18\x02 \x01(\x05R\n" +
-	"newVersion\"c\n" +
-	"\x12DeductStockRequest\x12\x1d\n" +
+	"newVersion\"~\n" +
+	"\x12DeductStockRequest\x12!\n" +
 	"\n" +
-	"product_id\x18\x01 \x01(\x03R\tproductId\x12\x14\n" +
+	"product_id\x18\x01 \x01(\x03B\x02\x18\x01R\tproductId\x12\x14\n" +
 	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\x05R\aversion\"M\n" +
+	"\aversion\x18\x03 \x01(\x05R\aversion\x12\x15\n" +
+	"\x06sku_id\x18\x04 \x01(\x03R\x05skuId\"M\n" +
 	"\x10DeductStockReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
 	"\vnew_version\x18\x02 \x01(\x05R\n" +
-	"newVersion\"d\n" +
-	"\x13ReleaseStockRequest\x12\x1d\n" +
+	"newVersion\"\x7f\n" +
+	"\x13ReleaseStockRequest\x12!\n" +
 	"\n" +
-	"product_id\x18\x01 \x01(\x03R\tproductId\x12\x14\n" +
+	"product_id\x18\x01 \x01(\x03B\x02\x18\x01R\tproductId\x12\x14\n" +
 	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\x05R\aversion\"N\n" +
+	"\aversion\x18\x03 \x01(\x05R\aversion\x12\x15\n" +
+	"\x06sku_id\x18\x04 \x01(\x03R\x05skuId\"N\n" +
 	"\x11ReleaseStockReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
 	"\vnew_version\x18\x02 \x01(\x05R\n" +
-	"newVersion\"`\n" +
-	"\x0fAddStockRequest\x12\x1d\n" +
+	"newVersion\"{\n" +
+	"\x0fAddStockRequest\x12!\n" +
 	"\n" +
-	"product_id\x18\x01 \x01(\x03R\tproductId\x12\x14\n" +
+	"product_id\x18\x01 \x01(\x03B\x02\x18\x01R\tproductId\x12\x14\n" +
 	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\x05R\aversion\"J\n" +
+	"\aversion\x18\x03 \x01(\x05R\aversion\x12\x15\n" +
+	"\x06sku_id\x18\x04 \x01(\x03R\x05skuId\"J\n" +
 	"\rAddStockReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
 	"\vnew_version\x18\x02 \x01(\x05R\n" +

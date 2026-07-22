@@ -29,6 +29,7 @@ func newStock(db *gorm.DB) stock {
 	_stock.UpdateTime = field.NewInt64(tableName, "update_time")
 	_stock.DeletedAt = field.NewField(tableName, "deleted_at")
 	_stock.ProductID = field.NewInt64(tableName, "product_id")
+	_stock.SkuID = field.NewInt64(tableName, "sku_id")
 	_stock.Total = field.NewInt32(tableName, "total")
 	_stock.Available = field.NewInt32(tableName, "available")
 	_stock.Reserved = field.NewInt32(tableName, "reserved")
@@ -48,6 +49,7 @@ type stock struct {
 	UpdateTime field.Int64
 	DeletedAt  field.Field
 	ProductID  field.Int64
+	SkuID      field.Int64
 	Total      field.Int32
 	Available  field.Int32
 	Reserved   field.Int32
@@ -73,6 +75,7 @@ func (s *stock) updateTableName(table string) *stock {
 	s.UpdateTime = field.NewInt64(table, "update_time")
 	s.DeletedAt = field.NewField(table, "deleted_at")
 	s.ProductID = field.NewInt64(table, "product_id")
+	s.SkuID = field.NewInt64(table, "sku_id")
 	s.Total = field.NewInt32(table, "total")
 	s.Available = field.NewInt32(table, "available")
 	s.Reserved = field.NewInt32(table, "reserved")
@@ -93,12 +96,13 @@ func (s *stock) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *stock) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 9)
+	s.fieldMap = make(map[string]field.Expr, 10)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["create_time"] = s.CreateTime
 	s.fieldMap["update_time"] = s.UpdateTime
 	s.fieldMap["deleted_at"] = s.DeletedAt
 	s.fieldMap["product_id"] = s.ProductID
+	s.fieldMap["sku_id"] = s.SkuID
 	s.fieldMap["total"] = s.Total
 	s.fieldMap["available"] = s.Available
 	s.fieldMap["reserved"] = s.Reserved

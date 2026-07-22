@@ -230,9 +230,11 @@ func protoToBizProduct(item *productRpc.ProductItem) *biz.Product {
 	if item.GetStatus() == 0 {
 		status = "下架"
 	}
-	// TODO: 商品总库存应从 inventory_stock 表获取
-	// 原逻辑从 sku.Stock 汇总，已不再使用
+	// 从 SKU 汇总总库存
 	stock := int32(0)
+	for _, sku := range item.GetSkus() {
+		stock += sku.GetStock()
+	}
 	return &biz.Product{
 		ID:          item.GetProductId(),
 		Name:        item.GetName(),
@@ -275,6 +277,7 @@ func protoToBizSkus(skus []*productRpc.SkuInfo) []*biz.SkuItem {
 			ID:      s.GetId(),
 			SkuCode: s.GetSkuCode(),
 			Price:   s.GetPrice(),
+			Stock:   s.GetStock(),
 			Spec:    s.GetSpec(),
 		})
 	}
@@ -308,6 +311,7 @@ func bizToProtoSkus(skus []*biz.SkuItem) []*productRpc.SkuInfo {
 			Id:      s.ID,
 			SkuCode: s.SkuCode,
 			Price:   s.Price,
+			Stock:   s.Stock,
 			Spec:    s.Spec,
 		})
 	}

@@ -116,6 +116,47 @@ func (r *specGroupRepo) GetSpecGroupsByProductID(ctx context.Context, productID 
 	return result, nil
 }
 
+// GetSpecGroupsByProductIDs 批量获取多个商品的规格组，返回 map[productID][]*SpecGroup
+func (r *specGroupRepo) GetSpecGroupsByProductIDs(ctx context.Context, productIDs []int64) (map[int64][]*biz.SpecGroup, error) {
+	if len(productIDs) == 0 {
+		return nil, nil
+	}
+	// 批量查询规格组
+	specGroups, err := curd.SpecGroup.WithContext(ctx).Where(curd.SpecGroup.ProductID.In(productIDs...)).Find()
+	if err != nil {
+		return nil, err
+	}
+	if len(specGroups) == 0 {
+		return nil, nil
+	}
+	// 收集所有规格组ID
+	groupIDs := make([]int64, 0, len(specGroups))
+	for _, sg := range specGroups {
+		groupIDs = append(groupIDs, sg.ID)
+	}
+	// 批量查询规格值
+	specValues, err := curd.SpecValue.WithContext(ctx).Where(curd.SpecValue.SpecGroupID.In(groupIDs...)).Find()
+	if err != nil {
+		return nil, err
+	}
+	// 按 spec_group_id 分组
+	valueMap := make(map[int64][]string)
+	for _, sv := range specValues {
+		valueMap[sv.SpecGroupID] = append(valueMap[sv.SpecGroupID], sv.Value)
+	}
+	// 按 productID 分组
+	result := make(map[int64][]*biz.SpecGroup)
+	for _, sg := range specGroups {
+		result[sg.ProductID] = append(result[sg.ProductID], &biz.SpecGroup{
+			ID:        sg.ID,
+			ProductID: sg.ProductID,
+			Name:      sg.Name,
+			Values:    valueMap[sg.ID],
+		})
+	}
+	return result, nil
+}
+
 // DeleteSpecGroupsByProductID 删除商品的所有规格组
 func (r *specGroupRepo) DeleteSpecGroupsByProductID(ctx context.Context, productID int64) error {
 	// 先查找所有规格组，删除对应的规格值

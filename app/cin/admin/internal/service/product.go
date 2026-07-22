@@ -146,6 +146,7 @@ func bizToAdminProtoSkus(skus []*biz.SkuItem) []*adminv1.SkuItem {
 			Id:      s.ID,
 			SkuCode: s.SkuCode,
 			Price:   s.Price,
+			Stock:   s.Stock,
 			Spec:    s.Spec,
 		})
 	}
@@ -179,6 +180,7 @@ func adminProtoToBizSkus(skus []*adminv1.SkuItem) []*biz.SkuItem {
 			ID:      s.Id,
 			SkuCode: s.SkuCode,
 			Price:   s.Price,
+			Stock:   s.Stock,
 			Spec:    s.Spec,
 		})
 	}

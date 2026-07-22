@@ -19,6 +19,8 @@ type SpecGroupRepo interface {
 	ReplaceSpecGroups(ctx context.Context, productID int64, groups []*SpecGroup) error
 	// GetSpecGroupsByProductID 获取商品的所有规格组
 	GetSpecGroupsByProductID(ctx context.Context, productID int64) ([]*SpecGroup, error)
+	// GetSpecGroupsByProductIDs 批量获取多个商品的规格组，返回 map[productID][]*SpecGroup
+	GetSpecGroupsByProductIDs(ctx context.Context, productIDs []int64) (map[int64][]*SpecGroup, error)
 	// DeleteSpecGroupsByProductID 删除商品的所有规格组
 	DeleteSpecGroupsByProductID(ctx context.Context, productID int64) error
 }

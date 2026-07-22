@@ -41,7 +41,7 @@ func (s *StockService) UpdateStock(ctx context.Context, req *v1.UpdateStockReque
 }
 
 func (s *StockService) ReserveStock(ctx context.Context, req *v1.ReserveStockRequest) (*v1.ReserveStockReply, error) {
-	newVersion, err := s.uc.ReserveStock(ctx, req.ProductId, req.Count, req.Version)
+	newVersion, err := s.uc.ReserveStock(ctx, req.GetSkuId(), req.Count, req.Version)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (s *StockService) ReserveStock(ctx context.Context, req *v1.ReserveStockReq
 }
 
 func (s *StockService) DeductStock(ctx context.Context, req *v1.DeductStockRequest) (*v1.DeductStockReply, error) {
-	newVersion, err := s.uc.DeductStock(ctx, req.ProductId, req.Count, req.Version)
+	newVersion, err := s.uc.DeductStock(ctx, req.GetSkuId(), req.Count, req.Version)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (s *StockService) DeductStock(ctx context.Context, req *v1.DeductStockReque
 }
 
 func (s *StockService) ReleaseStock(ctx context.Context, req *v1.ReleaseStockRequest) (*v1.ReleaseStockReply, error) {
-	newVersion, err := s.uc.ReleaseStock(ctx, req.ProductId, req.Count, req.Version)
+	newVersion, err := s.uc.ReleaseStock(ctx, req.GetSkuId(), req.Count, req.Version)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (s *StockService) ReleaseStock(ctx context.Context, req *v1.ReleaseStockReq
 }
 
 func (s *StockService) AddStock(ctx context.Context, req *v1.AddStockRequest) (*v1.AddStockReply, error) {
-	newVersion, err := s.uc.AddStock(ctx, req.ProductId, req.Count, req.Version)
+	newVersion, err := s.uc.AddStock(ctx, req.GetSkuId(), req.Count, req.Version)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (s *StockService) DeleteStock(ctx context.Context, req *v1.DeleteStockReque
 }
 
 func (s *StockService) GetStock(ctx context.Context, req *v1.GetStockRequest) (*v1.GetStockReply, error) {
-	stock, err := s.uc.GetStock(ctx, req.ProductId)
+	stock, err := s.uc.GetStock(ctx, req.GetSkuId())
 	if err != nil {
 		return nil, err
 	}

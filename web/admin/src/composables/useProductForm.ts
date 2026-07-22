@@ -14,6 +14,7 @@ interface SkuForm {
   id: string
   spec: Record<string, string>
   price: number   // 元
+  stock: number   // 库存
 }
 
 export interface ProductFormState {
@@ -86,6 +87,7 @@ export function useProductForm() {
         id: existing?.id || `sku_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
         spec,
         price: existing?.price ?? 0,
+        stock: existing?.stock ?? 0,
       }
     })
   }
@@ -108,6 +110,7 @@ export function useProductForm() {
         id: `sku_${s.id}`,
         spec: s.spec,
         price: s.price / 100,
+        stock: s.stock || 0,
       }))
     } finally {
       loading.value = false
@@ -127,6 +130,7 @@ export function useProductForm() {
     const formedSkus = skus.value.map(s => ({
       sku_code: Object.values(s.spec).join('-'),
       price: Math.round(s.price * 100),  // 元 → 分
+      stock: s.stock,
       spec: s.spec,
     }))
     return {
