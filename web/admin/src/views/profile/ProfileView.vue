@@ -17,8 +17,8 @@
       </div>
       <div class="overview-body">
         <div class="avatar-section">
-          <div class="avatar-circle" @click="handleChangeAvatar">
-            <img v-if="avatarUrl" :src="avatarUrl" class="avatar-image" />
+          <div class="avatar-circle" :style="avatarCircleStyle" @click="handleChangeAvatar">
+            <img v-if="avatarUrl" :src="avatarUrl" class="avatar-image" @error="handleAvatarError" />
             <span v-else class="avatar-text">{{ getDefaultAvatarText() }}</span>
           </div>
           <el-button class="avatar-btn" size="small" plain @click="handleChangeAvatar">
@@ -332,12 +332,38 @@ onMounted(async () => {
 /**
  * 获取默认头像文字（名字的最后一个字）
  */
+/** 头像颜色列表，与员工管理页保持一致 */
+const avatarColors = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#0d9488', '#4f46e5', '#db2777']
+
+/** 根据名称哈希取色 */
+function getAvatarColor(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return avatarColors[Math.abs(hash) % avatarColors.length]
+}
+
+/** 头像圆形背景样式：有头像时透明，无头像时使用哈希色 */
+const avatarCircleStyle = computed(() => {
+  if (avatarUrl.value) {
+    return { background: 'transparent' }
+  }
+  const name = basicForm.realName || store.adminInfo?.name || ''
+  return { background: getAvatarColor(name) }
+})
+
 function getDefaultAvatarText() {
   const name = basicForm.realName || store.adminInfo?.name || ''
   if (name) {
-    return name.slice(-1)
+    return name.charAt(0)
   }
   return '管'
+}
+
+/** 头像加载失败时，回退到文字显示 */
+function handleAvatarError() {
+  avatarUrl.value = ''
 }
 
 /** 基本信息验证规则 */
@@ -610,7 +636,7 @@ function handleViewActivity() {
   width: 96px;
   height: 96px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #4f6ef7, #a855f7);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;

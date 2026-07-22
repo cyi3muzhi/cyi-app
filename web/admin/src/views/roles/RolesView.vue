@@ -274,7 +274,7 @@ async function loadData() {
       users: r.users || 0,
       enabled: r.enabled !== false,
       is_system: r.is_system === true,
-      created_at: r.created_at || '',
+      created_at: r.createdAt || r.created_at || '',
       permissions: {} as RolePermissions
     }))
     permModules.value = permRes.modules || []

@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"errors"
 
 	"cyi-app/app/service/product/internal/biz"
 	"cyi-app/app/service/product/internal/data/curd"
@@ -10,7 +11,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
-	"gorm.io/gen"
+	"gorm.io/gorm"
 )
 
 type productRepo struct {
@@ -46,7 +47,10 @@ func (r *productRepo) UpdateProduct(ctx context.Context, in *biz.Product) error 
 	product.Category = in.Category
 	product.Image = in.Image
 	product.Sales = in.Sales
-	if _, err := curd.Product.Debug().WithContext(ctx).Where(curd.Product.ID.Eq(in.ID)).Updates(product); err != nil {
+	// 显式指定更新字段，确保 Status 等零值字段参与更新
+	if err := curd.Product.WithContext(ctx).UnderlyingDB().Model(&mod.Product{}).Select(
+		"name", "description", "price", "status", "category", "image", "sales",
+	).Where("id = ?", in.ID).Updates(product).Error; err != nil {
 		return err
 	}
 	return nil
@@ -62,6 +66,9 @@ func (r *productRepo) DeleteProduct(ctx context.Context, productID int64) error 
 func (r *productRepo) GetProduct(ctx context.Context, productID int64) (*biz.Product, error) {
 	product, err := curd.Product.WithContext(ctx).Where(curd.Product.ID.Eq(productID)).First()
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	out := &biz.Product{}
@@ -75,21 +82,22 @@ func (r *productRepo) GetProduct(ctx context.Context, productID int64) (*biz.Pro
 
 // ListProduct 获取商品列表（分页 + 关键词搜索 + 分类筛选）
 func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*biz.Product, int32, error) {
-	// 构建查询条件
-	conds := make([]gen.Condition, 0)
+	// 从 gorm gen 获取底层 *gorm.DB，确保 OR 条件正确分组
+	baseQuery := curd.Product.WithContext(ctx)
+	db := baseQuery.UnderlyingDB().Model(&mod.Product{})
 
-	// 关键词搜索：匹配名称或描述
+	// 关键词搜索：(name LIKE ? OR description LIKE ?)
 	if keyword != "" {
-		conds = append(conds, curd.Product.Name.Like("%"+keyword+"%"))
-		conds = append(conds, curd.Product.Description.Like("%"+keyword+"%"))
+		kw := "%" + keyword + "%"
+		db = db.Where("name LIKE ? OR description LIKE ?", kw, kw)
 	}
 
 	// 分类筛选
 	if category != "" {
-		conds = append(conds, curd.Product.Category.Eq(category))
+		db = db.Where("category = ?", category)
 	}
 
-	// 状态筛选（proto 中 status 是 string，数据库中是 int32）
+	// 状态筛选
 	if status != "" {
 		var statusInt int32
 		if status == "上架" || status == "1" {
@@ -97,37 +105,20 @@ func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, key
 		} else {
 			statusInt = 0
 		}
-		conds = append(conds, curd.Product.Status.Eq(statusInt))
-	}
-
-	// 构建查询
-	query := curd.Product.WithContext(ctx)
-	if len(conds) > 0 {
-		// 如果是关键词搜索，需要用 Or 组合名称和描述条件
-		if keyword != "" {
-			query = query.Where(curd.Product.Name.Like("%"+keyword+"%")).Or(curd.Product.Description.Like("%"+keyword+"%"))
-			// 添加其他 AND 条件
-			for _, c := range conds[2:] {
-				query = query.Where(c)
-			}
-		} else {
-			for _, c := range conds {
-				query = query.Where(c)
-			}
-		}
+		db = db.Where("status = ?", statusInt)
 	}
 
 	// 计算总数
-	total, err := query.Count()
-	if err != nil {
+	var total int64
+	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
 	// 分页查询
+	var products []*mod.Product
 	offset := int((page - 1) * pageSize)
 	limit := int(pageSize)
-	products, err := query.Offset(offset).Limit(limit).Find()
-	if err != nil {
+	if err := db.Offset(offset).Limit(limit).Find(&products).Error; err != nil {
 		return nil, 0, err
 	}
 

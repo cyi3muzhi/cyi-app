@@ -84,7 +84,7 @@ func (s *specGroup) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *specGroup) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 7)
+	s.fieldMap = make(map[string]field.Expr, 6)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["create_time"] = s.CreateTime
 	s.fieldMap["update_time"] = s.UpdateTime

@@ -75,11 +75,9 @@ onUnmounted(() => {
 <style scoped>
 .admin-layout {
   min-height: 100vh;
-  display: flex;
 }
 
 .main-wrapper {
-  flex: 1;
   min-height: 100vh;
   display: flex;
   flex-direction: column;

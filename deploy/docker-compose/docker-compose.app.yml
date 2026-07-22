@@ -108,6 +108,24 @@ services:
     networks:
       - cyi-network
 
+  # Admin BFF 服务 - 管理后台 API
+  service-admin:
+    image: cyi3muz/cin-admin:0.1.0
+    container_name: service-admin
+    restart: always
+    ports:
+      - "${ADMIN_HTTP_PORT}:8000"  # HTTP 端口
+      - "${ADMIN_GRPC_PORT}:9000"  # gRPC 端口
+    environment:
+      - CONSUL_ADDR=consul:8500
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/cin/admin
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - redis
+    networks:
+      - cyi-network
+
 networks:
   cyi-network:
     driver: bridge

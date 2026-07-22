@@ -45,12 +45,14 @@ func (s *AdminUserService) Login(ctx context.Context, req *v1.AdminLoginRequest)
 // CreateAdminUser 创建管理员
 func (s *AdminUserService) CreateAdminUser(ctx context.Context, req *v1.CreateAdminUserRequest) (*v1.CreateAdminUserReply, error) {
 	id, err := s.uc.Create(ctx, &biz.AdminUser{
-		Username: req.Username,
-		Password: req.Password,
-		Name:     req.Name,
-		Role:     req.Role,
-		Email:    req.Email,
-		Status:   1,
+		Username:   req.Username,
+		Password:   req.Password,
+		Name:       req.Name,
+		Role:       req.Role,
+		Email:      req.Email,
+		Phone:      req.Phone,
+		Department: req.Department,
+		Status:     1,
 	})
 	if err != nil {
 		return nil, err

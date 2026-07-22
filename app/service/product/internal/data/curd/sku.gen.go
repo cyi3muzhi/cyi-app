@@ -96,7 +96,7 @@ func (s *sku) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *sku) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 11)
+	s.fieldMap = make(map[string]field.Expr, 10)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["create_time"] = s.CreateTime
 	s.fieldMap["update_time"] = s.UpdateTime

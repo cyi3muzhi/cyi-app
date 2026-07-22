@@ -31,10 +31,23 @@ func NewProductUseCase(repo ProductRepo, stockRepo StockRepo, specGroupRepo Spec
 }
 
 // CreateProduct 创建商品（含规格组和SKU）
+// 若后续步骤失败，会回滚已创建的商品，保证数据一致性
 func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error {
 	if err := uc.repo.CreateProduct(ctx, in); err != nil {
 		return v1.ErrorCreateProductFailed("create product failed")
 	}
+
+	// 标记是否需要回滚商品
+	needRollback := true
+	defer func() {
+		if needRollback {
+			// 回滚：删除已创建的商品及其关联数据
+			_ = uc.specGroupRepo.DeleteSpecGroupsByProductID(ctx, in.ID)
+			_ = uc.skuRepo.DeleteSkusByProductID(ctx, in.ID)
+			_ = uc.repo.DeleteProduct(ctx, in.ID)
+		}
+	}()
+
 	// 创建规格组
 	if len(in.SpecGroups) > 0 {
 		if err := uc.specGroupRepo.CreateSpecGroups(ctx, in.ID, in.SpecGroups); err != nil {
@@ -59,6 +72,9 @@ func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error 
 	if err := uc.stockRepo.CreateStock(ctx, stock); err != nil {
 		return v1.ErrorCreateStockFailed("create stock failed")
 	}
+
+	// 所有步骤成功，取消回滚
+	needRollback = false
 	return nil
 }
 

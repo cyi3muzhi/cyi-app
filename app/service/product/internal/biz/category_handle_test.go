@@ -179,3 +179,43 @@ func TestListCategoryTree_RepoError(t *testing.T) {
 	assert.Nil(t, got)
 	assert.ErrorIs(t, err, wantErr)
 }
+
+// TestDeleteCategory_PropagatesProductConflict 验证当分类下存在商品时，DeleteCategory 应向上传递
+// "分类下存在商品"错误，避免数据层在缺少前置校验时把分类连同其商品一并删除，导致 product.category
+// 字段悬空、用户无法通过分类导航找到这些商品。
+func TestDeleteCategory_PropagatesProductConflict(t *testing.T) {
+	wantErr := assert.AnError
+	uc := &CategoryUseCase{
+		repo: &deleteCategoryRepo{
+			deleteFn: func(_ context.Context, _ int64) error { return wantErr },
+		},
+		log: log.NewHelper(log.NewStdLogger(io.Discard)),
+	}
+
+	err := uc.DeleteCategory(context.Background(), 42)
+	assert.ErrorIs(t, err, wantErr)
+}
+
+// deleteCategoryRepo 仅用于验证 DeleteCategory 错误传播的最小化模拟实现
+type deleteCategoryRepo struct {
+	deleteFn func(ctx context.Context, id int64) error
+}
+
+func (d *deleteCategoryRepo) ListCategoryTree(_ context.Context, _ int64) ([]*Category, error) {
+	return nil, nil
+}
+func (d *deleteCategoryRepo) GetCategory(_ context.Context, _ int64) (*Category, error) { return nil, nil }
+func (d *deleteCategoryRepo) CreateCategory(_ context.Context, _ *Category) error      { return nil }
+func (d *deleteCategoryRepo) UpdateCategory(_ context.Context, _ *Category) error      { return nil }
+func (d *deleteCategoryRepo) DeleteCategory(ctx context.Context, id int64) error       { return d.deleteFn(ctx, id) }
+func (d *deleteCategoryRepo) ListChildCategories(_ context.Context, _ int64) ([]*Category, error) {
+	return nil, nil
+}
+func (d *deleteCategoryRepo) UpdateCategorySort(_ context.Context, _ int64, _ int32) error  { return nil }
+func (d *deleteCategoryRepo) UpdateCategoryStatus(_ context.Context, _ int64, _ bool) error { return nil }
+func (d *deleteCategoryRepo) ToggleCategoryShowcase(_ context.Context, _ int64, _ bool) error {
+	return nil
+}
+func (d *deleteCategoryRepo) BatchOperation(_ context.Context, _ string, _ []int64) (int32, error) {
+	return 0, nil
+}

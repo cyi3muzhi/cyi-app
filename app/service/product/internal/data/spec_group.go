@@ -49,24 +49,46 @@ func (r *specGroupRepo) CreateSpecGroups(ctx context.Context, productID int64, g
 	return nil
 }
 
-// ReplaceSpecGroups 替换规格组（先删后插）
+// ReplaceSpecGroups 替换规格组（事务保证原子性：先删后插）
 func (r *specGroupRepo) ReplaceSpecGroups(ctx context.Context, productID int64, groups []*biz.SpecGroup) error {
-	// 先删除旧的规格值
-	specGroups, err := curd.SpecGroup.WithContext(ctx).Where(curd.SpecGroup.ProductID.Eq(productID)).Find()
-	if err != nil {
-		return err
-	}
-	for _, sg := range specGroups {
-		if _, err := curd.SpecValue.WithContext(ctx).Where(curd.SpecValue.SpecGroupID.Eq(sg.ID)).Delete(); err != nil {
+	return curd.Q.Transaction(func(tx *curd.Query) error {
+		// 先查找所有旧规格组，删除对应的规格值
+		specGroups, err := tx.SpecGroup.WithContext(ctx).Where(tx.SpecGroup.ProductID.Eq(productID)).Find()
+		if err != nil {
 			return err
 		}
-	}
-	// 删除旧的规格组
-	if _, err := curd.SpecGroup.WithContext(ctx).Where(curd.SpecGroup.ProductID.Eq(productID)).Delete(); err != nil {
-		return err
-	}
-	// 创建新的规格组和值
-	return r.CreateSpecGroups(ctx, productID, groups)
+		for _, sg := range specGroups {
+			if _, err := tx.SpecValue.WithContext(ctx).Where(tx.SpecValue.SpecGroupID.Eq(sg.ID)).Delete(); err != nil {
+				return err
+			}
+		}
+		// 删除旧的规格组
+		if _, err := tx.SpecGroup.WithContext(ctx).Where(tx.SpecGroup.ProductID.Eq(productID)).Delete(); err != nil {
+			return err
+		}
+		// 创建新的规格组和值
+		for _, group := range groups {
+			specGroup := &mod.SpecGroup{
+				ProductID: productID,
+				Name:      group.Name,
+			}
+			if err := tx.SpecGroup.WithContext(ctx).Create(specGroup); err != nil {
+				return err
+			}
+			group.ID = specGroup.ID
+			group.ProductID = productID
+			for _, value := range group.Values {
+				specValue := &mod.SpecValue{
+					SpecGroupID: specGroup.ID,
+					Value:       value,
+				}
+				if err := tx.SpecValue.WithContext(ctx).Create(specValue); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
 }
 
 // GetSpecGroupsByProductID 获取商品的所有规格组

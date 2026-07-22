@@ -15,20 +15,20 @@ var (
 	Q         = new(Query)
 	Category  *category
 	Product   *product
-	Stock     *stock
+	Sku       *sku
 	SpecGroup *specGroup
 	SpecValue *specValue
-	Sku       *sku
+	Stock     *stock
 )
 
 func SetDefault(db *gorm.DB) {
 	*Q = *Use(db)
 	Category = &Q.Category
 	Product = &Q.Product
-	Stock = &Q.Stock
+	Sku = &Q.Sku
 	SpecGroup = &Q.SpecGroup
 	SpecValue = &Q.SpecValue
-	Sku = &Q.Sku
+	Stock = &Q.Stock
 }
 
 func Use(db *gorm.DB) *Query {
@@ -36,10 +36,10 @@ func Use(db *gorm.DB) *Query {
 		db:        db,
 		Category:  newCategory(db),
 		Product:   newProduct(db),
-		Stock:     newStock(db),
+		Sku:       newSku(db),
 		SpecGroup: newSpecGroup(db),
 		SpecValue: newSpecValue(db),
-		Sku:       newSku(db),
+		Stock:     newStock(db),
 	}
 }
 
@@ -48,10 +48,10 @@ type Query struct {
 
 	Category  category
 	Product   product
-	Stock     stock
+	Sku       sku
 	SpecGroup specGroup
 	SpecValue specValue
-	Sku       sku
+	Stock     stock
 }
 
 func (q *Query) Available() bool { return q.db != nil }
@@ -61,30 +61,30 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		db:        db,
 		Category:  q.Category.clone(db),
 		Product:   q.Product.clone(db),
-		Stock:     q.Stock.clone(db),
+		Sku:       q.Sku.clone(db),
 		SpecGroup: q.SpecGroup.clone(db),
 		SpecValue: q.SpecValue.clone(db),
-		Sku:       q.Sku.clone(db),
+		Stock:     q.Stock.clone(db),
 	}
 }
 
 type queryCtx struct {
 	Category  categoryDo
 	Product   productDo
-	Stock     stockDo
+	Sku       skuDo
 	SpecGroup specGroupDo
 	SpecValue specValueDo
-	Sku       skuDo
+	Stock     stockDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
 		Category:  *q.Category.WithContext(ctx),
 		Product:   *q.Product.WithContext(ctx),
-		Stock:     *q.Stock.WithContext(ctx),
+		Sku:       *q.Sku.WithContext(ctx),
 		SpecGroup: *q.SpecGroup.WithContext(ctx),
 		SpecValue: *q.SpecValue.WithContext(ctx),
-		Sku:       *q.Sku.WithContext(ctx),
+		Stock:     *q.Stock.WithContext(ctx),
 	}
 }
 

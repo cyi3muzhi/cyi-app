@@ -68,11 +68,13 @@ func (r *staffRepo) List(ctx context.Context, page, pageSize int32, keyword, sta
 // Create 创建员工
 func (r *staffRepo) Create(ctx context.Context, s *biz.Staff, password string) (int64, error) {
 	resp, err := r.data.auc.CreateAdminUser(ctx, &userV1.CreateAdminUserRequest{
-		Username: s.Username,
-		Password: password,
-		Name:     s.Name,
-		Role:     s.Role,
-		Email:    s.Email,
+		Username:   s.Username,
+		Password:   password,
+		Name:       s.Name,
+		Role:       s.Role,
+		Email:      s.Email,
+		Phone:      s.Phone,
+		Department: s.Department,
 	})
 	if err != nil {
 		return 0, err

@@ -59,6 +59,10 @@ message CreateAdminUserRequest {
 	string role = 4;
 	// 邮箱
 	string email = 5;
+	// 手机号
+	string phone = 6;
+	// 部门
+	string department = 7;
 }
 
 message CreateAdminUserReply {

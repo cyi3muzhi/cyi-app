@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"fmt"
 
 	"cyi-app/app/service/product/internal/biz"
 	"cyi-app/app/service/product/internal/data/curd"
@@ -89,10 +90,15 @@ func (r *categoryRepo) UpdateCategory(ctx context.Context, in *biz.Category) err
 }
 
 // DeleteCategory 删除分类（级联删除所有子分类，防止产生孤儿数据）
+// 若分类（含子分类）下存在商品，则拒绝删除，避免产生 category 字段悬空的孤儿商品
 func (r *categoryRepo) DeleteCategory(ctx context.Context, id int64) error {
 	// 递归收集所有需要删除的分类 ID
 	ids := []int64{id}
 	if err := r.collectChildIDs(ctx, id, &ids); err != nil {
+		return err
+	}
+	// 检查这些分类下是否存在商品，存在则拒绝删除
+	if err := r.assertNoProductsInCategories(ctx, ids); err != nil {
 		return err
 	}
 	_, err := curd.Category.WithContext(ctx).
@@ -114,6 +120,35 @@ func (r *categoryRepo) collectChildIDs(ctx context.Context, parentID int64, ids 
 		if err := r.collectChildIDs(ctx, child.ID, ids); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// assertNoProductsInCategories 校验指定分类（含子分类）下是否存在商品
+// 存在则返回错误，避免删除后产生 category 字段悬空的孤儿商品
+func (r *categoryRepo) assertNoProductsInCategories(ctx context.Context, categoryIDs []int64) error {
+	if len(categoryIDs) == 0 {
+		return nil
+	}
+	// 先取出待删除分类的名称集合（product.category 存储的是分类名称字符串）
+	var nameList []string
+	if err := curd.Category.WithContext(ctx).
+		Where(curd.Category.ID.In(categoryIDs...)).
+		Pluck(curd.Category.Name, &nameList); err != nil {
+		return err
+	}
+	if len(nameList) == 0 {
+		return nil
+	}
+	// 检查商品表中是否仍引用这些分类名称
+	count, err := curd.Product.WithContext(ctx).
+		Where(curd.Product.Category.In(nameList...)).
+		Count()
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return fmt.Errorf("分类下存在 %d 个商品，请先处理商品后再删除", count)
 	}
 	return nil
 }
@@ -172,6 +207,10 @@ func (r *categoryRepo) BatchOperation(ctx context.Context, action string, ids []
 			if err := r.collectChildIDs(ctx, id, &allIDs); err != nil {
 				return 0, err
 			}
+		}
+		// 检查这些分类下是否存在商品，存在则拒绝删除，避免悬空 category 字段
+		if err := r.assertNoProductsInCategories(ctx, allIDs); err != nil {
+			return 0, err
 		}
 		result, err := curd.Category.WithContext(ctx).
 			Where(curd.Category.ID.In(allIDs...)).

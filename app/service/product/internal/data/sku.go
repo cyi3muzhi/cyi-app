@@ -41,17 +41,31 @@ func (r *skuRepo) CreateSkus(ctx context.Context, skus []*biz.Sku) error {
 	return nil
 }
 
-// ReplaceSkus 替换SKU（先删后插）
+// ReplaceSkus 替换SKU（事务保证原子性：先删后插）
 func (r *skuRepo) ReplaceSkus(ctx context.Context, productID int64, skus []*biz.Sku) error {
-	// 删除旧的SKU
-	if _, err := curd.Sku.WithContext(ctx).Where(curd.Sku.ProductID.Eq(productID)).Delete(); err != nil {
-		return err
-	}
-	// 创建新的SKU
-	for _, sku := range skus {
-		sku.ProductID = productID
-	}
-	return r.CreateSkus(ctx, skus)
+	return curd.Q.Transaction(func(tx *curd.Query) error {
+		// 删除旧的SKU
+		if _, err := tx.Sku.WithContext(ctx).Where(tx.Sku.ProductID.Eq(productID)).Delete(); err != nil {
+			return err
+		}
+		// 创建新的SKU
+		for _, sku := range skus {
+			model := &mod.Sku{
+				ProductID: productID,
+				SkuCode:   sku.SkuCode,
+				Price:     sku.Price,
+				Stock:     sku.Stock,
+				Sales:     sku.Sales,
+				SpecDesc:  marshalSpec(sku.Spec),
+			}
+			if err := tx.Sku.WithContext(ctx).Create(model); err != nil {
+				return err
+			}
+			sku.ID = model.ID
+			sku.ProductID = productID
+		}
+		return nil
+	})
 }
 
 // GetSkusByProductID 获取商品的所有SKU

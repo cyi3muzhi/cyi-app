@@ -177,7 +177,11 @@ type CreateAdminUserRequest struct {
 	// 角色
 	Role string `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
 	// 邮箱
-	Email         string `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
+	Email string `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
+	// 手机号
+	Phone string `protobuf:"bytes,6,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 部门
+	Department    string `protobuf:"bytes,7,opt,name=department,proto3" json:"department,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -243,6 +247,20 @@ func (x *CreateAdminUserRequest) GetRole() string {
 func (x *CreateAdminUserRequest) GetEmail() string {
 	if x != nil {
 		return x.Email
+	}
+	return ""
+}
+
+func (x *CreateAdminUserRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *CreateAdminUserRequest) GetDepartment() string {
+	if x != nil {
+		return x.Department
 	}
 	return ""
 }
@@ -1007,13 +1025,17 @@ const file_api_service_user_v1_admin_user_proto_rawDesc = "" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
 	"\x04role\x18\x04 \x01(\tR\x04role\x12\x14\n" +
 	"\x05valid\x18\x05 \x01(\bR\x05valid\x12\x16\n" +
-	"\x06avatar\x18\x06 \x01(\tR\x06avatar\"\xa4\x01\n" +
+	"\x06avatar\x18\x06 \x01(\tR\x06avatar\"\xda\x01\n" +
 	"\x16CreateAdminUserRequest\x12%\n" +
 	"\busername\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x02\x18 R\busername\x12%\n" +
 	"\bpassword\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18 R\bpassword\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
 	"\x04role\x18\x04 \x01(\tR\x04role\x12\x14\n" +
-	"\x05email\x18\x05 \x01(\tR\x05email\"&\n" +
+	"\x05email\x18\x05 \x01(\tR\x05email\x12\x14\n" +
+	"\x05phone\x18\x06 \x01(\tR\x05phone\x12\x1e\n" +
+	"\n" +
+	"department\x18\a \x01(\tR\n" +
+	"department\"&\n" +
 	"\x14CreateAdminUserReply\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"\xd3\x01\n" +
 	"\x16UpdateAdminUserRequest\x12\x17\n" +
