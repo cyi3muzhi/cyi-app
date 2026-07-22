@@ -27,7 +27,7 @@ func newSpecValue(db *gorm.DB) specValue {
 	_specValue.ID = field.NewInt64(tableName, "id")
 	_specValue.CreateTime = field.NewInt64(tableName, "create_time")
 	_specValue.UpdateTime = field.NewInt64(tableName, "update_time")
-	_specValue.IsDel = field.NewUint(tableName, "is_del")
+	_specValue.DeletedAt = field.NewField(tableName, "deleted_at")
 	_specValue.SpecGroupID = field.NewInt64(tableName, "spec_group_id")
 	_specValue.Value = field.NewString(tableName, "value")
 
@@ -43,7 +43,7 @@ type specValue struct {
 	ID          field.Int64
 	CreateTime  field.Int64
 	UpdateTime  field.Int64
-	IsDel       field.Uint
+	DeletedAt   field.Field
 	SpecGroupID field.Int64
 	Value       field.String
 
@@ -65,7 +65,7 @@ func (s *specValue) updateTableName(table string) *specValue {
 	s.ID = field.NewInt64(table, "id")
 	s.CreateTime = field.NewInt64(table, "create_time")
 	s.UpdateTime = field.NewInt64(table, "update_time")
-	s.IsDel = field.NewUint(table, "is_del")
+	s.DeletedAt = field.NewField(table, "deleted_at")
 	s.SpecGroupID = field.NewInt64(table, "spec_group_id")
 	s.Value = field.NewString(table, "value")
 
@@ -88,7 +88,7 @@ func (s *specValue) fillFieldMap() {
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["create_time"] = s.CreateTime
 	s.fieldMap["update_time"] = s.UpdateTime
-	s.fieldMap["is_del"] = s.IsDel
+	s.fieldMap["deleted_at"] = s.DeletedAt
 	s.fieldMap["spec_group_id"] = s.SpecGroupID
 	s.fieldMap["value"] = s.Value
 }

@@ -30,7 +30,7 @@ func NewProductService(uc *biz.ProductUseCase, logger log.Logger) *ProductServic
 func (s *ProductService) CreateProduct(ctx context.Context, req *v1.CreateProductRequest) (*v1.CreateProductReply, error) {
 	in := &biz.Product{}
 	convert.Convert(req, in)
-	in.Category = req.Category
+	in.CategoryID = req.GetCategoryId()
 	in.Image = req.Image
 	in.Sales = req.Sales
 	// 转换规格组
@@ -53,7 +53,7 @@ func (s *ProductService) UpdateProduct(ctx context.Context, req *v1.UpdateProduc
 		Name:        req.Name,
 		Description: req.Description,
 		Price:       req.Price,
-		Category:    req.Category,
+		CategoryID:  req.GetCategoryId(),
 		Image:       req.Image,
 		Sales:       req.Sales,
 		Status:      biz.ProductStatus(req.Status),
@@ -91,7 +91,7 @@ func (s *ProductService) GetProduct(ctx context.Context, req *v1.GetProductReque
 
 // ListProduct 获取商品列表
 func (s *ProductService) ListProduct(ctx context.Context, req *v1.ListProductRequest) (*v1.ListProductReply, error) {
-	items, total, err := s.uc.ListProduct(ctx, req.Page, req.PageSize, req.Keyword, req.Category, req.Status)
+	items, total, err := s.uc.ListProduct(ctx, req.Page, req.PageSize, req.Keyword, req.GetCategoryId(), req.Status)
 	if err != nil {
 		return nil, err
 	}
@@ -155,8 +155,6 @@ func skuInfoListToBiz(skus []*v1.SkuInfo) []*biz.Sku {
 			ID:      s.Id,
 			SkuCode: s.SkuCode,
 			Price:   s.Price,
-			Stock:   s.Stock,
-			Sales:   s.Sales,
 			Spec:    s.Spec,
 		})
 	}
@@ -169,8 +167,6 @@ func skuToProto(s *biz.Sku) *v1.SkuInfo {
 		Id:      s.ID,
 		SkuCode: s.SkuCode,
 		Price:   s.Price,
-		Stock:   s.Stock,
-		Sales:   s.Sales,
 		Spec:    s.Spec,
 	}
 }
@@ -195,7 +191,7 @@ func bizProductToProductItem(p *biz.Product) *v1.ProductItem {
 		Description: p.Description,
 		Price:       p.Price,
 		Status:      p.Status.Value(),
-		Category:    p.Category,
+		CategoryId:   p.CategoryID,
 		Image:       p.Image,
 		Sales:       p.Sales,
 		Specs:       specGroupListToProto(p.SpecGroups),

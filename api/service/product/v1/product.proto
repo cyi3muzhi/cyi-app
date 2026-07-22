@@ -38,22 +38,24 @@ message ProductItem {
 	string description = 3;  // 商品描述
 	int64 price = 4;        // 价格（单位：分）
 	int32 status = 5;       // 状态 0-下架 1-上架
-	string category = 6;    // 商品分类
+	string category = 6 [deprecated = true];  // 已废弃，改用 category_id
 	string image = 7;       // 商品图片
 	int32 sales = 8;        // 销量
 	repeated SpecGroupInfo specs = 9;  // 规格组列表
 	repeated SkuInfo skus = 10;        // SKU列表
+	int64 category_id = 11;  // 商品分类ID，关联 category 表
 }
 
 message CreateProductRequest {
 	string name = 1;        // 商品名称
 	string description = 2;  // 商品描述
 	int64 price = 3;        // 价格（单位：分）
-	string category = 4;    // 商品分类
+	string category = 4 [deprecated = true];  // 已废弃，改用 category_id
 	string image = 5;       // 商品图片
 	int32 sales = 6;        // 销量
 	repeated SpecGroupInfo specs = 7;  // 规格组列表
 	repeated SkuInfo skus = 8;         // SKU列表
+	int64 category_id = 9;   // 商品分类ID
 }
 
 message CreateProductReply {
@@ -65,12 +67,13 @@ message UpdateProductRequest {
 	string name = 2;        // 商品名称
 	string description = 3;  // 商品描述
 	int64 price = 4;        // 价格（单位：分）
-	string category = 5;    // 商品分类
+	string category = 5 [deprecated = true];  // 已废弃，改用 category_id
 	string image = 6;       // 商品图片
 	int32 sales = 7;        // 销量
 	int32 status = 8;       // 状态 0-下架 1-上架
 	repeated SpecGroupInfo specs = 9;  // 规格组列表
 	repeated SkuInfo skus = 10;        // SKU列表
+	int64 category_id = 11;  // 商品分类ID
 }
 
 message UpdateProductReply {
@@ -97,8 +100,9 @@ message ListProductRequest {
 	int32 page = 1;         // 页码（从1开始）
 	int32 page_size = 2;    // 每页条数
 	string keyword = 3;     // 关键词搜索（匹配名称/描述）
-	string category = 4;    // 分类筛选
+	string category = 4 [deprecated = true];  // 已废弃，改用 category_id
 	string status = 5;      // 状态筛选
+	int64 category_id = 6;   // 分类ID筛选
 }
 
 message ListProductReply {

@@ -27,12 +27,12 @@ func newProduct(db *gorm.DB) product {
 	_product.ID = field.NewInt64(tableName, "id")
 	_product.CreateTime = field.NewInt64(tableName, "create_time")
 	_product.UpdateTime = field.NewInt64(tableName, "update_time")
-	_product.IsDel = field.NewUint(tableName, "is_del")
+	_product.DeletedAt = field.NewField(tableName, "deleted_at")
 	_product.Name = field.NewString(tableName, "name")
 	_product.Description = field.NewString(tableName, "description")
 	_product.Price = field.NewInt64(tableName, "price")
 	_product.Status = field.NewInt32(tableName, "status")
-	_product.Category = field.NewString(tableName, "category")
+	_product.CategoryID = field.NewInt64(tableName, "category_id")
 	_product.Image = field.NewString(tableName, "image")
 	_product.Sales = field.NewInt32(tableName, "sales")
 
@@ -48,12 +48,12 @@ type product struct {
 	ID          field.Int64
 	CreateTime  field.Int64
 	UpdateTime  field.Int64
-	IsDel       field.Uint
+	DeletedAt   field.Field
 	Name        field.String
 	Description field.String
 	Price       field.Int64
 	Status      field.Int32
-	Category    field.String
+	CategoryID  field.Int64
 	Image       field.String
 	Sales       field.Int32
 
@@ -75,12 +75,12 @@ func (p *product) updateTableName(table string) *product {
 	p.ID = field.NewInt64(table, "id")
 	p.CreateTime = field.NewInt64(table, "create_time")
 	p.UpdateTime = field.NewInt64(table, "update_time")
-	p.IsDel = field.NewUint(table, "is_del")
+	p.DeletedAt = field.NewField(table, "deleted_at")
 	p.Name = field.NewString(table, "name")
 	p.Description = field.NewString(table, "description")
 	p.Price = field.NewInt64(table, "price")
 	p.Status = field.NewInt32(table, "status")
-	p.Category = field.NewString(table, "category")
+	p.CategoryID = field.NewInt64(table, "category_id")
 	p.Image = field.NewString(table, "image")
 	p.Sales = field.NewInt32(table, "sales")
 
@@ -103,12 +103,12 @@ func (p *product) fillFieldMap() {
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["create_time"] = p.CreateTime
 	p.fieldMap["update_time"] = p.UpdateTime
-	p.fieldMap["is_del"] = p.IsDel
+	p.fieldMap["deleted_at"] = p.DeletedAt
 	p.fieldMap["name"] = p.Name
 	p.fieldMap["description"] = p.Description
 	p.fieldMap["price"] = p.Price
 	p.fieldMap["status"] = p.Status
-	p.fieldMap["category"] = p.Category
+	p.fieldMap["category_id"] = p.CategoryID
 	p.fieldMap["image"] = p.Image
 	p.fieldMap["sales"] = p.Sales
 }

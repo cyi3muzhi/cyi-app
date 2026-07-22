@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"cyi-app/app/service/product/internal/biz"
 	"cyi-app/app/service/product/internal/data/curd"
@@ -25,9 +26,11 @@ func NewProductRepo(data *Data, logger log.Logger) biz.ProductRepo {
 // CreateProduct 创建商品
 func (r *productRepo) CreateProduct(ctx context.Context, in *biz.Product) error {
 	product := &mod.Product{}
-	convert.Convert(in, product)
+	if err := convert.Convert(in, product); err != nil {
+		return fmt.Errorf("convert product for create failed: %w", err)
+	}
 	// 设置新增字段
-	product.Category = in.Category
+	product.CategoryID = in.CategoryID
 	product.Image = in.Image
 	product.Sales = in.Sales
 	if err := curd.Product.WithContext(ctx).Create(product); err != nil {
@@ -40,14 +43,16 @@ func (r *productRepo) CreateProduct(ctx context.Context, in *biz.Product) error 
 // UpdateProduct 更新商品
 func (r *productRepo) UpdateProduct(ctx context.Context, in *biz.Product) error {
 	product := &mod.Product{}
-	convert.Convert(in, product)
+	if err := convert.Convert(in, product); err != nil {
+		return fmt.Errorf("convert product for update failed: %w", err)
+	}
 	product.ID = in.ID
-	product.Category = in.Category
+	product.CategoryID = in.CategoryID
 	product.Image = in.Image
 	product.Sales = in.Sales
 	// 显式指定更新字段，确保 Status 等零值字段参与更新
 	if err := curd.Product.WithContext(ctx).UnderlyingDB().Model(&mod.Product{}).Select(
-		"name", "description", "price", "status", "category", "image", "sales",
+		"name", "description", "price", "status", "category_id", "image", "sales",
 	).Where("id = ?", in.ID).Updates(product).Error; err != nil {
 		return err
 	}
@@ -70,16 +75,18 @@ func (r *productRepo) GetProduct(ctx context.Context, productID int64) (*biz.Pro
 		return nil, err
 	}
 	out := &biz.Product{}
-	convert.Convert(product, out)
+	if err := convert.Convert(product, out); err != nil {
+		return nil, fmt.Errorf("convert product for get failed: %w", err)
+	}
 	out.ID = product.ID
-	out.Category = product.Category
+	out.CategoryID = product.CategoryID
 	out.Image = product.Image
 	out.Sales = product.Sales
 	return out, nil
 }
 
-// ListProduct 获取商品列表（分页 + 关键词搜索 + 分类筛选）
-func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*biz.Product, int32, error) {
+// ListProduct 获取商品列表（分页 + 关键词搜索 + 分类筛选 + 按ID降序）
+func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string) ([]*biz.Product, int32, error) {
 	// 从 gorm gen 获取底层 *gorm.DB，确保 OR 条件正确分组
 	baseQuery := curd.Product.WithContext(ctx)
 	db := baseQuery.UnderlyingDB().Model(&mod.Product{})
@@ -91,19 +98,18 @@ func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, key
 	}
 
 	// 分类筛选
-	if category != "" {
-		db = db.Where("category = ?", category)
+	if categoryID > 0 {
+		db = db.Where("category_id = ?", categoryID)
 	}
 
-	// 状态筛选
+	// 状态筛选（支持 "上架"/"1"=上架, "下架"/"0"=下架）
 	if status != "" {
-		var statusInt int32
-		if status == "上架" || status == "1" {
-			statusInt = 1
-		} else {
-			statusInt = 0
+		switch status {
+		case "上架", "1":
+			db = db.Where("status = ?", 1)
+		case "下架", "0":
+			db = db.Where("status = ?", 0)
 		}
-		db = db.Where("status = ?", statusInt)
 	}
 
 	// 计算总数
@@ -111,12 +117,15 @@ func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, key
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
+	if total == 0 {
+		return nil, 0, nil
+	}
 
-	// 分页查询
+	// 分页查询，按 ID 降序
 	var products []*mod.Product
 	offset := int((page - 1) * pageSize)
 	limit := int(pageSize)
-	if err := db.Offset(offset).Limit(limit).Find(&products).Error; err != nil {
+	if err := db.Order("id DESC").Offset(offset).Limit(limit).Find(&products).Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -124,9 +133,11 @@ func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, key
 	items := make([]*biz.Product, 0, len(products))
 	for _, p := range products {
 		item := &biz.Product{}
-		convert.Convert(p, item)
+		if err := convert.Convert(p, item); err != nil {
+			return nil, 0, fmt.Errorf("convert product for list failed: %w", err)
+		}
 		item.ID = p.ID
-		item.Category = p.Category
+		item.CategoryID = p.CategoryID
 		item.Image = p.Image
 		item.Sales = p.Sales
 		item.Status = biz.ProductStatus(p.Status)

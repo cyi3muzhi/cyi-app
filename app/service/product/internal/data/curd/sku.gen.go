@@ -27,12 +27,10 @@ func newSku(db *gorm.DB) sku {
 	_sku.ID = field.NewInt64(tableName, "id")
 	_sku.CreateTime = field.NewInt64(tableName, "create_time")
 	_sku.UpdateTime = field.NewInt64(tableName, "update_time")
-	_sku.IsDel = field.NewUint(tableName, "is_del")
+	_sku.DeletedAt = field.NewField(tableName, "deleted_at")
 	_sku.ProductID = field.NewInt64(tableName, "product_id")
 	_sku.SkuCode = field.NewString(tableName, "sku_code")
 	_sku.Price = field.NewInt64(tableName, "price")
-	_sku.Stock = field.NewInt32(tableName, "stock")
-	_sku.Sales = field.NewInt32(tableName, "sales")
 	_sku.SpecDesc = field.NewString(tableName, "spec_desc")
 
 	_sku.fillFieldMap()
@@ -47,12 +45,10 @@ type sku struct {
 	ID         field.Int64
 	CreateTime field.Int64
 	UpdateTime field.Int64
-	IsDel      field.Uint
+	DeletedAt  field.Field
 	ProductID  field.Int64
 	SkuCode    field.String
 	Price      field.Int64
-	Stock      field.Int32
-	Sales      field.Int32
 	SpecDesc   field.String
 
 	fieldMap map[string]field.Expr
@@ -73,12 +69,10 @@ func (s *sku) updateTableName(table string) *sku {
 	s.ID = field.NewInt64(table, "id")
 	s.CreateTime = field.NewInt64(table, "create_time")
 	s.UpdateTime = field.NewInt64(table, "update_time")
-	s.IsDel = field.NewUint(table, "is_del")
+	s.DeletedAt = field.NewField(table, "deleted_at")
 	s.ProductID = field.NewInt64(table, "product_id")
 	s.SkuCode = field.NewString(table, "sku_code")
 	s.Price = field.NewInt64(table, "price")
-	s.Stock = field.NewInt32(table, "stock")
-	s.Sales = field.NewInt32(table, "sales")
 	s.SpecDesc = field.NewString(table, "spec_desc")
 
 	s.fillFieldMap()
@@ -96,16 +90,14 @@ func (s *sku) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *sku) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 10)
+	s.fieldMap = make(map[string]field.Expr, 8)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["create_time"] = s.CreateTime
 	s.fieldMap["update_time"] = s.UpdateTime
-	s.fieldMap["is_del"] = s.IsDel
+	s.fieldMap["deleted_at"] = s.DeletedAt
 	s.fieldMap["product_id"] = s.ProductID
 	s.fieldMap["sku_code"] = s.SkuCode
 	s.fieldMap["price"] = s.Price
-	s.fieldMap["stock"] = s.Stock
-	s.fieldMap["sales"] = s.Sales
 	s.fieldMap["spec_desc"] = s.SpecDesc
 }
 

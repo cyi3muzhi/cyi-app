@@ -5,9 +5,10 @@ import (
 	"io"
 	"testing"
 
+	v1 "cyi-app/api/service/product/v1"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/stretchr/testify/assert"
-	v1 "cyi-app/api/service/product/v1"
 )
 
 // mockProductRepo 商品仓储模拟实现
@@ -16,7 +17,7 @@ type mockProductRepo struct {
 	updateProduct func(ctx context.Context, in *Product) error
 	deleteProduct func(ctx context.Context, productID int64) error
 	getProduct    func(ctx context.Context, productID int64) (*Product, error)
-	listProduct   func(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*Product, int32, error)
+	listProduct   func(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string) ([]*Product, int32, error)
 }
 
 func (m *mockProductRepo) CreateProduct(ctx context.Context, in *Product) error {
@@ -31,19 +32,20 @@ func (m *mockProductRepo) DeleteProduct(ctx context.Context, productID int64) er
 func (m *mockProductRepo) GetProduct(ctx context.Context, productID int64) (*Product, error) {
 	return m.getProduct(ctx, productID)
 }
-func (m *mockProductRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*Product, int32, error) {
-	return m.listProduct(ctx, page, pageSize, keyword, category, status)
+func (m *mockProductRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string) ([]*Product, int32, error) {
+	return m.listProduct(ctx, page, pageSize, keyword, categoryID, status)
 }
 
 // mockStockRepo 库存仓储模拟实现
 type mockStockRepo struct {
-	createStock   func(ctx context.Context, in *Stock) error
-	updateStock   func(ctx context.Context, in *Stock) error
-	reserveStock  func(ctx context.Context, productID int64, count, version int32) (int32, error)
-	deductStock   func(ctx context.Context, productID int64, count, version int32) (int32, error)
-	releaseStock  func(ctx context.Context, productID int64, count, version int32) (int32, error)
-	addStock      func(ctx context.Context, productID int64, count, version int32) (int32, error)
-	getStock      func(ctx context.Context, productID int64) (*Stock, error)
+	createStock            func(ctx context.Context, in *Stock) error
+	updateStock            func(ctx context.Context, in *Stock) error
+	deleteStockByProductID func(ctx context.Context, productID int64) error
+	reserveStock           func(ctx context.Context, productID int64, count, version int32) (int32, error)
+	deductStock            func(ctx context.Context, productID int64, count, version int32) (int32, error)
+	releaseStock           func(ctx context.Context, productID int64, count, version int32) (int32, error)
+	addStock               func(ctx context.Context, productID int64, count, version int32) (int32, error)
+	getStock               func(ctx context.Context, productID int64) (*Stock, error)
 }
 
 func (m *mockStockRepo) CreateStock(ctx context.Context, in *Stock) error {
@@ -51,6 +53,9 @@ func (m *mockStockRepo) CreateStock(ctx context.Context, in *Stock) error {
 }
 func (m *mockStockRepo) UpdateStock(ctx context.Context, in *Stock) error {
 	return m.updateStock(ctx, in)
+}
+func (m *mockStockRepo) DeleteStockByProductID(ctx context.Context, productID int64) error {
+	return m.deleteStockByProductID(ctx, productID)
 }
 func (m *mockStockRepo) ReserveStock(ctx context.Context, productID int64, count, version int32) (int32, error) {
 	return m.reserveStock(ctx, productID, count, version)
@@ -70,10 +75,10 @@ func (m *mockStockRepo) GetStock(ctx context.Context, productID int64) (*Stock, 
 
 // mockSpecGroupRepo 规格组仓储模拟实现
 type mockSpecGroupRepo struct {
-	createSpecGroups             func(ctx context.Context, productID int64, groups []*SpecGroup) error
-	replaceSpecGroups            func(ctx context.Context, productID int64, groups []*SpecGroup) error
-	deleteSpecGroupsByProductID  func(ctx context.Context, productID int64) error
-	getSpecGroupsByProductID     func(ctx context.Context, productID int64) ([]*SpecGroup, error)
+	createSpecGroups            func(ctx context.Context, productID int64, groups []*SpecGroup) error
+	replaceSpecGroups           func(ctx context.Context, productID int64, groups []*SpecGroup) error
+	deleteSpecGroupsByProductID func(ctx context.Context, productID int64) error
+	getSpecGroupsByProductID    func(ctx context.Context, productID int64) ([]*SpecGroup, error)
 }
 
 func (m *mockSpecGroupRepo) CreateSpecGroups(ctx context.Context, productID int64, groups []*SpecGroup) error {
@@ -154,11 +159,11 @@ func TestCreateProduct_Success(t *testing.T) {
 
 	uc := newProductTestUseCase(pr, sr, sgr, skur)
 	in := &Product{
-		Name:   "测试商品",
-		Price:  100,
-		Status: ProductStatusOnSale,
+		Name:       "测试商品",
+		Price:      100,
+		Status:     ProductStatusOnSale,
 		SpecGroups: []*SpecGroup{{Name: "颜色", Values: []string{"红", "蓝"}}},
-		Skus:      []*Sku{{Price: 100, Stock: 10}, {Price: 120, Stock: 5}},
+		Skus:       []*Sku{{Price: 100}, {Price: 120}},
 	}
 
 	err := uc.CreateProduct(context.Background(), in)
@@ -351,8 +356,8 @@ func TestCreateProduct_SkuProductIDSet(t *testing.T) {
 	in := &Product{
 		Name: "测试商品",
 		Skus: []*Sku{
-			{Price: 100, Stock: 10},
-			{Price: 120, Stock: 5},
+			{Price: 100},
+			{Price: 120},
 		},
 	}
 	err := uc.CreateProduct(context.Background(), in)
@@ -387,7 +392,7 @@ func TestUpdateProduct_Success(t *testing.T) {
 		ID:         1,
 		Name:       "更新商品",
 		SpecGroups: []*SpecGroup{{Name: "尺码", Values: []string{"S", "M"}}},
-		Skus:       []*Sku{{Price: 200, Stock: 20}},
+		Skus:       []*Sku{{Price: 200}},
 	})
 	assert.NoError(t, err)
 	assert.True(t, replaceSpecCalled, "规格组应被替换")
@@ -437,12 +442,17 @@ func TestUpdateProduct_ReplaceSkuError(t *testing.T) {
 			return nil
 		},
 	}
+	sgr := mockSpecGroupRepo{
+		replaceSpecGroups: func(ctx context.Context, productID int64, groups []*SpecGroup) error {
+			return nil // 规格组替换成功
+		},
+	}
 	skur := mockSkuRepo{
 		replaceSkus: func(ctx context.Context, productID int64, skus []*Sku) error {
 			return assert.AnError
 		},
 	}
-	uc := newProductTestUseCase(pr, mockStockRepo{}, mockSpecGroupRepo{}, skur)
+	uc := newProductTestUseCase(pr, mockStockRepo{}, sgr, skur)
 
 	err := uc.UpdateProduct(context.Background(), &Product{
 		ID:   1,
@@ -477,7 +487,9 @@ func TestDeleteProduct_Success(t *testing.T) {
 			return nil
 		},
 	}
-	uc := newProductTestUseCase(pr, mockStockRepo{}, sgr, skur)
+	uc := newProductTestUseCase(pr, mockStockRepo{
+		deleteStockByProductID: func(ctx context.Context, productID int64) error { return nil },
+	}, sgr, skur)
 
 	err := uc.DeleteProduct(context.Background(), 1)
 	assert.NoError(t, err)
@@ -505,7 +517,9 @@ func TestDeleteProduct_AssociationError(t *testing.T) {
 			return assert.AnError
 		},
 	}
-	uc := newProductTestUseCase(pr, mockStockRepo{}, sgr, skur)
+	uc := newProductTestUseCase(pr, mockStockRepo{
+		deleteStockByProductID: func(ctx context.Context, productID int64) error { return nil },
+	}, sgr, skur)
 
 	err := uc.DeleteProduct(context.Background(), 1)
 	assert.NoError(t, err, "关联数据删除失败不影响商品删除")
@@ -582,7 +596,7 @@ func TestGetProduct_SpecGroupError(t *testing.T) {
 // TestListProduct_Success 测试获取商品列表成功，每个商品的规格组和SKU应被加载
 func TestListProduct_Success(t *testing.T) {
 	pr := mockProductRepo{
-		listProduct: func(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*Product, int32, error) {
+		listProduct: func(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string) ([]*Product, int32, error) {
 			return []*Product{
 				{ID: 1, Name: "商品1"},
 				{ID: 2, Name: "商品2"},
@@ -601,7 +615,7 @@ func TestListProduct_Success(t *testing.T) {
 	}
 	uc := newProductTestUseCase(pr, mockStockRepo{}, sgr, skur)
 
-	products, total, err := uc.ListProduct(context.Background(), 1, 10, "", "", "")
+	products, total, err := uc.ListProduct(context.Background(), 1, 10, "", 0, "")
 	assert.NoError(t, err)
 	assert.Equal(t, int32(2), total)
 	assert.Len(t, products, 2)

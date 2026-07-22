@@ -10,7 +10,7 @@ import (
 type Product struct {
 	ID          int64
 	Name        string
-	Category    string
+	CategoryID  int64
 	Price       int64
 	Stock       int32
 	Sales       int32
@@ -30,19 +30,18 @@ type SpecGroup struct {
 }
 
 // SkuItem SKU 领域模型
+// 注意：Stock（库存）和 Sales（销量）已迁移至独立的 inventory_stock 表管理，不再在此处维护
 type SkuItem struct {
 	ID      int64
 	SkuCode string
 	Price   int64
-	Stock   int32
-	Sales   int32
 	Spec    map[string]string
 }
 
 // ProductRepo 商品数据仓库接口
 type ProductRepo interface {
 	// ListProduct 获取商品列表
-	ListProduct(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*Product, int32, error)
+	ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string) ([]*Product, int32, error)
 	// CreateProduct 创建商品
 	CreateProduct(ctx context.Context, in *Product) (int64, error)
 	// UpdateProduct 更新商品
@@ -70,8 +69,8 @@ func NewProductUseCase(repo ProductRepo, logger log.Logger) *ProductUseCase {
 }
 
 // ListProduct 获取商品列表
-func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*Product, int32, error) {
-	return uc.repo.ListProduct(ctx, page, pageSize, keyword, category, status)
+func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string) ([]*Product, int32, error) {
+	return uc.repo.ListProduct(ctx, page, pageSize, keyword, categoryID, status)
 }
 
 // CreateProduct 创建商品

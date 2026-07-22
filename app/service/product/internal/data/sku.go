@@ -27,8 +27,6 @@ func (r *skuRepo) CreateSkus(ctx context.Context, skus []*biz.Sku) error {
 			ProductID: sku.ProductID,
 			SkuCode:   sku.SkuCode,
 			Price:     sku.Price,
-			Stock:     sku.Stock,
-			Sales:     sku.Sales,
 			SpecDesc:  marshalSpec(sku.Spec),
 		}
 		if err := curd.Sku.WithContext(ctx).Create(model); err != nil {
@@ -52,8 +50,6 @@ func (r *skuRepo) ReplaceSkus(ctx context.Context, productID int64, skus []*biz.
 				ProductID: productID,
 				SkuCode:   sku.SkuCode,
 				Price:     sku.Price,
-				Stock:     sku.Stock,
-				Sales:     sku.Sales,
 				SpecDesc:  marshalSpec(sku.Spec),
 			}
 			if err := tx.Sku.WithContext(ctx).Create(model); err != nil {
@@ -79,8 +75,6 @@ func (r *skuRepo) GetSkusByProductID(ctx context.Context, productID int64) ([]*b
 			ProductID: m.ProductID,
 			SkuCode:   m.SkuCode,
 			Price:     m.Price,
-			Stock:     m.Stock,
-			Sales:     m.Sales,
 			Spec:      unmarshalSpec(m.SpecDesc),
 		})
 	}

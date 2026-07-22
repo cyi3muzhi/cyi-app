@@ -13,7 +13,7 @@ type ProductRepo interface {
 	UpdateProduct(ctx context.Context, in *Product) error
 	DeleteProduct(ctx context.Context, productID int64) error
 	GetProduct(ctx context.Context, productID int64) (*Product, error)
-	ListProduct(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*Product, int32, error)
+	ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string) ([]*Product, int32, error)
 }
 
 // ProductUseCase 商品用例
@@ -79,33 +79,33 @@ func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error 
 }
 
 // UpdateProduct 更新商品（含规格组和SKU的替换）
+// 注意：规格组和SKU替换各自有独立的事务，若商品更新成功后规格组/SKU更新失败，
+// 商品表的字段已更新但关联数据未被替换，需要手动重试。后续可引入跨仓储事务。
 func (uc *ProductUseCase) UpdateProduct(ctx context.Context, in *Product) error {
 	if err := uc.repo.UpdateProduct(ctx, in); err != nil {
 		return err
 	}
-	// 替换规格组（先删后插）
-	if len(in.SpecGroups) > 0 {
-		if err := uc.specGroupRepo.ReplaceSpecGroups(ctx, in.ID, in.SpecGroups); err != nil {
-			return err
-		}
+	// 替换规格组（先删后插），始终执行以支持清空规格
+	if err := uc.specGroupRepo.ReplaceSpecGroups(ctx, in.ID, in.SpecGroups); err != nil {
+		return err
 	}
-	// 替换SKU（先删后插）
-	if len(in.Skus) > 0 {
-		for _, sku := range in.Skus {
-			sku.ProductID = in.ID
-		}
-		if err := uc.skuRepo.ReplaceSkus(ctx, in.ID, in.Skus); err != nil {
-			return err
-		}
+	// 替换SKU（先删后插），始终执行以支持清空SKU
+	for _, sku := range in.Skus {
+		sku.ProductID = in.ID
+	}
+	if err := uc.skuRepo.ReplaceSkus(ctx, in.ID, in.Skus); err != nil {
+		return err
 	}
 	return nil
 }
 
-// DeleteProduct 删除商品
+// DeleteProduct 删除商品（含关联的规格组、SKU、库存）
 func (uc *ProductUseCase) DeleteProduct(ctx context.Context, productID int64) error {
 	// 先删除关联的规格组和SKU
 	_ = uc.specGroupRepo.DeleteSpecGroupsByProductID(ctx, productID)
 	_ = uc.skuRepo.DeleteSkusByProductID(ctx, productID)
+	// 删除库存记录
+	_ = uc.stockRepo.DeleteStockByProductID(ctx, productID)
 	return uc.repo.DeleteProduct(ctx, productID)
 }
 
@@ -124,8 +124,8 @@ func (uc *ProductUseCase) GetProduct(ctx context.Context, productID int64) (*Pro
 }
 
 // ListProduct 获取商品列表
-func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*Product, int32, error) {
-	products, total, err := uc.repo.ListProduct(ctx, page, pageSize, keyword, category, status)
+func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string) ([]*Product, int32, error) {
+	products, total, err := uc.repo.ListProduct(ctx, page, pageSize, keyword, categoryID, status)
 	if err != nil {
 		return nil, 0, err
 	}

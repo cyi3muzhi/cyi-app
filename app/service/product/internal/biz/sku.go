@@ -4,13 +4,12 @@ import "context"
 
 // Sku SKU 业务实体
 // 每个SKU对应一个具体的规格组合，如"颜色:红色,尺码:XL"
+// 注意：Stock（库存）和 Sales（销量）已迁移至独立的 inventory_stock 表管理，不再在此处维护
 type Sku struct {
 	ID        int64
 	ProductID int64
 	SkuCode   string
 	Price     int64
-	Stock     int32
-	Sales     int32
 	Spec      map[string]string // 规格描述，如 {"颜色":"红色","尺码":"XL"}
 }
 

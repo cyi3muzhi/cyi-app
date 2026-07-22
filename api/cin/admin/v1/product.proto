@@ -56,8 +56,9 @@ message ListProductRequest {
   int32 page = 1;
   int32 page_size = 2;
   string keyword = 3;
-  string category = 4;
+  string category = 4 [deprecated = true];
   string status = 5;
+  int64 category_id = 6;
 }
 
 message ListProductReply {
@@ -85,7 +86,7 @@ message SkuItem {
 message ProductItem {
   int64 id = 1;
   string name = 2;
-  string category = 3;
+  string category = 3 [deprecated = true]; // 已废弃，改用 category_id
   int64 price = 4;
   int32 stock = 5;
   int32 sales = 6;
@@ -94,11 +95,13 @@ message ProductItem {
   string sku = 9;
   repeated SpecGroupItem specs = 10;
   repeated SkuItem skus = 11;
+  string description = 12;
+  int64 category_id = 13; // 商品分类ID
 }
 
 message CreateProductRequest {
   string name = 1 [(validate.rules).string = {min_len: 1, max_len: 128}];
-  string category = 2;
+  string category = 2 [deprecated = true];
   int64 price = 3 [(validate.rules).int64 = {gte: 0}];
   int32 stock = 4 [(validate.rules).int32 = {gte: 0}];
   string description = 5;
@@ -106,6 +109,7 @@ message CreateProductRequest {
   string sku = 7;
   repeated SpecGroupItem specs = 8;
   repeated SkuItem skus = 9;
+  int64 category_id = 10; // 商品分类ID
 }
 
 message CreateProductReply {
@@ -115,7 +119,7 @@ message CreateProductReply {
 message UpdateProductRequest {
   int64 id = 1 [(validate.rules).int64 = {gt: 0}];
   string name = 2;
-  string category = 3;
+  string category = 3 [deprecated = true];
   int64 price = 4;
   int32 stock = 5;
   string description = 6;
@@ -124,6 +128,7 @@ message UpdateProductRequest {
   string status = 9;
   repeated SpecGroupItem specs = 10;
   repeated SkuItem skus = 11;
+  int64 category_id = 12; // 商品分类ID
 }
 
 message UpdateProductReply {

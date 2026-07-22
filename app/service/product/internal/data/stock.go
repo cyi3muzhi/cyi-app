@@ -139,3 +139,12 @@ func (r *stockRepo) GetStock(ctx context.Context, productID int64) (*biz.Stock, 
 	out.ID = stock.ID
 	return out, nil
 }
+
+// DeleteStockByProductID 根据商品 ID 删除库存记录
+func (r *stockRepo) DeleteStockByProductID(ctx context.Context, productID int64) error {
+	_, err := curd.Stock.WithContext(ctx).Where(curd.Stock.ProductID.Eq(productID)).Delete()
+	if err != nil {
+		return err
+	}
+	return nil
+}

@@ -47,7 +47,7 @@ func TestDeleteCategory_WithProductsBlocked(t *testing.T) {
 
 	cat := &mod.Category{Name: "手机数码"}
 	requireNoError(t, db.Create(cat).Error)
-	product := &mod.Product{Name: "智能手机", Category: "手机数码"}
+	product := &mod.Product{Name: "智能手机", CategoryID: 1}
 	requireNoError(t, db.Create(product).Error)
 
 	err := repo.DeleteCategory(ctx, cat.ID)
@@ -69,7 +69,7 @@ func TestDeleteCategory_ChildHasProductsBlocked(t *testing.T) {
 	requireNoError(t, db.Create(parent).Error)
 	child := &mod.Category{Name: "手机", ParentID: parent.ID}
 	requireNoError(t, db.Create(child).Error)
-	product := &mod.Product{Name: "智能手机", Category: "手机"}
+	product := &mod.Product{Name: "智能手机", CategoryID: 1}
 	requireNoError(t, db.Create(product).Error)
 
 	err := repo.DeleteCategory(ctx, parent.ID)
@@ -109,7 +109,7 @@ func TestBatchOperation_DeleteWithProductsBlocked(t *testing.T) {
 
 	cat := &mod.Category{Name: "家电"}
 	requireNoError(t, db.Create(cat).Error)
-	product := &mod.Product{Name: "冰箱", Category: "家电"}
+	product := &mod.Product{Name: "冰箱", CategoryID: 1}
 	requireNoError(t, db.Create(product).Error)
 
 	affected, err := repo.BatchOperation(ctx, "delete", []int64{cat.ID})

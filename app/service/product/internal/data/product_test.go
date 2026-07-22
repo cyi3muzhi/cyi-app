@@ -29,7 +29,7 @@ func TestListProduct_StatusFilterOnSale(t *testing.T) {
 	requireNoError(t, db.Create(onSale).Error)
 	requireNoError(t, db.Create(offSale).Error)
 
-	products, total, err := repo.ListProduct(ctx, 1, 10, "", "", "上架")
+	products, total, err := repo.ListProduct(ctx, 1, 10, "", 0, "上架")
 	assert.NoError(t, err)
 	assert.Equal(t, int32(1), total)
 	assert.Len(t, products, 1)
@@ -45,7 +45,7 @@ func TestListProduct_StatusFilterNumericOne(t *testing.T) {
 	onSale := &mod.Product{Name: "上架商品", Status: 1}
 	requireNoError(t, db.Create(onSale).Error)
 
-	products, total, err := repo.ListProduct(ctx, 1, 10, "", "", "1")
+	products, total, err := repo.ListProduct(ctx, 1, 10, "", 0, "1")
 	assert.NoError(t, err)
 	assert.Equal(t, int32(1), total)
 	assert.Len(t, products, 1)
@@ -62,7 +62,7 @@ func TestListProduct_StatusFilterOffSale(t *testing.T) {
 	requireNoError(t, db.Create(onSale).Error)
 	requireNoError(t, db.Create(offSale).Error)
 
-	products, total, err := repo.ListProduct(ctx, 1, 10, "", "", "下架")
+	products, total, err := repo.ListProduct(ctx, 1, 10, "", 0, "下架")
 	assert.NoError(t, err)
 	assert.Equal(t, int32(1), total)
 	assert.Equal(t, "下架商品", products[0].Name)
@@ -81,7 +81,7 @@ func TestListProduct_KeywordSearch(t *testing.T) {
 	requireNoError(t, db.Create(p2).Error)
 	requireNoError(t, db.Create(p3).Error)
 
-	products, total, err := repo.ListProduct(ctx, 1, 10, "智能", "", "")
+	products, total, err := repo.ListProduct(ctx, 1, 10, "智能", 0, "")
 	assert.NoError(t, err)
 	assert.Equal(t, int32(2), total)
 	assert.Len(t, products, 2)
@@ -93,14 +93,14 @@ func TestListProduct_CategoryFilter(t *testing.T) {
 	repo := newProductTestRepo(t, db)
 	ctx := context.Background()
 
-	p1 := &mod.Product{Name: "手机", Category: "数码"}
-	p2 := &mod.Product{Name: "电脑", Category: "数码"}
-	p3 := &mod.Product{Name: "衣服", Category: "服饰"}
+	p1 := &mod.Product{Name: "手机", CategoryID: 1}
+	p2 := &mod.Product{Name: "电脑", CategoryID: 1}
+	p3 := &mod.Product{Name: "衣服", CategoryID: 2}
 	requireNoError(t, db.Create(p1).Error)
 	requireNoError(t, db.Create(p2).Error)
 	requireNoError(t, db.Create(p3).Error)
 
-	products, total, err := repo.ListProduct(ctx, 1, 10, "", "数码", "")
+	products, total, err := repo.ListProduct(ctx, 1, 10, "", 1, "")
 	assert.NoError(t, err)
 	assert.Equal(t, int32(2), total)
 	assert.Len(t, products, 2)
@@ -116,7 +116,7 @@ func TestListProduct_Pagination(t *testing.T) {
 		requireNoError(t, db.Create(&mod.Product{Name: "商品"}).Error)
 	}
 
-	products, total, err := repo.ListProduct(ctx, 2, 2, "", "", "")
+	products, total, err := repo.ListProduct(ctx, 2, 2, "", 0, "")
 	assert.NoError(t, err)
 	assert.Equal(t, int32(5), total)
 	assert.Len(t, products, 2)
@@ -128,7 +128,7 @@ func TestCreateProduct_AssignsID(t *testing.T) {
 	repo := newProductTestRepo(t, db)
 	ctx := context.Background()
 
-	in := &biz.Product{Name: "测试商品", Price: 100, Status: biz.ProductStatusOnSale, Category: "数码", Image: "image.jpg", Sales: 10}
+	in := &biz.Product{Name: "测试商品", Price: 100, Status: biz.ProductStatusOnSale, CategoryID: 1, Image: "image.jpg", Sales: 10}
 	err := repo.CreateProduct(ctx, in)
 	assert.NoError(t, err)
 	assert.Greater(t, in.ID, int64(0))
@@ -138,7 +138,7 @@ func TestCreateProduct_AssignsID(t *testing.T) {
 	assert.Equal(t, "测试商品", model.Name)
 	assert.Equal(t, int64(100), model.Price)
 	assert.Equal(t, int32(1), model.Status)
-	assert.Equal(t, "数码", model.Category)
+	assert.Equal(t, int64(1), model.CategoryID)
 	assert.Equal(t, "image.jpg", model.Image)
 	assert.Equal(t, int32(10), model.Sales)
 }

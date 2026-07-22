@@ -29,7 +29,7 @@ func newAdminUser(db *gorm.DB) adminUser {
 	_adminUser.ID = field.NewInt64(tableName, "id")
 	_adminUser.CreateTime = field.NewInt64(tableName, "create_time")
 	_adminUser.UpdateTime = field.NewInt64(tableName, "update_time")
-	_adminUser.IsDel = field.NewUint(tableName, "is_del")
+	_adminUser.DeletedAt = field.NewField(tableName, "deleted_at")
 	_adminUser.Username = field.NewString(tableName, "username")
 	_adminUser.Password = field.NewString(tableName, "password")
 	_adminUser.Name = field.NewString(tableName, "name")
@@ -55,7 +55,7 @@ type adminUser struct {
 	ID         field.Int64
 	CreateTime field.Int64
 	UpdateTime field.Int64
-	IsDel      field.Uint
+	DeletedAt  field.Field
 	Username   field.String
 	Password   field.String
 	Name       field.String
@@ -87,7 +87,7 @@ func (a *adminUser) updateTableName(table string) *adminUser {
 	a.ID = field.NewInt64(table, "id")
 	a.CreateTime = field.NewInt64(table, "create_time")
 	a.UpdateTime = field.NewInt64(table, "update_time")
-	a.IsDel = field.NewUint(table, "is_del")
+	a.DeletedAt = field.NewField(table, "deleted_at")
 	a.Username = field.NewString(table, "username")
 	a.Password = field.NewString(table, "password")
 	a.Name = field.NewString(table, "name")
@@ -120,7 +120,7 @@ func (a *adminUser) fillFieldMap() {
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["create_time"] = a.CreateTime
 	a.fieldMap["update_time"] = a.UpdateTime
-	a.fieldMap["is_del"] = a.IsDel
+	a.fieldMap["deleted_at"] = a.DeletedAt
 	a.fieldMap["username"] = a.Username
 	a.fieldMap["password"] = a.Password
 	a.fieldMap["name"] = a.Name

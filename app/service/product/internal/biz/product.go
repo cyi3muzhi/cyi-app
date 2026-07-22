@@ -7,7 +7,7 @@ type Product struct {
 	Description string
 	Price       int64
 	Status      ProductStatus
-	Category    string
+	CategoryID  int64
 	Image       string
 	Sales       int32
 	SpecGroups  []*SpecGroup

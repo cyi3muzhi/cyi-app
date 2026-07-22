@@ -181,6 +181,11 @@ func (m *ProductItem) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.CategoryId != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.CategoryId))
+		i--
+		dAtA[i] = 0x58
+	}
 	if len(m.Skus) > 0 {
 		for iNdEx := len(m.Skus) - 1; iNdEx >= 0; iNdEx-- {
 			size, err := m.Skus[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
@@ -285,6 +290,11 @@ func (m *CreateProductRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) 
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.CategoryId != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.CategoryId))
+		i--
+		dAtA[i] = 0x48
 	}
 	if len(m.Skus) > 0 {
 		for iNdEx := len(m.Skus) - 1; iNdEx >= 0; iNdEx-- {
@@ -418,6 +428,11 @@ func (m *UpdateProductRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) 
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.CategoryId != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.CategoryId))
+		i--
+		dAtA[i] = 0x58
 	}
 	if len(m.Skus) > 0 {
 		for iNdEx := len(m.Skus) - 1; iNdEx >= 0; iNdEx-- {
@@ -729,6 +744,11 @@ func (m *ListProductRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.CategoryId != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.CategoryId))
+		i--
+		dAtA[i] = 0x30
+	}
 	if len(m.Status) > 0 {
 		i -= len(m.Status)
 		copy(dAtA[i:], m.Status)
@@ -916,6 +936,9 @@ func (m *ProductItem) SizeVT() (n int) {
 			n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 		}
 	}
+	if m.CategoryId != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.CategoryId))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -959,6 +982,9 @@ func (m *CreateProductRequest) SizeVT() (n int) {
 			l = e.SizeVT()
 			n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 		}
+	}
+	if m.CategoryId != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.CategoryId))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -1022,6 +1048,9 @@ func (m *UpdateProductRequest) SizeVT() (n int) {
 			l = e.SizeVT()
 			n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
 		}
+	}
+	if m.CategoryId != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.CategoryId))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -1116,6 +1145,9 @@ func (m *ListProductRequest) SizeVT() (n int) {
 	l = len(m.Status)
 	if l > 0 {
 		n += 1 + l + protohelpers.SizeOfVarint(uint64(l))
+	}
+	if m.CategoryId != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.CategoryId))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -1861,6 +1893,25 @@ func (m *ProductItem) UnmarshalVT(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 11:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CategoryId", wireType)
+			}
+			m.CategoryId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CategoryId |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -2146,6 +2197,25 @@ func (m *CreateProductRequest) UnmarshalVT(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CategoryId", wireType)
+			}
+			m.CategoryId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CategoryId |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -2539,6 +2609,25 @@ func (m *UpdateProductRequest) UnmarshalVT(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 11:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CategoryId", wireType)
+			}
+			m.CategoryId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CategoryId |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -3093,6 +3182,25 @@ func (m *ListProductRequest) UnmarshalVT(dAtA []byte) error {
 			}
 			m.Status = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CategoryId", wireType)
+			}
+			m.CategoryId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CategoryId |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])

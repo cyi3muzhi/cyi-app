@@ -27,7 +27,7 @@ func newCategory(db *gorm.DB) category {
 	_category.ID = field.NewInt64(tableName, "id")
 	_category.CreateTime = field.NewInt64(tableName, "create_time")
 	_category.UpdateTime = field.NewInt64(tableName, "update_time")
-	_category.IsDel = field.NewUint(tableName, "is_del")
+	_category.DeletedAt = field.NewField(tableName, "deleted_at")
 	_category.ParentID = field.NewInt64(tableName, "parent_id")
 	_category.Name = field.NewString(tableName, "name")
 	_category.Slug = field.NewString(tableName, "slug")
@@ -54,7 +54,7 @@ type category struct {
 	ID          field.Int64
 	CreateTime  field.Int64
 	UpdateTime  field.Int64
-	IsDel       field.Uint
+	DeletedAt   field.Field
 	ParentID    field.Int64
 	Name        field.String
 	Slug        field.String
@@ -87,7 +87,7 @@ func (c *category) updateTableName(table string) *category {
 	c.ID = field.NewInt64(table, "id")
 	c.CreateTime = field.NewInt64(table, "create_time")
 	c.UpdateTime = field.NewInt64(table, "update_time")
-	c.IsDel = field.NewUint(table, "is_del")
+	c.DeletedAt = field.NewField(table, "deleted_at")
 	c.ParentID = field.NewInt64(table, "parent_id")
 	c.Name = field.NewString(table, "name")
 	c.Slug = field.NewString(table, "slug")
@@ -121,7 +121,7 @@ func (c *category) fillFieldMap() {
 	c.fieldMap["id"] = c.ID
 	c.fieldMap["create_time"] = c.CreateTime
 	c.fieldMap["update_time"] = c.UpdateTime
-	c.fieldMap["is_del"] = c.IsDel
+	c.fieldMap["deleted_at"] = c.DeletedAt
 	c.fieldMap["parent_id"] = c.ParentID
 	c.fieldMap["name"] = c.Name
 	c.fieldMap["slug"] = c.Slug

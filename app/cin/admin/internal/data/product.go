@@ -97,13 +97,13 @@ func (r *productRepo) resolveImageURL(ctx context.Context, image string) string 
 }
 
 // ListProduct 通过 gRPC 调用商品服务获取商品列表
-func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword, category, status string) ([]*biz.Product, int32, error) {
+func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string) ([]*biz.Product, int32, error) {
 	reply, err := r.data.pc.ListProduct(ctx, &productRpc.ListProductRequest{
-		Page:     page,
-		PageSize: pageSize,
-		Keyword:  keyword,
-		Category: category,
-		Status:   status,
+		Page:       page,
+		PageSize:   pageSize,
+		Keyword:    keyword,
+		CategoryId: categoryID,
+		Status:     status,
 	})
 	if err != nil {
 		return nil, 0, err
@@ -129,7 +129,7 @@ func (r *productRepo) CreateProduct(ctx context.Context, in *biz.Product) (int64
 		Name:        in.Name,
 		Description: in.Description,
 		Price:       in.Price,
-		Category:    in.Category,
+		CategoryId:  in.CategoryID,
 		Image:       imagePath,
 		Sales:       in.Sales,
 		Specs:       bizToProtoSpecGroups(in.Specs),
@@ -160,7 +160,7 @@ func (r *productRepo) UpdateProduct(ctx context.Context, in *biz.Product) error 
 		Name:        in.Name,
 		Description: in.Description,
 		Price:       in.Price,
-		Category:    in.Category,
+		CategoryId:  in.CategoryID,
 		Image:       imagePath,
 		Sales:       in.Sales,
 		Status:      statusInt,
@@ -189,9 +189,9 @@ func (r *productRepo) BatchOperation(ctx context.Context, action string, ids []i
 		case "删除":
 			err = r.DeleteProduct(ctx, id)
 		case "上架":
-			err = r.UpdateProduct(ctx, &biz.Product{ID: id, Status: "上架"})
+			err = r.batchUpdateStatus(ctx, id, "上架")
 		case "下架":
-			err = r.UpdateProduct(ctx, &biz.Product{ID: id, Status: "下架"})
+			err = r.batchUpdateStatus(ctx, id, "下架")
 		default:
 			continue
 		}
@@ -209,19 +209,38 @@ func (r *productRepo) BatchOperation(ctx context.Context, action string, ids []i
 	return affected, nil
 }
 
+// batchUpdateStatus 批量更新商品状态，先查再改以避免覆盖其他字段
+func (r *productRepo) batchUpdateStatus(ctx context.Context, id int64, status string) error {
+	// 先查现有商品
+	product, err := r.GetProduct(ctx, id)
+	if err != nil {
+		return fmt.Errorf("get product %d failed: %w", id, err)
+	}
+	if product == nil {
+		return fmt.Errorf("product %d not found", id)
+	}
+	// 只改状态，保留其他字段
+	product.Status = status
+	return r.UpdateProduct(ctx, product)
+}
+
 // protoToBizProduct 将 proto ProductItem 转换为 biz Product
 func protoToBizProduct(item *productRpc.ProductItem) *biz.Product {
 	status := "上架"
 	if item.GetStatus() == 0 {
 		status = "下架"
 	}
+	// TODO: 商品总库存应从 inventory_stock 表获取
+	// 原逻辑从 sku.Stock 汇总，已不再使用
+	stock := int32(0)
 	return &biz.Product{
 		ID:          item.GetProductId(),
 		Name:        item.GetName(),
 		Description: item.GetDescription(),
 		Price:       item.GetPrice(),
+		Stock:       stock,
 		Status:      status,
-		Category:    item.GetCategory(),
+		CategoryID:  item.GetCategoryId(),
 		Image:       item.GetImage(),
 		Sales:       item.GetSales(),
 		Specs:       protoToBizSpecGroups(item.GetSpecs()),
@@ -256,8 +275,6 @@ func protoToBizSkus(skus []*productRpc.SkuInfo) []*biz.SkuItem {
 			ID:      s.GetId(),
 			SkuCode: s.GetSkuCode(),
 			Price:   s.GetPrice(),
-			Stock:   s.GetStock(),
-			Sales:   s.GetSales(),
 			Spec:    s.GetSpec(),
 		})
 	}
@@ -291,8 +308,6 @@ func bizToProtoSkus(skus []*biz.SkuItem) []*productRpc.SkuInfo {
 			Id:      s.ID,
 			SkuCode: s.SkuCode,
 			Price:   s.Price,
-			Stock:   s.Stock,
-			Sales:   s.Sales,
 			Spec:    s.Spec,
 		})
 	}

@@ -5,6 +5,7 @@ import "context"
 type StockRepo interface {
 	CreateStock(ctx context.Context, in *Stock) error
 	UpdateStock(ctx context.Context, in *Stock) error
+	DeleteStockByProductID(ctx context.Context, productID int64) error
 	ReserveStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
 	DeductStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
 	ReleaseStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)

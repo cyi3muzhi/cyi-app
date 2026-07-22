@@ -9,7 +9,7 @@ import (
 
 // ListProduct 获取商品列表
 func (s *AdminService) ListProduct(ctx context.Context, req *adminv1.ListProductRequest) (*adminv1.ListProductReply, error) {
-	items, total, err := s.pc.ListProduct(ctx, req.Page, req.PageSize, req.Keyword, req.Category, req.Status)
+	items, total, err := s.pc.ListProduct(ctx, req.Page, req.PageSize, req.Keyword, req.CategoryId, req.Status)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (s *AdminService) ListProduct(ctx context.Context, req *adminv1.ListProduct
 func (s *AdminService) CreateProduct(ctx context.Context, req *adminv1.CreateProductRequest) (*adminv1.CreateProductReply, error) {
 	id, err := s.pc.CreateProduct(ctx, &biz.Product{
 		Name:        req.Name,
-		Category:    req.Category,
+		CategoryID:  req.CategoryId,
 		Price:       req.Price,
 		Stock:       req.Stock,
 		Image:       req.Image,
@@ -49,7 +49,7 @@ func (s *AdminService) UpdateProduct(ctx context.Context, req *adminv1.UpdatePro
 	err := s.pc.UpdateProduct(ctx, &biz.Product{
 		ID:          req.Id,
 		Name:        req.Name,
-		Category:    req.Category,
+		CategoryID:  req.CategoryId,
 		Price:       req.Price,
 		Stock:       req.Stock,
 		Image:       req.Image,
@@ -104,17 +104,18 @@ func (s *AdminService) BatchOperation(ctx context.Context, req *adminv1.BatchOpe
 // bizToAdminProtoProduct 将 biz Product 转换为 admin proto ProductItem
 func bizToAdminProtoProduct(product *biz.Product) *adminv1.ProductItem {
 	return &adminv1.ProductItem{
-		Id:       product.ID,
-		Name:     product.Name,
-		Category: product.Category,
-		Price:    product.Price,
-		Stock:    product.Stock,
-		Sales:    product.Sales,
-		Status:   product.Status,
-		Image:    product.Image,
-		Sku:      product.SKU,
-		Specs:    bizToAdminProtoSpecGroups(product.Specs),
-		Skus:     bizToAdminProtoSkus(product.Skus),
+		Id:          product.ID,
+		Name:        product.Name,
+		CategoryId:  product.CategoryID,
+		Price:       product.Price,
+		Stock:       product.Stock,
+		Sales:       product.Sales,
+		Status:      product.Status,
+		Image:       product.Image,
+		Sku:         product.SKU,
+		Specs:       bizToAdminProtoSpecGroups(product.Specs),
+		Skus:        bizToAdminProtoSkus(product.Skus),
+		Description: product.Description,
 	}
 }
 
@@ -145,8 +146,6 @@ func bizToAdminProtoSkus(skus []*biz.SkuItem) []*adminv1.SkuItem {
 			Id:      s.ID,
 			SkuCode: s.SkuCode,
 			Price:   s.Price,
-			Stock:   s.Stock,
-			Sales:   s.Sales,
 			Spec:    s.Spec,
 		})
 	}
@@ -180,8 +179,6 @@ func adminProtoToBizSkus(skus []*adminv1.SkuItem) []*biz.SkuItem {
 			ID:      s.Id,
 			SkuCode: s.SkuCode,
 			Price:   s.Price,
-			Stock:   s.Stock,
-			Sales:   s.Sales,
 			Spec:    s.Spec,
 		})
 	}

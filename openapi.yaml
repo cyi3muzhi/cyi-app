@@ -540,6 +540,10 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: categoryId
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -1690,6 +1694,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.SkuItem'
+                categoryId:
+                    type: string
         api.cin.admin.v1.CreateRoleReply:
             type: object
             properties:
@@ -2107,6 +2113,10 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.SkuItem'
+                description:
+                    type: string
+                categoryId:
+                    type: string
         api.cin.admin.v1.RevenueCategory:
             type: object
             properties:
@@ -2378,6 +2388,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.SkuItem'
+                categoryId:
+                    type: string
         api.cin.admin.v1.UpdateRolePermissionsReply:
             type: object
             properties:

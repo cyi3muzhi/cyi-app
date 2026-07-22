@@ -1,12 +1,14 @@
 package gorm
 
 import (
-	"gorm.io/plugin/soft_delete"
+	"gorm.io/gorm"
 )
 
+// Model 基础模型，所有表嵌入此结构体
+// 统一使用 deleted_at datetime(3) 软删除（NULL=未删除）
 type Model struct {
-	ID         int64                 `gorm:"primarykey,autoIncrement"`
-	CreateTime int64                 `gorm:"autoCreateTime"`  // 使用时间戳秒数填充创建时间
-	UpdateTime int64                 `gorm:"autoUpdateTime"`  // 使用时间戳秒数填充更新时间
-	IsDel      soft_delete.DeletedAt `gorm:"softDelete:flag"` // 软删除字段 0 表示未删除 1 表示已删除
+	ID         int64          `gorm:"primarykey,autoIncrement"`
+	CreateTime int64          `gorm:"autoCreateTime"` // 创建时间（Unix 时间戳秒）
+	UpdateTime int64          `gorm:"autoUpdateTime"` // 更新时间（Unix 时间戳秒）
+	DeletedAt  gorm.DeletedAt `gorm:"index"`         // 软删除时间（NULL=未删除）
 }

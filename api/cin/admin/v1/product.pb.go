@@ -24,12 +24,14 @@ const (
 )
 
 type ListProductRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	Keyword       string                 `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`
-	Category      string                 `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
-	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Page     int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Keyword  string                 `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`
+	// Deprecated: Marked as deprecated in api/cin/admin/v1/product.proto.
+	Category      string `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
+	Status        string `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
+	CategoryId    int64  `protobuf:"varint,6,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -85,6 +87,7 @@ func (x *ListProductRequest) GetKeyword() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in api/cin/admin/v1/product.proto.
 func (x *ListProductRequest) GetCategory() string {
 	if x != nil {
 		return x.Category
@@ -97,6 +100,13 @@ func (x *ListProductRequest) GetStatus() string {
 		return x.Status
 	}
 	return ""
+}
+
+func (x *ListProductRequest) GetCategoryId() int64 {
+	if x != nil {
+		return x.CategoryId
+	}
+	return 0
 }
 
 type ListProductReply struct {
@@ -298,18 +308,21 @@ func (x *SkuItem) GetSpec() map[string]string {
 }
 
 type ProductItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Category      string                 `protobuf:"bytes,3,opt,name=category,proto3" json:"category,omitempty"`
-	Price         int64                  `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
-	Stock         int32                  `protobuf:"varint,5,opt,name=stock,proto3" json:"stock,omitempty"`
-	Sales         int32                  `protobuf:"varint,6,opt,name=sales,proto3" json:"sales,omitempty"`
-	Status        string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
-	Image         string                 `protobuf:"bytes,8,opt,name=image,proto3" json:"image,omitempty"`
-	Sku           string                 `protobuf:"bytes,9,opt,name=sku,proto3" json:"sku,omitempty"`
-	Specs         []*SpecGroupItem       `protobuf:"bytes,10,rep,name=specs,proto3" json:"specs,omitempty"`
-	Skus          []*SkuItem             `protobuf:"bytes,11,rep,name=skus,proto3" json:"skus,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name  string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Deprecated: Marked as deprecated in api/cin/admin/v1/product.proto.
+	Category      string           `protobuf:"bytes,3,opt,name=category,proto3" json:"category,omitempty"` // 已废弃，改用 category_id
+	Price         int64            `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
+	Stock         int32            `protobuf:"varint,5,opt,name=stock,proto3" json:"stock,omitempty"`
+	Sales         int32            `protobuf:"varint,6,opt,name=sales,proto3" json:"sales,omitempty"`
+	Status        string           `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
+	Image         string           `protobuf:"bytes,8,opt,name=image,proto3" json:"image,omitempty"`
+	Sku           string           `protobuf:"bytes,9,opt,name=sku,proto3" json:"sku,omitempty"`
+	Specs         []*SpecGroupItem `protobuf:"bytes,10,rep,name=specs,proto3" json:"specs,omitempty"`
+	Skus          []*SkuItem       `protobuf:"bytes,11,rep,name=skus,proto3" json:"skus,omitempty"`
+	Description   string           `protobuf:"bytes,12,opt,name=description,proto3" json:"description,omitempty"`
+	CategoryId    int64            `protobuf:"varint,13,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"` // 商品分类ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -358,6 +371,7 @@ func (x *ProductItem) GetName() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in api/cin/admin/v1/product.proto.
 func (x *ProductItem) GetCategory() string {
 	if x != nil {
 		return x.Category
@@ -421,17 +435,33 @@ func (x *ProductItem) GetSkus() []*SkuItem {
 	return nil
 }
 
+func (x *ProductItem) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *ProductItem) GetCategoryId() int64 {
+	if x != nil {
+		return x.CategoryId
+	}
+	return 0
+}
+
 type CreateProductRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Category      string                 `protobuf:"bytes,2,opt,name=category,proto3" json:"category,omitempty"`
-	Price         int64                  `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
-	Stock         int32                  `protobuf:"varint,4,opt,name=stock,proto3" json:"stock,omitempty"`
-	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	Image         string                 `protobuf:"bytes,6,opt,name=image,proto3" json:"image,omitempty"`
-	Sku           string                 `protobuf:"bytes,7,opt,name=sku,proto3" json:"sku,omitempty"`
-	Specs         []*SpecGroupItem       `protobuf:"bytes,8,rep,name=specs,proto3" json:"specs,omitempty"`
-	Skus          []*SkuItem             `protobuf:"bytes,9,rep,name=skus,proto3" json:"skus,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// Deprecated: Marked as deprecated in api/cin/admin/v1/product.proto.
+	Category      string           `protobuf:"bytes,2,opt,name=category,proto3" json:"category,omitempty"`
+	Price         int64            `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
+	Stock         int32            `protobuf:"varint,4,opt,name=stock,proto3" json:"stock,omitempty"`
+	Description   string           `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Image         string           `protobuf:"bytes,6,opt,name=image,proto3" json:"image,omitempty"`
+	Sku           string           `protobuf:"bytes,7,opt,name=sku,proto3" json:"sku,omitempty"`
+	Specs         []*SpecGroupItem `protobuf:"bytes,8,rep,name=specs,proto3" json:"specs,omitempty"`
+	Skus          []*SkuItem       `protobuf:"bytes,9,rep,name=skus,proto3" json:"skus,omitempty"`
+	CategoryId    int64            `protobuf:"varint,10,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"` // 商品分类ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -473,6 +503,7 @@ func (x *CreateProductRequest) GetName() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in api/cin/admin/v1/product.proto.
 func (x *CreateProductRequest) GetCategory() string {
 	if x != nil {
 		return x.Category
@@ -529,6 +560,13 @@ func (x *CreateProductRequest) GetSkus() []*SkuItem {
 	return nil
 }
 
+func (x *CreateProductRequest) GetCategoryId() int64 {
+	if x != nil {
+		return x.CategoryId
+	}
+	return 0
+}
+
 type CreateProductReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -574,18 +612,20 @@ func (x *CreateProductReply) GetId() int64 {
 }
 
 type UpdateProductRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Category      string                 `protobuf:"bytes,3,opt,name=category,proto3" json:"category,omitempty"`
-	Price         int64                  `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
-	Stock         int32                  `protobuf:"varint,5,opt,name=stock,proto3" json:"stock,omitempty"`
-	Description   string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
-	Image         string                 `protobuf:"bytes,7,opt,name=image,proto3" json:"image,omitempty"`
-	Sku           string                 `protobuf:"bytes,8,opt,name=sku,proto3" json:"sku,omitempty"`
-	Status        string                 `protobuf:"bytes,9,opt,name=status,proto3" json:"status,omitempty"`
-	Specs         []*SpecGroupItem       `protobuf:"bytes,10,rep,name=specs,proto3" json:"specs,omitempty"`
-	Skus          []*SkuItem             `protobuf:"bytes,11,rep,name=skus,proto3" json:"skus,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name  string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Deprecated: Marked as deprecated in api/cin/admin/v1/product.proto.
+	Category      string           `protobuf:"bytes,3,opt,name=category,proto3" json:"category,omitempty"`
+	Price         int64            `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
+	Stock         int32            `protobuf:"varint,5,opt,name=stock,proto3" json:"stock,omitempty"`
+	Description   string           `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
+	Image         string           `protobuf:"bytes,7,opt,name=image,proto3" json:"image,omitempty"`
+	Sku           string           `protobuf:"bytes,8,opt,name=sku,proto3" json:"sku,omitempty"`
+	Status        string           `protobuf:"bytes,9,opt,name=status,proto3" json:"status,omitempty"`
+	Specs         []*SpecGroupItem `protobuf:"bytes,10,rep,name=specs,proto3" json:"specs,omitempty"`
+	Skus          []*SkuItem       `protobuf:"bytes,11,rep,name=skus,proto3" json:"skus,omitempty"`
+	CategoryId    int64            `protobuf:"varint,12,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"` // 商品分类ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -634,6 +674,7 @@ func (x *UpdateProductRequest) GetName() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in api/cin/admin/v1/product.proto.
 func (x *UpdateProductRequest) GetCategory() string {
 	if x != nil {
 		return x.Category
@@ -695,6 +736,13 @@ func (x *UpdateProductRequest) GetSkus() []*SkuItem {
 		return x.Skus
 	}
 	return nil
+}
+
+func (x *UpdateProductRequest) GetCategoryId() int64 {
+	if x != nil {
+		return x.CategoryId
+	}
+	return 0
 }
 
 type UpdateProductReply struct {
@@ -1025,13 +1073,15 @@ var File_api_cin_admin_v1_product_proto protoreflect.FileDescriptor
 
 const file_api_cin_admin_v1_product_proto_rawDesc = "" +
 	"\n" +
-	"\x1eapi/cin/admin/v1/product.proto\x12\x10api.cin.admin.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\x93\x01\n" +
+	"\x1eapi/cin/admin/v1/product.proto\x12\x10api.cin.admin.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\xb8\x01\n" +
 	"\x12ListProductRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x18\n" +
-	"\akeyword\x18\x03 \x01(\tR\akeyword\x12\x1a\n" +
-	"\bcategory\x18\x04 \x01(\tR\bcategory\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\tR\x06status\"]\n" +
+	"\akeyword\x18\x03 \x01(\tR\akeyword\x12\x1e\n" +
+	"\bcategory\x18\x04 \x01(\tB\x02\x18\x01R\bcategory\x12\x16\n" +
+	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1f\n" +
+	"\vcategory_id\x18\x06 \x01(\x03R\n" +
+	"categoryId\"]\n" +
 	"\x10ListProductReply\x123\n" +
 	"\x05items\x18\x01 \x03(\v2\x1d.api.cin.admin.v1.ProductItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\"K\n" +
@@ -1048,11 +1098,11 @@ const file_api_cin_admin_v1_product_proto_rawDesc = "" +
 	"\x04spec\x18\x06 \x03(\v2#.api.cin.admin.v1.SkuItem.SpecEntryR\x04spec\x1a7\n" +
 	"\tSpecEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xb5\x02\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xfc\x02\n" +
 	"\vProductItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
-	"\bcategory\x18\x03 \x01(\tR\bcategory\x12\x14\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1e\n" +
+	"\bcategory\x18\x03 \x01(\tB\x02\x18\x01R\bcategory\x12\x14\n" +
 	"\x05price\x18\x04 \x01(\x03R\x05price\x12\x14\n" +
 	"\x05stock\x18\x05 \x01(\x05R\x05stock\x12\x14\n" +
 	"\x05sales\x18\x06 \x01(\x05R\x05sales\x12\x16\n" +
@@ -1061,24 +1111,30 @@ const file_api_cin_admin_v1_product_proto_rawDesc = "" +
 	"\x03sku\x18\t \x01(\tR\x03sku\x125\n" +
 	"\x05specs\x18\n" +
 	" \x03(\v2\x1f.api.cin.admin.v1.SpecGroupItemR\x05specs\x12-\n" +
-	"\x04skus\x18\v \x03(\v2\x19.api.cin.admin.v1.SkuItemR\x04skus\"\xc0\x02\n" +
+	"\x04skus\x18\v \x03(\v2\x19.api.cin.admin.v1.SkuItemR\x04skus\x12 \n" +
+	"\vdescription\x18\f \x01(\tR\vdescription\x12\x1f\n" +
+	"\vcategory_id\x18\r \x01(\x03R\n" +
+	"categoryId\"\xe5\x02\n" +
 	"\x14CreateProductRequest\x12\x1e\n" +
 	"\x04name\x18\x01 \x01(\tB\n" +
-	"\xfaB\ar\x05\x10\x01\x18\x80\x01R\x04name\x12\x1a\n" +
-	"\bcategory\x18\x02 \x01(\tR\bcategory\x12\x1d\n" +
+	"\xfaB\ar\x05\x10\x01\x18\x80\x01R\x04name\x12\x1e\n" +
+	"\bcategory\x18\x02 \x01(\tB\x02\x18\x01R\bcategory\x12\x1d\n" +
 	"\x05price\x18\x03 \x01(\x03B\a\xfaB\x04\"\x02(\x00R\x05price\x12\x1d\n" +
 	"\x05stock\x18\x04 \x01(\x05B\a\xfaB\x04\x1a\x02(\x00R\x05stock\x12 \n" +
 	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x14\n" +
 	"\x05image\x18\x06 \x01(\tR\x05image\x12\x10\n" +
 	"\x03sku\x18\a \x01(\tR\x03sku\x125\n" +
 	"\x05specs\x18\b \x03(\v2\x1f.api.cin.admin.v1.SpecGroupItemR\x05specs\x12-\n" +
-	"\x04skus\x18\t \x03(\v2\x19.api.cin.admin.v1.SkuItemR\x04skus\"$\n" +
+	"\x04skus\x18\t \x03(\v2\x19.api.cin.admin.v1.SkuItemR\x04skus\x12\x1f\n" +
+	"\vcategory_id\x18\n" +
+	" \x01(\x03R\n" +
+	"categoryId\"$\n" +
 	"\x12CreateProductReply\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"\xd3\x02\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\xf8\x02\n" +
 	"\x14UpdateProductRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
-	"\bcategory\x18\x03 \x01(\tR\bcategory\x12\x14\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1e\n" +
+	"\bcategory\x18\x03 \x01(\tB\x02\x18\x01R\bcategory\x12\x14\n" +
 	"\x05price\x18\x04 \x01(\x03R\x05price\x12\x14\n" +
 	"\x05stock\x18\x05 \x01(\x05R\x05stock\x12 \n" +
 	"\vdescription\x18\x06 \x01(\tR\vdescription\x12\x14\n" +
@@ -1087,7 +1143,9 @@ const file_api_cin_admin_v1_product_proto_rawDesc = "" +
 	"\x06status\x18\t \x01(\tR\x06status\x125\n" +
 	"\x05specs\x18\n" +
 	" \x03(\v2\x1f.api.cin.admin.v1.SpecGroupItemR\x05specs\x12-\n" +
-	"\x04skus\x18\v \x03(\v2\x19.api.cin.admin.v1.SkuItemR\x04skus\".\n" +
+	"\x04skus\x18\v \x03(\v2\x19.api.cin.admin.v1.SkuItemR\x04skus\x12\x1f\n" +
+	"\vcategory_id\x18\f \x01(\x03R\n" +
+	"categoryId\".\n" +
 	"\x12UpdateProductReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"/\n" +
 	"\x14DeleteProductRequest\x12\x17\n" +

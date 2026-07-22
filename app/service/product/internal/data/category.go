@@ -123,26 +123,16 @@ func (r *categoryRepo) collectChildIDs(ctx context.Context, parentID int64, ids 
 }
 
 // assertNoProductsInCategories 校验指定分类（含子分类）下是否存在商品
-// 存在则返回错误，避免删除后产生 category 字段悬空的孤儿商品
+// 存在则返回错误，避免删除后产生 category_id 字段悬空的孤儿商品
 func (r *categoryRepo) assertNoProductsInCategories(ctx context.Context, categoryIDs []int64) error {
 	if len(categoryIDs) == 0 {
 		return nil
 	}
-	// 先取出待删除分类的名称集合（product.category 存储的是分类名称字符串）
-	var nameList []string
-	if err := curd.Category.WithContext(ctx).
-		Where(curd.Category.ID.In(categoryIDs...)).
-		Pluck(curd.Category.Name, &nameList); err != nil {
-		return err
-	}
-	if len(nameList) == 0 {
-		return nil
-	}
-	// 检查商品表中是否仍引用这些分类名称
-	count, err := curd.Product.WithContext(ctx).
-		Where(curd.Product.Category.In(nameList...)).
-		Count()
-	if err != nil {
+	// 直接按 category_id 检查商品表中是否仍有引用
+	var count int64
+	if err := curd.Product.WithContext(ctx).UnderlyingDB().Model(&mod.Product{}).
+		Where("category_id IN ?", categoryIDs).
+		Count(&count).Error; err != nil {
 		return err
 	}
 	if count > 0 {

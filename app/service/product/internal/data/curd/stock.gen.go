@@ -27,7 +27,7 @@ func newStock(db *gorm.DB) stock {
 	_stock.ID = field.NewInt64(tableName, "id")
 	_stock.CreateTime = field.NewInt64(tableName, "create_time")
 	_stock.UpdateTime = field.NewInt64(tableName, "update_time")
-	_stock.IsDel = field.NewUint(tableName, "is_del")
+	_stock.DeletedAt = field.NewField(tableName, "deleted_at")
 	_stock.ProductID = field.NewInt64(tableName, "product_id")
 	_stock.Total = field.NewInt32(tableName, "total")
 	_stock.Available = field.NewInt32(tableName, "available")
@@ -46,7 +46,7 @@ type stock struct {
 	ID         field.Int64
 	CreateTime field.Int64
 	UpdateTime field.Int64
-	IsDel      field.Uint
+	DeletedAt  field.Field
 	ProductID  field.Int64
 	Total      field.Int32
 	Available  field.Int32
@@ -71,7 +71,7 @@ func (s *stock) updateTableName(table string) *stock {
 	s.ID = field.NewInt64(table, "id")
 	s.CreateTime = field.NewInt64(table, "create_time")
 	s.UpdateTime = field.NewInt64(table, "update_time")
-	s.IsDel = field.NewUint(table, "is_del")
+	s.DeletedAt = field.NewField(table, "deleted_at")
 	s.ProductID = field.NewInt64(table, "product_id")
 	s.Total = field.NewInt32(table, "total")
 	s.Available = field.NewInt32(table, "available")
@@ -97,7 +97,7 @@ func (s *stock) fillFieldMap() {
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["create_time"] = s.CreateTime
 	s.fieldMap["update_time"] = s.UpdateTime
-	s.fieldMap["is_del"] = s.IsDel
+	s.fieldMap["deleted_at"] = s.DeletedAt
 	s.fieldMap["product_id"] = s.ProductID
 	s.fieldMap["total"] = s.Total
 	s.fieldMap["available"] = s.Available
