@@ -17,7 +17,10 @@ type Order struct {
 	OrderNo    string
 	TotalPrice Money
 	PayAmount  Money
+	Freight    Money // 运费（单位：分）
+	Discount   Money // 优惠金额（单位：分）
 	Status     v1.OrderStatus
+	CreateTime int64 // 创建时间（Unix 时间戳秒）
 
 	Items         []*OrderItem // 聚合内的实体
 	statusHandler OrderStatus  // 状态模式

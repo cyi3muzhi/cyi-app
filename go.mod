@@ -47,7 +47,6 @@ require (
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gen v0.3.6
 	gorm.io/gorm v1.31.1
-	gorm.io/plugin/soft_delete v1.2.1
 )
 
 require gopkg.in/ini.v1 v1.67.1 // indirect

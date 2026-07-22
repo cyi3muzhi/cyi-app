@@ -37,7 +37,6 @@ func bizToModelProduct(in *biz.Product) *mod.Product {
 		CategoryID:  in.CategoryID,
 		Image:       in.Image,
 		Images:      marshalImages(in.Images),
-		Sales:       in.Sales,
 	}
 }
 
@@ -51,7 +50,6 @@ func modelToBizProduct(p *mod.Product) *biz.Product {
 		Status:      biz.ProductStatus(p.Status),
 		CategoryID:  p.CategoryID,
 		Image:       p.Image,
-		Sales:       p.Sales,
 	}
 	// 手动反序列化轮播图 JSON
 	if p.Images != "" {
@@ -76,7 +74,7 @@ func (r *productRepo) UpdateProduct(ctx context.Context, in *biz.Product) error 
 	product.ID = in.ID
 	// 显式指定更新字段，确保 Status 等零值字段参与更新
 	if err := curd.Product.WithContext(ctx).UnderlyingDB().Model(&mod.Product{}).Select(
-		"name", "description", "price", "status", "category_id", "image", "images", "sales",
+		"name", "description", "price", "status", "category_id", "image", "images",
 	).Where("id = ?", in.ID).Updates(product).Error; err != nil {
 		return fmt.Errorf("update product failed: %w", err)
 	}

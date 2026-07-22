@@ -36,12 +36,14 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	categoryClient := data.NewCategoryServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	adminUserClient := data.NewAdminUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	rustFSClient, err := data.NewOssClient(confData)
 	if err != nil {
 		return nil, nil, err
 	}
 	client := data.NewRedisClient(confData)
-	dataData, cleanup, err := data.NewData(productClient, categoryClient, adminUserClient, rustFSClient, client, logger)
+	dataData, cleanup, err := data.NewData(productClient, categoryClient, adminUserClient, orderClient, userClient, rustFSClient, client, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -57,8 +59,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	staffUseCase := biz.NewStaffUseCase(staffRepo, logger)
 	categoryRepo := data.NewCategoryRepo(dataData, logger)
 	categoryUseCase := biz.NewCategoryUseCase(categoryRepo, logger)
+	orderRepo := data.NewOrderRepo(dataData, logger)
+	orderUseCase := biz.NewOrderUseCase(orderRepo, logger)
 	uploadRepo := data.NewUploadRepo(dataData, logger)
-	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, staffUseCase, categoryUseCase, uploadRepo, logger)
+	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, staffUseCase, categoryUseCase, orderUseCase, uploadRepo, logger)
 	server2 := server.NewGRPCServer(grpcServer, adminService)
 	tokenValidator := data.NewTokenValidator(client)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth, tokenValidator, enforcerProvider)

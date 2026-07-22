@@ -127,7 +127,7 @@ func TestCreateProduct_AssignsID(t *testing.T) {
 	repo := newProductTestRepo(t, db)
 	ctx := context.Background()
 
-	in := &biz.Product{Name: "测试商品", Price: 100, Status: biz.ProductStatusOnSale, CategoryID: 1, Image: "image.jpg", Sales: 10}
+	in := &biz.Product{Name: "测试商品", Price: 100, Status: biz.ProductStatusOnSale, CategoryID: 1, Image: "image.jpg"}
 	err := repo.CreateProduct(ctx, in)
 	assert.NoError(t, err)
 	assert.Greater(t, in.ID, int64(0))
@@ -139,7 +139,6 @@ func TestCreateProduct_AssignsID(t *testing.T) {
 	assert.Equal(t, int32(1), model.Status)
 	assert.Equal(t, int64(1), model.CategoryID)
 	assert.Equal(t, "image.jpg", model.Image)
-	assert.Equal(t, int32(10), model.Sales)
 }
 
 // TestGetProduct_NotFound 测试获取不存在的商品返回 nil

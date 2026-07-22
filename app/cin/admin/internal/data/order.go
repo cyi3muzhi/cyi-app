@@ -1,0 +1,221 @@
+package data
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	orderRpc "cyi-app/api/service/order/v1"
+	userRpc "cyi-app/api/service/user/v1"
+	"cyi-app/app/cin/admin/internal/biz"
+
+	"github.com/go-kratos/kratos/v2/log"
+)
+
+// orderRepo 订单数据仓库，通过 gRPC 调用订单服务和用户服务
+type orderRepo struct {
+	log  *log.Helper
+	data *Data
+}
+
+// NewOrderRepo 创建订单数据仓库
+func NewOrderRepo(data *Data, logger log.Logger) biz.OrderRepo {
+	return &orderRepo{
+		log:  log.NewHelper(logger),
+		data: data,
+	}
+}
+
+// orderStatusMap 订单状态数字到中文文本的映射
+var orderStatusMap = map[int32]string{
+	1: "待支付",
+	2: "已支付",
+	3: "待发货",
+	4: "已发货",
+	5: "待收货",
+	6: "已完成",
+	7: "已取消",
+	8: "退款中",
+	9: "已退款",
+}
+
+// orderStatusText 根据状态数字返回状态文本
+func orderStatusText(status int32) string {
+	if text, ok := orderStatusMap[status]; ok {
+		return text
+	}
+	return "未知"
+}
+
+// ListOrder 通过 gRPC 调用订单服务获取订单列表
+func (r *orderRepo) ListOrder(ctx context.Context, page, pageSize int32, status string, keyword string) ([]*biz.Order, int32, error) {
+	// 调用订单服务获取列表
+	reply, err := r.data.oc.ListOrder(ctx, &orderRpc.ListOrderRequest{
+		Page:     page,
+		PageSize: pageSize,
+		Status:   status,
+		Keyword:  keyword,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	items := make([]*biz.Order, 0, len(reply.Items))
+	for _, item := range reply.Items {
+		// 时间戳转格式化字符串
+		createdAt := time.Unix(item.CreatedAt, 0).Format("2006-01-02 15:04:05")
+		// 状态文本
+		statusText := orderStatusText(item.Status)
+
+		order := &biz.Order{
+			ID:          item.OrderId,
+			OrderNo:     item.OrderNo,
+			CreatedAt:   createdAt,
+			Amount:      item.PayAmount,
+			Status:      formatOrderStatus(item.Status),
+			StatusText:  statusText,
+			Freight:     item.Freight,
+			DiscountAmt: item.DiscountAmount,
+		}
+		items = append(items, order)
+	}
+
+	// 批量获取用户名称（去重后查询）
+	userIDs := make([]int64, 0, len(items))
+	userIDSet := make(map[int64]struct{})
+	for _, item := range items {
+		// 从 reply.Items 中查找对应的 user_id
+		for _, ri := range reply.Items {
+			if ri.OrderId == item.ID {
+				if _, ok := userIDSet[ri.UserId]; !ok {
+					userIDSet[ri.UserId] = struct{}{}
+					userIDs = append(userIDs, ri.UserId)
+				}
+				break
+			}
+		}
+	}
+
+	// 查询用户信息
+	userNameMap := r.batchGetUserNames(ctx, userIDs)
+
+	// 填充用户名称
+	for _, item := range items {
+		for _, ri := range reply.Items {
+			if ri.OrderId == item.ID {
+				if name, ok := userNameMap[ri.UserId]; ok {
+					item.UserName = name
+				}
+				break
+			}
+		}
+	}
+
+	return items, reply.Total, nil
+}
+
+// batchGetUserNames 批量查询用户名称
+func (r *orderRepo) batchGetUserNames(ctx context.Context, userIDs []int64) map[int64]string {
+	result := make(map[int64]string, len(userIDs))
+	for _, uid := range userIDs {
+		user, err := r.data.uc.GetUser(ctx, &userRpc.GetUserRequest{
+			Id: uid,
+		})
+		if err != nil {
+			r.log.Warnf("failed to get user %d: %v", uid, err)
+			result[uid] = fmt.Sprintf("用户% d", uid)
+			continue
+		}
+		result[uid] = user.GetName()
+	}
+	return result
+}
+
+// formatOrderStatus 将订单状态数字映射为管理端使用的状态编码
+// 订单服务 OrderStatus: 0=未指定, 1=待支付, 2=已支付, 3=待发货, 4=已发货, 5=待收货, 6=已完成, 7=已取消, 8=退款中, 9=已退款
+// 管理端状态编码: pending=待支付, paid=已支付, shipped=已发货, completed=已完成, cancelled=已取消, refunding=退款中
+func formatOrderStatus(status int32) string {
+	switch status {
+	case 1:
+		return "pending"
+	case 2:
+		return "paid"
+	case 3:
+		return "paid"
+	case 4:
+		return "shipped"
+	case 5:
+		return "shipped"
+	case 6:
+		return "completed"
+	case 7:
+		return "cancelled"
+	case 8:
+		return "refunding"
+	case 9:
+		return "refunded"
+	default:
+		return "unknown"
+	}
+}
+
+// GetOrder 通过 gRPC 调用订单服务获取订单详情
+func (r *orderRepo) GetOrder(ctx context.Context, orderID int64) (*biz.Order, error) {
+	reply, err := r.data.oc.GetOrder(ctx, &orderRpc.GetOrderRequest{
+		OrderId: orderID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	statusText := orderStatusText(reply.Status)
+
+	// 查询用户名称
+	userName := ""
+	user, err := r.data.uc.GetUser(ctx, &userRpc.GetUserRequest{
+		Id: reply.UserId,
+	})
+	if err != nil {
+		r.log.Warnf("failed to get user %d: %v", reply.UserId, err)
+		userName = fmt.Sprintf("用户% d", reply.UserId)
+	} else {
+		userName = user.GetName()
+	}
+
+	order := &biz.Order{
+		ID:          reply.OrderId,
+		OrderNo:     reply.OrderNo,
+		CreatedAt:   "",
+		UserName:    userName,
+		Amount:      reply.PayAmount,
+		Status:      formatOrderStatus(reply.Status),
+		StatusText:  statusText,
+		Freight:     reply.Freight,
+		DiscountAmt: reply.DiscountAmount,
+	}
+
+	for _, item := range reply.Items {
+		order.Products = append(order.Products, &biz.OrderProduct{
+			Name:  item.ProductName,
+			Spec:  item.SpecDesc,
+			Qty:   item.Quantity,
+			Price: item.Price,
+		})
+	}
+
+	return order, nil
+}
+
+// ShipOrder 通过 gRPC 调用订单服务发货（待实现订单服务端的发货接口）
+func (r *orderRepo) ShipOrder(ctx context.Context, orderID int64, logisticsCompany string, logisticsNo string) error {
+	// TODO: 订单服务端暂未实现发货 RPC，后续扩展
+	r.log.Infof("ship order %d: company=%s, no=%s", orderID, logisticsCompany, logisticsNo)
+	return nil
+}
+
+// CancelOrder 通过 gRPC 调用订单服务取消订单（暂以更新订单状态方式实现）
+func (r *orderRepo) CancelOrder(ctx context.Context, orderID int64, reason string) error {
+	// TODO: 订单服务端暂未实现取消 RPC，后续扩展
+	r.log.Infof("cancel order %d: reason=%s", orderID, reason)
+	return nil
+}

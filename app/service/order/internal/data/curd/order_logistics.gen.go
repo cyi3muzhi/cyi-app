@@ -27,7 +27,7 @@ func newOrderLogistics(db *gorm.DB) orderLogistics {
 	_orderLogistics.ID = field.NewInt64(tableName, "id")
 	_orderLogistics.CreateTime = field.NewInt64(tableName, "create_time")
 	_orderLogistics.UpdateTime = field.NewInt64(tableName, "update_time")
-	_orderLogistics.IsDel = field.NewUint(tableName, "is_del")
+	_orderLogistics.DeletedAt = field.NewField(tableName, "deleted_at")
 	_orderLogistics.OrderID = field.NewInt64(tableName, "order_id")
 	_orderLogistics.Receiver = field.NewString(tableName, "receiver")
 	_orderLogistics.Phone = field.NewString(tableName, "phone")
@@ -46,7 +46,7 @@ type orderLogistics struct {
 	ID         field.Int64
 	CreateTime field.Int64
 	UpdateTime field.Int64
-	IsDel      field.Uint
+	DeletedAt  field.Field
 	OrderID    field.Int64
 	Receiver   field.String
 	Phone      field.String
@@ -71,7 +71,7 @@ func (o *orderLogistics) updateTableName(table string) *orderLogistics {
 	o.ID = field.NewInt64(table, "id")
 	o.CreateTime = field.NewInt64(table, "create_time")
 	o.UpdateTime = field.NewInt64(table, "update_time")
-	o.IsDel = field.NewUint(table, "is_del")
+	o.DeletedAt = field.NewField(table, "deleted_at")
 	o.OrderID = field.NewInt64(table, "order_id")
 	o.Receiver = field.NewString(table, "receiver")
 	o.Phone = field.NewString(table, "phone")
@@ -97,7 +97,7 @@ func (o *orderLogistics) fillFieldMap() {
 	o.fieldMap["id"] = o.ID
 	o.fieldMap["create_time"] = o.CreateTime
 	o.fieldMap["update_time"] = o.UpdateTime
-	o.fieldMap["is_del"] = o.IsDel
+	o.fieldMap["deleted_at"] = o.DeletedAt
 	o.fieldMap["order_id"] = o.OrderID
 	o.fieldMap["receiver"] = o.Receiver
 	o.fieldMap["phone"] = o.Phone

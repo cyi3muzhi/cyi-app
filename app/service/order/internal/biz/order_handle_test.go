@@ -5,8 +5,8 @@ import (
 	"io"
 	"testing"
 
-	productRpc "cyi-app/api/service/product/v1"
 	v1 "cyi-app/api/service/order/v1"
+	productRpc "cyi-app/api/service/product/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/stretchr/testify/assert"
@@ -30,9 +30,9 @@ func (m *mockProductRepoForOrder) GetProduct(ctx context.Context, productID int6
 
 // mockStockRepoForOrder 用于 OrderUseCase 测试的库存 mock
 type mockStockRepoForOrder struct {
-	getStockFn    func(ctx context.Context, productID int64) (*productRpc.GetStockReply, error)
+	getStockFn     func(ctx context.Context, productID int64) (*productRpc.GetStockReply, error)
 	reserveStockFn func(ctx context.Context, productID int64, quantity int32, version int32) (int32, error)
-	deductStockFn func(ctx context.Context, productID int64, quantity int32, version int32) (int32, error)
+	deductStockFn  func(ctx context.Context, productID int64, quantity int32, version int32) (int32, error)
 }
 
 func (m *mockStockRepoForOrder) GetStock(ctx context.Context, productID int64) (*productRpc.GetStockReply, error) {
@@ -90,6 +90,10 @@ func (m *mockOrderRepoForOrder) GetOrder(ctx context.Context, id int64) (*Order,
 		return m.getOrderFn(ctx, id)
 	}
 	return nil, nil
+}
+
+func (m *mockOrderRepoForOrder) ListOrder(_ context.Context, _ int32, _ int32, _ string, _ string) ([]*Order, int32, error) {
+	return nil, 0, nil
 }
 
 // newTestOrderUseCase 快速构建测试用 OrderUseCase

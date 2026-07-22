@@ -27,10 +27,12 @@ func newOrderItem(db *gorm.DB) orderItem {
 	_orderItem.ID = field.NewInt64(tableName, "id")
 	_orderItem.CreateTime = field.NewInt64(tableName, "create_time")
 	_orderItem.UpdateTime = field.NewInt64(tableName, "update_time")
-	_orderItem.IsDel = field.NewUint(tableName, "is_del")
+	_orderItem.DeletedAt = field.NewField(tableName, "deleted_at")
 	_orderItem.OrderID = field.NewInt64(tableName, "order_id")
 	_orderItem.ProductID = field.NewInt64(tableName, "product_id")
+	_orderItem.SkuID = field.NewInt64(tableName, "sku_id")
 	_orderItem.ProductName = field.NewString(tableName, "product_name")
+	_orderItem.SpecDesc = field.NewString(tableName, "spec_desc")
 	_orderItem.Price = field.NewInt64(tableName, "price")
 	_orderItem.Quantity = field.NewInt32(tableName, "quantity")
 
@@ -46,10 +48,12 @@ type orderItem struct {
 	ID          field.Int64
 	CreateTime  field.Int64
 	UpdateTime  field.Int64
-	IsDel       field.Uint
+	DeletedAt   field.Field
 	OrderID     field.Int64
 	ProductID   field.Int64
+	SkuID       field.Int64
 	ProductName field.String
+	SpecDesc    field.String
 	Price       field.Int64
 	Quantity    field.Int32
 
@@ -71,10 +75,12 @@ func (o *orderItem) updateTableName(table string) *orderItem {
 	o.ID = field.NewInt64(table, "id")
 	o.CreateTime = field.NewInt64(table, "create_time")
 	o.UpdateTime = field.NewInt64(table, "update_time")
-	o.IsDel = field.NewUint(table, "is_del")
+	o.DeletedAt = field.NewField(table, "deleted_at")
 	o.OrderID = field.NewInt64(table, "order_id")
 	o.ProductID = field.NewInt64(table, "product_id")
+	o.SkuID = field.NewInt64(table, "sku_id")
 	o.ProductName = field.NewString(table, "product_name")
+	o.SpecDesc = field.NewString(table, "spec_desc")
 	o.Price = field.NewInt64(table, "price")
 	o.Quantity = field.NewInt32(table, "quantity")
 
@@ -93,14 +99,16 @@ func (o *orderItem) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (o *orderItem) fillFieldMap() {
-	o.fieldMap = make(map[string]field.Expr, 9)
+	o.fieldMap = make(map[string]field.Expr, 11)
 	o.fieldMap["id"] = o.ID
 	o.fieldMap["create_time"] = o.CreateTime
 	o.fieldMap["update_time"] = o.UpdateTime
-	o.fieldMap["is_del"] = o.IsDel
+	o.fieldMap["deleted_at"] = o.DeletedAt
 	o.fieldMap["order_id"] = o.OrderID
 	o.fieldMap["product_id"] = o.ProductID
+	o.fieldMap["sku_id"] = o.SkuID
 	o.fieldMap["product_name"] = o.ProductName
+	o.fieldMap["spec_desc"] = o.SpecDesc
 	o.fieldMap["price"] = o.Price
 	o.fieldMap["quantity"] = o.Quantity
 }

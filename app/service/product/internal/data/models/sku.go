@@ -16,6 +16,8 @@ type Sku struct {
 	SpecDesc string `json:"spec_desc" gorm:"type:varchar(256);default:'';comment:规格描述JSON"`
 	// SKU图片
 	Image string `json:"image" gorm:"type:varchar(1024);default:'';comment:SKU图片"`
+	// 销量
+	Sales int32 `json:"sales" gorm:"not null;default:0;comment:SKU级别销量"`
 }
 
 // ISku GORM gen 接口标记

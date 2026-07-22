@@ -10,11 +10,11 @@ type ProductRepo interface {
 	GetProduct(ctx context.Context, productID int64) (*productRpc.GetProductReply, error)
 }
 
-// StockRepo 库存仓储接口（远程调用库存服务）
+// StockRepo 库存仓储接口（按 SKU 维度操作库存）
 type StockRepo interface {
-	GetStock(ctx context.Context, productID int64) (*productRpc.GetStockReply, error)
-	ReserveStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
-	DeductStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
-	ReleaseStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
-	AddStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
+	GetStock(ctx context.Context, skuID int64) (*productRpc.GetStockReply, error)
+	ReserveStock(ctx context.Context, skuID int64, count int32, version int32) (int32, error)
+	DeductStock(ctx context.Context, skuID int64, count int32, version int32) (int32, error)
+	ReleaseStock(ctx context.Context, skuID int64, count int32, version int32) (int32, error)
+	AddStock(ctx context.Context, skuID int64, count int32, version int32) (int32, error)
 }

@@ -34,7 +34,6 @@ func (s *ProductService) CreateProduct(ctx context.Context, req *v1.CreateProduc
 	in.CategoryID = req.GetCategoryId()
 	in.Image = req.Image
 	in.Images = req.GetImages()
-	in.Sales = req.Sales
 	// 转换规格组
 	in.SpecGroups = specGroupInfoListToBiz(req.Specs)
 	// 转换SKU
@@ -58,7 +57,6 @@ func (s *ProductService) UpdateProduct(ctx context.Context, req *v1.UpdateProduc
 		CategoryID:  req.GetCategoryId(),
 		Image:       req.Image,
 		Images:      req.GetImages(),
-		Sales:       req.Sales,
 		Status:      biz.ProductStatus(req.Status),
 		SpecGroups:  specGroupInfoListToBiz(req.Specs),
 		Skus:        skuInfoListToBiz(req.Skus),
@@ -206,7 +204,6 @@ func bizProductToProductItem(p *biz.Product) *v1.ProductItem {
 		CategoryId:   p.CategoryID,
 		Image:       p.Image,
 		Images:      p.Images,
-		Sales:       p.Sales,
 		Specs:       specGroupListToProto(p.SpecGroups),
 		Skus:        skuListToProto(p.Skus),
 	}

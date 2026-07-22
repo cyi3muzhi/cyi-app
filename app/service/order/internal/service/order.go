@@ -34,6 +34,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *v1.CreateOrderReque
 		for _, item := range req.Items {
 			in.AddItem(&biz.OrderItem{
 				ProductID: item.ProductId,
+				SkuID:     item.SkuId,
 				Quantity:  item.Quantity,
 				Currency:  "CNY",
 			})
@@ -41,6 +42,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *v1.CreateOrderReque
 	} else {
 		in.AddItem(&biz.OrderItem{
 			ProductID: req.ProductId,
+			SkuID:     req.SkuId,
 			Price:     req.Price,
 			Quantity:  req.Count,
 			Currency:  "CNY",
@@ -72,16 +74,20 @@ func (s *OrderService) GetOrder(ctx context.Context, req *v1.GetOrderRequest) (*
 		return nil, err
 	}
 	reply := &v1.GetOrderReply{
-		OrderId:    order.ID,
-		UserId:     order.UserID,
-		OrderNo:    order.OrderNo,
-		Status:     int32(order.Status),
-		TotalPrice: order.TotalPrice.Amount,
-		PayAmount:  order.PayAmount.Amount,
+		OrderId:        order.ID,
+		UserId:         order.UserID,
+		OrderNo:        order.OrderNo,
+		Status:         int32(order.Status),
+		TotalPrice:     order.TotalPrice.Amount,
+		PayAmount:      order.PayAmount.Amount,
+		Freight:        order.Freight.Amount,
+		DiscountAmount: order.Discount.Amount,
 	}
 	for _, item := range order.Items {
 		reply.Items = append(reply.Items, &v1.OrderItemProto{
 			ProductId:   item.ProductID,
+			SkuId:       item.SkuID,
+			SpecDesc:    item.SpecDesc,
 			ProductName: item.ProductName,
 			Price:       item.Price,
 			Quantity:    item.Quantity,
@@ -91,8 +97,31 @@ func (s *OrderService) GetOrder(ctx context.Context, req *v1.GetOrderRequest) (*
 }
 
 func (s *OrderService) ListOrder(ctx context.Context, req *v1.ListOrderRequest) (*v1.ListOrderReply, error) {
-	return &v1.ListOrderReply{}, nil
+	items, total, err := s.uc.List(ctx, req.Page, req.PageSize, req.Status, req.Keyword)
+	if err != nil {
+		return nil, err
+	}
+	replyItems := make([]*v1.ListOrderItem, 0, len(items))
+	for _, item := range items {
+		replyItems = append(replyItems, &v1.ListOrderItem{
+			OrderId:        item.ID,
+			OrderNo:        item.OrderNo,
+			UserId:         item.UserID,
+			Status:         int32(item.Status),
+			TotalPrice:     item.TotalPrice.Amount,
+			PayAmount:      item.PayAmount.Amount,
+			Freight:        item.Freight.Amount,
+			DiscountAmount: item.Discount.Amount,
+			CreatedAt:      item.CreateTime,
+		})
+	}
+	return &v1.ListOrderReply{
+		Items: replyItems,
+		Total: total,
+	}, nil
 }
+
+// payAmount / freight / discount 在 service 层从 biz.Money 获取 Amount
 
 func (s *OrderService) PayOrder(ctx context.Context, req *v1.PayOrderRequest) (*v1.PayOrderReply, error) {
 	if err := s.uc.Pay(ctx, req.OrderId, req.UserId); err != nil {

@@ -131,6 +131,15 @@ func (m *mockSkuRepo) GetSkusByProductIDs(ctx context.Context, productIDs []int6
 	return m.getSkusByProductIDs(ctx, productIDs)
 }
 
+// newDefaultMockSkuRepo 创建默认的 mockSkuRepo，所有方法返回空结果（避免 nil 指针 panic）
+func newDefaultMockSkuRepo() mockSkuRepo {
+	return mockSkuRepo{
+		getSkusByProductID: func(ctx context.Context, productID int64) ([]*Sku, error) {
+			return []*Sku{}, nil
+		},
+	}
+}
+
 // newProductTestUseCase 创建测试用的ProductUseCase
 func newProductTestUseCase(
 	pr mockProductRepo,
@@ -422,6 +431,9 @@ func TestUpdateProduct_Success(t *testing.T) {
 			assert.Equal(t, int64(1), productID)
 			return nil
 		},
+		getSkusByProductID: func(ctx context.Context, productID int64) ([]*Sku, error) {
+			return []*Sku{}, nil
+		},
 	}
 	uc := newProductTestUseCase(pr, mockStockRepo{
 		deleteStockByProductID: func(ctx context.Context, productID int64) error { return nil },
@@ -446,7 +458,7 @@ func TestUpdateProduct_RepoError(t *testing.T) {
 			return assert.AnError
 		},
 	}
-	uc := newProductTestUseCase(pr, mockStockRepo{}, mockSpecGroupRepo{}, mockSkuRepo{})
+	uc := newProductTestUseCase(pr, mockStockRepo{}, mockSpecGroupRepo{}, newDefaultMockSkuRepo())
 
 	err := uc.UpdateProduct(context.Background(), &Product{ID: 1, Name: "测试"})
 	assert.Error(t, err)
@@ -465,7 +477,7 @@ func TestUpdateProduct_ReplaceSpecGroupError(t *testing.T) {
 			return assert.AnError
 		},
 	}
-	uc := newProductTestUseCase(pr, mockStockRepo{}, sgr, mockSkuRepo{})
+	uc := newProductTestUseCase(pr, mockStockRepo{}, sgr, newDefaultMockSkuRepo())
 
 	err := uc.UpdateProduct(context.Background(), &Product{
 		ID:         1,
@@ -490,6 +502,9 @@ func TestUpdateProduct_ReplaceSkuError(t *testing.T) {
 	skur := mockSkuRepo{
 		replaceSkus: func(ctx context.Context, productID int64, skus []*Sku) error {
 			return assert.AnError
+		},
+		getSkusByProductID: func(ctx context.Context, productID int64) ([]*Sku, error) {
+			return []*Sku{}, nil
 		},
 	}
 	uc := newProductTestUseCase(pr, mockStockRepo{

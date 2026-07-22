@@ -30,17 +30,18 @@ func (b *statusBase) transitionTo(ctx context.Context, order *Order, newStatus v
 }
 
 // releaseStockForOrder 释放订单中所有商品的预留库存
-// 适用场景：取消未支付订单（reserved-，available+）
+// 适用场景：取消未支付订单（按SKU维度，reserved-，available+）
 func (b *statusBase) releaseStockForOrder(ctx context.Context, order *Order) error {
 	for _, item := range order.Items {
-		stock, err := b.stockRe.GetStock(ctx, item.ProductID)
+		skuID := item.SkuID
+		stock, err := b.stockRe.GetStock(ctx, skuID)
 		if err != nil {
-			b.log.WithContext(ctx).Errorf("获取库存失败, productID: %d, error: %v", item.ProductID, err)
+			b.log.WithContext(ctx).Errorf("获取库存失败, skuID: %d, error: %v", skuID, err)
 			return err
 		}
 
-		if _, err := b.stockRe.ReleaseStock(ctx, item.ProductID, item.Quantity, stock.Version); err != nil {
-			b.log.WithContext(ctx).Errorf("释放预留库存失败, productID: %d, error: %v", item.ProductID, err)
+		if _, err := b.stockRe.ReleaseStock(ctx, skuID, item.Quantity, stock.Version); err != nil {
+			b.log.WithContext(ctx).Errorf("释放预留库存失败, skuID: %d, error: %v", skuID, err)
 			return err
 		}
 	}
@@ -48,17 +49,18 @@ func (b *statusBase) releaseStockForOrder(ctx context.Context, order *Order) err
 }
 
 // addStockForOrder 增加订单中所有商品的库存总量
-// 适用场景：取消已支付订单或退款完成（total+，available+）
+// 适用场景：取消已支付订单或退款完成（按SKU维度，total+，available+）
 func (b *statusBase) addStockForOrder(ctx context.Context, order *Order) error {
 	for _, item := range order.Items {
-		stock, err := b.stockRe.GetStock(ctx, item.ProductID)
+		skuID := item.SkuID
+		stock, err := b.stockRe.GetStock(ctx, skuID)
 		if err != nil {
-			b.log.WithContext(ctx).Errorf("获取库存失败, productID: %d, error: %v", item.ProductID, err)
+			b.log.WithContext(ctx).Errorf("获取库存失败, skuID: %d, error: %v", skuID, err)
 			return err
 		}
 
-		if _, err := b.stockRe.AddStock(ctx, item.ProductID, item.Quantity, stock.Version); err != nil {
-			b.log.WithContext(ctx).Errorf("增加库存失败, productID: %d, error: %v", item.ProductID, err)
+		if _, err := b.stockRe.AddStock(ctx, skuID, item.Quantity, stock.Version); err != nil {
+			b.log.WithContext(ctx).Errorf("增加库存失败, skuID: %d, error: %v", skuID, err)
 			return err
 		}
 	}

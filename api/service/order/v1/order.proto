@@ -22,6 +22,7 @@ message CreateOrderRequest {
 	int32 count = 3;                  // 立即购买：数量
 	int64 price = 4;                  // 立即购买：单价（单位：分）
 	repeated OrderItemProto items = 5; // 购物车结算：多个商品（与 product_id 二选一）
+	int64 sku_id = 6;                 // 立即购买：SKU ID
 }
 
 message CreateOrderReply {
@@ -48,6 +49,8 @@ message GetOrderReply {
 	int64 total_price = 5;   // 订单总金额
 	int64 pay_amount = 6;    // 支付金额
 	repeated OrderItemProto items = 7;
+	int64 freight = 8;       // 运费（单位：分）
+	int64 discount_amount = 9; // 优惠金额（单位：分）
 }
 
 message OrderItemProto {
@@ -55,11 +58,33 @@ message OrderItemProto {
 	string product_name = 2;
 	int64 price = 3;         // 单价
 	int32 quantity = 4;      // 数量
+	int64 sku_id = 5;        // SKU ID
+	string spec_desc = 6;    // 规格描述快照（如"红色/大号"）
 }
 
-message ListOrderRequest {}
+message ListOrderRequest {
+	int32 page = 1;
+	int32 page_size = 2;
+	string status = 3;    // 按状态筛选（空字符串表示全部）
+	string keyword = 4;   // 按订单号模糊搜索
+}
 
-message ListOrderReply {}
+message ListOrderReply {
+	repeated ListOrderItem items = 1;
+	int32 total = 2;
+}
+
+message ListOrderItem {
+	int64 order_id = 1;
+	string order_no = 2;
+	int64 user_id = 3;
+	int32 status = 4;
+	int64 total_price = 5;
+	int64 pay_amount = 6;
+	int64 freight = 7;
+	int64 discount_amount = 8;
+	int64 created_at = 9;
+}
 
 
 message PayOrderRequest {

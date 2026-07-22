@@ -34,11 +34,12 @@ type AdminService struct {
 	rc   *biz.RoleUseCase
 	sc   *biz.StaffUseCase
 	cc   *biz.CategoryUseCase
+	oc   *biz.OrderUseCase
 	ur   *data.UploadRepo
 }
 
 // NewAdminService 创建 AdminService
-func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.AuthUseCase, rc *biz.RoleUseCase, sc *biz.StaffUseCase, cc *biz.CategoryUseCase, ur *data.UploadRepo, logger log.Logger) *AdminService {
+func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.AuthUseCase, rc *biz.RoleUseCase, sc *biz.StaffUseCase, cc *biz.CategoryUseCase, oc *biz.OrderUseCase, ur *data.UploadRepo, logger log.Logger) *AdminService {
 	return &AdminService{
 		log: log.NewHelper(logger),
 		dc:  dc,
@@ -47,6 +48,7 @@ func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.A
 		rc:  rc,
 		sc:  sc,
 		cc:  cc,
+		oc:  oc,
 		ur:  ur,
 	}
 }

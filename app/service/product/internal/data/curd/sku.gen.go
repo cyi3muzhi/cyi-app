@@ -33,6 +33,7 @@ func newSku(db *gorm.DB) sku {
 	_sku.Price = field.NewInt64(tableName, "price")
 	_sku.SpecDesc = field.NewString(tableName, "spec_desc")
 	_sku.Image = field.NewString(tableName, "image")
+	_sku.Sales = field.NewInt32(tableName, "sales")
 
 	_sku.fillFieldMap()
 
@@ -52,6 +53,7 @@ type sku struct {
 	Price      field.Int64
 	SpecDesc   field.String
 	Image      field.String
+	Sales      field.Int32
 
 	fieldMap map[string]field.Expr
 }
@@ -77,6 +79,7 @@ func (s *sku) updateTableName(table string) *sku {
 	s.Price = field.NewInt64(table, "price")
 	s.SpecDesc = field.NewString(table, "spec_desc")
 	s.Image = field.NewString(table, "image")
+	s.Sales = field.NewInt32(table, "sales")
 
 	s.fillFieldMap()
 
@@ -93,7 +96,7 @@ func (s *sku) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *sku) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 9)
+	s.fieldMap = make(map[string]field.Expr, 10)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["create_time"] = s.CreateTime
 	s.fieldMap["update_time"] = s.UpdateTime
@@ -103,6 +106,7 @@ func (s *sku) fillFieldMap() {
 	s.fieldMap["price"] = s.Price
 	s.fieldMap["spec_desc"] = s.SpecDesc
 	s.fieldMap["image"] = s.Image
+	s.fieldMap["sales"] = s.Sales
 }
 
 func (s sku) clone(db *gorm.DB) sku {

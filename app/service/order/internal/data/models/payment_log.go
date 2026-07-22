@@ -16,8 +16,8 @@ type PaymentLog struct {
 	TransactionID string `json:"transaction_id" gorm:"type:varchar(64);default:'';comment:第三方支付订单号"`
 	// 支付金额（单位：分）
 	Amount int64 `json:"amount" gorm:"not null;default:0;comment:支付金额"`
-	// 支付状态 0-未支付 1-支付成功 2-支付失败 3-已退款
-	PayStatus int32 `json:"pay_status" gorm:"not null;default:0;comment:支付状态"`
+	// 支付状态: 0-未支付 1-支付中 2-已支付 3-已退款 4-支付失败
+	PayStatus int32 `json:"pay_status" gorm:"not null;default:0;comment:支付状态: 0-未支付 1-支付中 2-已支付 3-已退款 4-支付失败"`
 	// 支付结果描述
 	PayMsg string `json:"pay_msg" gorm:"type:varchar(256);default:'';comment:支付结果描述"`
 }

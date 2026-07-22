@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	adminv1 "cyi-app/api/cin/admin/v1"
+	orderRpc "cyi-app/api/service/order/v1"
 	productRpc "cyi-app/api/service/product/v1"
 	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/cin/admin/internal/conf"
@@ -26,10 +27,13 @@ var ProviderSet = wire.NewSet(
 	NewAuthRepo,
 	NewStaffRepo,
 	NewUploadRepo,
+	NewOrderRepo,
 	NewProductServiceClient,
 	NewCategoryServiceClient,
 	NewAdminUserServiceClient,
 	NewAdminRoleClient,
+	NewOrderServiceClient,
+	NewUserServiceClient,
 	NewTokenValidator,
 	NewOssClient,
 	NewRedisClient,
@@ -43,16 +47,18 @@ type Data struct {
 	pc    productRpc.ProductClient
 	cc    productRpc.CategoryClient
 	auc   userRpc.AdminUserClient
+	oc    orderRpc.OrderClient
+	uc    userRpc.UserClient
 	oss   *rustfs.RustFSClient
 	redis *redis.Client
 }
 
 // NewData .
-func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, auc userRpc.AdminUserClient, oss *rustfs.RustFSClient, redis *redis.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, auc userRpc.AdminUserClient, oc orderRpc.OrderClient, uc userRpc.UserClient, oss *rustfs.RustFSClient, redis *redis.Client, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the admin data resources")
 	}
-	return &Data{pc: pc, cc: cc, auc: auc, oss: oss, redis: redis}, cleanup, nil
+	return &Data{pc: pc, cc: cc, auc: auc, oc: oc, uc: uc, oss: oss, redis: redis}, cleanup, nil
 }
 
 // NewOssClient 创建 OSS 客户端

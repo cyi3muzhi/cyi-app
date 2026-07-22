@@ -27,7 +27,7 @@ func newPaymentLog(db *gorm.DB) paymentLog {
 	_paymentLog.ID = field.NewInt64(tableName, "id")
 	_paymentLog.CreateTime = field.NewInt64(tableName, "create_time")
 	_paymentLog.UpdateTime = field.NewInt64(tableName, "update_time")
-	_paymentLog.IsDel = field.NewUint(tableName, "is_del")
+	_paymentLog.DeletedAt = field.NewField(tableName, "deleted_at")
 	_paymentLog.OrderID = field.NewInt64(tableName, "order_id")
 	_paymentLog.PayType = field.NewString(tableName, "pay_type")
 	_paymentLog.TransactionID = field.NewString(tableName, "transaction_id")
@@ -47,7 +47,7 @@ type paymentLog struct {
 	ID            field.Int64
 	CreateTime    field.Int64
 	UpdateTime    field.Int64
-	IsDel         field.Uint
+	DeletedAt     field.Field
 	OrderID       field.Int64
 	PayType       field.String
 	TransactionID field.String
@@ -73,7 +73,7 @@ func (p *paymentLog) updateTableName(table string) *paymentLog {
 	p.ID = field.NewInt64(table, "id")
 	p.CreateTime = field.NewInt64(table, "create_time")
 	p.UpdateTime = field.NewInt64(table, "update_time")
-	p.IsDel = field.NewUint(table, "is_del")
+	p.DeletedAt = field.NewField(table, "deleted_at")
 	p.OrderID = field.NewInt64(table, "order_id")
 	p.PayType = field.NewString(table, "pay_type")
 	p.TransactionID = field.NewString(table, "transaction_id")
@@ -100,7 +100,7 @@ func (p *paymentLog) fillFieldMap() {
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["create_time"] = p.CreateTime
 	p.fieldMap["update_time"] = p.UpdateTime
-	p.fieldMap["is_del"] = p.IsDel
+	p.fieldMap["deleted_at"] = p.DeletedAt
 	p.fieldMap["order_id"] = p.OrderID
 	p.fieldMap["pay_type"] = p.PayType
 	p.fieldMap["transaction_id"] = p.TransactionID

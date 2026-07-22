@@ -7,8 +7,8 @@ import (
 // OrderLogistics 订单物流信息表
 type OrderLogistics struct {
 	gorm.Model
-	// 订单ID
-	OrderID int64 `json:"order_id" gorm:"index;not null;comment:订单ID"`
+	// 订单ID（一个订单只能有一条物流记录）
+	OrderID int64 `json:"order_id" gorm:"uniqueIndex;not null;comment:订单ID"`
 	// 收货人
 	Receiver string `json:"receiver" gorm:"type:varchar(64);not null;comment:收货人"`
 	// 手机号

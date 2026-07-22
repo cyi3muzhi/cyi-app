@@ -27,12 +27,14 @@ func newOrder(db *gorm.DB) order {
 	_order.ID = field.NewInt64(tableName, "id")
 	_order.CreateTime = field.NewInt64(tableName, "create_time")
 	_order.UpdateTime = field.NewInt64(tableName, "update_time")
-	_order.IsDel = field.NewUint(tableName, "is_del")
+	_order.DeletedAt = field.NewField(tableName, "deleted_at")
 	_order.UserID = field.NewInt64(tableName, "user_id")
 	_order.TotalPrice = field.NewInt64(tableName, "total_price")
+	_order.PayAmount = field.NewInt64(tableName, "pay_amount")
+	_order.Freight = field.NewInt64(tableName, "freight")
+	_order.DiscountAmount = field.NewInt64(tableName, "discount_amount")
 	_order.Status = field.NewInt32(tableName, "status")
 	_order.OrderNo = field.NewString(tableName, "order_no")
-	_order.PayAmount = field.NewInt64(tableName, "pay_amount")
 
 	_order.fillFieldMap()
 
@@ -42,16 +44,18 @@ func newOrder(db *gorm.DB) order {
 type order struct {
 	orderDo
 
-	ALL        field.Field
-	ID         field.Int64
-	CreateTime field.Int64
-	UpdateTime field.Int64
-	IsDel      field.Uint
-	UserID     field.Int64
-	TotalPrice field.Int64
-	Status     field.Int32
-	OrderNo    field.String
-	PayAmount  field.Int64
+	ALL            field.Field
+	ID             field.Int64
+	CreateTime     field.Int64
+	UpdateTime     field.Int64
+	DeletedAt      field.Field
+	UserID         field.Int64
+	TotalPrice     field.Int64
+	PayAmount      field.Int64
+	Freight        field.Int64
+	DiscountAmount field.Int64
+	Status         field.Int32
+	OrderNo        field.String
 
 	fieldMap map[string]field.Expr
 }
@@ -71,12 +75,14 @@ func (o *order) updateTableName(table string) *order {
 	o.ID = field.NewInt64(table, "id")
 	o.CreateTime = field.NewInt64(table, "create_time")
 	o.UpdateTime = field.NewInt64(table, "update_time")
-	o.IsDel = field.NewUint(table, "is_del")
+	o.DeletedAt = field.NewField(table, "deleted_at")
 	o.UserID = field.NewInt64(table, "user_id")
 	o.TotalPrice = field.NewInt64(table, "total_price")
+	o.PayAmount = field.NewInt64(table, "pay_amount")
+	o.Freight = field.NewInt64(table, "freight")
+	o.DiscountAmount = field.NewInt64(table, "discount_amount")
 	o.Status = field.NewInt32(table, "status")
 	o.OrderNo = field.NewString(table, "order_no")
-	o.PayAmount = field.NewInt64(table, "pay_amount")
 
 	o.fillFieldMap()
 
@@ -93,16 +99,18 @@ func (o *order) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (o *order) fillFieldMap() {
-	o.fieldMap = make(map[string]field.Expr, 9)
+	o.fieldMap = make(map[string]field.Expr, 11)
 	o.fieldMap["id"] = o.ID
 	o.fieldMap["create_time"] = o.CreateTime
 	o.fieldMap["update_time"] = o.UpdateTime
-	o.fieldMap["is_del"] = o.IsDel
+	o.fieldMap["deleted_at"] = o.DeletedAt
 	o.fieldMap["user_id"] = o.UserID
 	o.fieldMap["total_price"] = o.TotalPrice
+	o.fieldMap["pay_amount"] = o.PayAmount
+	o.fieldMap["freight"] = o.Freight
+	o.fieldMap["discount_amount"] = o.DiscountAmount
 	o.fieldMap["status"] = o.Status
 	o.fieldMap["order_no"] = o.OrderNo
-	o.fieldMap["pay_amount"] = o.PayAmount
 }
 
 func (o order) clone(db *gorm.DB) order {
