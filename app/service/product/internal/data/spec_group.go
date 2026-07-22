@@ -9,18 +9,16 @@ import (
 	mod "cyi-app/app/service/product/internal/data/models"
 
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/redis/go-redis/v9"
 )
 
 type specGroupRepo struct {
-	data  *Data
-	cache *redis.Client
-	log   *log.Helper
+	data *Data
+	log  *log.Helper
 }
 
 // NewSpecGroupRepo 创建规格组仓储
 func NewSpecGroupRepo(data *Data, logger log.Logger) biz.SpecGroupRepo {
-	return &specGroupRepo{data: data, cache: data.cache, log: log.NewHelper(logger)}
+	return &specGroupRepo{data: data, log: log.NewHelper(logger)}
 }
 
 // CreateSpecGroups 批量创建规格组及其值

@@ -10,17 +10,15 @@ import (
 	v1 "cyi-app/api/service/order/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/redis/go-redis/v9"
 )
 
 type orderRepo struct {
-	data  *Data
-	cache *redis.Client
-	log   *log.Helper
+	data *Data
+	log  *log.Helper
 }
 
 func NewOrderRepo(data *Data, logger log.Logger) biz.OrderRepo {
-	return &orderRepo{data: data, cache: data.cache, log: log.NewHelper(logger)}
+	return &orderRepo{data: data, log: log.NewHelper(logger)}
 }
 
 func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {

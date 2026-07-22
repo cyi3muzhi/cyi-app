@@ -176,11 +176,11 @@ func NewOrderStatusHandler(status v1.OrderStatus, repo OrderRepo, stockRe StockR
 	case v1.OrderStatus_Complete:
 		return NewCompleteStatus(repo, stockRe, logger)
 	case v1.OrderStatus_Cancel:
-		return NewCancelStatus(repo, stockRe, logger)
+		return NewFinalStatus(repo, stockRe, logger)
 	case v1.OrderStatus_Refunding:
 		return NewRefundingStatus(repo, stockRe, logger)
 	case v1.OrderStatus_Refunded:
-		return NewRefundedStatus(repo, stockRe, logger)
+		return NewFinalStatus(repo, stockRe, logger)
 	default:
 		return nil
 	}

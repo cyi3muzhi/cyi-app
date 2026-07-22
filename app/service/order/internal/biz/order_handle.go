@@ -88,7 +88,7 @@ func (uc *OrderUseCase) Get(ctx context.Context, orderID int64) (*Order, error) 
 	return order, nil
 }
 
-// Pay 支付订单（含扣减库存）
+// Pay 支付订单（先扣库存，后改状态，避免已支付未扣库存的数据不一致）
 func (uc *OrderUseCase) Pay(ctx context.Context, orderID int64, userID int64) error {
 	order, err := uc.Get(ctx, orderID)
 	if err != nil {
@@ -98,12 +98,8 @@ func (uc *OrderUseCase) Pay(ctx context.Context, orderID int64, userID int64) er
 		return err
 	}
 
-	// 1. 支付订单（状态流转）—— 先做，失败则库存不动
-	if err := order.Pay(ctx); err != nil {
-		return err
-	}
-
-	// 2. 实际扣减库存（Total-、Reserved-、乐观锁）
+	// 1. 先扣减库存（Total-、Reserved-、乐观锁）
+	// 库存扣减失败时订单状态不变，调用方可安全重试
 	for _, item := range order.Items {
 		stock, err := uc.stockRe.GetStock(ctx, item.ProductID)
 		if err != nil {
@@ -112,9 +108,15 @@ func (uc *OrderUseCase) Pay(ctx context.Context, orderID int64, userID int64) er
 		}
 		_, err = uc.stockRe.DeductStock(ctx, item.ProductID, item.Quantity, stock.Version)
 		if err != nil {
-			uc.log.Errorf("deduct stock failed, order already paid, need manual fix: %v", err)
-			return v1.ErrorStockOperationFailed("deduct stock failed, already paid")
+			uc.log.Errorf("deduct stock failed: %v", err)
+			return v1.ErrorStockOperationFailed("deduct stock failed")
 		}
+	}
+
+	// 2. 再更新订单状态（库存已扣，状态变更失败需人工介入补偿库存）
+	if err := order.Pay(ctx); err != nil {
+		uc.log.Errorf("order pay failed after stock deducted, need manual compensation, orderID: %d: %v", orderID, err)
+		return err
 	}
 
 	return nil

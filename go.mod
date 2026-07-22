@@ -9,6 +9,7 @@ require (
 	github.com/casbin/casbin/v2 v2.135.0
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/fatih/structs v1.1.0
+	github.com/glebarez/sqlite v1.11.0
 	github.com/go-kratos/blades v0.4.0
 	github.com/go-kratos/kratos/contrib/config/consul/v2 v2.0.0-20250912104010-25b6c0fb9f38
 	github.com/go-kratos/kratos/contrib/registry/consul/v2 v2.0.0-20250912104010-25b6c0fb9f38
@@ -69,7 +70,6 @@ require (
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/glebarez/go-sqlite v1.22.0 // indirect
-	github.com/glebarez/sqlite v1.11.0 // indirect
 	github.com/go-kratos/aegis v0.2.0 // indirect
 	github.com/go-kratos/kit v0.0.0-20251121083925-65298ad2aa44 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect

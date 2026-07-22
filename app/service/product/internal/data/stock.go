@@ -10,17 +10,15 @@ import (
 	"cyi-app/pkg/util/convert"
 
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/redis/go-redis/v9"
 )
 
 type stockRepo struct {
-	data  *Data
-	cache *redis.Client
-	log   *log.Helper
+	data *Data
+	log  *log.Helper
 }
 
 func NewStockRepo(data *Data, logger log.Logger) biz.StockRepo {
-	return &stockRepo{data: data, cache: data.cache, log: log.NewHelper(logger)}
+	return &stockRepo{data: data, log: log.NewHelper(logger)}
 }
 
 func (r *stockRepo) CreateStock(ctx context.Context, in *biz.Stock) error {

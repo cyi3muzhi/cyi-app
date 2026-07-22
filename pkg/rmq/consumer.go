@@ -4,16 +4,33 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// Consumer 消息消费者，持有独立 Channel（线程安全）
 type Consumer struct {
-	conn *Connection
+	conn    *Connection
+	channel *amqp.Channel
 }
 
-func NewConsumer(conn *Connection) *Consumer {
-	return &Consumer{conn: conn}
+// NewConsumer 创建消费者并创建独立 Channel
+func NewConsumer(conn *Connection) (*Consumer, error) {
+	ch, err := conn.Channel()
+	if err != nil {
+		return nil, err
+	}
+	return &Consumer{conn: conn, channel: ch}, nil
+}
+
+// Channel 返回消费者持有的 AMQP Channel
+func (c *Consumer) Channel() *amqp.Channel {
+	return c.channel
+}
+
+// Close 关闭消费者持有的 Channel
+func (c *Consumer) Close() error {
+	return c.channel.Close()
 }
 
 func (c *Consumer) Consume(opts ConsumeOptions) (<-chan amqp.Delivery, error) {
-	return c.conn.Channel().Consume(
+	return c.channel.Consume(
 		opts.QueueName,
 		opts.ConsumerTag,
 		opts.AutoAck,

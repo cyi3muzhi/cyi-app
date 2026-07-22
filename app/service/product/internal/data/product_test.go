@@ -15,7 +15,7 @@ import (
 
 // newProductTestRepo 创建测试用的 productRepo
 func newProductTestRepo(t *testing.T, db *gorm.DB) *productRepo {
-	return &productRepo{data: &Data{cache: nil}, cache: nil, log: log.NewHelper(log.NewStdLogger(nil))}
+	return &productRepo{data: &Data{}, log: log.NewHelper(log.NewStdLogger(nil))}
 }
 
 // TestListProduct_StatusFilterOnSale 测试状态筛选 "上架" 只返回上架商品

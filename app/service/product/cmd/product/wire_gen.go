@@ -30,8 +30,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	traceTracerProvider := provideTracerProvider(tracerProvider)
 	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	db := data.NewDB(confData)
-	client := data.NewRedisClient(confData, logger)
-	dataData, cleanup, err := data.NewData(confData, db, client, logger)
+	dataData, cleanup, err := data.NewData(confData, db, logger)
 	if err != nil {
 		return nil, nil, err
 	}

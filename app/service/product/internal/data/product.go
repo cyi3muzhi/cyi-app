@@ -10,18 +10,16 @@ import (
 	"cyi-app/pkg/util/convert"
 
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type productRepo struct {
-	data  *Data
-	cache *redis.Client
-	log   *log.Helper
+	data *Data
+	log  *log.Helper
 }
 
 func NewProductRepo(data *Data, logger log.Logger) biz.ProductRepo {
-	return &productRepo{data: data, cache: data.cache, log: log.NewHelper(logger)}
+	return &productRepo{data: data, log: log.NewHelper(logger)}
 }
 
 // CreateProduct 创建商品

@@ -10,19 +10,17 @@ import (
 	"cyi-app/pkg/util/convert"
 
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/redis/go-redis/v9"
 )
 
 // categoryRepo 商品分类仓储实现
 type categoryRepo struct {
-	data  *Data
-	cache *redis.Client
-	log   *log.Helper
+	data *Data
+	log  *log.Helper
 }
 
 // NewCategoryRepo 创建分类仓储
 func NewCategoryRepo(data *Data, logger log.Logger) biz.CategoryRepo {
-	return &categoryRepo{data: data, cache: data.cache, log: log.NewHelper(logger)}
+	return &categoryRepo{data: data, log: log.NewHelper(logger)}
 }
 
 // ListCategoryTree 获取全量扁平分类列表，按排序值升序

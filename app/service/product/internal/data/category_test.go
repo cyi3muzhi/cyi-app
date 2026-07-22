@@ -15,7 +15,7 @@ import (
 
 // newCategoryTestRepo 创建测试用的 categoryRepo
 func newCategoryTestRepo(t *testing.T, db *gorm.DB) *categoryRepo {
-	return &categoryRepo{data: &Data{cache: nil}, log: log.NewHelper(log.NewStdLogger(nil))}
+	return &categoryRepo{data: &Data{}, log: log.NewHelper(log.NewStdLogger(nil))}
 }
 
 // TestDeleteCategory_CascadeChildren 测试删除父分类时级联删除所有子分类

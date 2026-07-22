@@ -210,11 +210,11 @@ type QueueInfo struct {
 	Conn         *Connection
 }
 
-func (qi *QueueInfo) NewProducer() *Producer {
+func (qi *QueueInfo) NewProducer() (*Producer, error) {
 	return NewProducer(qi.Conn)
 }
 
-func (qi *QueueInfo) NewConsumer() *Consumer {
+func (qi *QueueInfo) NewConsumer() (*Consumer, error) {
 	return NewConsumer(qi.Conn)
 }
 
@@ -223,15 +223,19 @@ func (qi *QueueInfo) NewConfirmProducer() (*ConfirmProducer, error) {
 }
 
 func (qi *QueueInfo) Publish(body []byte, contentType string) error {
-	producer := qi.NewProducer()
-	
+	producer, err := qi.NewProducer()
+	if err != nil {
+		return err
+	}
+	defer producer.Close()
+
 	var opts PublishOptions
 	if qi.ExchangeName != "" {
 		opts = DefaultPublishOptions(qi.ExchangeName, qi.BindingKey)
 	} else {
 		opts = DefaultPublishOptions("", qi.Name)
 	}
-	
+
 	msg := Message{
 		Body:        body,
 		ContentType: contentType,
@@ -243,10 +247,15 @@ func (qi *QueueInfo) PublishToDelay(body []byte, contentType string) error {
 	if qi.DelayQueue == "" {
 		return qi.Publish(body, contentType)
 	}
-	
-	producer := qi.NewProducer()
+
+	producer, err := qi.NewProducer()
+	if err != nil {
+		return err
+	}
+	defer producer.Close()
+
 	opts := DefaultPublishOptions("", qi.DelayQueue)
-	
+
 	msg := Message{
 		Body:        body,
 		ContentType: contentType,
@@ -255,19 +264,25 @@ func (qi *QueueInfo) PublishToDelay(body []byte, contentType string) error {
 }
 
 func (qi *QueueInfo) Consume(handler func(amqp.Delivery)) error {
-	consumer := qi.NewConsumer()
-	opts := DefaultConsumeOptions(qi.Name)
-	
-	msgs, err := consumer.Consume(opts)
+	consumer, err := qi.NewConsumer()
 	if err != nil {
 		return err
 	}
-	
+
+	opts := DefaultConsumeOptions(qi.Name)
+
+	msgs, err := consumer.Consume(opts)
+	if err != nil {
+		consumer.Close()
+		return err
+	}
+
 	go func() {
+		defer consumer.Close()
 		for d := range msgs {
 			handler(d)
 		}
 	}()
-	
+
 	return nil
 }

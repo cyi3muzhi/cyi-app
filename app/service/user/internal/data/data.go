@@ -69,37 +69,30 @@ func NewDB(c *conf.Data) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-	// 自动迁移：创建或更新数据库表结构
-	if err := db.AutoMigrate(&mod.User{}, &mod.AdminUser{}, &mod.CasbinRule{}, &mod.RoleMeta{}); err != nil {
-		panic(err)
+
+	// 仅在非生产环境自动迁移表结构（生产环境禁止使用 AutoMigrate）
+	env := os.Getenv("SERVICE_ENV")
+	if env != "production" {
+		if err := db.AutoMigrate(&mod.User{}, &mod.AdminUser{}, &mod.CasbinRule{}, &mod.RoleMeta{}); err != nil {
+			panic(err)
+		}
+
+		// 初始化默认管理员（仅表为空时插入）
+		initDefaultAdmin(db)
+
+		// 初始化 Casbin 默认策略（仅表为空时插入）
+		initCasbinPolicies(db)
+
+		// 同步所有管理员的角色到 Casbin 分组策略
+		syncAdminUserRoles(db)
 	}
 
-	// 初始化默认管理员（仅表为空时插入）
-	initDefaultAdmin(db)
-
-	// 初始化 Casbin 默认策略（仅表为空时插入）
-	initCasbinPolicies(db)
-
-	// 同步所有管理员的角色到 Casbin 分组策略
-	syncAdminUserRoles(db)
-
-	// 仅在开发环境且文件不存在时执行生成
-	if shouldGenerateCode() {
+	// 仅在开发环境执行代码生成
+	if env == "develop" {
 		generateCode(db)
 	}
 
 	return db
-}
-
-func shouldGenerateCode() bool {
-	// 检查环境变量
-	if os.Getenv("SERVICE_ENV") != "develop" {
-		return false
-	}
-
-	// 检查生成目录是否已存在内容
-	// _, err := os.Stat("../../internal/data/curd/user.gen.go")
-	return true
 }
 
 func generateCode(db *gorm.DB) {

@@ -8,18 +8,16 @@ import (
 	mod "cyi-app/app/service/product/internal/data/models"
 
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/redis/go-redis/v9"
 )
 
 type skuRepo struct {
-	data  *Data
-	cache *redis.Client
-	log   *log.Helper
+	data *Data
+	log  *log.Helper
 }
 
 // NewSkuRepo 创建SKU仓储
 func NewSkuRepo(data *Data, logger log.Logger) biz.SkuRepo {
-	return &skuRepo{data: data, cache: data.cache, log: log.NewHelper(logger)}
+	return &skuRepo{data: data, log: log.NewHelper(logger)}
 }
 
 // CreateSkus 批量创建SKU
