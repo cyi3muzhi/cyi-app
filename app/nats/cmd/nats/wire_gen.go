@@ -28,12 +28,11 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, nats
 	registrar := server.NewRegistrar(registry)
 	conn := server.NewNatsConn(nats)
 	natsConsumer := consumers.NewNatsConsumer(conn, logger)
-	client := data.NewRedisClient(confData, logger)
-	dataData, cleanup, err := data.NewData(confData, client, logger)
+	dataData, cleanup, err := data.NewData(confData, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	orderRepo := data.NewOrderRepo(dataData)
+	orderRepo := data.NewOrderRepo(dataData, logger)
 	orderUseCase := biz.NewOrderUseCase(orderRepo, logger)
 	orderService := service.NewOrderService(orderUseCase, logger)
 	consumer := consumers.NewConsumer(natsConsumer, orderService)

@@ -179,8 +179,10 @@ func (r *productRepo) DeleteProduct(ctx context.Context, id int64) error {
 }
 
 // BatchOperation 批量操作商品（遍历调用 UpdateProduct/DeleteProduct）
+// 跨服务批量操作无法保证原子性，失败时已成功的操作不会回滚
 func (r *productRepo) BatchOperation(ctx context.Context, action string, ids []int64) (int32, error) {
 	var affected int32
+	var errs []string
 	for _, id := range ids {
 		var err error
 		switch action {
@@ -195,9 +197,14 @@ func (r *productRepo) BatchOperation(ctx context.Context, action string, ids []i
 		}
 		if err != nil {
 			r.log.Errorf("batch operation %s failed for product %d: %v", action, id, err)
+			errs = append(errs, fmt.Sprintf("product %d: %v", id, err))
 			continue
 		}
 		affected++
+	}
+	if len(errs) > 0 {
+		return affected, fmt.Errorf("batch %s partial failure (%d/%d succeeded): %s",
+			action, affected, len(ids), strings.Join(errs, "; "))
 	}
 	return affected, nil
 }

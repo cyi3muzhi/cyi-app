@@ -426,6 +426,9 @@ function uid(): string {
 /** 商品列表数据（从 API 加载） */
 const products = ref<ProductItem[]>([])
 
+/** 总记录数（服务端返回） */
+const totalCount = ref(0)
+
 /** 搜索关键词 */
 const searchKeyword = ref('')
 
@@ -521,15 +524,14 @@ const filteredProducts = computed(() => {
   return list
 })
 
-/** 当前页数据 */
+/** 当前页数据（服务端已分页，无需前端 slice） */
 const pageData = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value
-  return filteredProducts.value.slice(start, start + pageSize.value)
+  return products.value
 })
 
-/** 总页数 */
+/** 总页数（基于服务端返回的 totalCount） */
 const totalPages = computed(() => {
-  return Math.ceil(filteredProducts.value.length / pageSize.value) || 1
+  return Math.ceil(totalCount.value / pageSize.value) || 1
 })
 
 /** 分页按钮列表 */
@@ -1031,6 +1033,7 @@ function closeSkuPopup() {
 function goPage(page: number) {
   if (page < 1 || page > totalPages.value) return
   currentPage.value = page
+  loadProducts()
 }
 
 // ======================== 从 API 加载数据 ========================
@@ -1043,11 +1046,12 @@ async function loadProducts() {
   loading.value = true
   try {
     const res = await apiListProducts({
-      page: 1,
-      page_size: 999,
+      page: currentPage.value,
+      page_size: pageSize.value,
       keyword: searchKeyword.value || undefined,
       category: categoryFilter.value || undefined
     })
+    totalCount.value = res.total
     products.value = (res.items || []).map(item => ({
       id: item.id,
       name: item.name,

@@ -2,7 +2,6 @@ package biz
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -28,6 +27,6 @@ func NewOrderUseCase(repo OrderRepo, logger log.Logger) *OrderUseCase {
 
 // CreateOrder 创建订单
 func (u *OrderUseCase) CreateOrder(ctx context.Context) error {
-	fmt.Println("biz CreateOrder")
+	u.log.WithContext(ctx).Info("biz CreateOrder")
 	return u.repo.CreateOrder(ctx)
 }

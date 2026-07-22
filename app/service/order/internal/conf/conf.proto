@@ -42,6 +42,7 @@ message Data {
     string password = 5;
   }
   Database database = 1;
+  // Redis 配置（当前版本未使用，保留字段避免破坏现有配置）
   Redis redis = 2;
 }
 

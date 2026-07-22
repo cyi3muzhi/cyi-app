@@ -1,9 +1,8 @@
-﻿package service
+package service
 
 import (
 	"context"
 	"cyi-app/app/nats/internal/biz"
-	"fmt"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -24,30 +23,30 @@ func NewOrderService(uc *biz.OrderUseCase, logger log.Logger) *OrderService {
 
 // CreateOrder 处理订单创建事件
 func (s *OrderService) CreateOrder(ctx context.Context, msg []byte) error {
-	fmt.Println("service CreateOrder, msg:", string(msg))
+	s.log.WithContext(ctx).Infof("收到订单创建事件: %s", string(msg))
 	return s.uc.CreateOrder(ctx)
 }
 
 // HandleOrderPaid 处理订单支付事件
 func (s *OrderService) HandleOrderPaid(ctx context.Context, msg []byte) error {
-	fmt.Println("service HandleOrderPaid, msg:", string(msg))
+	s.log.WithContext(ctx).Infof("收到订单支付事件: %s", string(msg))
 	return nil
 }
 
 // HandleOrderShipped 处理订单发货事件
 func (s *OrderService) HandleOrderShipped(ctx context.Context, msg []byte) error {
-	fmt.Println("service HandleOrderShipped, msg:", string(msg))
+	s.log.WithContext(ctx).Infof("收到订单发货事件: %s", string(msg))
 	return nil
 }
 
 // HandleOrderCancelled 处理订单取消事件
 func (s *OrderService) HandleOrderCancelled(ctx context.Context, msg []byte) error {
-	fmt.Println("service HandleOrderCancelled, msg:", string(msg))
+	s.log.WithContext(ctx).Infof("收到订单取消事件: %s", string(msg))
 	return nil
 }
 
 // HandleOrderRefunded 处理订单退款事件
 func (s *OrderService) HandleOrderRefunded(ctx context.Context, msg []byte) error {
-	fmt.Println("service HandleOrderRefunded, msg:", string(msg))
+	s.log.WithContext(ctx).Infof("收到订单退款事件: %s", string(msg))
 	return nil
 }

@@ -3,6 +3,7 @@ package consumers
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/nats-io/nats.go"
@@ -34,9 +35,20 @@ func (c *NatsConsumer) Subscribe(subject string, handler func(context.Context, [
 func (c *NatsConsumer) Start() error {
 	for subject, handler := range c.handlers {
 		sub, err := c.conn.Subscribe(subject, func(msg *nats.Msg) {
-			c.log.WithContext(context.Background()).Infof("收到消息, subject: %s", msg.Subject)
-			if err := handler(context.Background(), msg.Data); err != nil {
-				c.log.WithContext(context.Background()).Errorf("处理消息失败, subject: %s, error: %v", msg.Subject, err)
+			// 创建带 trace 的 context（后续接入 tracing 后自动继承 span）
+			ctx := context.TODO()
+
+			// panic 保护，防止单个 handler 崩溃导致整个订阅中断
+			defer func() {
+				if r := recover(); r != nil {
+					c.log.WithContext(ctx).Errorf("NATS handler panic, subject: %s, recover: %v, stack: %s",
+						msg.Subject, r, string(debug.Stack()))
+				}
+			}()
+
+			c.log.WithContext(ctx).Infof("收到消息, subject: %s", msg.Subject)
+			if err := handler(ctx, msg.Data); err != nil {
+				c.log.WithContext(ctx).Errorf("处理消息失败, subject: %s, error: %v", msg.Subject, err)
 			}
 		})
 		if err != nil {

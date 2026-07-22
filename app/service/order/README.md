@@ -33,9 +33,9 @@ app/service/order/
 │   │   ├── pay_status.go        # 已支付/待发货状态处理器
 │   │   ├── ship_status.go       # 已发货/待收货状态处理器
 │   │   ├── complete_status.go   # 已完成状态处理器
-│   │   ├── cancel_status.go     # 已取消状态处理器（终态）
+│   │   ├── terminal_status.go   # 终端状态处理器（共享，替代已取消/已退款）
 │   │   ├── refunding_status.go  # 退款中状态处理器
-│   │   ├── refunded_status.go   # 已退款状态处理器（终态）
+│   │   └── terminal_status.go   # 终端状态处理器
 │   │   ├── service.go       # ProductRepo、StockRepo 接口定义
 │   │   ├── order_test.go    # 订单单元测试
 │   │   ├── order_status_test.go         # 状态机测试
@@ -180,9 +180,8 @@ OrderStatus (接口)
  │    ├── PayStatus           — 已支付/待发货行为
  │    ├── ShipStatus          — 已发货/待收货行为
  │    ├── CompleteStatus      — 已完成行为
- │    ├── CancelStatus        — 已取消行为（终态，全部拒绝）
- │    ├── RefundingStatus     — 退款中行为
- │    └── RefundedStatus      — 已退款行为（终态，全部拒绝）
+ │    ├── FinalStatus         — 终端状态（已取消/已退款，全部拒绝）
+ │    └── RefundingStatus     — 退款中行为
 ```
 
 - **默认拒绝**：`statusBase` 为所有操作提供默认实现，返回"无效操作"错误。各具体处理器只需重写**允许**的方法。
@@ -212,9 +211,8 @@ Pay/Ship/Complete → Refunding → Refunded
 | `pay_status.go` | 已支付/待发货状态：允许 Ship、Cancel、Refunding |
 | `ship_status.go` | 已发货/待收货状态：允许 Receive、Refunding |
 | `complete_status.go` | 已完成状态：允许 Refunding |
-| `cancel_status.go` | 已取消状态：全部拒绝（终态） |
+| `terminal_status.go` | 终端状态（已取消/已退款）：全部拒绝 |
 | `refunding_status.go` | 退款中状态：允许 Refunded |
-| `refunded_status.go` | 已退款状态：全部拒绝（终态） |
 
 #### 如何新增状态
 
