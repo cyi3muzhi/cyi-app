@@ -43,6 +43,12 @@ func (r *UploadRepo) GetUploadToken(ctx context.Context, filename, directory str
 
 	bucketName := string(rustfs.AdminServiceBucket)
 
+	// 防御：OSS 客户端未初始化时直接返回明确错误，避免后续调用 nil 指针 panic
+	// 该场景通常发生在配置缺失或测试环境未注入客户端时
+	if r.data == nil || r.data.oss == nil {
+		return "", "", "", fmt.Errorf("OSS 客户端未初始化，无法生成上传凭证")
+	}
+
 	// 确保 bucket 存在，不存在则创建
 	exists, err := r.data.oss.BucketExists(ctx, bucketName)
 	if err != nil {

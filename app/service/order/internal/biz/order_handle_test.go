@@ -66,9 +66,10 @@ func (m *mockStockRepoForOrder) AddStock(_ context.Context, _ int64, _ int32, _ 
 
 // mockOrderRepoForOrder 用于 OrderUseCase 测试的订单 mock
 type mockOrderRepoForOrder struct {
-	createOrderFn func(ctx context.Context, in *Order) error
-	updateOrderFn func(ctx context.Context, in *Order) error
-	getOrderFn    func(ctx context.Context, id int64) (*Order, error)
+	createOrderFn   func(ctx context.Context, in *Order) error
+	updateOrderFn   func(ctx context.Context, in *Order) error
+	getOrderFn      func(ctx context.Context, id int64) (*Order, error)
+	batchGetOrderFn func(ctx context.Context, ids []int64) ([]*Order, error)
 }
 
 func (m *mockOrderRepoForOrder) CreateOrder(ctx context.Context, in *Order) error {
@@ -88,6 +89,14 @@ func (m *mockOrderRepoForOrder) UpdateOrder(ctx context.Context, in *Order) erro
 func (m *mockOrderRepoForOrder) GetOrder(ctx context.Context, id int64) (*Order, error) {
 	if m.getOrderFn != nil {
 		return m.getOrderFn(ctx, id)
+	}
+	return nil, nil
+}
+
+// BatchGetOrder 批量获取订单详情（含商品明细），默认返回空切片以匹配接口契约
+func (m *mockOrderRepoForOrder) BatchGetOrder(ctx context.Context, ids []int64) ([]*Order, error) {
+	if m.batchGetOrderFn != nil {
+		return m.batchGetOrderFn(ctx, ids)
 	}
 	return nil, nil
 }

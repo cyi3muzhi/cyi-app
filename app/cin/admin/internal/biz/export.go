@@ -20,8 +20,8 @@ type ExportRepo interface {
 	SaveTaskInfo(ctx context.Context, info *exporttask.ExportTaskInfo) error
 	// GetTaskInfo 查询任务状态（供前端轮询）
 	GetTaskInfo(ctx context.Context, taskID string) (*exporttask.ExportTaskInfo, error)
-	// GenerateDownloadURL 根据 objectKey 动态生成 presigned 下载 URL
-	GenerateDownloadURL(ctx context.Context, objectKey string) (string, error)
+	// GetOrGenerateDownloadURL 获取或生成下载 URL，带 Redis 缓存避免轮询时重复生成
+	GetOrGenerateDownloadURL(ctx context.Context, taskID, objectKey string) (string, error)
 }
 
 // ExportUseCase 订单导出业务用例（投递端）
@@ -72,10 +72,10 @@ func (uc *ExportUseCase) GetTaskStatus(ctx context.Context, taskID string) (*exp
 	if err != nil {
 		return nil, "", err
 	}
-	// 如果任务已完成且有 objectKey，动态生成 presigned URL（7天有效期）
+	// 如果任务已完成且有 objectKey，获取或生成 presigned URL（带缓存）
 	var downloadURL string
 	if info.Status == exporttask.ExportStatusCompleted && info.ObjectKey != "" {
-		downloadURL, err = uc.repo.GenerateDownloadURL(ctx, info.ObjectKey)
+		downloadURL, err = uc.repo.GetOrGenerateDownloadURL(ctx, taskID, info.ObjectKey)
 		if err != nil {
 			uc.log.Errorf("生成下载链接失败: task_id=%s, err=%v", taskID, err)
 			// 下载链接生成失败不影响状态查询，返回空 URL

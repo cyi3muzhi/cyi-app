@@ -87,11 +87,17 @@ func (r *exportRepo) GetTaskInfo(ctx context.Context, taskID string) (*exporttas
 	return &info, nil
 }
 
-// GenerateDownloadURL 根据 objectKey 动态生成 presigned 下载 URL（7天有效期）
-// admin 查询任务状态时，若任务 completed 则调用本方法生成临时下载链接返回前端。
-func (r *exportRepo) GenerateDownloadURL(ctx context.Context, objectKey string) (string, error) {
+// GetOrGenerateDownloadURL 获取或生成 presigned 下载 URL，带 Redis 缓存
+// 同一任务的下载链接在缓存有效期内（6小时）只生成一次，避免前端轮询时重复调用 OSS。
+// 缓存 TTL 小于 presigned URL 7 天有效期，过期后自动重新生成。
+func (r *exportRepo) GetOrGenerateDownloadURL(ctx context.Context, taskID, objectKey string) (string, error) {
+	cacheKey := exporttask.URLCacheKey(taskID)
+	// 1. 先读缓存
+	if cached, err := r.data.redis.Get(ctx, cacheKey).Result(); err == nil {
+		return cached, nil
+	}
+	// 2. 缓存未命中，生成 presigned URL
 	bucketName := string(rustfs.AdminServiceBucket)
-	// 确保 bucket 存在
 	exists, err := r.data.oss.BucketExists(ctx, bucketName)
 	if err != nil {
 		return "", fmt.Errorf("检查存储桶失败: %w", err)
@@ -101,5 +107,11 @@ func (r *exportRepo) GenerateDownloadURL(ctx context.Context, objectKey string) 
 			return "", fmt.Errorf("创建存储桶失败: %w", err)
 		}
 	}
-	return r.data.oss.GetPresignedURL(ctx, bucketName, objectKey, downloadURLExpiry)
+	url, err := r.data.oss.GetPresignedURL(ctx, bucketName, objectKey, downloadURLExpiry)
+	if err != nil {
+		return "", err
+	}
+	// 3. 缓存（TTL 6 小时，小于 presigned URL 7 天有效期）
+	r.data.redis.Set(ctx, cacheKey, url, exporttask.URLCacheTTL)
+	return url, nil
 }

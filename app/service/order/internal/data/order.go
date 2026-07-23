@@ -260,3 +260,52 @@ func (r *orderRepo) GetOrder(ctx context.Context, id int64) (*biz.Order, error) 
 	}
 	return out, nil
 }
+
+// BatchGetOrder 批量获取订单详情（含商品明细）
+// 用 1 次 orders 表查询 + 1 次 order_items 表查询替代 N 次 GetOrder，消除 N+1 查询。
+// 商品明细按 order_id 分组后回填到对应订单。
+func (r *orderRepo) BatchGetOrder(ctx context.Context, ids []int64) ([]*biz.Order, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	// 批量查询订单主表
+	orders, err := curd.Order.WithContext(ctx).Where(curd.Order.ID.In(ids...)).Find()
+	if err != nil {
+		return nil, err
+	}
+	// 批量查询所有订单的商品明细（1 次查询替代 N 次）
+	items, err := curd.OrderItem.WithContext(ctx).Where(curd.OrderItem.OrderID.In(ids...)).Find()
+	if err != nil {
+		return nil, err
+	}
+	// 按 order_id 分组商品明细
+	itemsMap := make(map[int64][]*biz.OrderItem, len(orders))
+	for _, item := range items {
+		itemsMap[item.OrderID] = append(itemsMap[item.OrderID], &biz.OrderItem{
+			ProductID:   item.ProductID,
+			SkuID:       item.SkuID,
+			SpecDesc:    item.SpecDesc,
+			ProductName: item.ProductName,
+			Image:       item.Image,
+			Price:       item.Price,
+			Quantity:    item.Quantity,
+		})
+	}
+	// 组装返回（含商品明细）
+	result := make([]*biz.Order, 0, len(orders))
+	for _, order := range orders {
+		result = append(result, &biz.Order{
+			ID:         order.ID,
+			UserID:     order.UserID,
+			OrderNo:    order.OrderNo,
+			TotalPrice: biz.Money{Amount: order.TotalPrice},
+			PayAmount:  biz.Money{Amount: order.PayAmount},
+			Freight:    biz.Money{Amount: order.Freight},
+			Discount:   biz.Money{Amount: order.DiscountAmount},
+			Status:     v1.OrderStatus(order.Status),
+			CreateTime: order.CreateTime,
+			Items:      itemsMap[order.ID],
+		})
+	}
+	return result, nil
+}

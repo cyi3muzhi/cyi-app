@@ -16,15 +16,17 @@ service Order {
 	rpc PayOrder (PayOrderRequest) returns (PayOrderReply);
 	// 订单统计（按状态分组计数）
 	rpc OrderStats (OrderStatsRequest) returns (OrderStatsReply);
+	// 批量获取订单详情（含商品明细），用于导出等场景，1 次调用替代 N 次 GetOrder
+	rpc BatchGetOrder (BatchGetOrderRequest) returns (BatchGetOrderReply);
 }
 
 message CreateOrderRequest {
 	int64 user_id = 1;
-	int64 product_id = 2;             // 立即购买：单个商品ID（与 items 二选一）
-	int32 count = 3;                  // 立即购买：数量
-	int64 price = 4;                  // 立即购买：单价（单位：分）
+	int64 product_id = 2; // 立即购买：单个商品ID（与 items 二选一）
+	int32 count = 3; // 立即购买：数量
+	int64 price = 4; // 立即购买：单价（单位：分）
 	repeated OrderItemProto items = 5; // 购物车结算：多个商品（与 product_id 二选一）
-	int64 sku_id = 6;                 // 立即购买：SKU ID
+	int64 sku_id = 6; // 立即购买：SKU ID
 }
 
 message CreateOrderReply {
@@ -48,31 +50,31 @@ message GetOrderReply {
 	int64 user_id = 2;
 	string order_no = 3;
 	int32 status = 4;
-	int64 total_price = 5;   // 订单总金额
-	int64 pay_amount = 6;    // 支付金额
+	int64 total_price = 5; // 订单总金额
+	int64 pay_amount = 6; // 支付金额
 	repeated OrderItemProto items = 7;
-	int64 freight = 8;       // 运费（单位：分）
+	int64 freight = 8; // 运费（单位：分）
 	int64 discount_amount = 9; // 优惠金额（单位：分）
-	int64 created_at = 10;   // 下单时间（Unix 时间戳秒）
+	int64 created_at = 10; // 下单时间（Unix 时间戳秒）
 }
 
 message OrderItemProto {
 	int64 product_id = 1;
 	string product_name = 2;
-	int64 price = 3;         // 单价
-	int32 quantity = 4;      // 数量
-	int64 sku_id = 5;        // SKU ID
-	string spec_desc = 6;    // 规格描述快照（如"红色/大号"）
-	string image = 7;        // 商品图片
+	int64 price = 3; // 单价
+	int32 quantity = 4; // 数量
+	int64 sku_id = 5; // SKU ID
+	string spec_desc = 6; // 规格描述快照（如"红色/大号"）
+	string image = 7; // 商品图片
 }
 
 message ListOrderRequest {
 	int32 page = 1;
 	int32 page_size = 2;
-	string status = 3;    // 按状态筛选（空字符串表示全部）
-	string keyword = 4;   // 按订单号模糊搜索
+	string status = 3; // 按状态筛选（空字符串表示全部）
+	string keyword = 4; // 按订单号模糊搜索
 	string date_from = 5; // 开始日期（格式：2006-01-02）
-	string date_to = 6;   // 结束日期（格式：2006-01-02）
+	string date_to = 6; // 结束日期（格式：2006-01-02）
 }
 
 message ListOrderReply {
@@ -105,21 +107,31 @@ message OrderStatsRequest {}
 
 // 订单统计响应
 message OrderStatsReply {
-	int32 total_count = 1;     // 总订单数
-	int32 pending_count = 2;   // 待处理数（待支付+待发货: status=1,2,3）
-	int32 today_count = 3;    // 今日订单数
-	int32 refund_count = 4;    // 退款/售后数（退款中+已退款: status=8,9）
+	int32 total_count = 1; // 总订单数
+	int32 pending_count = 2; // 待处理数（待支付+待发货: status=1,2,3）
+	int32 today_count = 3; // 今日订单数
+	int32 refund_count = 4; // 退款/售后数（退款中+已退款: status=8,9）
+}
+
+// 批量获取订单详情请求
+message BatchGetOrderRequest {
+	repeated int64 order_ids = 1; // 订单ID列表
+}
+
+// 批量获取订单详情响应（复用 GetOrderReply 结构，含商品明细）
+message BatchGetOrderReply {
+	repeated GetOrderReply orders = 1;
 }
 
 enum OrderStatus {
-    OrderStatusUnspecified = 0;  // 未指定
-    WaitPay = 1;                 // 待支付
-    Pay = 2;                     // 已支付
-    WaitShip = 3;                // 待发货
-    Ship = 4;                    // 已发货
-    WaitReceive = 5;             // 待收货
-    Complete = 6;                // 已完成
-    Cancel = 7;                  // 已取消
-    Refunding = 8;               // 退款中
-    Refunded = 9;                // 已退款
+    OrderStatusUnspecified = 0; // 未指定
+    WaitPay = 1; // 待支付
+    Pay = 2; // 已支付
+    WaitShip = 3; // 待发货
+    Ship = 4; // 已发货
+    WaitReceive = 5; // 待收货
+    Complete = 6; // 已完成
+    Cancel = 7; // 已取消
+    Refunding = 8; // 退款中
+    Refunded = 9; // 已退款
 }

@@ -24,6 +24,11 @@ func (m *mockOrderRepo) UpdateOrder(ctx context.Context, in *Order) error {
 	return nil
 }
 func (m *mockOrderRepo) GetOrder(_ context.Context, _ int64) (*Order, error) { return nil, nil }
+
+// BatchGetOrder 批量获取订单详情（含商品明细），状态机测试不依赖该方法，返回空切片以满足接口契约
+func (m *mockOrderRepo) BatchGetOrder(_ context.Context, _ []int64) ([]*Order, error) {
+	return nil, nil
+}
 func (m *mockOrderRepo) ListOrder(_ context.Context, _ int32, _ int32, _ string, _ string, _ string, _ string) ([]*Order, int32, error) {
 	return nil, 0, nil
 }

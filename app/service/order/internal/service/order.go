@@ -74,6 +74,25 @@ func (s *OrderService) GetOrder(ctx context.Context, req *v1.GetOrderRequest) (*
 	if err != nil {
 		return nil, err
 	}
+	return orderToReply(order), nil
+}
+
+// BatchGetOrder 批量获取订单详情（含商品明细）
+// task 服务导出订单时调用，1 次请求替代 N 次 GetOrder，消除 N+1 查询
+func (s *OrderService) BatchGetOrder(ctx context.Context, req *v1.BatchGetOrderRequest) (*v1.BatchGetOrderReply, error) {
+	orders, err := s.uc.BatchGet(ctx, req.OrderIds)
+	if err != nil {
+		return nil, err
+	}
+	reply := &v1.BatchGetOrderReply{Orders: make([]*v1.GetOrderReply, 0, len(orders))}
+	for _, order := range orders {
+		reply.Orders = append(reply.Orders, orderToReply(order))
+	}
+	return reply, nil
+}
+
+// orderToReply 将 biz.Order 转换为 proto GetOrderReply（GetOrder/BatchGetOrder 共用）
+func orderToReply(order *biz.Order) *v1.GetOrderReply {
 	reply := &v1.GetOrderReply{
 		OrderId:        order.ID,
 		UserId:         order.UserID,
@@ -96,7 +115,7 @@ func (s *OrderService) GetOrder(ctx context.Context, req *v1.GetOrderRequest) (*
 			Quantity:    item.Quantity,
 		})
 	}
-	return reply, nil
+	return reply
 }
 
 func (s *OrderService) ListOrder(ctx context.Context, req *v1.ListOrderRequest) (*v1.ListOrderReply, error) {

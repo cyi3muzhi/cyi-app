@@ -500,10 +500,10 @@ async function handleExport() {
     }
     const res = await exportOrder(params)
     ElMessage.success('导出任务已提交，正在后台处理...')
+    // 轮询期间保持 loading，防止重复提交（轮询结束/超时/失败时才解除）
     startExportPolling(res.taskId)
   } catch {
-    // 拦截器已处理错误
-  } finally {
+    // 投递失败时解除 loading（轮询未启动）
     exportLoading.value = false
   }
 }
@@ -516,6 +516,7 @@ function startExportPolling(taskId: string) {
     if (exportPollCount > MAX_POLL_TIMES) {
       clearInterval(exportPollTimer!)
       exportPollTimer = null
+      exportLoading.value = false
       ElMessage.warning('导出超时，请稍后重试')
       return
     }
@@ -524,12 +525,14 @@ function startExportPolling(taskId: string) {
       if (status.status === 'COMPLETED' && status.downloadUrl) {
         clearInterval(exportPollTimer!)
         exportPollTimer = null
+        exportLoading.value = false
         ElMessage.success('订单导出完成，正在下载...')
         // 用隐藏 <a> 标签触发下载，避免 window.open 打开新标签页导致页面闪烁
         triggerDownload(status.downloadUrl)
       } else if (status.status === 'FAILED') {
         clearInterval(exportPollTimer!)
         exportPollTimer = null
+        exportLoading.value = false
         ElMessage.error(`导出失败: ${status.error || '未知错误'}`)
       }
     } catch {
@@ -558,6 +561,7 @@ onUnmounted(() => {
   if (exportPollTimer) {
     clearInterval(exportPollTimer)
     exportPollTimer = null
+    exportLoading.value = false
   }
 })
 

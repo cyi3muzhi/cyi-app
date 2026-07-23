@@ -29,6 +29,9 @@ const (
 	TaskTTL = 24 * time.Hour
 	// DownloadURLExpiry 下载链接有效期（7 天，单位：秒）
 	DownloadURLExpiry = 7 * 24 * 3600
+	// URLCacheTTL 下载 URL 缓存时长（6 小时，小于 presigned URL 7 天有效期）
+	// 过期后重新生成，避免返回过期链接
+	URLCacheTTL = 6 * time.Hour
 )
 
 // ExportStatus 导出任务状态
@@ -66,6 +69,12 @@ type ExportTaskInfo struct {
 // TaskKey 拼接任务在 Redis 中的完整 key
 func TaskKey(taskID string) string {
 	return RedisKeyPrefix + taskID
+}
+
+// URLCacheKey 拼接下载 URL 缓存在 Redis 中的完整 key
+// 用于 admin 缓存 presigned URL，避免轮询时重复生成
+func URLCacheKey(taskID string) string {
+	return RedisKeyPrefix + "url:" + taskID
 }
 
 // MarshalPayload 序列化任务 payload（供 admin 投递 asynq.NewTask 时使用）

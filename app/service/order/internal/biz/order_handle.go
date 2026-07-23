@@ -12,6 +12,8 @@ type OrderRepo interface {
 	CreateOrder(ctx context.Context, in *Order) error
 	UpdateOrder(ctx context.Context, in *Order) error
 	GetOrder(ctx context.Context, id int64) (*Order, error)
+	// BatchGetOrder 批量获取订单详情（含商品明细），1 次查询替代 N 次 GetOrder
+	BatchGetOrder(ctx context.Context, ids []int64) ([]*Order, error)
 	// ListOrder 获取订单列表，支持按订单号模糊搜索、按状态筛选、按日期范围筛选，分页返回并按ID降序
 	ListOrder(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string) ([]*Order, int32, error)
 	// OrderStats 统计订单数据：总订单数、待处理数、今日订单数、退款售后数
@@ -204,6 +206,11 @@ func (uc *OrderUseCase) Get(ctx context.Context, orderID int64) (*Order, error) 
 	}
 	order.SetStatus(order.Status, uc.repo, uc.stockRe, uc.logger)
 	return order, nil
+}
+
+// BatchGet 批量查询订单详情（含商品明细），用于导出等场景
+func (uc *OrderUseCase) BatchGet(ctx context.Context, ids []int64) ([]*Order, error) {
+	return uc.repo.BatchGetOrder(ctx, ids)
 }
 
 // Pay 支付订单（先扣库存，后改状态，避免已支付未扣库存的数据不一致）

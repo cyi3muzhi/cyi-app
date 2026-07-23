@@ -3,7 +3,6 @@ package data
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	orderRpc "cyi-app/api/service/order/v1"
@@ -74,7 +73,7 @@ func NewOrderRepo(data *Data, logger log.Logger) biz.OrderQueryRepo {
 }
 
 // ListOrdersForExport 分页查询订单用于导出
-// 通过 order gRPC 拉订单列表，并发调用 GetOrder 补全商品明细，再用 user gRPC 批量补全用户名。
+// 通过 order gRPC 拉订单列表，BatchGetOrder 批量补全商品明细，再用 user gRPC 批量补全用户名。
 // 注意：order proto 未定义支付方式字段，Payment 列暂显示"-"，后续如需可在 proto 中补充。
 func (r *orderRepo) ListOrdersForExport(ctx context.Context, page, pageSize int32, status, dateFrom, dateTo string) ([]*biz.ExportOrder, int32, error) {
 	// 管理端状态编码转订单服务数字状态
@@ -111,9 +110,7 @@ func (r *orderRepo) ListOrdersForExport(ctx context.Context, page, pageSize int3
 		}
 	}
 
-	// 并发调用 GetOrder 补全每个订单的商品明细
-	// ListOrder 接口不返回商品明细，需逐个调用 GetOrder 获取 items 字段。
-	// 使用信号量控制并发数，避免大批量导出时 gRPC 连接被打满。
+	// 批量补全商品明细（1 次 BatchGetOrder 替代 N 次 GetOrder）
 	r.batchFillProducts(ctx, items, reply.Items)
 
 	// 批量查询用户名
@@ -129,39 +126,43 @@ func (r *orderRepo) ListOrdersForExport(ctx context.Context, page, pageSize int3
 	return items, reply.Total, nil
 }
 
-// batchFillProducts 并发为每个订单补全商品明细
-// orders 为导出数据切片，rpcItems 为对应的 gRPC 返回项（按索引一一对应）。
-// 单个订单查询失败不影响整体，仅记录告警，商品信息留空显示"-"。
+// batchFillProducts 批量补全订单商品明细
+// 通过 BatchGetOrder 一次性查询所有订单的商品明细（1 次 gRPC 替代 N 次 GetOrder）。
+// orders 与 rpcItems 按索引一一对应；查询失败时整体回退，商品信息留空显示"-"。
 func (r *orderRepo) batchFillProducts(ctx context.Context, orders []*biz.ExportOrder, rpcItems []*orderRpc.ListOrderItem) {
-	const maxConcurrency = 20 // 并发上限，避免压垮 order 服务
-	sem := make(chan struct{}, maxConcurrency)
-	var wg sync.WaitGroup
-
-	for i, rpcItem := range rpcItems {
-		wg.Add(1)
-		go func(idx int, orderID int64) {
-			defer wg.Done()
-			sem <- struct{}{}
-			defer func() { <-sem }()
-
-			detail, err := r.data.oc.GetOrder(ctx, &orderRpc.GetOrderRequest{OrderId: orderID})
-			if err != nil {
-				r.log.Warnf("export: get order detail failed, order_id=%d: %v", orderID, err)
-				return
-			}
-			// 组装商品明细
-			products := make([]*biz.ExportOrderProduct, 0, len(detail.Items))
-			for _, it := range detail.Items {
-				products = append(products, &biz.ExportOrderProduct{
-					Name: it.ProductName,
-					Spec: it.SpecDesc,
-					Qty:  it.Quantity,
-				})
-			}
-			orders[idx].Products = products
-		}(i, rpcItem.OrderId)
+	if len(rpcItems) == 0 {
+		return
 	}
-	wg.Wait()
+	// 收集 order_id
+	orderIDs := make([]int64, 0, len(rpcItems))
+	for _, item := range rpcItems {
+		orderIDs = append(orderIDs, item.OrderId)
+	}
+	// 1 次批量调用替代 N 次 GetOrder
+	reply, err := r.data.oc.BatchGetOrder(ctx, &orderRpc.BatchGetOrderRequest{OrderIds: orderIDs})
+	if err != nil {
+		r.log.Warnf("export: batch get orders failed: %v", err)
+		return
+	}
+	// 按 order_id 建立 products 映射
+	productsMap := make(map[int64][]*biz.ExportOrderProduct, len(reply.Orders))
+	for _, o := range reply.Orders {
+		products := make([]*biz.ExportOrderProduct, 0, len(o.Items))
+		for _, it := range o.Items {
+			products = append(products, &biz.ExportOrderProduct{
+				Name: it.ProductName,
+				Spec: it.SpecDesc,
+				Qty:  it.Quantity,
+			})
+		}
+		productsMap[o.OrderId] = products
+	}
+	// 按 rpcItems 索引回填到 orders（两者按索引一一对应）
+	for i, rpcItem := range rpcItems {
+		if products, ok := productsMap[rpcItem.OrderId]; ok {
+			orders[i].Products = products
+		}
+	}
 }
 
 // batchGetUserNames 批量查询用户名称
