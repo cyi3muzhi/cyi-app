@@ -33,6 +33,7 @@ func newOrderItem(db *gorm.DB) orderItem {
 	_orderItem.SkuID = field.NewInt64(tableName, "sku_id")
 	_orderItem.ProductName = field.NewString(tableName, "product_name")
 	_orderItem.SpecDesc = field.NewString(tableName, "spec_desc")
+	_orderItem.Image = field.NewString(tableName, "image")
 	_orderItem.Price = field.NewInt64(tableName, "price")
 	_orderItem.Quantity = field.NewInt32(tableName, "quantity")
 
@@ -54,6 +55,7 @@ type orderItem struct {
 	SkuID       field.Int64
 	ProductName field.String
 	SpecDesc    field.String
+	Image       field.String
 	Price       field.Int64
 	Quantity    field.Int32
 
@@ -81,6 +83,7 @@ func (o *orderItem) updateTableName(table string) *orderItem {
 	o.SkuID = field.NewInt64(table, "sku_id")
 	o.ProductName = field.NewString(table, "product_name")
 	o.SpecDesc = field.NewString(table, "spec_desc")
+	o.Image = field.NewString(table, "image")
 	o.Price = field.NewInt64(table, "price")
 	o.Quantity = field.NewInt32(table, "quantity")
 
@@ -99,7 +102,7 @@ func (o *orderItem) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (o *orderItem) fillFieldMap() {
-	o.fieldMap = make(map[string]field.Expr, 11)
+	o.fieldMap = make(map[string]field.Expr, 12)
 	o.fieldMap["id"] = o.ID
 	o.fieldMap["create_time"] = o.CreateTime
 	o.fieldMap["update_time"] = o.UpdateTime
@@ -109,6 +112,7 @@ func (o *orderItem) fillFieldMap() {
 	o.fieldMap["sku_id"] = o.SkuID
 	o.fieldMap["product_name"] = o.ProductName
 	o.fieldMap["spec_desc"] = o.SpecDesc
+	o.fieldMap["image"] = o.Image
 	o.fieldMap["price"] = o.Price
 	o.fieldMap["quantity"] = o.Quantity
 }

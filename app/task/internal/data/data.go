@@ -2,11 +2,13 @@ package data
 
 import (
 	"context"
-	userRpc "cyi-app/api/service/user/v1"
-	"cyi-app/app/task/internal/conf"
 	"time"
 
-	// "cyi-app/app/service/task/internal/data/curd"
+	orderRpc "cyi-app/api/service/order/v1"
+	userRpc "cyi-app/api/service/user/v1"
+	"cyi-app/app/task/internal/biz"
+	"cyi-app/app/task/internal/conf"
+	"cyi-app/pkg/util/rustfs"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -15,30 +17,47 @@ import (
 )
 
 // ProviderSet is data providers.
+// 包含：用户/订单 gRPC 客户端、OSS 客户端、Redis、asynq、各业务 repo。
 var ProviderSet = wire.NewSet(
 	NewUserRepo,
 	NewTaskRepo,
 	NewData,
 	NewRedisClient,
 	NewUserServiceClient,
+	NewOrderServiceClient,
+	NewOssClient,
+	// 订单导出相关
+	NewExportRepo,
+	NewExcelGenerator,
+	NewOrderRepo,
+	// 接口绑定：ExcelGenerator 实现 biz.ExcelWriter 接口
+	wire.Bind(new(biz.ExcelWriter), new(*ExcelGenerator)),
 )
 
+// Data 包含下游微服务 gRPC 客户端与基础资源
 type Data struct {
 	userC userRpc.UserClient
-	cache      redis.UniversalClient
+	oc    orderRpc.OrderClient     // 订单服务客户端（导出查询用）
+	oss   *rustfs.RustFSClient     // OSS 客户端（导出文件上传用）
+	cache redis.UniversalClient
 }
 
-func NewData(c *conf.Data, cache redis.UniversalClient, logger log.Logger, server *asynq.Server, userC userRpc.UserClient) (*Data, func(), error) {
+// NewData 创建数据层实例
+// server 用于 cleanup 时关闭 asynq 服务端
+func NewData(c *conf.Data, cache redis.UniversalClient, logger log.Logger, server *asynq.Server, userC userRpc.UserClient, oc orderRpc.OrderClient, oss *rustfs.RustFSClient) (*Data, func(), error) {
 	cleanup := func() {
 		server.Shutdown()
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	return &Data{
-		cache:      cache,
+		cache: cache,
 		userC: userC,
+		oc:    oc,
+		oss:   oss,
 	}, cleanup, nil
 }
 
+// NewRedisClient 创建 Redis 客户端
 func NewRedisClient(c *conf.Data, logger log.Logger) redis.UniversalClient {
 	client := redis.NewClient(&redis.Options{
 		Addr:         c.Redis.Addr,
@@ -54,4 +73,14 @@ func NewRedisClient(c *conf.Data, logger log.Logger) redis.UniversalClient {
 		panic(err)
 	}
 	return client
+}
+
+// NewOssClient 创建 OSS（RustFS）客户端，用于订单导出文件上传
+func NewOssClient(cfg *conf.Data) (*rustfs.RustFSClient, error) {
+	return rustfs.NewRustFSClient(&rustfs.Config{
+		Endpoint:       cfg.Oss.Endpoint,
+		PublicEndpoint: cfg.Oss.PublicEndpoint,
+		AccessKey:      cfg.Oss.AccessKey,
+		SecretKey:      cfg.Oss.SecretKey,
+	})
 }

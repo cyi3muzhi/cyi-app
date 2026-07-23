@@ -15,6 +15,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
+	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -40,25 +41,32 @@ var ProviderSet = wire.NewSet(
 	NewRoleRepo,
 	NewRemoteEnforcer,
 	ProvideEnforcerProvider,
+	// 导出任务相关（仅投递，消费由 task 服务负责）
+	NewExportRepo,
+	NewAsynqClient,
 )
 
 // Data 包含所有下游微服务的 gRPC 客户端连接
 type Data struct {
-	pc    productRpc.ProductClient
-	cc    productRpc.CategoryClient
-	auc   userRpc.AdminUserClient
-	oc    orderRpc.OrderClient
-	uc    userRpc.UserClient
-	oss   *rustfs.RustFSClient
-	redis *redis.Client
+	pc          productRpc.ProductClient
+	cc          productRpc.CategoryClient
+	auc         userRpc.AdminUserClient
+	oc          orderRpc.OrderClient
+	uc          userRpc.UserClient
+	oss         *rustfs.RustFSClient
+	redis       *redis.Client
+	asynqClient *asynq.Client
 }
 
-// NewData .
-func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, auc userRpc.AdminUserClient, oc orderRpc.OrderClient, uc userRpc.UserClient, oss *rustfs.RustFSClient, redis *redis.Client, logger log.Logger) (*Data, func(), error) {
+// NewData 创建数据层实例
+// admin 仅持有 asynq.Client 用于投递任务，不持有 asynq.Server；
+// cleanup 时关闭 asynq 客户端连接。
+func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, auc userRpc.AdminUserClient, oc orderRpc.OrderClient, uc userRpc.UserClient, oss *rustfs.RustFSClient, redis *redis.Client, asynqClient *asynq.Client, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
+		asynqClient.Close()
 		log.NewHelper(logger).Info("closing the admin data resources")
 	}
-	return &Data{pc: pc, cc: cc, auc: auc, oc: oc, uc: uc, oss: oss, redis: redis}, cleanup, nil
+	return &Data{pc: pc, cc: cc, auc: auc, oc: oc, uc: uc, oss: oss, redis: redis, asynqClient: asynqClient}, cleanup, nil
 }
 
 // NewOssClient 创建 OSS 客户端

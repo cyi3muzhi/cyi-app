@@ -16,6 +16,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
+	"github.com/nats-io/nats.go"
 )
 
 // ProviderSet is data providers.
@@ -26,23 +27,35 @@ var ProviderSet = wire.NewSet(
 	NewData,
 	NewDB,
 	NewProductServiceClient,
-	NewStockServiceClient,
+	NewNATSConn,
 )
 
 type Data struct {
 	pc productRpc.ProductClient
-	sc productRpc.StockClient
+	nc *nats.Conn
 }
 
-func NewData(c *conf.Data, db *gorm.DB, logger log.Logger, pc productRpc.ProductClient, sc productRpc.StockClient) (*Data, func(), error) {
+func NewData(c *conf.Data, db *gorm.DB, logger log.Logger, pc productRpc.ProductClient, nc *nats.Conn) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
+		if nc != nil {
+			nc.Close()
+		}
 	}
 	curd.SetDefault(db)
 	return &Data{
 		pc: pc,
-		sc: sc,
+		nc: nc,
 	}, cleanup, nil
+}
+
+// NewNATSConn 创建 NATS 连接（单例）
+func NewNATSConn() *nats.Conn {
+	nc, err := nats.Connect("nats://localhost:4222")
+	if err != nil {
+		panic(err)
+	}
+	return nc
 }
 
 func NewDB(c *conf.Data) *gorm.DB {

@@ -7,6 +7,8 @@ import (
 	mod "cyi-app/app/service/order/internal/data/models"
 	"errors"
 	"strconv"
+	"strings"
+	"time"
 
 	v1 "cyi-app/api/service/order/v1"
 
@@ -54,6 +56,7 @@ func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
 				SkuID:       item.SkuID,
 				SpecDesc:    item.SpecDesc,
 				ProductName: item.ProductName,
+				Image:       item.Image,
 				Price:       item.Price,
 				Quantity:    item.Quantity,
 			}
@@ -84,22 +87,48 @@ func (r *orderRepo) UpdateOrder(ctx context.Context, in *biz.Order) error {
 	return nil
 }
 
-// ListOrder 实现订单列表查询，支持按订单号模糊搜索、按状态筛选，分页返回并按ID降序
-func (r *orderRepo) ListOrder(ctx context.Context, page, pageSize int32, status string, keyword string) ([]*biz.Order, int32, error) {
+// ListOrder 实现订单列表查询，支持按订单号模糊搜索、按状态筛选（支持逗号分隔多状态）、按日期范围筛选，分页返回并按ID降序
+func (r *orderRepo) ListOrder(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string) ([]*biz.Order, int32, error) {
 	// 构建查询条件
 	do := curd.Order.WithContext(ctx)
 
-	// 按状态筛选（status 为 proto 中 OrderStatus 的数字字符串）
+	// 按状态筛选（status 支持逗号分隔的多状态，如 "2,3"）
 	if status != "" {
-		statusInt, err := parseInt32(status)
-		if err == nil {
-			do = do.Where(curd.Order.Status.Eq(statusInt))
+		statuses := strings.Split(status, ",")
+		var statusInts []int32
+		for _, s := range statuses {
+			if sInt, err := parseInt32(s); err == nil {
+				statusInts = append(statusInts, sInt)
+			}
+		}
+		if len(statusInts) > 0 {
+			if len(statusInts) == 1 {
+				do = do.Where(curd.Order.Status.Eq(statusInts[0]))
+			} else {
+				do = do.Where(curd.Order.Status.In(statusInts...))
+			}
 		}
 	}
 
 	// 按订单号模糊搜索
 	if keyword != "" {
 		do = do.Where(curd.Order.OrderNo.Like("%" + keyword + "%"))
+	}
+
+	// 按日期范围筛选（格式：2006-01-02，使用中国时区 CST）
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	if dateFrom != "" {
+		fromTime, err := time.ParseInLocation("2006-01-02", dateFrom, loc)
+		if err == nil {
+			do = do.Where(curd.Order.CreateTime.Gte(fromTime.Unix()))
+		}
+	}
+	if dateTo != "" {
+		toTime, err := time.ParseInLocation("2006-01-02", dateTo, loc)
+		if err == nil {
+			toTime = toTime.Add(24*time.Hour - time.Second)
+			do = do.Where(curd.Order.CreateTime.Lte(toTime.Unix()))
+		}
 	}
 
 	// 查询总数
@@ -142,6 +171,50 @@ func (r *orderRepo) ListOrder(ctx context.Context, page, pageSize int32, status 
 	return items, int32(total), nil
 }
 
+// OrderStats 统计订单数据：总订单数、待处理数、今日订单数、退款售后数
+func (r *orderRepo) OrderStats(ctx context.Context) (total, pending, today, refund int32, err error) {
+	// 总订单数
+	totalCount, err := curd.Order.WithContext(ctx).Count()
+	if err != nil {
+		return 0, 0, 0, 0, err
+	}
+	total = int32(totalCount)
+
+	// 待处理数（待支付1 + 已支付2 + 待发货3）
+	pendingCount, err := curd.Order.WithContext(ctx).
+		Where(curd.Order.Status.In(1, 2, 3)).
+		Count()
+	if err != nil {
+		return 0, 0, 0, 0, err
+	}
+	pending = int32(pendingCount)
+
+	// 今日订单数（基于 CreateTime Unix 时间戳，使用中国时区 CST）
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	now := time.Now().In(loc)
+	startToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc).Unix()
+	endToday := startToday + 24*60*60 - 1
+	todayCount, err := curd.Order.WithContext(ctx).
+		Where(curd.Order.CreateTime.Gte(startToday)).
+		Where(curd.Order.CreateTime.Lte(endToday)).
+		Count()
+	if err != nil {
+		return 0, 0, 0, 0, err
+	}
+	today = int32(todayCount)
+
+	// 退款/售后数（退款中8 + 已退款9）
+	refundCount, err := curd.Order.WithContext(ctx).
+		Where(curd.Order.Status.In(8, 9)).
+		Count()
+	if err != nil {
+		return 0, 0, 0, 0, err
+	}
+	refund = int32(refundCount)
+
+	return total, pending, today, refund, nil
+}
+
 func (r *orderRepo) GetOrder(ctx context.Context, id int64) (*biz.Order, error) {
 	order, err := curd.Order.WithContext(ctx).Where(curd.Order.ID.Eq(id)).First()
 	if err != nil {
@@ -166,7 +239,8 @@ func (r *orderRepo) GetOrder(ctx context.Context, id int64) (*biz.Order, error) 
 		Discount: biz.Money{
 			Amount: order.DiscountAmount,
 		},
-		Status: v1.OrderStatus(order.Status),
+		Status:     v1.OrderStatus(order.Status),
+		CreateTime: order.CreateTime,
 	}
 
 	items, err := curd.OrderItem.WithContext(ctx).Where(curd.OrderItem.OrderID.Eq(id)).Find()
@@ -179,6 +253,7 @@ func (r *orderRepo) GetOrder(ctx context.Context, id int64) (*biz.Order, error) 
 			SkuID:       item.SkuID,
 			SpecDesc:    item.SpecDesc,
 			ProductName: item.ProductName,
+			Image:       item.Image,
 			Price:       item.Price,
 			Quantity:    item.Quantity,
 		})

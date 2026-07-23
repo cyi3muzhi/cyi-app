@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	adminv1 "cyi-app/api/cin/admin/v1"
 	"cyi-app/app/cin/admin/internal/biz"
@@ -10,7 +9,7 @@ import (
 
 // ListOrder 获取订单列表
 func (s *AdminService) ListOrder(ctx context.Context, req *adminv1.ListOrderRequest) (*adminv1.ListOrderReply, error) {
-	items, total, err := s.oc.List(ctx, req.Page, req.PageSize, req.Status, req.Keyword)
+	items, total, err := s.oc.List(ctx, req.Page, req.PageSize, req.Status, req.Keyword, req.DateFrom, req.DateTo)
 	if err != nil {
 		return nil, err
 	}
@@ -57,10 +56,17 @@ func (s *AdminService) CancelOrder(ctx context.Context, req *adminv1.CancelOrder
 	}, nil
 }
 
-// ExportOrder 导出订单（保留 mock 实现，后续真实导出路径再替换）
-func (s *AdminService) ExportOrder(ctx context.Context, req *adminv1.ExportOrderRequest) (*adminv1.ExportOrderReply, error) {
-	return &adminv1.ExportOrderReply{
-		DownloadUrl: fmt.Sprintf("https://example.com/export/orders_export.xlsx"),
+// OrderStats 获取订单统计数据（顶部统计卡片）
+func (s *AdminService) OrderStats(ctx context.Context, req *adminv1.OrderStatsRequest) (*adminv1.OrderStatsReply, error) {
+	total, pending, today, refund, err := s.oc.Stats(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &adminv1.OrderStatsReply{
+		TotalCount:   total,
+		PendingCount: pending,
+		TodayCount:   today,
+		RefundCount:  refund,
 	}, nil
 }
 
@@ -73,6 +79,7 @@ func bizToAdminProtoOrder(order *biz.Order) *adminv1.OrderItem {
 			Spec:  p.Spec,
 			Qty:   p.Qty,
 			Price: p.Price,
+			Image: p.Image,
 		})
 	}
 	return &adminv1.OrderItem{

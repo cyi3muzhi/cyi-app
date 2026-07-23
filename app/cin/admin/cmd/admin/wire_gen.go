@@ -43,7 +43,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 		return nil, nil, err
 	}
 	client := data.NewRedisClient(confData)
-	dataData, cleanup, err := data.NewData(productClient, categoryClient, adminUserClient, orderClient, userClient, rustFSClient, client, logger)
+	asynqClient := data.NewAsynqClient(confData, logger)
+	dataData, cleanup, err := data.NewData(productClient, categoryClient, adminUserClient, orderClient, userClient, rustFSClient, client, asynqClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -61,8 +62,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	categoryUseCase := biz.NewCategoryUseCase(categoryRepo, logger)
 	orderRepo := data.NewOrderRepo(dataData, logger)
 	orderUseCase := biz.NewOrderUseCase(orderRepo, logger)
+	exportRepo := data.NewExportRepo(dataData, asynqClient, logger)
+	exportUseCase := biz.NewExportUseCase(exportRepo, logger)
 	uploadRepo := data.NewUploadRepo(dataData, logger)
-	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, staffUseCase, categoryUseCase, orderUseCase, uploadRepo, logger)
+	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, staffUseCase, categoryUseCase, orderUseCase, exportUseCase, uploadRepo, logger)
 	server2 := server.NewGRPCServer(grpcServer, adminService)
 	tokenValidator := data.NewTokenValidator(client)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth, tokenValidator, enforcerProvider)

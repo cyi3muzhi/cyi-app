@@ -4,6 +4,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { listProducts } from '../api/product'
+import { orderStats } from '../api/order'
 import type { AdminInfo } from '../types/api'
 
 /** localStorage 中保存的管理员信息 */
@@ -41,6 +42,19 @@ export const useAppStore = defineStore('app', () => {
       productOnlineCount.value = res.total.toLocaleString()
     } catch {
       productOnlineCount.value = ''
+    }
+  }
+
+  // 待处理订单数量（待支付+待发货）
+  const orderPendingCount = ref('')
+
+  /** 刷新待处理订单数量，为 0 时不显示徽标 */
+  async function fetchOrderPendingCount() {
+    try {
+      const res = await orderStats()
+      orderPendingCount.value = res.pendingCount > 0 ? String(res.pendingCount) : ''
+    } catch {
+      orderPendingCount.value = ''
     }
   }
 
@@ -118,6 +132,7 @@ export const useAppStore = defineStore('app', () => {
     userPermissions,
     notificationCount,
     productOnlineCount,
+    orderPendingCount,
     sidebarWidth,
     isLoggedIn,
     toggleSidebar() { sidebarCollapsed.value = !sidebarCollapsed.value },
@@ -125,6 +140,7 @@ export const useAppStore = defineStore('app', () => {
     setPermissions,
     hasPerm,
     logout,
-    fetchProductOnlineCount
+    fetchProductOnlineCount,
+    fetchOrderPendingCount
   }
 })

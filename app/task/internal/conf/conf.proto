@@ -43,6 +43,16 @@ message Data {
   }
   // Database database = 1;
   Redis redis = 1;
+  // OSS 对象存储配置（订单导出文件上传/下载使用）
+  OSS oss = 2;
+}
+
+// OSS 对象存储（RustFS）配置
+message OSS {
+  string endpoint = 1;         // 内部访问端点
+  string public_endpoint = 2;  // 对外可访问端点（用于生成下载链接）
+  string access_key = 3;
+  string secret_key = 4;
 }
 
 message Registry {

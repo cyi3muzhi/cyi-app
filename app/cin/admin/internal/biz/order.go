@@ -33,13 +33,15 @@ type OrderProduct struct {
 // OrderRepo 订单数据仓库接口
 type OrderRepo interface {
 	// ListOrder 获取订单列表
-	ListOrder(ctx context.Context, page, pageSize int32, status string, keyword string) ([]*Order, int32, error)
+	ListOrder(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string) ([]*Order, int32, error)
 	// GetOrder 获取订单详情
 	GetOrder(ctx context.Context, orderID int64) (*Order, error)
 	// ShipOrder 发货
 	ShipOrder(ctx context.Context, orderID int64, logisticsCompany string, logisticsNo string) error
 	// CancelOrder 取消订单
 	CancelOrder(ctx context.Context, orderID int64, reason string) error
+	// OrderStats 获取订单统计数据
+	OrderStats(ctx context.Context) (total, pending, today, refund int32, err error)
 }
 
 // OrderUseCase 订单管理业务用例
@@ -57,8 +59,13 @@ func NewOrderUseCase(repo OrderRepo, logger log.Logger) *OrderUseCase {
 }
 
 // List 获取订单列表
-func (uc *OrderUseCase) List(ctx context.Context, page, pageSize int32, status string, keyword string) ([]*Order, int32, error) {
-	return uc.repo.ListOrder(ctx, page, pageSize, status, keyword)
+func (uc *OrderUseCase) List(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string) ([]*Order, int32, error) {
+	return uc.repo.ListOrder(ctx, page, pageSize, status, keyword, dateFrom, dateTo)
+}
+
+// Stats 获取订单统计数据
+func (uc *OrderUseCase) Stats(ctx context.Context) (total, pending, today, refund int32, err error) {
+	return uc.repo.OrderStats(ctx)
 }
 
 // Get 获取订单详情

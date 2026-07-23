@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	orderRpc "cyi-app/api/service/order/v1"
@@ -48,13 +49,18 @@ func orderStatusText(status int32) string {
 }
 
 // ListOrder 通过 gRPC 调用订单服务获取订单列表
-func (r *orderRepo) ListOrder(ctx context.Context, page, pageSize int32, status string, keyword string) ([]*biz.Order, int32, error) {
+func (r *orderRepo) ListOrder(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string) ([]*biz.Order, int32, error) {
+	// 将管理端状态编码转换为订单服务的数字状态
+	orderStatus := parseAdminOrderStatus(status)
+
 	// 调用订单服务获取列表
 	reply, err := r.data.oc.ListOrder(ctx, &orderRpc.ListOrderRequest{
 		Page:     page,
 		PageSize: pageSize,
-		Status:   status,
+		Status:   orderStatus,
 		Keyword:  keyword,
+		DateFrom: dateFrom,
+		DateTo:   dateTo,
 	})
 	if err != nil {
 		return nil, 0, err
@@ -114,6 +120,15 @@ func (r *orderRepo) ListOrder(ctx context.Context, page, pageSize int32, status 
 	return items, reply.Total, nil
 }
 
+// OrderStats 通过 gRPC 调用订单服务获取订单统计数据
+func (r *orderRepo) OrderStats(ctx context.Context) (total, pending, today, refund int32, err error) {
+	reply, err := r.data.oc.OrderStats(ctx, &orderRpc.OrderStatsRequest{})
+	if err != nil {
+		return 0, 0, 0, 0, err
+	}
+	return reply.TotalCount, reply.PendingCount, reply.TodayCount, reply.RefundCount, nil
+}
+
 // batchGetUserNames 批量查询用户名称
 func (r *orderRepo) batchGetUserNames(ctx context.Context, userIDs []int64) map[int64]string {
 	result := make(map[int64]string, len(userIDs))
@@ -159,6 +174,29 @@ func formatOrderStatus(status int32) string {
 	}
 }
 
+// parseAdminOrderStatus 将管理端状态编码转换为订单服务的数字状态（支持多状态）
+// 返回逗号分隔的数字字符串，如 "2,3"
+func parseAdminOrderStatus(status string) string {
+	switch status {
+	case "pending":
+		return "1"
+	case "paid":
+		return "2,3"
+	case "shipped":
+		return "4,5"
+	case "completed":
+		return "6"
+	case "cancelled":
+		return "7"
+	case "refunding":
+		return "8"
+	case "refunded":
+		return "9"
+	default:
+		return status
+	}
+}
+
 // GetOrder 通过 gRPC 调用订单服务获取订单详情
 func (r *orderRepo) GetOrder(ctx context.Context, orderID int64) (*biz.Order, error) {
 	reply, err := r.data.oc.GetOrder(ctx, &orderRpc.GetOrderRequest{
@@ -185,7 +223,7 @@ func (r *orderRepo) GetOrder(ctx context.Context, orderID int64) (*biz.Order, er
 	order := &biz.Order{
 		ID:          reply.OrderId,
 		OrderNo:     reply.OrderNo,
-		CreatedAt:   "",
+		CreatedAt:   time.Unix(reply.CreatedAt, 0).Format("2006-01-02 15:04:05"),
 		UserName:    userName,
 		Amount:      reply.PayAmount,
 		Status:      formatOrderStatus(reply.Status),
@@ -200,10 +238,26 @@ func (r *orderRepo) GetOrder(ctx context.Context, orderID int64) (*biz.Order, er
 			Spec:  item.SpecDesc,
 			Qty:   item.Quantity,
 			Price: item.Price,
+			Image: r.resolveImageURL(ctx, item.Image),
 		})
 	}
 
 	return order, nil
+}
+
+// resolveImageURL 解析商品图片：OSS 路径转 presigned URL，已有 URL 原样返回
+func (r *orderRepo) resolveImageURL(ctx context.Context, image string) string {
+	if image == "" || strings.HasPrefix(image, "http") {
+		return image
+	}
+	parts := strings.SplitN(image, "/", 2)
+	if len(parts) == 2 {
+		presigned, err := r.data.oss.GetPresignedURL(ctx, parts[0], parts[1], 3600*24*30)
+		if err == nil {
+			return presigned
+		}
+	}
+	return image
 }
 
 // ShipOrder 通过 gRPC 调用订单服务发货（待实现订单服务端的发货接口）

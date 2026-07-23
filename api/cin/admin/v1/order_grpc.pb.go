@@ -19,11 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AdminOrder_ListOrder_FullMethodName   = "/api.cin.admin.v1.AdminOrder/ListOrder"
-	AdminOrder_GetOrder_FullMethodName    = "/api.cin.admin.v1.AdminOrder/GetOrder"
-	AdminOrder_ShipOrder_FullMethodName   = "/api.cin.admin.v1.AdminOrder/ShipOrder"
-	AdminOrder_CancelOrder_FullMethodName = "/api.cin.admin.v1.AdminOrder/CancelOrder"
-	AdminOrder_ExportOrder_FullMethodName = "/api.cin.admin.v1.AdminOrder/ExportOrder"
+	AdminOrder_ListOrder_FullMethodName        = "/api.cin.admin.v1.AdminOrder/ListOrder"
+	AdminOrder_OrderStats_FullMethodName       = "/api.cin.admin.v1.AdminOrder/OrderStats"
+	AdminOrder_ExportOrder_FullMethodName      = "/api.cin.admin.v1.AdminOrder/ExportOrder"
+	AdminOrder_ExportTaskStatus_FullMethodName = "/api.cin.admin.v1.AdminOrder/ExportTaskStatus"
+	AdminOrder_GetOrder_FullMethodName         = "/api.cin.admin.v1.AdminOrder/GetOrder"
+	AdminOrder_ShipOrder_FullMethodName        = "/api.cin.admin.v1.AdminOrder/ShipOrder"
+	AdminOrder_CancelOrder_FullMethodName      = "/api.cin.admin.v1.AdminOrder/CancelOrder"
 )
 
 // AdminOrderClient is the client API for AdminOrder service.
@@ -34,14 +36,21 @@ const (
 type AdminOrderClient interface {
 	// 订单列表
 	ListOrder(ctx context.Context, in *ListOrderRequest, opts ...grpc.CallOption) (*ListOrderReply, error)
+	// 订单统计（顶部统计卡片数据）
+	// 注意：必须放在 GetOrder 之前注册，避免 /stats 被当作 {order_id} 匹配
+	OrderStats(ctx context.Context, in *OrderStatsRequest, opts ...grpc.CallOption) (*OrderStatsReply, error)
+	// 导出订单
+	// 注意：需要放在 GetOrder 之前，避免 /export 被当作 {order_id} 匹配
+	ExportOrder(ctx context.Context, in *ExportOrderRequest, opts ...grpc.CallOption) (*ExportOrderReply, error)
+	// 查询导出任务状态
+	// 注意：需要放在 GetOrder 之前，避免 /export/{task_id} 中的 export 被当作 {order_id}
+	ExportTaskStatus(ctx context.Context, in *ExportTaskStatusRequest, opts ...grpc.CallOption) (*ExportTaskStatusReply, error)
 	// 订单详情
 	GetOrder(ctx context.Context, in *GetOrderRequest, opts ...grpc.CallOption) (*GetOrderReply, error)
 	// 发货
 	ShipOrder(ctx context.Context, in *ShipOrderRequest, opts ...grpc.CallOption) (*ShipOrderReply, error)
 	// 取消订单
 	CancelOrder(ctx context.Context, in *CancelOrderRequest, opts ...grpc.CallOption) (*CancelOrderReply, error)
-	// 导出订单
-	ExportOrder(ctx context.Context, in *ExportOrderRequest, opts ...grpc.CallOption) (*ExportOrderReply, error)
 }
 
 type adminOrderClient struct {
@@ -56,6 +65,36 @@ func (c *adminOrderClient) ListOrder(ctx context.Context, in *ListOrderRequest, 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListOrderReply)
 	err := c.cc.Invoke(ctx, AdminOrder_ListOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminOrderClient) OrderStats(ctx context.Context, in *OrderStatsRequest, opts ...grpc.CallOption) (*OrderStatsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OrderStatsReply)
+	err := c.cc.Invoke(ctx, AdminOrder_OrderStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminOrderClient) ExportOrder(ctx context.Context, in *ExportOrderRequest, opts ...grpc.CallOption) (*ExportOrderReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ExportOrderReply)
+	err := c.cc.Invoke(ctx, AdminOrder_ExportOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminOrderClient) ExportTaskStatus(ctx context.Context, in *ExportTaskStatusRequest, opts ...grpc.CallOption) (*ExportTaskStatusReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ExportTaskStatusReply)
+	err := c.cc.Invoke(ctx, AdminOrder_ExportTaskStatus_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -92,16 +131,6 @@ func (c *adminOrderClient) CancelOrder(ctx context.Context, in *CancelOrderReque
 	return out, nil
 }
 
-func (c *adminOrderClient) ExportOrder(ctx context.Context, in *ExportOrderRequest, opts ...grpc.CallOption) (*ExportOrderReply, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ExportOrderReply)
-	err := c.cc.Invoke(ctx, AdminOrder_ExportOrder_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // AdminOrderServer is the server API for AdminOrder service.
 // All implementations must embed UnimplementedAdminOrderServer
 // for forward compatibility.
@@ -110,14 +139,21 @@ func (c *adminOrderClient) ExportOrder(ctx context.Context, in *ExportOrderReque
 type AdminOrderServer interface {
 	// 订单列表
 	ListOrder(context.Context, *ListOrderRequest) (*ListOrderReply, error)
+	// 订单统计（顶部统计卡片数据）
+	// 注意：必须放在 GetOrder 之前注册，避免 /stats 被当作 {order_id} 匹配
+	OrderStats(context.Context, *OrderStatsRequest) (*OrderStatsReply, error)
+	// 导出订单
+	// 注意：需要放在 GetOrder 之前，避免 /export 被当作 {order_id} 匹配
+	ExportOrder(context.Context, *ExportOrderRequest) (*ExportOrderReply, error)
+	// 查询导出任务状态
+	// 注意：需要放在 GetOrder 之前，避免 /export/{task_id} 中的 export 被当作 {order_id}
+	ExportTaskStatus(context.Context, *ExportTaskStatusRequest) (*ExportTaskStatusReply, error)
 	// 订单详情
 	GetOrder(context.Context, *GetOrderRequest) (*GetOrderReply, error)
 	// 发货
 	ShipOrder(context.Context, *ShipOrderRequest) (*ShipOrderReply, error)
 	// 取消订单
 	CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error)
-	// 导出订单
-	ExportOrder(context.Context, *ExportOrderRequest) (*ExportOrderReply, error)
 	mustEmbedUnimplementedAdminOrderServer()
 }
 
@@ -131,6 +167,15 @@ type UnimplementedAdminOrderServer struct{}
 func (UnimplementedAdminOrderServer) ListOrder(context.Context, *ListOrderRequest) (*ListOrderReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListOrder not implemented")
 }
+func (UnimplementedAdminOrderServer) OrderStats(context.Context, *OrderStatsRequest) (*OrderStatsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OrderStats not implemented")
+}
+func (UnimplementedAdminOrderServer) ExportOrder(context.Context, *ExportOrderRequest) (*ExportOrderReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExportOrder not implemented")
+}
+func (UnimplementedAdminOrderServer) ExportTaskStatus(context.Context, *ExportTaskStatusRequest) (*ExportTaskStatusReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExportTaskStatus not implemented")
+}
 func (UnimplementedAdminOrderServer) GetOrder(context.Context, *GetOrderRequest) (*GetOrderReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOrder not implemented")
 }
@@ -139,9 +184,6 @@ func (UnimplementedAdminOrderServer) ShipOrder(context.Context, *ShipOrderReques
 }
 func (UnimplementedAdminOrderServer) CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelOrder not implemented")
-}
-func (UnimplementedAdminOrderServer) ExportOrder(context.Context, *ExportOrderRequest) (*ExportOrderReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ExportOrder not implemented")
 }
 func (UnimplementedAdminOrderServer) mustEmbedUnimplementedAdminOrderServer() {}
 func (UnimplementedAdminOrderServer) testEmbeddedByValue()                    {}
@@ -178,6 +220,60 @@ func _AdminOrder_ListOrder_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminOrderServer).ListOrder(ctx, req.(*ListOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminOrder_OrderStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OrderStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminOrderServer).OrderStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminOrder_OrderStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminOrderServer).OrderStats(ctx, req.(*OrderStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminOrder_ExportOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminOrderServer).ExportOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminOrder_ExportOrder_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminOrderServer).ExportOrder(ctx, req.(*ExportOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminOrder_ExportTaskStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportTaskStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminOrderServer).ExportTaskStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminOrder_ExportTaskStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminOrderServer).ExportTaskStatus(ctx, req.(*ExportTaskStatusRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -236,24 +332,6 @@ func _AdminOrder_CancelOrder_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AdminOrder_ExportOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ExportOrderRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AdminOrderServer).ExportOrder(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AdminOrder_ExportOrder_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminOrderServer).ExportOrder(ctx, req.(*ExportOrderRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // AdminOrder_ServiceDesc is the grpc.ServiceDesc for AdminOrder service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -266,6 +344,18 @@ var AdminOrder_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AdminOrder_ListOrder_Handler,
 		},
 		{
+			MethodName: "OrderStats",
+			Handler:    _AdminOrder_OrderStats_Handler,
+		},
+		{
+			MethodName: "ExportOrder",
+			Handler:    _AdminOrder_ExportOrder_Handler,
+		},
+		{
+			MethodName: "ExportTaskStatus",
+			Handler:    _AdminOrder_ExportTaskStatus_Handler,
+		},
+		{
 			MethodName: "GetOrder",
 			Handler:    _AdminOrder_GetOrder_Handler,
 		},
@@ -276,10 +366,6 @@ var AdminOrder_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CancelOrder",
 			Handler:    _AdminOrder_CancelOrder_Handler,
-		},
-		{
-			MethodName: "ExportOrder",
-			Handler:    _AdminOrder_ExportOrder_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

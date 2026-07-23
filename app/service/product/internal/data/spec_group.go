@@ -47,44 +47,88 @@ func (r *specGroupRepo) CreateSpecGroups(ctx context.Context, productID int64, g
 	return nil
 }
 
-// ReplaceSpecGroups 替换规格组（事务保证原子性：先删后插）
+// ReplaceSpecGroups 替换规格组（按名称匹配复用旧ID，只处理变动的部分）
 func (r *specGroupRepo) ReplaceSpecGroups(ctx context.Context, productID int64, groups []*biz.SpecGroup) error {
 	return curd.Q.Transaction(func(tx *curd.Query) error {
-		// 先查找所有旧规格组，删除对应的规格值
-		specGroups, err := tx.SpecGroup.WithContext(ctx).Where(tx.SpecGroup.ProductID.Eq(productID)).Find()
+		// 1. 加载旧规格组
+		oldGroups, err := tx.SpecGroup.WithContext(ctx).Where(tx.SpecGroup.ProductID.Eq(productID)).Find()
 		if err != nil {
 			return err
 		}
-		for _, sg := range specGroups {
-			if _, err := tx.SpecValue.WithContext(ctx).Where(tx.SpecValue.SpecGroupID.Eq(sg.ID)).Delete(); err != nil {
-				return err
-			}
+		oldByName := make(map[string]*mod.SpecGroup, len(oldGroups))
+		for _, g := range oldGroups {
+			oldByName[g.Name] = g
 		}
-		// 删除旧的规格组
-		if _, err := tx.SpecGroup.WithContext(ctx).Where(tx.SpecGroup.ProductID.Eq(productID)).Delete(); err != nil {
-			return err
-		}
-		// 创建新的规格组和值
+
+		// 2. 遍历新规格组：匹配的复用旧ID，新增的创建
 		for _, group := range groups {
-			specGroup := &mod.SpecGroup{
-				ProductID: productID,
-				Name:      group.Name,
-			}
-			if err := tx.SpecGroup.WithContext(ctx).Create(specGroup); err != nil {
-				return err
-			}
-			group.ID = specGroup.ID
-			group.ProductID = productID
-			for _, value := range group.Values {
-				specValue := &mod.SpecValue{
-					SpecGroupID: specGroup.ID,
-					Value:       value,
+			if old, ok := oldByName[group.Name]; ok {
+				// 匹配上：复用旧ID
+				group.ID = old.ID
+				group.ProductID = productID
+				delete(oldByName, group.Name) // 从待删除列表中移除
+			} else {
+				// 新增的规格组
+				specGroup := &mod.SpecGroup{
+					ProductID: productID,
+					Name:      group.Name,
 				}
-				if err := tx.SpecValue.WithContext(ctx).Create(specValue); err != nil {
+				if err := tx.SpecGroup.WithContext(ctx).Create(specGroup); err != nil {
 					return err
 				}
+				group.ID = specGroup.ID
+				group.ProductID = productID
+			}
+
+			// 3. 替换规格值：按值匹配复用，只处理变动
+			sgID := group.ID
+			oldValues, err := tx.SpecValue.WithContext(ctx).Where(tx.SpecValue.SpecGroupID.Eq(sgID)).Find()
+			if err != nil {
+				return err
+			}
+			oldValueSet := make(map[string]struct{}, len(oldValues))
+			for _, v := range oldValues {
+				oldValueSet[v.Value] = struct{}{}
+			}
+
+			// 新增或保留的规格值
+			newValueSet := make(map[string]struct{}, len(group.Values))
+			for _, value := range group.Values {
+				newValueSet[value] = struct{}{}
+				if _, exists := oldValueSet[value]; !exists {
+					// 新增的规格值
+					if err := tx.SpecValue.WithContext(ctx).Create(&mod.SpecValue{
+						SpecGroupID: sgID,
+						Value:       value,
+					}); err != nil {
+						return err
+					}
+				}
+			}
+
+			// 删除不再存在的规格值
+			for _, v := range oldValues {
+				if _, keep := newValueSet[v.Value]; !keep {
+					if _, err := tx.SpecValue.WithContext(ctx).Where(
+						tx.SpecValue.SpecGroupID.Eq(sgID),
+						tx.SpecValue.Value.Eq(v.Value),
+					).Delete(); err != nil {
+						return err
+					}
+				}
 			}
 		}
+
+		// 4. 删除不再存在的旧规格组（及其所有规格值）
+		for _, old := range oldByName {
+			if _, err := tx.SpecValue.WithContext(ctx).Where(tx.SpecValue.SpecGroupID.Eq(old.ID)).Delete(); err != nil {
+				return err
+			}
+			if _, err := tx.SpecGroup.WithContext(ctx).Where(tx.SpecGroup.ID.Eq(old.ID)).Delete(); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	})
 }

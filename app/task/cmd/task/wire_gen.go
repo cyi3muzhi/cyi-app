@@ -36,7 +36,12 @@ func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Regist
 	taskServer := server.NewServerMux(logger)
 	discovery := server.NewDiscovery(registry)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
-	dataData, cleanup, err := data.NewData(confData, universalClient, logger, asynqServer, userClient)
+	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	rustFSClient, err := data.NewOssClient(confData)
+	if err != nil {
+		return nil, nil, err
+	}
+	dataData, cleanup, err := data.NewData(confData, universalClient, logger, asynqServer, userClient, orderClient, rustFSClient)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -44,7 +49,11 @@ func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Regist
 	taskUseCase := biz.NewTaskUseCase(taskRepo)
 	userRepo := data.NewUserRepo(dataData)
 	userUseCase := biz.NewUserUseCase(userRepo, logger)
-	taskService := service.NewTaskService(taskUseCase, userUseCase, logger)
+	exportRepo := data.NewExportRepo(dataData, universalClient, logger)
+	excelGenerator := data.NewExcelGenerator(rustFSClient, logger)
+	orderQueryRepo := data.NewOrderRepo(dataData, logger)
+	exportUseCase := biz.NewExportUseCase(exportRepo, excelGenerator, orderQueryRepo, logger)
+	taskService := service.NewTaskService(taskUseCase, userUseCase, exportUseCase, logger)
 	serveMux := server.ProcessTask(taskServer, taskService)
 	app := newApp(logger, server2, registrar, asynqServer, serveMux)
 	return app, func() {

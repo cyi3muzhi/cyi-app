@@ -49,6 +49,7 @@ service Order {
 message PlaceOrderRequest {
   int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
   int32 count = 2 [(validate.rules).int32 = {gt: 0}];
+  int64 sku_id = 3; // SKU ID（多SKU商品必传）
 }
 
 message PlaceOrderReply {
@@ -74,6 +75,7 @@ message CartCheckoutReply {
 message CartItem {
   int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
   int32 quantity = 2 [(validate.rules).int32 = {gt: 0}];
+  int64 sku_id = 3; // SKU ID（多SKU商品必传）
 }
 
 message ListOrderRequest {

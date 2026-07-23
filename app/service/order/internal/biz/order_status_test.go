@@ -24,8 +24,12 @@ func (m *mockOrderRepo) UpdateOrder(ctx context.Context, in *Order) error {
 	return nil
 }
 func (m *mockOrderRepo) GetOrder(_ context.Context, _ int64) (*Order, error) { return nil, nil }
-func (m *mockOrderRepo) ListOrder(_ context.Context, _ int32, _ int32, _ string, _ string) ([]*Order, int32, error) {
+func (m *mockOrderRepo) ListOrder(_ context.Context, _ int32, _ int32, _ string, _ string, _ string, _ string) ([]*Order, int32, error) {
 	return nil, 0, nil
+}
+
+func (m *mockOrderRepo) OrderStats(_ context.Context) (int32, int32, int32, int32, error) {
+	return 0, 0, 0, 0, nil
 }
 
 // mockStockRepo 用于状态机测试的 mock 库存仓储

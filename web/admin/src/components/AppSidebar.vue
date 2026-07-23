@@ -52,13 +52,24 @@ const store = useAppStore()
 /** 侧边栏从 store 读取已上架商品数量，无需自己发起请求 */
 const productBadge = computed(() => store.productOnlineCount)
 
+/** 侧边栏从 store 读取待处理订单数量 */
+const orderBadge = computed(() => store.orderPendingCount)
+
 /** 监听商品变更事件，刷新 store 中的计数 */
 function onProductChanged() { store.fetchProductOnlineCount() }
 window.addEventListener('product-changed', onProductChanged)
 onUnmounted(() => window.removeEventListener('product-changed', onProductChanged))
 
+/** 监听订单变更事件（发货、取消等），刷新待处理订单徽标 */
+function onOrderChanged() { store.fetchOrderPendingCount() }
+window.addEventListener('order-changed', onOrderChanged)
+onUnmounted(() => window.removeEventListener('order-changed', onOrderChanged))
+
 /** 初始化时加载一次计数 */
-onMounted(() => store.fetchProductOnlineCount())
+onMounted(() => {
+  store.fetchProductOnlineCount()
+  store.fetchOrderPendingCount()
+})
 
 // 菜单项定义（perm 为可选的权限标识 ×××.view）
 const allMenuItems = [
@@ -131,6 +142,9 @@ const menuItems = computed(() => {
   return allMenuItems.map(item => {
     if (item.path === '/products') {
       return { ...item, badge: productBadge.value || undefined }
+    }
+    if (item.path === '/orders') {
+      return { ...item, badge: orderBadge.value || undefined }
     }
     return item
   }).filter(item => {

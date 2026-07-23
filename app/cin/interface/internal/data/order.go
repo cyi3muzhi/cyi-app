@@ -38,6 +38,7 @@ func (r *orderRepo) CreateOrder(ctx context.Context, order *biz.Order) error {
 			req.Items = append(req.Items, &orderV1.OrderItemProto{
 				ProductId: item.ProductID,
 				Quantity:  item.Quantity,
+				SkuId:     item.SkuID,
 			})
 		}
 	} else {
@@ -45,6 +46,7 @@ func (r *orderRepo) CreateOrder(ctx context.Context, order *biz.Order) error {
 		req.ProductId = order.ProductID
 		req.Count = order.Count
 		req.Price = order.Price
+		req.SkuId = order.SkuID
 	}
 	res, err := r.data.oc.CreateOrder(ctx, req)
 	if err != nil {

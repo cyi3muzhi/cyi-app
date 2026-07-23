@@ -14,6 +14,8 @@ service Order {
 	rpc ListOrder (ListOrderRequest) returns (ListOrderReply);
 	// 支付订单
 	rpc PayOrder (PayOrderRequest) returns (PayOrderReply);
+	// 订单统计（按状态分组计数）
+	rpc OrderStats (OrderStatsRequest) returns (OrderStatsReply);
 }
 
 message CreateOrderRequest {
@@ -51,6 +53,7 @@ message GetOrderReply {
 	repeated OrderItemProto items = 7;
 	int64 freight = 8;       // 运费（单位：分）
 	int64 discount_amount = 9; // 优惠金额（单位：分）
+	int64 created_at = 10;   // 下单时间（Unix 时间戳秒）
 }
 
 message OrderItemProto {
@@ -60,6 +63,7 @@ message OrderItemProto {
 	int32 quantity = 4;      // 数量
 	int64 sku_id = 5;        // SKU ID
 	string spec_desc = 6;    // 规格描述快照（如"红色/大号"）
+	string image = 7;        // 商品图片
 }
 
 message ListOrderRequest {
@@ -67,6 +71,8 @@ message ListOrderRequest {
 	int32 page_size = 2;
 	string status = 3;    // 按状态筛选（空字符串表示全部）
 	string keyword = 4;   // 按订单号模糊搜索
+	string date_from = 5; // 开始日期（格式：2006-01-02）
+	string date_to = 6;   // 结束日期（格式：2006-01-02）
 }
 
 message ListOrderReply {
@@ -93,6 +99,17 @@ message PayOrderRequest {
 }
 
 message PayOrderReply {}
+
+// 订单统计请求
+message OrderStatsRequest {}
+
+// 订单统计响应
+message OrderStatsReply {
+	int32 total_count = 1;     // 总订单数
+	int32 pending_count = 2;   // 待处理数（待支付+待发货: status=1,2,3）
+	int32 today_count = 3;    // 今日订单数
+	int32 refund_count = 4;    // 退款/售后数（退款中+已退款: status=8,9）
+}
 
 enum OrderStatus {
     OrderStatusUnspecified = 0;  // 未指定

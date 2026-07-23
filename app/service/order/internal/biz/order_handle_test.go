@@ -92,8 +92,12 @@ func (m *mockOrderRepoForOrder) GetOrder(ctx context.Context, id int64) (*Order,
 	return nil, nil
 }
 
-func (m *mockOrderRepoForOrder) ListOrder(_ context.Context, _ int32, _ int32, _ string, _ string) ([]*Order, int32, error) {
+func (m *mockOrderRepoForOrder) ListOrder(_ context.Context, _ int32, _ int32, _ string, _ string, _ string, _ string) ([]*Order, int32, error) {
 	return nil, 0, nil
+}
+
+func (m *mockOrderRepoForOrder) OrderStats(_ context.Context) (int32, int32, int32, int32, error) {
+	return 0, 0, 0, 0, nil
 }
 
 // newTestOrderUseCase 快速构建测试用 OrderUseCase

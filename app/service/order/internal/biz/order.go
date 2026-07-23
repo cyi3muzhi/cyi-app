@@ -40,10 +40,11 @@ func (o *Order) VerifyOwner(userID int64) error {
 	return nil
 }
 
-// GenerateOrderNo 生成订单号
+// GenerateOrderNo 生成订单号（CIN开头，后接年月日时分秒+6位随机hex）
+// 格式: CIN240723163206a3f2b1 → CIN + YYMMDDHHmmss + 6位hex
 func (o *Order) GenerateOrderNo() {
 	now := time.Now()
-	b := make([]byte, 4)
+	b := make([]byte, 3)
 	rand.Read(b)
-	o.OrderNo = fmt.Sprintf("%s%d%08x", now.Format("20060102150405"), o.UserID, b)
+	o.OrderNo = fmt.Sprintf("CIN%s%06x", now.Format("060102150405"), b)
 }

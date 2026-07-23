@@ -203,7 +203,7 @@ app/cin/admin/
 | `GetOrder` | GET | `/admin/v1/order/{order_id}` | 订单详情 |
 | `ShipOrder` | POST | `/admin/v1/order/ship` | 发货 |
 | `CancelOrder` | POST | `/admin/v1/order/cancel` | 取消订单 |
-| `ExportOrder` | GET | `/admin/v1/order/export` | 导出订单 |
+| `ExportOrder` | GET | `/admin/v1/order/export` | 导出订单（投递异步任务到 task 服务消费） |
 
 #### 用户接口（AdminUser）
 

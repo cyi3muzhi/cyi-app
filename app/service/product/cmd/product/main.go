@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"cyi-app/app/service/product/internal/conf"
+	"cyi-app/app/service/product/internal/server"
 
 	cgrpc "cyi-app/pkg/kratos/client"
 	consulConfig "cyi-app/pkg/kratos/config"
@@ -60,7 +61,7 @@ func init() {
 	}
 }
 
-func newApp(logger log.Logger, gs *grpc.Server, reg registry.Registrar) *kratos.App {
+func newApp(logger log.Logger, gs *grpc.Server, ns *server.NATSServer, reg registry.Registrar) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -69,6 +70,7 @@ func newApp(logger log.Logger, gs *grpc.Server, reg registry.Registrar) *kratos.
 		kratos.Logger(logger),
 		kratos.Server(
 			gs,
+			ns,
 		),
 		kratos.Registrar(reg),
 	)

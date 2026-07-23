@@ -21,19 +21,28 @@ const _ = http.SupportPackageIsVersion1
 
 const OperationAdminOrderCancelOrder = "/api.cin.admin.v1.AdminOrder/CancelOrder"
 const OperationAdminOrderExportOrder = "/api.cin.admin.v1.AdminOrder/ExportOrder"
+const OperationAdminOrderExportTaskStatus = "/api.cin.admin.v1.AdminOrder/ExportTaskStatus"
 const OperationAdminOrderGetOrder = "/api.cin.admin.v1.AdminOrder/GetOrder"
 const OperationAdminOrderListOrder = "/api.cin.admin.v1.AdminOrder/ListOrder"
+const OperationAdminOrderOrderStats = "/api.cin.admin.v1.AdminOrder/OrderStats"
 const OperationAdminOrderShipOrder = "/api.cin.admin.v1.AdminOrder/ShipOrder"
 
 type AdminOrderHTTPServer interface {
 	// CancelOrder 取消订单
 	CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error)
 	// ExportOrder 导出订单
+	// 注意：需要放在 GetOrder 之前，避免 /export 被当作 {order_id} 匹配
 	ExportOrder(context.Context, *ExportOrderRequest) (*ExportOrderReply, error)
+	// ExportTaskStatus 查询导出任务状态
+	// 注意：需要放在 GetOrder 之前，避免 /export/{task_id} 中的 export 被当作 {order_id}
+	ExportTaskStatus(context.Context, *ExportTaskStatusRequest) (*ExportTaskStatusReply, error)
 	// GetOrder 订单详情
 	GetOrder(context.Context, *GetOrderRequest) (*GetOrderReply, error)
 	// ListOrder 订单列表
 	ListOrder(context.Context, *ListOrderRequest) (*ListOrderReply, error)
+	// OrderStats 订单统计（顶部统计卡片数据）
+	// 注意：必须放在 GetOrder 之前注册，避免 /stats 被当作 {order_id} 匹配
+	OrderStats(context.Context, *OrderStatsRequest) (*OrderStatsReply, error)
 	// ShipOrder 发货
 	ShipOrder(context.Context, *ShipOrderRequest) (*ShipOrderReply, error)
 }
@@ -41,10 +50,12 @@ type AdminOrderHTTPServer interface {
 func RegisterAdminOrderHTTPServer(s *http.Server, srv AdminOrderHTTPServer) {
 	r := s.Route("/")
 	r.GET("/admin/v1/orders", _AdminOrder_ListOrder0_HTTP_Handler(srv))
+	r.GET("/admin/v1/orders/stats", _AdminOrder_OrderStats0_HTTP_Handler(srv))
+	r.GET("/admin/v1/orders/export", _AdminOrder_ExportOrder0_HTTP_Handler(srv))
+	r.GET("/admin/v1/orders/export/{task_id}", _AdminOrder_ExportTaskStatus0_HTTP_Handler(srv))
 	r.GET("/admin/v1/orders/{order_id}", _AdminOrder_GetOrder0_HTTP_Handler(srv))
 	r.POST("/admin/v1/orders/{order_id}/ship", _AdminOrder_ShipOrder0_HTTP_Handler(srv))
 	r.POST("/admin/v1/orders/{order_id}/cancel", _AdminOrder_CancelOrder0_HTTP_Handler(srv))
-	r.GET("/admin/v1/orders/export", _AdminOrder_ExportOrder0_HTTP_Handler(srv))
 }
 
 func _AdminOrder_ListOrder0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx http.Context) error {
@@ -62,6 +73,66 @@ func _AdminOrder_ListOrder0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx http
 			return err
 		}
 		reply := out.(*ListOrderReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _AdminOrder_OrderStats0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in OrderStatsRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminOrderOrderStats)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.OrderStats(ctx, req.(*OrderStatsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*OrderStatsReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _AdminOrder_ExportOrder0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ExportOrderRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminOrderExportOrder)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ExportOrder(ctx, req.(*ExportOrderRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ExportOrderReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _AdminOrder_ExportTaskStatus0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ExportTaskStatusRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminOrderExportTaskStatus)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ExportTaskStatus(ctx, req.(*ExportTaskStatusRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ExportTaskStatusReply)
 		return ctx.Result(200, reply)
 	}
 }
@@ -138,34 +209,22 @@ func _AdminOrder_CancelOrder0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx ht
 	}
 }
 
-func _AdminOrder_ExportOrder0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in ExportOrderRequest
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationAdminOrderExportOrder)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.ExportOrder(ctx, req.(*ExportOrderRequest))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*ExportOrderReply)
-		return ctx.Result(200, reply)
-	}
-}
-
 type AdminOrderHTTPClient interface {
 	// CancelOrder 取消订单
 	CancelOrder(ctx context.Context, req *CancelOrderRequest, opts ...http.CallOption) (rsp *CancelOrderReply, err error)
 	// ExportOrder 导出订单
+	// 注意：需要放在 GetOrder 之前，避免 /export 被当作 {order_id} 匹配
 	ExportOrder(ctx context.Context, req *ExportOrderRequest, opts ...http.CallOption) (rsp *ExportOrderReply, err error)
+	// ExportTaskStatus 查询导出任务状态
+	// 注意：需要放在 GetOrder 之前，避免 /export/{task_id} 中的 export 被当作 {order_id}
+	ExportTaskStatus(ctx context.Context, req *ExportTaskStatusRequest, opts ...http.CallOption) (rsp *ExportTaskStatusReply, err error)
 	// GetOrder 订单详情
 	GetOrder(ctx context.Context, req *GetOrderRequest, opts ...http.CallOption) (rsp *GetOrderReply, err error)
 	// ListOrder 订单列表
 	ListOrder(ctx context.Context, req *ListOrderRequest, opts ...http.CallOption) (rsp *ListOrderReply, err error)
+	// OrderStats 订单统计（顶部统计卡片数据）
+	// 注意：必须放在 GetOrder 之前注册，避免 /stats 被当作 {order_id} 匹配
+	OrderStats(ctx context.Context, req *OrderStatsRequest, opts ...http.CallOption) (rsp *OrderStatsReply, err error)
 	// ShipOrder 发货
 	ShipOrder(ctx context.Context, req *ShipOrderRequest, opts ...http.CallOption) (rsp *ShipOrderReply, err error)
 }
@@ -193,11 +252,27 @@ func (c *AdminOrderHTTPClientImpl) CancelOrder(ctx context.Context, in *CancelOr
 }
 
 // ExportOrder 导出订单
+// 注意：需要放在 GetOrder 之前，避免 /export 被当作 {order_id} 匹配
 func (c *AdminOrderHTTPClientImpl) ExportOrder(ctx context.Context, in *ExportOrderRequest, opts ...http.CallOption) (*ExportOrderReply, error) {
 	var out ExportOrderReply
 	pattern := "/admin/v1/orders/export"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAdminOrderExportOrder))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ExportTaskStatus 查询导出任务状态
+// 注意：需要放在 GetOrder 之前，避免 /export/{task_id} 中的 export 被当作 {order_id}
+func (c *AdminOrderHTTPClientImpl) ExportTaskStatus(ctx context.Context, in *ExportTaskStatusRequest, opts ...http.CallOption) (*ExportTaskStatusReply, error) {
+	var out ExportTaskStatusReply
+	pattern := "/admin/v1/orders/export/{task_id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminOrderExportTaskStatus))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
@@ -226,6 +301,21 @@ func (c *AdminOrderHTTPClientImpl) ListOrder(ctx context.Context, in *ListOrderR
 	pattern := "/admin/v1/orders"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAdminOrderListOrder))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// OrderStats 订单统计（顶部统计卡片数据）
+// 注意：必须放在 GetOrder 之前注册，避免 /stats 被当作 {order_id} 匹配
+func (c *AdminOrderHTTPClientImpl) OrderStats(ctx context.Context, in *OrderStatsRequest, opts ...http.CallOption) (*OrderStatsReply, error) {
+	var out OrderStatsReply
+	pattern := "/admin/v1/orders/stats"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminOrderOrderStats))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

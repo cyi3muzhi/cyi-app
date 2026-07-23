@@ -66,6 +66,8 @@ func init() {
 }
 
 // newApp 创建 Kratos 应用实例
+// admin 仅作为 BFF 提供 HTTP/gRPC 服务，不再启动 asynq.Server；
+// 订单导出等异步任务的消费由 task 服务（app/task）负责。
 func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, reg registry.Registrar) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),

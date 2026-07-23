@@ -32,8 +32,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	db := data.NewDB(confData)
 	discovery := server.NewDiscovery(registry)
 	productClient := data.NewProductServiceClient(discovery, auth, confServer, traceTracerProvider, meter)
-	stockClient := data.NewStockServiceClient(discovery, auth, confServer, traceTracerProvider, meter)
-	dataData, cleanup, err := data.NewData(confData, db, logger, productClient, stockClient)
+	natsConn := data.NewNATSConn()
+	dataData, cleanup, err := data.NewData(confData, db, logger, productClient, natsConn)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -75,10 +75,16 @@ func NewDiscovery(conf *conf.Registry) registry.Discovery {
 	return dis
 }
 
+// NewTaskServer 创建 asynq 服务端，用于消费 cron 定时任务。
+// job 服务作为 cron 调度器，既投递 cron 任务到 critical 队列，也消费该队列。
+// 必须在此声明消费 critical 队列，否则投递的任务无人处理会被 task 服务误消费报错。
 func NewTaskServer(r redis.UniversalClient, logger log.Logger) *asynq.Server {
 	server := asynq.NewServerFromRedisClient(r, asynq.Config{
 		Concurrency: 10,
 		Logger:      log.NewHelper(logger),
+		Queues: map[string]int{
+			"critical": 5, // cron 任务专用队列（与 task 服务隔离）
+		},
 	})
 	return server
 }

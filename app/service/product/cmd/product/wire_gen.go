@@ -46,8 +46,11 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	categoryUseCase := biz.NewCategoryUseCase(categoryRepo, logger)
 	categoryService := service.NewCategoryService(categoryUseCase, logger)
 	server2 := server.NewServer(grpcServer, productService, stockService, categoryService)
+	stockHandler := server.NewNATSHandler(stockUseCase, logger)
+	conn := server.NewNATSConn()
+	natsServer := server.NewNATSServer(stockHandler, conn)
 	registrar := server.NewRegistrar(registry)
-	app := newApp(logger, server2, registrar)
+	app := newApp(logger, server2, natsServer, registrar)
 	return app, func() {
 		cleanup()
 	}, nil

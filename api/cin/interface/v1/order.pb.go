@@ -27,6 +27,7 @@ type PlaceOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
 	Count         int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+	SkuId         int64                  `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（多SKU商品必传）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -71,6 +72,13 @@ func (x *PlaceOrderRequest) GetProductId() int64 {
 func (x *PlaceOrderRequest) GetCount() int32 {
 	if x != nil {
 		return x.Count
+	}
+	return 0
+}
+
+func (x *PlaceOrderRequest) GetSkuId() int64 {
+	if x != nil {
+		return x.SkuId
 	}
 	return 0
 }
@@ -299,6 +307,7 @@ type CartItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
 	Quantity      int32                  `protobuf:"varint,2,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	SkuId         int64                  `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（多SKU商品必传）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -343,6 +352,13 @@ func (x *CartItem) GetProductId() int64 {
 func (x *CartItem) GetQuantity() int32 {
 	if x != nil {
 		return x.Quantity
+	}
+	return 0
+}
+
+func (x *CartItem) GetSkuId() int64 {
+	if x != nil {
+		return x.SkuId
 	}
 	return 0
 }
@@ -735,11 +751,12 @@ var File_api_cin_interface_v1_order_proto protoreflect.FileDescriptor
 
 const file_api_cin_interface_v1_order_proto_rawDesc = "" +
 	"\n" +
-	" api/cin/interface/v1/order.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"Z\n" +
+	" api/cin/interface/v1/order.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"q\n" +
 	"\x11PlaceOrderRequest\x12&\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\tproductId\x12\x1d\n" +
-	"\x05count\x18\x02 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x05count\"5\n" +
+	"\x05count\x18\x02 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x05count\x12\x15\n" +
+	"\x06sku_id\x18\x03 \x01(\x03R\x05skuId\"5\n" +
 	"\x0fPlaceOrderReply\x12\"\n" +
 	"\border_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aorderId\"5\n" +
 	"\x0fPayOrderRequest\x12\"\n" +
@@ -749,11 +766,12 @@ const file_api_cin_interface_v1_order_proto_rawDesc = "" +
 	"\x13CartCheckoutRequest\x12>\n" +
 	"\x05items\x18\x01 \x03(\v2\x1e.api.cin.interface.v1.CartItemB\b\xfaB\x05\x92\x01\x02\b\x01R\x05items\".\n" +
 	"\x11CartCheckoutReply\x12\x19\n" +
-	"\border_id\x18\x01 \x01(\x03R\aorderId\"W\n" +
+	"\border_id\x18\x01 \x01(\x03R\aorderId\"n\n" +
 	"\bCartItem\x12&\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\tproductId\x12#\n" +
-	"\bquantity\x18\x02 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\bquantity\"u\n" +
+	"\bquantity\x18\x02 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\bquantity\x12\x15\n" +
+	"\x06sku_id\x18\x03 \x01(\x03R\x05skuId\"u\n" +
 	"\x10ListOrderRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x16\n" +

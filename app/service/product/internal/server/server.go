@@ -1,13 +1,17 @@
 package server
 
 import (
+	"context"
+	"cyi-app/app/service/product/internal/biz"
 	"cyi-app/app/service/product/internal/conf"
+	productNats "cyi-app/app/service/product/internal/nats"
 	consul "cyi-app/pkg/kratos/config"
 
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 
 	"github.com/google/wire"
+	"github.com/nats-io/nats.go"
 
 	ts "cyi-app/pkg/kratos/server/transporter"
 
@@ -18,7 +22,7 @@ import (
 )
 
 // ProviderSet is server providers.
-var ProviderSet = wire.NewSet(NewServer, NewRegistrar, NewGRPCServerConf)
+var ProviderSet = wire.NewSet(NewServer, NewRegistrar, NewGRPCServerConf, NewNATSConn, NewNATSServer)
 
 func NewGRPCServerConf(
 	c *conf.Server,
@@ -51,4 +55,43 @@ func NewRegistrar(conf *conf.Registry) registry.Registrar {
 		panic(err)
 	}
 	return reg
+}
+
+// NewNATSConn 创建NATS连接
+func NewNATSConn() *nats.Conn {
+	conn, err := nats.Connect("nats://localhost:4222")
+	if err != nil {
+		panic(err)
+	}
+	return conn
+}
+
+// NATSServer NATS订阅服务（作为kratos server管理生命周期）
+type NATSServer struct {
+	handler *productNats.StockHandler
+	conn    *nats.Conn
+}
+
+// NewNATSServer 创建NATS订阅服务
+func NewNATSServer(handler *productNats.StockHandler, conn *nats.Conn) *NATSServer {
+	return &NATSServer{handler: handler, conn: conn}
+}
+
+// Start 启动NATS订阅
+func (s *NATSServer) Start(ctx context.Context) error {
+	if err := s.handler.Register(s.conn); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Stop 停止NATS订阅
+func (s *NATSServer) Stop(ctx context.Context) error {
+	s.conn.Close()
+	return nil
+}
+
+// NewNATSHandler 创建NATS库存处理器（给wire注入用）
+func NewNATSHandler(uc *biz.StockUseCase, logger log.Logger) *productNats.StockHandler {
+	return productNats.NewStockHandler(uc, logger)
 }

@@ -28,6 +28,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *v1.CreateOrderReque
 	in := &biz.Order{}
 	convert.Convert(req, in)
 	in.UserID = req.UserId
+	in.Items = nil // 清空 convert.Convert 错误填充的 Items（类型不匹配导致重复）
 
 	// 支持两种模式：立即购买（单商品）和购物车结算（多商品）
 	if len(req.Items) > 0 {
@@ -82,6 +83,7 @@ func (s *OrderService) GetOrder(ctx context.Context, req *v1.GetOrderRequest) (*
 		PayAmount:      order.PayAmount.Amount,
 		Freight:        order.Freight.Amount,
 		DiscountAmount: order.Discount.Amount,
+		CreatedAt:      order.CreateTime,
 	}
 	for _, item := range order.Items {
 		reply.Items = append(reply.Items, &v1.OrderItemProto{
@@ -89,6 +91,7 @@ func (s *OrderService) GetOrder(ctx context.Context, req *v1.GetOrderRequest) (*
 			SkuId:       item.SkuID,
 			SpecDesc:    item.SpecDesc,
 			ProductName: item.ProductName,
+			Image:       item.Image,
 			Price:       item.Price,
 			Quantity:    item.Quantity,
 		})
@@ -97,7 +100,7 @@ func (s *OrderService) GetOrder(ctx context.Context, req *v1.GetOrderRequest) (*
 }
 
 func (s *OrderService) ListOrder(ctx context.Context, req *v1.ListOrderRequest) (*v1.ListOrderReply, error) {
-	items, total, err := s.uc.List(ctx, req.Page, req.PageSize, req.Status, req.Keyword)
+	items, total, err := s.uc.List(ctx, req.Page, req.PageSize, req.Status, req.Keyword, req.DateFrom, req.DateTo)
 	if err != nil {
 		return nil, err
 	}
@@ -118,6 +121,20 @@ func (s *OrderService) ListOrder(ctx context.Context, req *v1.ListOrderRequest) 
 	return &v1.ListOrderReply{
 		Items: replyItems,
 		Total: total,
+	}, nil
+}
+
+// OrderStats 获取订单统计数据
+func (s *OrderService) OrderStats(ctx context.Context, req *v1.OrderStatsRequest) (*v1.OrderStatsReply, error) {
+	total, pending, today, refund, err := s.uc.Stats(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.OrderStatsReply{
+		TotalCount:   total,
+		PendingCount: pending,
+		TodayCount:   today,
+		RefundCount:  refund,
 	}, nil
 }
 

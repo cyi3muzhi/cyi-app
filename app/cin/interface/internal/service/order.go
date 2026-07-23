@@ -42,6 +42,7 @@ func (s *CinInterface) CartCheckout(ctx context.Context, req *v1.CartCheckoutReq
 		in.Items = append(in.Items, &biz.CartItem{
 			ProductID: item.ProductId,
 			Quantity:  item.Quantity,
+			SkuID:     item.SkuId,
 		})
 	}
 	// 订单服务内部完成：商品校验、库存校验、预留库存、创建订单

@@ -11,6 +11,7 @@ import (
 type CartItem struct {
 	ProductID int64
 	Quantity  int32
+	SkuID     int64 // SKU ID
 }
 
 type Order struct {
@@ -20,6 +21,7 @@ type Order struct {
 	Count     int32  `json:"count"`
 	Price     int64  `json:"price"`
 	Status    int32  `json:"status"`
+	SkuID     int64  `json:"sku_id"` // SKU ID
 	Items     []*CartItem // 购物车结算：多个商品
 }
 

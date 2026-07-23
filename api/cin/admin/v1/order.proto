@@ -17,6 +17,27 @@ service AdminOrder {
       get: "/admin/v1/orders"
     };
   }
+  // 订单统计（顶部统计卡片数据）
+  // 注意：必须放在 GetOrder 之前注册，避免 /stats 被当作 {order_id} 匹配
+  rpc OrderStats (OrderStatsRequest) returns (OrderStatsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/orders/stats"
+    };
+  }
+  // 导出订单
+  // 注意：需要放在 GetOrder 之前，避免 /export 被当作 {order_id} 匹配
+  rpc ExportOrder (ExportOrderRequest) returns (ExportOrderReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/orders/export"
+    };
+  }
+  // 查询导出任务状态
+  // 注意：需要放在 GetOrder 之前，避免 /export/{task_id} 中的 export 被当作 {order_id}
+  rpc ExportTaskStatus (ExportTaskStatusRequest) returns (ExportTaskStatusReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/orders/export/{task_id}"
+    };
+  }
   // 订单详情
   rpc GetOrder (GetOrderRequest) returns (GetOrderReply) {
     option (google.api.http) = {
@@ -35,12 +56,6 @@ service AdminOrder {
     option (google.api.http) = {
       post: "/admin/v1/orders/{order_id}/cancel"
       body: "*"
-    };
-  }
-  // 导出订单
-  rpc ExportOrder (ExportOrderRequest) returns (ExportOrderReply) {
-    option (google.api.http) = {
-      get: "/admin/v1/orders/export"
     };
   }
 }
@@ -76,6 +91,7 @@ message OrderProduct {
   string spec = 2;
   int32 qty = 3;
   int64 price = 4;
+  string image = 5; // 商品图片
 }
 
 message GetOrderRequest {
@@ -112,5 +128,43 @@ message ExportOrderRequest {
 }
 
 message ExportOrderReply {
-  string download_url = 1;
+  string task_id = 1; // 异步任务ID，前端用于轮询状态
+  ExportStatus status = 2; // 当前状态（初始为 PENDING）
+}
+
+// 导出任务状态查询请求
+message ExportTaskStatusRequest {
+  string task_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+// 导出任务状态查询响应
+message ExportTaskStatusReply {
+  string task_id = 1;
+  ExportStatus status = 2; // 任务状态
+  string download_url = 3; // 完成后的下载链接（动态生成 presigned URL）
+  int64 created_at = 4; // 任务创建时间（Unix秒）
+  int64 finished_at = 5; // 任务完成时间（Unix秒）
+  string error = 6; // 失败原因
+  int32 total_count = 7; // 总订单数（进度展示）
+  int32 processed_count = 8; // 已处理订单数
+}
+
+// 导出任务状态枚举
+enum ExportStatus {
+  ExportStatusUnspecified = 0;
+  PENDING = 1; // 已入队，等待处理
+  PROCESSING = 2; // 处理中
+  COMPLETED = 3; // 已完成
+  FAILED = 4; // 失败
+}
+
+// 订单统计请求（无入参，统计全量数据）
+message OrderStatsRequest {}
+
+// 订单统计响应
+message OrderStatsReply {
+  int32 total_count = 1; // 总订单数
+  int32 pending_count = 2; // 待处理数（待支付 + 待发货）
+  int32 today_count = 3; // 今日订单数
+  int32 refund_count = 4; // 退款/售后数（退款中 + 已退款）
 }

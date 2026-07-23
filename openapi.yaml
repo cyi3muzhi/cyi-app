@@ -407,7 +407,9 @@ paths:
         get:
             tags:
                 - AdminOrder
-            description: 导出订单
+            description: |-
+                导出订单
+                 注意：需要放在 GetOrder 之前，避免 /export 被当作 {order_id} 匹配
             operationId: AdminOrder_ExportOrder
             parameters:
                 - name: status
@@ -429,6 +431,42 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.ExportOrderReply'
+    /admin/v1/orders/export/{taskId}:
+        get:
+            tags:
+                - AdminOrder
+            description: |-
+                查询导出任务状态
+                 注意：需要放在 GetOrder 之前，避免 /export/{task_id} 中的 export 被当作 {order_id}
+            operationId: AdminOrder_ExportTaskStatus
+            parameters:
+                - name: taskId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ExportTaskStatusReply'
+    /admin/v1/orders/stats:
+        get:
+            tags:
+                - AdminOrder
+            description: |-
+                订单统计（顶部统计卡片数据）
+                 注意：必须放在 GetOrder 之前注册，避免 /stats 被当作 {order_id} 匹配
+            operationId: AdminOrder_OrderStats
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.OrderStatsReply'
     /admin/v1/orders/{orderId}:
         get:
             tags:
@@ -1780,8 +1818,34 @@ components:
         api.cin.admin.v1.ExportOrderReply:
             type: object
             properties:
+                taskId:
+                    type: string
+                status:
+                    type: integer
+                    format: enum
+        api.cin.admin.v1.ExportTaskStatusReply:
+            type: object
+            properties:
+                taskId:
+                    type: string
+                status:
+                    type: integer
+                    format: enum
                 downloadUrl:
                     type: string
+                createdAt:
+                    type: string
+                finishedAt:
+                    type: string
+                error:
+                    type: string
+                totalCount:
+                    type: integer
+                    format: int32
+                processedCount:
+                    type: integer
+                    format: int32
+            description: 导出任务状态查询响应
         api.cin.admin.v1.GetAdminInfoReply:
             type: object
             properties:
@@ -2063,6 +2127,24 @@ components:
                     format: int32
                 price:
                     type: string
+                image:
+                    type: string
+        api.cin.admin.v1.OrderStatsReply:
+            type: object
+            properties:
+                totalCount:
+                    type: integer
+                    format: int32
+                pendingCount:
+                    type: integer
+                    format: int32
+                todayCount:
+                    type: integer
+                    format: int32
+                refundCount:
+                    type: integer
+                    format: int32
+            description: 订单统计响应
         api.cin.admin.v1.PermItem:
             type: object
             properties:
@@ -2568,6 +2650,8 @@ components:
                 quantity:
                     type: integer
                     format: int32
+                skuId:
+                    type: string
         api.cin.interface.v1.CartProductItem:
             type: object
             properties:
@@ -2719,6 +2803,8 @@ components:
                 count:
                     type: integer
                     format: int32
+                skuId:
+                    type: string
         api.cin.interface.v1.ProductItem:
             type: object
             properties:

@@ -294,3 +294,7 @@ code {
     border-right-color: var(--border);
   }
 }
+
+.el-image-viewer__wrapper {
+  z-index: 3000 !important;
+}
