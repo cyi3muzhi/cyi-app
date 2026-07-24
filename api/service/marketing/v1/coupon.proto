@@ -6,6 +6,8 @@ option go_package = "cyi-app/api/service/marketing/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.service.marketing.v1";
 
+import "validate/validate.proto";
+
 service CouponService {
   rpc CreateCoupon (CreateCouponRequest) returns (CreateCouponReply);
   rpc UpdateCoupon (UpdateCouponRequest) returns (UpdateCouponReply);
@@ -34,13 +36,13 @@ message Coupon {
 }
 
 message CreateCouponRequest {
-  string name = 1;
-  int32 type = 2;
-  int64 value = 3;
+  string name = 1 [(validate.rules).string.min_len = 1];
+  int32 type = 2 [(validate.rules).int32 = {in: [1, 2, 3]}];
+  int64 value = 3 [(validate.rules).int64 = {gt: 0}];
   int64 min_amount = 4;
-  int32 quantity = 5;
-  int64 valid_start = 6;
-  int64 valid_end = 7;
+  int32 quantity = 5 [(validate.rules).int32 = {gt: 0}];
+  int64 valid_start = 6 [(validate.rules).int64 = {gt: 0}];
+  int64 valid_end = 7 [(validate.rules).int64 = {gt: 0}];
 }
 
 message CreateCouponReply {
@@ -48,14 +50,14 @@ message CreateCouponReply {
 }
 
 message UpdateCouponRequest {
-  int64 id = 1;
-  string name = 2;
-  int32 type = 3;
-  int64 value = 4;
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  int32 type = 3 [(validate.rules).int32 = {in: [1, 2, 3]}];
+  int64 value = 4 [(validate.rules).int64 = {gt: 0}];
   int64 min_amount = 5;
-  int32 quantity = 6;
-  int64 valid_start = 7;
-  int64 valid_end = 8;
+  int32 quantity = 6 [(validate.rules).int32 = {gt: 0}];
+  int64 valid_start = 7 [(validate.rules).int64 = {gt: 0}];
+  int64 valid_end = 8 [(validate.rules).int64 = {gt: 0}];
   bool enabled = 9;
 }
 
@@ -64,7 +66,7 @@ message UpdateCouponReply {
 }
 
 message DeleteCouponRequest {
-  int64 id = 1;
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
 message DeleteCouponReply {
@@ -72,7 +74,7 @@ message DeleteCouponReply {
 }
 
 message GetCouponRequest {
-  int64 id = 1;
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
 message GetCouponReply {
@@ -94,8 +96,8 @@ message ListCouponReply {
 }
 
 message ToggleCouponStatusRequest {
-  int64 id = 1;
-  int32 action = 2;
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 action = 2 [(validate.rules).int32 = {in: [1, 2]}];
 }
 
 message ToggleCouponStatusReply {

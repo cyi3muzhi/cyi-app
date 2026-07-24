@@ -7,6 +7,7 @@
 package v1
 
 import (
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -973,7 +974,7 @@ var File_api_service_marketing_v1_coupon_proto protoreflect.FileDescriptor
 
 const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\n" +
-	"%api/service/marketing/v1/coupon.proto\x12\x18api.service.marketing.v1\"\x85\x03\n" +
+	"%api/service/marketing/v1/coupon.proto\x12\x18api.service.marketing.v1\x1a\x17validate/validate.proto\"\x85\x03\n" +
 	"\x06Coupon\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
@@ -994,39 +995,39 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\vcreate_time\x18\r \x01(\x03R\n" +
 	"createTime\x12\x1f\n" +
 	"\vupdate_time\x18\x0e \x01(\x03R\n" +
-	"updateTime\"\xcc\x01\n" +
-	"\x13CreateCouponRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
-	"\x04type\x18\x02 \x01(\x05R\x04type\x12\x14\n" +
-	"\x05value\x18\x03 \x01(\x03R\x05value\x12\x1d\n" +
+	"updateTime\"\x86\x02\n" +
+	"\x13CreateCouponRequest\x12\x1b\n" +
+	"\x04name\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04name\x12\x1f\n" +
+	"\x04type\x18\x02 \x01(\x05B\v\xfaB\b\x1a\x060\x010\x020\x03R\x04type\x12\x1d\n" +
+	"\x05value\x18\x03 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x05value\x12\x1d\n" +
 	"\n" +
-	"min_amount\x18\x04 \x01(\x03R\tminAmount\x12\x1a\n" +
-	"\bquantity\x18\x05 \x01(\x05R\bquantity\x12\x1f\n" +
-	"\vvalid_start\x18\x06 \x01(\x03R\n" +
-	"validStart\x12\x1b\n" +
-	"\tvalid_end\x18\a \x01(\x03R\bvalidEnd\"0\n" +
+	"min_amount\x18\x04 \x01(\x03R\tminAmount\x12#\n" +
+	"\bquantity\x18\x05 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\bquantity\x12(\n" +
+	"\vvalid_start\x18\x06 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\n" +
+	"validStart\x12$\n" +
+	"\tvalid_end\x18\a \x01(\x03B\a\xfaB\x04\"\x02 \x00R\bvalidEnd\"0\n" +
 	"\x11CreateCouponReply\x12\x1b\n" +
-	"\tcoupon_id\x18\x01 \x01(\x03R\bcouponId\"\xf6\x01\n" +
-	"\x13UpdateCouponRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
-	"\x04type\x18\x03 \x01(\x05R\x04type\x12\x14\n" +
-	"\x05value\x18\x04 \x01(\x03R\x05value\x12\x1d\n" +
+	"\tcoupon_id\x18\x01 \x01(\x03R\bcouponId\"\xb9\x02\n" +
+	"\x13UpdateCouponRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\x12\x1b\n" +
+	"\x04name\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04name\x12\x1f\n" +
+	"\x04type\x18\x03 \x01(\x05B\v\xfaB\b\x1a\x060\x010\x020\x03R\x04type\x12\x1d\n" +
+	"\x05value\x18\x04 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x05value\x12\x1d\n" +
 	"\n" +
-	"min_amount\x18\x05 \x01(\x03R\tminAmount\x12\x1a\n" +
-	"\bquantity\x18\x06 \x01(\x05R\bquantity\x12\x1f\n" +
-	"\vvalid_start\x18\a \x01(\x03R\n" +
-	"validStart\x12\x1b\n" +
-	"\tvalid_end\x18\b \x01(\x03R\bvalidEnd\x12\x18\n" +
+	"min_amount\x18\x05 \x01(\x03R\tminAmount\x12#\n" +
+	"\bquantity\x18\x06 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\bquantity\x12(\n" +
+	"\vvalid_start\x18\a \x01(\x03B\a\xfaB\x04\"\x02 \x00R\n" +
+	"validStart\x12$\n" +
+	"\tvalid_end\x18\b \x01(\x03B\a\xfaB\x04\"\x02 \x00R\bvalidEnd\x12\x18\n" +
 	"\aenabled\x18\t \x01(\bR\aenabled\"-\n" +
 	"\x11UpdateCouponReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"%\n" +
-	"\x13DeleteCouponRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"-\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\".\n" +
+	"\x13DeleteCouponRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\"-\n" +
 	"\x11DeleteCouponReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\"\n" +
-	"\x10GetCouponRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"J\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"+\n" +
+	"\x10GetCouponRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\"J\n" +
 	"\x0eGetCouponReply\x128\n" +
 	"\x06coupon\x18\x01 \x01(\v2 .api.service.marketing.v1.CouponR\x06coupon\"\xac\x01\n" +
 	"\x11ListCouponRequest\x12\x12\n" +
@@ -1038,10 +1039,10 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\adate_to\x18\x06 \x01(\tR\x06dateTo\"_\n" +
 	"\x0fListCouponReply\x126\n" +
 	"\x05items\x18\x01 \x03(\v2 .api.service.marketing.v1.CouponR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\"C\n" +
-	"\x19ToggleCouponStatusRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
-	"\x06action\x18\x02 \x01(\x05R\x06action\"3\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"W\n" +
+	"\x19ToggleCouponStatusRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\x12!\n" +
+	"\x06action\x18\x02 \x01(\x05B\t\xfaB\x06\x1a\x040\x010\x02R\x06action\"3\n" +
 	"\x17ToggleCouponStatusReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x14\n" +
 	"\x12CouponStatsRequest\"\x9e\x01\n" +

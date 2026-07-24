@@ -56,16 +56,16 @@
 
     <!-- 用户表格 -->
     <el-table :data="filteredUsers" stripe style="width: 100%" size="small" v-loading="loading">
-      <el-table-column label="用户" width="80">
+      <el-table-column label="用户" width="64">
         <template #default="{ row }">
           <div class="user-avatar" :style="{ background: avatarColor(row.name) }">
             {{ row.name.charAt(0) }}
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="name" label="用户名" width="100" />
-      <el-table-column prop="phone" label="手机号" width="130" />
-      <el-table-column label="会员等级" width="120">
+      <el-table-column prop="name" label="用户名" min-width="100" />
+      <el-table-column prop="phone" label="手机号" min-width="130" />
+      <el-table-column label="会员等级" min-width="100">
         <template #default="{ row }">
           <el-tag
             :type="levelTagType(row.level)"
@@ -76,14 +76,14 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="regTime" label="注册时间" width="120" />
-      <el-table-column label="消费金额" width="120">
+      <el-table-column prop="regTime" label="注册时间" min-width="110" />
+      <el-table-column label="消费金额" min-width="100">
         <template #default="{ row }">
           <span class="amount-text">&yen;{{ row.amount.toLocaleString() }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="orders" label="订单数" width="80" />
-      <el-table-column label="状态" width="90">
+      <el-table-column prop="orders" label="订单数" width="70" align="center" />
+      <el-table-column label="状态" min-width="80">
         <template #default="{ row }">
           <span :class="['status-indicator', row.status]">
             <span class="status-dot"></span>
@@ -91,7 +91,7 @@
           </span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="180" fixed="right">
+      <el-table-column label="操作" width="170" fixed="right">
         <template #default="{ row }">
           <el-button text size="small" type="primary" @click="handleEdit(row)">
             编辑

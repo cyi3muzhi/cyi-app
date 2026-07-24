@@ -67,8 +67,8 @@
       <el-table-column type="expand">
         <template #default="{ row }">
           <div class="expand-records">
-            <div class="expand-header">发放记录（共 {{ row.dist_records?.length || 0 }} 条）</div>
-            <el-table :data="row.dist_records || []" size="small" stripe>
+            <div class="expand-header">发放记录（共 {{ row.distRecords?.length || 0 }} 条）</div>
+            <el-table :data="row.distRecords || []" size="small" stripe>
               <el-table-column prop="time" label="发放时间" width="160" />
               <el-table-column prop="user" label="领取用户" width="120" />
               <el-table-column prop="source" label="来源" width="100" />
@@ -114,29 +114,29 @@
           <span class="value-text">{{ formatValue(row) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="min_amount" label="使用门槛" width="120">
+      <el-table-column label="使用门槛" width="120">
         <template #default="{ row }">
-          <span v-if="row.min_amount > 0">满 {{ row.min_amount }} 元可用</span>
+          <span v-if="row.minAmount > 0">满 {{ row.minAmount }} 元可用</span>
           <span v-else class="no-threshold">无门槛</span>
         </template>
       </el-table-column>
       <el-table-column label="发放数量/已用" width="140">
         <template #default="{ row }">
           <div class="qty-cell">
-            <span>已发 {{ row.issued_count }}</span>
+            <span>已发 {{ row.issuedCount }}</span>
             <el-progress
               :percentage="usagePercent(row)"
               :stroke-width="6"
               size="small"
               :color="usagePercent(row) > 80 ? 'var(--shop-destructive)' : 'var(--shop-primary)'"
             />
-            <span class="used-text">已用 {{ row.used_count }}</span>
+            <span class="used-text">已用 {{ row.usedCount }}</span>
           </div>
         </template>
       </el-table-column>
       <el-table-column label="有效期" width="200">
         <template #default="{ row }">
-          <span class="date-text">{{ row.valid_start }} ~ {{ row.valid_end }}</span>
+          <span class="date-text">{{ row.validStart }} ~ {{ row.validEnd }}</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" width="100">
@@ -186,6 +186,7 @@
       width="560px"
       :close-on-click-modal="false"
       destroy-on-close
+      append-to-body
     >
       <el-form
         ref="formRef"
@@ -295,12 +296,13 @@ const formRef = ref(null)
 
 const couponList = ref<CouponItem[]>([])
 const total = ref(0)
-const stats = ref({
-  total_count: 0,
-  active_count: 0,
-  issued_count: 0,
-  expired_count: 0
-})
+const statsDefault = {
+  totalCount: 0,
+  activeCount: 0,
+  issuedCount: 0,
+  expiredCount: 0
+}
+const stats = ref({ ...statsDefault })
 
 const statusButtons = [
   { key: '', label: '全部' },
@@ -311,10 +313,10 @@ const statusButtons = [
 ]
 
 const statsCards = computed(() => [
-  { key: '', label: '全部优惠券', count: stats.value.total_count, unit: '张', color: 'blue' },
-  { key: '1', label: '进行中', count: stats.value.active_count, unit: '张', color: 'green' },
-  { key: '', label: '已发放', count: stats.value.issued_count, unit: '张', color: 'orange' },
-  { key: '', label: '已过期', count: stats.value.expired_count, unit: '张', color: 'red' }
+  { key: '', label: '全部优惠券', count: stats.value.totalCount, unit: '张', color: 'blue' },
+  { key: '1', label: '进行中', count: stats.value.activeCount, unit: '张', color: 'green' },
+  { key: '', label: '已发放', count: stats.value.issuedCount, unit: '张', color: 'orange' },
+  { key: '', label: '已过期', count: stats.value.expiredCount, unit: '张', color: 'red' }
 ])
 
 const formData = reactive({
@@ -368,7 +370,7 @@ async function loadCoupons() {
 async function loadStats() {
   try {
     const res = await getCouponStats()
-    stats.value = res
+    stats.value = { ...statsDefault, ...res }
   } catch (error) {
     console.error('获取统计数据失败', error)
   }
@@ -400,8 +402,10 @@ function formatValue(coupon: CouponItem) {
 }
 
 function usagePercent(coupon: CouponItem) {
-  if (coupon.issued_count === 0) return 0
-  return Math.round((coupon.used_count / coupon.issued_count) * 100)
+  const issued = coupon.issuedCount || 0
+  const used = coupon.usedCount || 0
+  if (issued === 0) return 0
+  return Math.round((used / issued) * 100)
 }
 
 function statusLabel(status: string) {
@@ -433,9 +437,9 @@ function handleEdit(row: CouponItem) {
   formData.name = row.name
   formData.type = row.type
   formData.value = row.value
-  formData.minAmount = row.min_amount
+  formData.minAmount = row.minAmount
   formData.quantity = row.quantity
-  formData.validDate = [row.valid_start, row.valid_end]
+  formData.validDate = [row.validStart, row.validEnd]
   formData.enabled = row.enabled
   dialogVisible.value = true
 }
@@ -445,30 +449,49 @@ async function handleSubmit() {
     if (!valid) return
     submitting.value = true
     const [start, end] = formData.validDate || []
-    const data = {
-      name: formData.name,
-      type: formData.type,
-      value: formData.value,
-      min_amount: formData.minAmount,
-      quantity: formData.quantity,
-      valid_start: start,
-      valid_end: end,
-      enabled: formData.enabled
-    }
-    const promise = isEditing.value
-      ? updateCoupon(editingId.value, data)
-      : createCoupon(data)
 
-    promise.then(() => {
-      ElMessage.success(isEditing.value ? '优惠券已更新' : '优惠券已创建')
-      dialogVisible.value = false
-      loadCoupons()
-      loadStats()
-    }).catch(() => {
-      ElMessage.error(isEditing.value ? '更新优惠券失败' : '创建优惠券失败')
-    }).finally(() => {
-      submitting.value = false
-    })
+    if (isEditing.value) {
+      const data = {
+        name: formData.name,
+        type: formData.type,
+        value: formData.value,
+        minAmount: formData.minAmount,
+        quantity: formData.quantity,
+        validStart: start,
+        validEnd: end,
+        enabled: formData.enabled
+      }
+      updateCoupon(editingId.value!, data).then(() => {
+        ElMessage.success('优惠券已更新')
+        dialogVisible.value = false
+        loadCoupons()
+        loadStats()
+      }).catch(() => {
+        ElMessage.error('更新优惠券失败')
+      }).finally(() => {
+        submitting.value = false
+      })
+    } else {
+      const data = {
+        name: formData.name,
+        type: formData.type,
+        value: formData.value,
+        minAmount: formData.minAmount,
+        quantity: formData.quantity,
+        validStart: start,
+        validEnd: end
+      }
+      createCoupon(data).then(() => {
+        ElMessage.success('优惠券已创建')
+        dialogVisible.value = false
+        loadCoupons()
+        loadStats()
+      }).catch(() => {
+        ElMessage.error('创建优惠券失败')
+      }).finally(() => {
+        submitting.value = false
+      })
+    }
   })
 }
 

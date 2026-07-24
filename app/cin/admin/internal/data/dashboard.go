@@ -24,7 +24,9 @@ func NewDashboardRepo(data *Data, logger log.Logger) biz.DashboardRepo {
 	}
 }
 
-// GetDashboardStats 获取仪表盘统计数据（实时数据）
+// GetDashboardStats 获取仪表盘统计数据
+// 真实数据来源：今日订单数(OrderStats)、总用户数(UserCount)、总商品数(ListProduct)
+// TODO: 今日营收和各项增长率暂无服务接口，后续需扩展 order service 添加相关 RPC
 func (r *dashboardRepo) GetDashboardStats(ctx context.Context) (*biz.DashboardStats, error) {
 	// 并行查询各服务
 	type statsResult struct {
@@ -69,27 +71,30 @@ func (r *dashboardRepo) GetDashboardStats(ctx context.Context) (*biz.DashboardSt
 		errCh <- nil
 	}()
 
-	// 等待所有查询完成
+	// 等待所有查询完成，部分失败则用零值/默认值
 	for i := 0; i < 3; i++ {
 		if err := <-errCh; err != nil {
 			r.log.Warnf("获取仪表盘数据部分失败: %v", err)
 		}
 	}
 
-	stats := &biz.DashboardStats{}
-	if result.orderStats != nil {
-		stats.TodayOrders = int64(result.orderStats.TodayCount)
-		stats.TotalProducts = int64(result.prodCount)
-	}
-	stats.TotalUsers = result.userCount
-	if result.prodCount > 0 {
-		stats.TotalProducts = int64(result.prodCount)
+	stats := &biz.DashboardStats{
+		TodayOrders:   int64(result.orderStats.GetTodayCount()),
+		TotalUsers:    result.userCount,
+		TotalProducts: int64(result.prodCount),
+		// 以下字段暂无真实数据来源，保留零值，前端用 mock 数据降级
+		// TodayRevenue:   — 需 order service 提供营收统计 RPC
+		// OrdersGrowth:   — 需 order service 提供同期对比数据
+		// RevenueGrowth:  — 同上
+		// UsersGrowth:    — 需 user service 提供同期对比
+		// ProductsGrowth: — 需 product service 提供同期对比
 	}
 
 	return stats, nil
 }
 
-// GetOrderTrend 获取近14日订单趋势（mock 数据）
+// GetOrderTrend 获取近14日订单趋势
+// TODO: 暂无真实数据，待 order service 提供按日订单数查询 RPC 后替换
 func (r *dashboardRepo) GetOrderTrend(ctx context.Context) ([]*biz.TrendItem, error) {
 	return []*biz.TrendItem{
 		{Date: "06-01", Value: 86},
@@ -109,7 +114,8 @@ func (r *dashboardRepo) GetOrderTrend(ctx context.Context) ([]*biz.TrendItem, er
 	}, nil
 }
 
-// GetRevenueCategories 获取营收分类占比（mock 数据）
+// GetRevenueCategories 获取营收分类占比
+// TODO: 暂无真实数据，待 order service 提供按分类营收统计 RPC 后替换
 func (r *dashboardRepo) GetRevenueCategories(ctx context.Context) ([]*biz.RevenueCategory, error) {
 	return []*biz.RevenueCategory{
 		{Name: "电子产品", Percentage: 35.5, Color: "#5470c6"},

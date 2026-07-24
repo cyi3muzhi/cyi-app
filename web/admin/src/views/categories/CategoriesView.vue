@@ -34,13 +34,13 @@
         </div>
 
         <div class="tree-panel-body" id="treeBody">
-          <div v-for="item in treeNodes" :key="item.id" :class="['tree-item', { active: selectedNodeId === item.id }]" :style="{ paddingLeft: (12 + item._depth * 18) + 'px' }">
-            <span v-if="item.hasChildren" :class="['tree-toggle', { expanded: expandedState[item.id] !== false }]" @click="toggleTreeNode(item.id)">
+          <div v-for="item in treeNodes" :key="item.id" :class="['tree-item', { active: selectedNodeId === item.id }]" :style="{ paddingLeft: (12 + item._depth * 18) + 'px' }" @click="selectTreeNode(item.id)">
+            <span v-if="item.hasChildren" :class="['tree-toggle', { expanded: expandedState[item.id] !== false }]" @click.stop="toggleTreeNode(item.id)">
               <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </span>
             <span v-else class="tree-toggle-placeholder" />
             <span class="tree-dot" :class="{ active: selectedNodeId === item.id }" />
-            <span class="tree-label" @click="selectTreeNode(item.id)">{{ item.name }}</span>
+            <span class="tree-label">{{ item.name }}</span>
             <span class="tree-count">{{ item.count }}</span>
           </div>
           <div v-if="treeNodes.length === 0" class="tree-empty">无匹配分类</div>

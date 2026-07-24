@@ -1,28 +1,32 @@
+/** 优惠券模块类型定义 */
+
+/** 字段为 camelCase，与 protobuf JSON 序列化一致 */
+
 export interface CouponItem {
   id: number
   name: string
   type: string
   value: number
-  min_amount: number
+  minAmount: number
   quantity: number
-  issued_count: number
-  used_count: number
-  valid_start: string
-  valid_end: string
+  issuedCount: number
+  usedCount: number
+  validStart: string
+  validEnd: string
   status: string
   enabled: boolean
-  create_time: number
-  update_time: number
-  dist_records?: DistRecord[]
+  createTime: number
+  updateTime: number
+  distRecords?: DistRecord[]
 }
 
 export interface DistRecord {
   id: number
-  user_id: number
+  userId: number
   source: string
   status: string
-  used_time: number
-  order_id: number
+  usedTime: number
+  orderId: number
 }
 
 export interface CouponListParams {
@@ -43,26 +47,26 @@ export interface CouponCreateData {
   name: string
   type: string
   value: number
-  min_amount: number
+  minAmount: number
   quantity: number
-  valid_start: string
-  valid_end: string
+  validStart: string
+  validEnd: string
 }
 
 export interface CouponUpdateData {
   name?: string
   type?: string
   value?: number
-  min_amount?: number
+  minAmount?: number
   quantity?: number
-  valid_start?: string
-  valid_end?: string
+  validStart?: string
+  validEnd?: string
   enabled?: boolean
 }
 
 export interface CouponStatsResponse {
-  total_count: number
-  active_count: number
-  issued_count: number
-  expired_count: number
+  totalCount: number
+  activeCount: number
+  issuedCount: number
+  expiredCount: number
 }

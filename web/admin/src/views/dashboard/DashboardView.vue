@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <!-- 仪表盘页面 - 统计卡片 + 图表 + 最新订单 + 快捷操作 -->
   <div class="dashboard">
     <!-- 4个统计卡片 -->
@@ -98,7 +98,7 @@
     <div class="actions-grid">
       <div
         class="action-card"
-        v-for="action in quickActions"
+        v-for="action in visibleActions"
         :key="action.label"
         @click="handleQuickAction(action)"
       >
@@ -116,22 +116,152 @@
 /**
  * 仪表盘页面组件
  * 展示统计卡片、订单趋势图表、营收分类占比、最新订单列表、快捷操作
+ * 优先从后端 API 获取真实数据，不可用的字段使用 mock 降级
  */
-import { computed } from 'vue'
+import { computed, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   Document, Money, User, Goods,
   Plus, ShoppingCart, Avatar, Bell
 } from '@element-plus/icons-vue'
-import {
-  dashboardStats, orderTrend, revenueCategories,
-  latestOrders, quickActions
-} from '../../api/mock'
+import { getDashboardStats, getOrderTrend, getRevenueCategories } from '../../api/dashboard'
+import { listOrder } from '../../api/order'
+import { quickActions } from '../../api/mock'
+import { useAppStore } from '../../store/app'
 
 const router = useRouter()
+const store = useAppStore()
 
-/** 统计数据映射 */
+// ===================== Mock 降级数据 =====================
+const MOCK_STATS = {
+  todayOrders: { value: 128, unit: '单', growth: 12.5 },
+  todayRevenue: { value: 45680, unit: '元', prefix: '¥', growth: 8.3 },
+  totalUsers: { value: 23568, unit: '', growth: 5.2 },
+  totalProducts: { value: 1286, unit: '', growth: 3.1 }
+}
+const MOCK_ORDER_TREND = {
+  days: ['6/30', '7/1', '7/2', '7/3', '7/4', '7/5', '7/6', '7/7', '7/8', '7/9', '7/10', '7/11', '7/12', '7/13'],
+  values: [85, 92, 78, 110, 95, 120, 105, 98, 115, 130, 108, 125, 140, 128]
+}
+const MOCK_REVENUE_CATEGORIES = [
+  { name: '服装鞋帽', percent: 42, color: '#3b82f6' },
+  { name: '数码电子', percent: 28, color: '#10b981' },
+  { name: '家居生活', percent: 18, color: '#f59e0b' },
+  { name: '其他品类', percent: 12, color: '#8b5cf6' }
+]
+const MOCK_LATEST_ORDERS = [
+  { id: 'ORD-20260713-001', user: '王芳', amount: 1280.00, status: 'completed', statusText: '已完成', time: '2026-07-13 14:32' },
+  { id: 'ORD-20260713-002', user: '李强', amount: 568.50, status: 'processing', statusText: '处理中', time: '2026-07-13 14:15' },
+  { id: 'ORD-20260713-003', user: '赵丽', amount: 2450.00, status: 'processing', statusText: '处理中', time: '2026-07-13 13:58' },
+  { id: 'ORD-20260713-004', user: '陈伟', amount: 399.00, status: 'completed', statusText: '已完成', time: '2026-07-13 12:40' },
+  { id: 'ORD-20260713-005', user: '刘洋', amount: 1899.00, status: 'cancelled', statusText: '已取消', time: '2026-07-13 11:22' }
+]
+
+// ===================== 响应式状态 =====================
+/** 统计卡片数据（初始为 mock，API 返回后覆盖真实字段） */
+const dashboardStats = reactive({ ...MOCK_STATS })
+/** 订单趋势数据 */
+const orderTrend = reactive({ ...MOCK_ORDER_TREND })
+/** 营收分类占比 */
+const revenueCategories = reactive([...MOCK_REVENUE_CATEGORIES])
+/** 最新订单 */
+const latestOrders = reactive([...MOCK_LATEST_ORDERS])
+
+// ===================== 数据获取 =====================
+/**
+ * 初始化：并行获取仪表盘所有数据，失败时保留 mock 降级
+ */
+onMounted(async () => {
+  // 并行请求仪表盘统计 + 订单趋势 + 营收分类
+  await Promise.all([
+    fetchStats(),
+    fetchTrend(),
+    fetchCategories()
+  ])
+
+  // 获取最新订单（独立处理数据转换）
+  await fetchLatestOrders()
+})
+
+/**
+ * 获取仪表盘统计数据
+ * 真实字段：todayOrders / totalUsers / totalProducts
+ * Mock 字段：todayRevenue / growth 系列（后端暂无数据源）
+ */
+async function fetchStats() {
+  try {
+    const res = await getDashboardStats()
+    if (!res) return
+    dashboardStats.todayOrders.value = res.todayOrders ?? MOCK_STATS.todayOrders.value
+    dashboardStats.todayRevenue.value = res.todayRevenue
+      ? Number(res.todayRevenue)
+      : MOCK_STATS.todayRevenue.value
+    dashboardStats.totalUsers.value = res.totalUsers ?? MOCK_STATS.totalUsers.value
+    dashboardStats.totalProducts.value = res.totalProducts ?? MOCK_STATS.totalProducts.value
+  } catch (e) {
+    console.warn('获取仪表盘统计数据失败，使用 mock 降级', e)
+  }
+}
+
+/**
+ * 获取近14日订单趋势
+ * TODO: 后端目前返回 mock 数据，待 order service 支持按日统计后替换
+ */
+async function fetchTrend() {
+  try {
+    const res = await getOrderTrend()
+    if (!res?.items?.length) return
+    orderTrend.days = res.items.map(i => i.date)
+    orderTrend.values = res.items.map(i => i.value)
+  } catch (e) {
+    console.warn('获取订单趋势失败，使用 mock 降级', e)
+  }
+}
+
+/**
+ * 获取营收分类占比
+ * TODO: 后端目前返回 mock 数据，待 order service 支持分类营收统计后替换
+ */
+async function fetchCategories() {
+  try {
+    const res = await getRevenueCategories()
+    if (!res?.categories?.length) return
+    revenueCategories.length = 0
+    res.categories.forEach(c => {
+      revenueCategories.push({ name: c.name, percent: c.percentage, color: c.color })
+    })
+  } catch (e) {
+    console.warn('获取营收分类失败，使用 mock 降级', e)
+  }
+}
+
+/**
+ * 获取最新订单（最近5条）
+ * 通过已有 listOrder API 获取真实数据
+ */
+async function fetchLatestOrders() {
+  try {
+    const res = await listOrder({ page: 1, page_size: 5 })
+    if (!res?.items?.length) return
+    latestOrders.length = 0
+    res.items.forEach(o => {
+      latestOrders.push({
+        id: o.orderNo,
+        user: o.userName,
+        amount: o.amount / 100, // 分→元
+        status: o.status,
+        statusText: o.statusText,
+        time: o.createdAt
+      })
+    })
+  } catch (e) {
+    console.warn('获取最新订单失败，使用 mock 降级', e)
+  }
+}
+
+// ===================== 计算属性 =====================
+/** 统计卡片映射 */
 const stats = computed(() => [
   {
     label: '今日订单',
@@ -171,13 +301,11 @@ const stats = computed(() => [
   }
 ])
 
-/** 订单趋势最大值 */
+/** 订单趋势最大值（用于柱状图高度计算） */
 const maxTrendVal = computed(() => Math.max(...orderTrend.values))
 
 /** 环形图渐变色 */
 const donutGradient = computed(() => {
-  const segments = revenueCategories.map(cat => `${cat.color} ${cat.percent}%`)
-  // 改为 conic-gradient 形式
   let currentDeg = 0
   const parts = revenueCategories.map(cat => {
     const start = currentDeg
@@ -189,7 +317,7 @@ const donutGradient = computed(() => {
 })
 
 /** 快捷操作图标映射 */
-const actionIcons = {
+const actionIcons: Record<string, any> = {
   add: Plus,
   order: ShoppingCart,
   user: Avatar,
@@ -197,12 +325,28 @@ const actionIcons = {
 }
 
 /**
- * 获取订单状态对应的 el-tag 类型
- * @param {string} status 订单状态标识
- * @returns {string} tag 类型
+ * 快捷操作 → 权限映射（与侧边栏 AppSidebar.vue 保持一致）
+ * key 为操作名称，value 为 [module, action] 元组，无权限时隐藏
  */
-function statusTagType(status) {
-  const map = {
+const ACTION_PERMS: Record<string, [string, string]> = {
+  '系统公告': ['settings', 'basic']
+}
+
+/** 根据权限过滤后的可见快捷操作 */
+const visibleActions = computed(() => {
+  return quickActions.filter(action => {
+    const perm = ACTION_PERMS[action.label]
+    if (!perm) return true // 无权限要求，可见
+    return store.hasPerm(perm[0], perm[1])
+  })
+})
+
+/**
+ * 获取订单状态对应的 el-tag 类型
+ * @param status 订单状态标识
+ */
+function statusTagType(status: string): string {
+  const map: Record<string, string> = {
     completed: 'success',
     processing: 'warning',
     cancelled: 'info'
@@ -212,9 +356,8 @@ function statusTagType(status) {
 
 /**
  * 处理快捷操作点击
- * @param {Object} action 快捷操作项
  */
-function handleQuickAction(action) {
+function handleQuickAction(action: any) {
   if (action.route) {
     router.push(action.route)
   } else {
@@ -224,8 +367,34 @@ function handleQuickAction(action) {
 </script>
 
 <style scoped>
+/* ---- 动效 ──── */
+@keyframes dashFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes dashSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes dashScaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes barGrow {
+  from { height: 0 !important; }
+}
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes iconBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
 .dashboard {
   width: 100%;
+  animation: dashFadeIn 0.3s ease;
 }
 
 /* ---- 统计卡片 ---- */
@@ -243,11 +412,20 @@ function handleQuickAction(action) {
   box-shadow: var(--shop-shadow-sm);
   border: 1px solid var(--shop-border);
   transition: box-shadow 0.2s ease, transform 0.2s ease;
+  animation: dashSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
+.stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stat-card:nth-child(2) { animation-delay: 0.12s; }
+.stat-card:nth-child(3) { animation-delay: 0.19s; }
+.stat-card:nth-child(4) { animation-delay: 0.26s; }
 
 .stat-card:hover {
   box-shadow: var(--shop-shadow-md);
   transform: translateY(-1px);
+}
+
+.stat-card:hover .stat-icon {
+  animation: iconBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .stat-header {
@@ -311,6 +489,12 @@ function handleQuickAction(action) {
   margin-bottom: 1.5rem;
 }
 
+.chart-card {
+  animation: dashSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.chart-card:nth-child(1) { animation-delay: 0.18s; }
+.chart-card:nth-child(2) { animation-delay: 0.25s; }
+
 .chart-card :deep(.el-card__body) {
   padding: 1rem 1.25rem;
 }
@@ -346,7 +530,22 @@ function handleQuickAction(action) {
   background: linear-gradient(180deg, var(--shop-primary), var(--shop-primary-light));
   min-height: 4px;
   transition: height 0.6s ease;
+  animation: barGrow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
+.bar-wrap:nth-child(1) .bar { animation-delay: 0.30s; }
+.bar-wrap:nth-child(2) .bar { animation-delay: 0.33s; }
+.bar-wrap:nth-child(3) .bar { animation-delay: 0.36s; }
+.bar-wrap:nth-child(4) .bar { animation-delay: 0.39s; }
+.bar-wrap:nth-child(5) .bar { animation-delay: 0.42s; }
+.bar-wrap:nth-child(6) .bar { animation-delay: 0.45s; }
+.bar-wrap:nth-child(7) .bar { animation-delay: 0.48s; }
+.bar-wrap:nth-child(8) .bar { animation-delay: 0.51s; }
+.bar-wrap:nth-child(9) .bar { animation-delay: 0.54s; }
+.bar-wrap:nth-child(10) .bar { animation-delay: 0.57s; }
+.bar-wrap:nth-child(11) .bar { animation-delay: 0.60s; }
+.bar-wrap:nth-child(12) .bar { animation-delay: 0.63s; }
+.bar-wrap:nth-child(13) .bar { animation-delay: 0.66s; }
+.bar-wrap:nth-child(14) .bar { animation-delay: 0.69s; }
 
 .bar:hover {
   opacity: 0.8;
@@ -438,6 +637,8 @@ function handleQuickAction(action) {
 /* ---- 最新订单 ---- */
 .orders-card {
   margin-bottom: 1.5rem;
+  animation: dashSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 0.32s;
 }
 
 .orders-card :deep(.el-card__header) {
@@ -490,7 +691,12 @@ function handleQuickAction(action) {
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  animation: dashScaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
+.action-card:nth-child(1) { animation-delay: 0.38s; }
+.action-card:nth-child(2) { animation-delay: 0.43s; }
+.action-card:nth-child(3) { animation-delay: 0.48s; }
+.action-card:nth-child(4) { animation-delay: 0.53s; }
 
 .action-card:hover {
   box-shadow: var(--shop-shadow-md);

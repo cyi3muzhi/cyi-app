@@ -41,7 +41,7 @@
         <div
           class="perm-tab"
           :class="{ active: activeTab === 'permission' }"
-          @click="activeTab = 'permission'">
+          @click="switchToPermissionTab">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           权限配置
           <span class="tab-badge">{{ permSelectedCount }}</span>
@@ -55,7 +55,7 @@
             <span style="font-weight:600;font-size:0.9375rem;">所有角色</span>
             <span class="tab-total">共 {{ roles.length }} 个角色</span>
           </div>
-          <el-table :data="roles" stripe highlight-current-row row-class-name="row-enter">
+          <el-table :data="roles" stripe highlight-current-row row-class-name="row-enter" @row-click="(row: Role) => { selectedIndex = roles.indexOf(row) }">
           <el-table-column prop="name" label="角色名称" min-width="120">
             <template #default="{ row }">
               <el-tag :color="row.color" effect="dark" size="small" class="color-tag">{{ row.name }}</el-tag>
@@ -84,8 +84,14 @@
                 <span class="role-system-tag">系统角色，不可操作</span>
               </template>
               <template v-else>
-                <el-button text size="small" type="primary" @click="editPermission($index)">编辑权限</el-button>
-                <el-button text size="small" type="warning" @click="openEditModal($index)">编辑</el-button>
+                <el-button text size="small" type="primary" @click="editPermission($index)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  权限
+                </el-button>
+                <el-button text size="small" type="warning" @click="openEditModal($index)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  基本信息
+                </el-button>
                 <el-button
                   v-if="!row.is_system"
                   text size="small" type="danger"
@@ -101,18 +107,34 @@
       <div v-else key="permission" class="tab-content">
         <template v-if="currentRole">
         <div class="perm-header">
-          <h3>权限配置</h3>
+          <div>
+            <h3>
+              权限配置
+              <span class="perm-back-link" @click="activeTab = 'list'">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                返回列表
+              </span>
+            </h3>
+          </div>
           <div class="perm-summary">
             当前角色：<strong>{{ currentRole.name }}</strong>
-            &nbsp;|&nbsp; 已选 <strong>{{ permSelectedCount }}</strong> 项权限
+            &nbsp;|&nbsp; 已选 <strong>{{ permSelectedCount }}</strong> / {{ totalPermCount }} 项
           </div>
         </div>
         <el-alert
           title="选中表格中的角色以编辑权限。超级管理员拥有所有系统权限，且不可修改。"
           type="info" :closable="false" show-icon class="perm-hint" />
         <div class="perm-body">
+          <!-- 权限搜索 -->
+          <div class="perm-search-bar">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input v-model="permSearch" type="text" class="perm-search-input" placeholder="搜索权限模块或权限项..." />
+            <button v-if="permSearch" class="perm-search-clear" @click="permSearch = ''">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
           <div class="perm-grid">
-            <div class="perm-module" v-for="(mod, idx) in permModules" :key="mod.key"
+            <div class="perm-module" v-for="(mod, idx) in filteredModules" :key="mod.key"
               :style="{ animationDelay: `${0.02 + idx * 0.05}s` }">
               <div class="perm-module-header">
                 <span class="perm-module-title">{{ mod.title }}</span>
@@ -210,7 +232,7 @@
  */
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus, WarningFilled } from '@element-plus/icons-vue'
+import { Plus, WarningFilled, Lock, UserFilled, SetUp, Collection } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { listRoles, createRole, updateRole, deleteRole, getRolePermissions, updateRolePermissions, listAllPermissions } from '@/api/role'
 
@@ -277,7 +299,7 @@ async function loadData() {
       color: r.color || '',
       users: r.users || 0,
       enabled: r.enabled !== false,
-      is_system: r.is_system === true,
+      is_system: r.is_system === true || r.slug === 'super_admin',
       created_at: r.createdAt || r.created_at || '',
       permissions: {} as RolePermissions
     }))
@@ -321,26 +343,38 @@ onMounted(() => loadData())
 
 // ---------- 统计卡片 ----------
 const stats = computed(() => {
-  const data = roles.value
-  const cards: { label: string; value: number; unit: string; color: string; icon: string }[] = [
-    { label: '角色总数', value: data.length, unit: '个', color: 'blue', icon: 'Shield' },
+  const total = roles.value.length
+  const system = roles.value.filter(r => r.is_system).length
+  const custom = total - system
+  const permModCount = permModules.value.length
+  return [
+    { label: '角色总数', value: total, unit: '个', color: 'blue', icon: Collection },
+    { label: '系统角色', value: system, unit: '个', color: 'purple', icon: Lock },
+    { label: '自定义角色', value: custom, unit: '个', color: 'green', icon: UserFilled },
+    { label: '权限模块', value: permModCount, unit: '个', color: 'orange', icon: SetUp },
   ]
-  // 每个角色一行（超级管理员固定不展示）
-   const colors = ['green', 'orange', 'purple', 'pink', 'teal', 'indigo']
-   data.filter((r: Role) => r.slug !== 'super_admin').forEach((r, idx) => {
-     cards.push({
-       label: r.name,
-       value: r.users || 0,
-       unit: '人',
-       color: colors[idx % colors.length],
-       icon: idx === 0 ? 'UserFilled' : idx === 1 ? 'Avatar' : idx === 2 ? 'SetUp' : 'User',
-     })
-   })
-  return cards
 })
 
 // ---------- 权限相关 ----------
+const permSearch = ref('')
 const totalPermCount = computed(() => permModules.value.reduce((s: number, m: PermModule) => s + m.items.length, 0))
+
+/** 根据搜索关键词过滤权限模块 */
+const filteredModules = computed(() => {
+  const kw = permSearch.value.trim().toLowerCase()
+  if (!kw) return permModules.value
+  return permModules.value
+    .map(m => {
+      const matchedItems = m.items.filter(i =>
+        i.label.toLowerCase().includes(kw) || i.key.toLowerCase().includes(kw)
+      )
+      const titleMatch = m.title.toLowerCase().includes(kw) || m.key.toLowerCase().includes(kw)
+      if (titleMatch) return { ...m, items: m.items }
+      if (matchedItems.length > 0) return { ...m, items: matchedItems }
+      return null
+    })
+    .filter(Boolean) as PermModule[]
+})
 
 function countPermissions(perms: RolePermissions): number {
   let count = 0
@@ -412,6 +446,18 @@ async function editPermission(index: number) {
   // 如果该角色还没加载过权限，加载它
   if (!roles.value[index]?.permissions || Object.keys(roles.value[index].permissions).length === 0) {
     await loadRolePermissions(index)
+  }
+  activeTab.value = 'permission'
+}
+
+/** 切换到权限配置标签，默认显示第一个角色的权限 */
+async function switchToPermissionTab() {
+  // 重置为第一个角色（超级管理员），除非是通过"编辑权限"按钮进来的
+  if (roles.value.length > 0) {
+    selectedIndex.value = 0
+    if (!roles.value[0]?.permissions || Object.keys(roles.value[0].permissions).length === 0) {
+      await loadRolePermissions(0)
+    }
   }
   activeTab.value = 'permission'
 }
@@ -748,6 +794,8 @@ async function confirmDelete() {
   font-size: 0.9375rem;
   font-weight: 600;
   margin: 0;
+  display: flex;
+  align-items: center;
 }
 
 .perm-summary {
@@ -759,6 +807,71 @@ async function confirmDelete() {
 .perm-summary strong {
   color: var(--shop-primary);
   font-weight: 700;
+}
+
+/* 返回列表链接 */
+.perm-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--shop-muted-foreground);
+  cursor: pointer;
+  margin-left: 12px;
+  transition: color 0.15s;
+}
+.perm-back-link:hover {
+  color: var(--shop-primary);
+}
+
+/* 权限搜索栏 */
+.perm-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #f1f5f9;
+  border-radius: var(--shop-radius-md);
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+}
+.perm-search-bar:focus-within {
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(64,158,255,0.2);
+}
+.perm-search-bar svg {
+  color: var(--shop-muted-foreground);
+  flex-shrink: 0;
+}
+.perm-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.8125rem;
+  color: var(--shop-foreground);
+}
+.perm-search-input::placeholder {
+  color: var(--shop-muted-foreground);
+}
+.perm-search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--shop-muted-foreground);
+  transition: all 0.15s;
+  padding: 0;
+}
+.perm-search-clear:hover {
+  background: #e2e8f0;
+  color: var(--shop-foreground);
 }
 
 .perm-hint {
