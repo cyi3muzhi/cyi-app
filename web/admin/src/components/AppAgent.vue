@@ -176,7 +176,7 @@ onMounted(async () => {
     messages.value = [
       {
         role: 'assistant',
-        content: '您好！我是悦选商城的智能助手，请问有什么可以帮助您的？',
+        content: `您好！我是${store.shopName}的智能助手，请问有什么可以帮助您的？`,
         timestamp: Date.now()
       }
     ]
@@ -289,7 +289,7 @@ async function handleClearHistory() {
   messages.value = [
     {
       role: 'assistant',
-      content: '您好！我是悦选商城的智能助手，请问有什么可以帮助您的？',
+      content: `您好！我是${store.shopName}的智能助手，请问有什么可以帮助您的？`,
       timestamp: Date.now()
     }
   ]
