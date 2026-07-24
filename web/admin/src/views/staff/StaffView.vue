@@ -488,6 +488,16 @@ async function toggleStaff(id: number) {
 </script>
 
 <style scoped>
+/* ---- 动效 ---- */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.staff-page {
+  animation: fadeSlideUp 0.35s ease both;
+}
+
 /* 自定义颜色标签去掉 Element Plus 默认蓝色边框 */
 .color-tag {
   border: none !important;
@@ -531,7 +541,11 @@ async function toggleStaff(id: number) {
   border-radius: var(--shop-radius-lg);
   padding: 18px 20px;
   transition: box-shadow 0.2s, transform 0.2s;
+  animation: fadeSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
+.stat-card:nth-child(1) { animation-delay: 0s; }
+.stat-card:nth-child(2) { animation-delay: 0.08s; }
+.stat-card:nth-child(3) { animation-delay: 0.16s; }
 .stat-card:hover {
   box-shadow: var(--shop-shadow-md);
   transform: translateY(-1px);
@@ -719,6 +733,21 @@ async function toggleStaff(id: number) {
 .tip-link:hover {
   text-decoration: underline;
 }
+
+/* 表格行入场动画 */
+.el-table__body-wrapper tbody tr {
+  animation: fadeSlideUp 0.3s ease both;
+}
+.el-table__body-wrapper tbody tr:nth-child(1) { animation-delay: 0.02s; }
+.el-table__body-wrapper tbody tr:nth-child(2) { animation-delay: 0.04s; }
+.el-table__body-wrapper tbody tr:nth-child(3) { animation-delay: 0.06s; }
+.el-table__body-wrapper tbody tr:nth-child(4) { animation-delay: 0.08s; }
+.el-table__body-wrapper tbody tr:nth-child(5) { animation-delay: 0.10s; }
+.el-table__body-wrapper tbody tr:nth-child(6) { animation-delay: 0.12s; }
+.el-table__body-wrapper tbody tr:nth-child(7) { animation-delay: 0.14s; }
+.el-table__body-wrapper tbody tr:nth-child(8) { animation-delay: 0.16s; }
+.el-table__body-wrapper tbody tr:nth-child(9) { animation-delay: 0.18s; }
+.el-table__body-wrapper tbody tr:nth-child(10) { animation-delay: 0.20s; }
 
 /* 响应式 */
 @media (max-width: 1024px) {

@@ -112,9 +112,10 @@ const router = createRouter({
 
 // 路由守卫 - 未登录跳转登录页
 router.beforeEach((to, _from, next) => {
-  document.title = to.meta.title ? `${to.meta.title} - 悦选商城管理后台` : '悦选商城管理后台'
-
   const store = useAppStore()
+  const brand = store.shopName || '悦选商城'
+  document.title = to.meta.title ? `${to.meta.title} - ${brand}管理后台` : `${brand}管理后台`
+
   if (to.name !== 'Login' && !store.isLoggedIn) {
     next({ name: 'Login' })
   } else if (to.name === 'Login' && store.isLoggedIn) {

@@ -6,7 +6,7 @@
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
         </svg>
-        <span v-show="!store.sidebarCollapsed" class="logo-text">悦选商城</span>
+        <span v-show="!store.sidebarCollapsed" class="logo-text">{{ store.shopName }}</span>
       </router-link>
     </div>
 
@@ -69,6 +69,7 @@ onUnmounted(() => window.removeEventListener('order-changed', onOrderChanged))
 onMounted(() => {
   store.fetchProductOnlineCount()
   store.fetchOrderPendingCount()
+  store.fetchShopName()
 })
 
 // 菜单项定义（perm 为可选的权限标识 ×××.view）
@@ -166,6 +167,12 @@ function isActive(path) {
 </script>
 
 <style scoped>
+/* ---- 动效 ---- */
+@keyframes sidebarFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .sidebar {
   position: fixed;
   top: 0;
@@ -230,21 +237,43 @@ function isActive(path) {
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   margin-bottom: 2px;
   white-space: nowrap;
+  position: relative;
+}
+
+/* 激活指示条 - 激活时从左侧滑入 */
+.nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 0;
+  border-radius: 0 2px 2px 0;
+  background: var(--shop-primary);
+  transition: height 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              top 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.nav-item.active::before {
+  top: 6px;
+  height: calc(100% - 12px);
 }
 
 .nav-item:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #e2e8f0;
+  transform: translateX(2px);
 }
 
 .nav-item.active {
   background: var(--shop-primary);
   color: #fff;
   box-shadow: 0 4px 12px hsla(217, 91%, 52%, 0.3);
+  transform: translateX(0);
 }
 
 .nav-item .nav-icon {

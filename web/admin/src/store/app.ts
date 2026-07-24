@@ -5,6 +5,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { listProducts } from '../api/product'
 import { orderStats } from '../api/order'
+import { getSettings } from '../api/settings'
 import type { AdminInfo } from '../types/api'
 
 /** localStorage 中保存的管理员信息 */
@@ -50,6 +51,21 @@ export const useAppStore = defineStore('app', () => {
 
   // 待处理订单数量（待支付+待发货）
   const orderPendingCount = ref('')
+
+  // 商城名称（从系统设置加载）
+  const shopName = ref('悦选商城')
+
+  /** 从系统设置加载商城名称 */
+  async function fetchShopName() {
+    try {
+      const settings = await getSettings()
+      if (settings.shopName) {
+        shopName.value = settings.shopName
+      }
+    } catch {
+      // 加载失败使用默认值
+    }
+  }
 
   /** 刷新待处理订单数量，为 0 时不显示徽标 */
   async function fetchOrderPendingCount() {
@@ -137,6 +153,7 @@ export const useAppStore = defineStore('app', () => {
     agentPanelOpen,
     productOnlineCount,
     orderPendingCount,
+    shopName,
     sidebarWidth,
     isLoggedIn,
     toggleSidebar() { sidebarCollapsed.value = !sidebarCollapsed.value },
@@ -146,6 +163,7 @@ export const useAppStore = defineStore('app', () => {
     hasPerm,
     logout,
     fetchProductOnlineCount,
-    fetchOrderPendingCount
+    fetchOrderPendingCount,
+    fetchShopName
   }
 })

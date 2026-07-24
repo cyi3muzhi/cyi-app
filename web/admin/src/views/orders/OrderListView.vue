@@ -5,30 +5,30 @@
       <img :src="previewImage" class="preview-img" />
     </div>
 
-    <!-- ===== 顶部统计卡片 ===== -->
+    <!-- ===== 顶部统计卡片（错落入场动画） ===== -->
     <div class="stats-row">
-      <div class="stat-card stat-card--total">
+      <div class="stat-card stat-card--total" style="--i: 0">
         <div class="stat-icon"><el-icon :size="22"><Tickets /></el-icon></div>
         <div class="stat-body">
           <span class="stat-label">总订单</span>
           <span class="stat-value">{{ statsData.totalCount }}</span>
         </div>
       </div>
-      <div class="stat-card stat-card--pending">
+      <div class="stat-card stat-card--pending" style="--i: 1">
         <div class="stat-icon"><el-icon :size="22"><WarningFilled /></el-icon></div>
         <div class="stat-body">
           <span class="stat-label">待处理</span>
           <span class="stat-value">{{ pendingCount }}</span>
         </div>
       </div>
-      <div class="stat-card stat-card--today">
+      <div class="stat-card stat-card--today" style="--i: 2">
         <div class="stat-icon"><el-icon :size="22"><TrendCharts /></el-icon></div>
         <div class="stat-body">
           <span class="stat-label">今日订单</span>
           <span class="stat-value">{{ todayCount }}</span>
         </div>
       </div>
-      <div class="stat-card stat-card--refund">
+      <div class="stat-card stat-card--refund" style="--i: 3">
         <div class="stat-icon"><el-icon :size="22"><CircleCloseFilled /></el-icon></div>
         <div class="stat-body">
           <span class="stat-label">退款/售后</span>
@@ -39,17 +39,24 @@
 
     <!-- ===== 状态标签页 ===== -->
     <div class="tab-bar-wrap">
-      <div
-        v-for="tab in tabs"
-        :key="tab.key"
-        :class="['tab-item', { active: activeTab === tab.key }]"
-        @click="switchTab(tab.key)"
-      >
-        <span class="tab-label">{{ tab.label }}</span>
+      <div class="tab-bar-inner" ref="barInner">
+        <div class="tab-slider" :style="sliderStyle" />
+        <div
+          v-for="tab in tabs"
+          :key="tab.key"
+          :ref="el => setTabRef(tab.key, el)"
+          :class="['tab-item', { active: activeTab === tab.key }]"
+          @click="switchTab(tab.key)"
+        >
+          <el-icon :size="16">
+            <component :is="tab.icon" />
+          </el-icon>
+          <span class="tab-label">{{ tab.label }}</span>
+        </div>
       </div>
     </div>
 
-    <!-- ===== 筛选栏 ===== -->
+    <!-- ===== 筛选栏（固定不动） ===== -->
     <div class="filter-bar">
       <div class="filter-left">
         <el-input
@@ -82,121 +89,127 @@
       </div>
     </div>
 
-    <!-- ===== 订单表格 ===== -->
-    <el-table
-      :data="orders"
-      v-loading="loading"
-      stripe
-      style="width: 100%"
-      size="small"
-      @expand-change="onExpandChange"
-    >
-      <el-table-column type="expand" width="40">
-        <template #default="{ row }">
-          <div class="expand-detail">
-            <!-- 加载中 -->
-            <div v-if="expandLoading.has(row.id)" class="expand-loading">
-              <el-icon class="is-loading"><Loading /></el-icon> 加载中...
-            </div>
-            <!-- 商品明细 -->
-            <table v-else-if="expandProducts[row.id]?.length" class="product-table">
-              <thead>
-                <tr>
-                  <th>商品</th>
-                  <th>规格</th>
-                  <th class="th-price">单价</th>
-                  <th class="th-qty">数量</th>
-                  <th class="th-price">小计</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(p, i) in expandProducts[row.id]" :key="i">
-                  <td class="cell-product">
-                    <img v-if="p.image" :src="p.image" class="cell-img" @error="onExpandImgError($event)" @click="openPreview(p.image)" />
-                    <span v-else class="cell-avatar" :style="{ background: nameColor(p.name) }">{{ p.name.charAt(0) }}</span>
-                    <span class="cell-name">{{ p.name }}</span>
-                  </td>
-                  <td class="cell-spec">{{ p.spec || '-' }}</td>
-                  <td class="cell-price">&yen;{{ (p.price / 100).toFixed(2) }}</td>
-                  <td class="cell-qty">{{ p.qty }}</td>
-                  <td class="cell-price">&yen;{{ ((p.price * p.qty) / 100).toFixed(2) }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div v-else class="expand-empty">暂无商品数据</div>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="订单号" width="180">
-        <template #default="{ row }">
-          <span class="order-no-text">{{ row.orderNo }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="下单时间" width="155">
-        <template #default="{ row }">{{ row.createdAt }}</template>
-      </el-table-column>
-      <el-table-column label="用户" width="90" show-overflow-tooltip>
-        <template #default="{ row }">{{ row.userName }}</template>
-      </el-table-column>
-      <el-table-column label="商品" min-width="180">
-        <template #default="{ row }">
-          <el-button link type="primary" size="small" @click="openDetail(row)">
-            {{ expandProducts[row.id]?.length ? `${expandProducts[row.id].length}件商品` : '查看商品' }}
-          </el-button>
-        </template>
-      </el-table-column>
-      <el-table-column label="实付金额" width="120" align="right">
-        <template #default="{ row }">
-          <span class="amount-text">&yen;{{ (row.amount / 100).toFixed(2) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" width="100">
-        <template #default="{ row }">
-          <el-tag :type="statusTagType(row.status)" size="small" effect="plain">
-            {{ row.statusText }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="150" fixed="right">
-        <template #default="{ row }">
-          <el-button link type="primary" size="small" @click="openDetail(row)">
-            详情
-          </el-button>
-          <el-button
-            v-if="row.status === 'paid'"
-            link type="success" size="small"
-            @click="openShipDialog(row)"
-          >
-            发货
-          </el-button>
-          <el-button
-            v-if="row.status === 'pending'"
-            link type="danger" size="small"
-            @click="handleCancelClick(row)"
-          >
-            取消
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <!-- ===== 列表数据区（切换标签时淡入淡出） ===== -->
+    <Transition name="tab-content" mode="out-in">
+      <div :key="activeTab" class="table-area">
+        <el-table
+          :data="orders"
+          v-loading="loading"
+          stripe
+          style="width: 100%"
+          size="small"
+          row-key="id"
+          :row-class-name="getRowClass"
+          @expand-change="onExpandChange"
+        >
+          <el-table-column type="expand" width="40">
+            <template #default="{ row }">
+              <div class="expand-detail">
+                <!-- 加载中 -->
+                <div v-if="expandLoading.has(row.id)" class="expand-loading">
+                  <el-icon class="is-loading"><Loading /></el-icon> 加载中...
+                </div>
+                <!-- 商品明细 -->
+                <table v-else-if="expandProducts.get(row.id)?.length" class="product-table">
+                  <thead>
+                    <tr>
+                      <th>商品</th>
+                      <th>规格</th>
+                      <th class="th-price">单价</th>
+                      <th class="th-qty">数量</th>
+                      <th class="th-price">小计</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(p, i) in expandProducts.get(row.id)" :key="i">
+                      <td class="cell-product">
+                        <img v-if="p.image" :src="p.image" class="cell-img" @error="onExpandImgError($event)" @click="openPreview(p.image)" />
+                        <span v-else class="cell-avatar" :style="{ background: nameColor(p.name) }">{{ p.name.charAt(0) }}</span>
+                        <span class="cell-name">{{ p.name }}</span>
+                      </td>
+                      <td class="cell-spec">{{ p.spec || '-' }}</td>
+                      <td class="cell-price">&yen;{{ (p.price / 100).toFixed(2) }}</td>
+                      <td class="cell-qty">{{ p.qty }}</td>
+                      <td class="cell-price">&yen;{{ ((p.price * p.qty) / 100).toFixed(2) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div v-else class="expand-empty">暂无商品数据</div>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="订单号" width="180">
+            <template #default="{ row }">
+              <span class="order-no-text">{{ row.orderNo }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="下单时间" width="155">
+            <template #default="{ row }">{{ row.createdAt }}</template>
+          </el-table-column>
+          <el-table-column label="用户" width="90" show-overflow-tooltip>
+            <template #default="{ row }">{{ row.userName }}</template>
+          </el-table-column>
+          <el-table-column label="商品" min-width="180">
+            <template #default="{ row }">
+              <el-button link type="primary" size="small" @click="openDetail(row)">
+                {{ expandProducts.get(row.id)?.length ? `${expandProducts.get(row.id)?.length}件商品` : '查看商品' }}
+              </el-button>
+            </template>
+          </el-table-column>
+          <el-table-column label="实付金额" width="120" align="right">
+            <template #default="{ row }">
+              <span class="amount-text">&yen;{{ (row.amount / 100).toFixed(2) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="状态" width="100">
+            <template #default="{ row }">
+              <el-tag :type="statusTagType(row.status)" size="small" effect="plain">
+                {{ row.statusText }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="150" fixed="right">
+            <template #default="{ row }">
+              <el-button link type="primary" size="small" @click="openDetail(row)">
+                详情
+              </el-button>
+              <el-button
+                v-if="row.status === 'paid'"
+                link type="success" size="small"
+                @click="openShipDialog(row)"
+              >
+                发货
+              </el-button>
+              <el-button
+                v-if="row.status === 'pending'"
+                link type="danger" size="small"
+                @click="handleCancelClick(row)"
+              >
+                取消
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
 
-    <!-- ===== 空状态 ===== -->
-    <el-empty v-if="!loading && orders.length === 0" description="暂无订单" />
+        <!-- ===== 空状态 ===== -->
+        <el-empty v-if="!loading && orders.length === 0" description="暂无订单" />
 
-    <!-- ===== 分页 ===== -->
-    <div class="pagination-wrap">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="totalCount"
-        :page-sizes="[10, 20, 50]"
-        layout="total, sizes, prev, pager, next"
-        background
-        small
-        @current-change="loadOrders"
-        @size-change="onSizeChange"
-      />
-    </div>
+        <!-- ===== 分页 ===== -->
+        <div class="pagination-wrap">
+          <el-pagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :total="totalCount"
+            :page-sizes="[10, 20, 50]"
+            layout="total, sizes, prev, pager, next"
+            background
+            small
+            @current-change="loadOrders"
+            @size-change="onSizeChange"
+          />
+        </div>
+      </div>
+    </Transition>
 
 <!-- ===== 发货对话框 ===== -->
     <el-dialog
@@ -230,12 +243,13 @@
  * 订单管理列表页面
  * 功能：统计卡片、状态标签页、筛选、列表、展开商品、发货、取消、导出
  */
-import { ref, computed, onMounted, onUnmounted, reactive } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Search, Download,
-  Tickets, WarningFilled, TrendCharts, CircleCloseFilled, Loading
+  Tickets, WarningFilled, TrendCharts, CircleCloseFilled, Loading,
+  List, Timer, TakeawayBox, Van, CircleCheck, CloseBold, Money
 } from '@element-plus/icons-vue'
 import { listOrder, getOrder, shipOrder, cancelOrder, orderStats, exportOrder, getExportTaskStatus } from '../../api/order'
 import type { OrderItem, OrderProduct, OrderStatsResponse } from '../../types/order'
@@ -255,9 +269,9 @@ const searchKeyword = ref('')
 const dateRange = ref<[string, string] | null>(null)
 
 /** 展开行缓存 { orderId: OrderProduct[] } */
-const expandProducts = reactive<Record<number, OrderProduct[]>>({})
+const expandProducts = reactive(new Map<number, OrderProduct[]>())
 /** 展开行加载状态 */
-const expandLoading = reactive<Set<number>>(new Set())
+const expandLoading = reactive(new Set<number>())
 
 /** 图片预览 */
 const previewImage = ref('')
@@ -302,20 +316,45 @@ const refundCount = computed(() => statsData.value.refundCount)
 
 /* ==================== 标签页 ==================== */
 
+/** 滑动指示器 ref */
+const barInner = ref<HTMLElement | null>(null)
+const tabRefs = ref<Record<string, HTMLElement>>({})
+const sliderStyle = ref({ width: '0px', left: '0px', opacity: 0 })
+
+function setTabRef(key: string, el: any) {
+  if (el) tabRefs.value[key] = el
+}
+
+/** 更新滑动指示器位置 */
+async function updateSlider() {
+  await nextTick()
+  const activeEl = tabRefs.value[activeTab.value]
+  if (activeEl && barInner.value) {
+    const containerRect = barInner.value.getBoundingClientRect()
+    const elRect = activeEl.getBoundingClientRect()
+    sliderStyle.value = {
+      width: `${elRect.width}px`,
+      left: `${elRect.left - containerRect.left}px`,
+      opacity: 1,
+    }
+  }
+}
+
 const tabs = computed(() => [
-  { key: '', label: '全部' },
-  { key: 'pending', label: '待付款' },
-  { key: 'paid', label: '待发货' },
-  { key: 'shipped', label: '已发货' },
-  { key: 'completed', label: '已完成' },
-  { key: 'cancelled', label: '已取消' },
-  { key: 'refunding', label: '退款中' },
+  { key: '', label: '全部', icon: Tickets },
+  { key: 'pending', label: '待付款', icon: Timer },
+  { key: 'paid', label: '待发货', icon: TakeawayBox },
+  { key: 'shipped', label: '已发货', icon: Van },
+  { key: 'completed', label: '已完成', icon: CircleCheck },
+  { key: 'cancelled', label: '已取消', icon: CloseBold },
+  { key: 'refunding', label: '退款中', icon: Money },
 ])
 
 /** 标签页切换 */
 function switchTab(key: string) {
   activeTab.value = key
   currentPage.value = 1
+  updateSlider()
   loadOrders()
 }
 
@@ -323,6 +362,7 @@ function switchTab(key: string) {
 
 /** 加载订单列表 */
 async function loadOrders() {
+  rowIndexCounter = 0
   loading.value = true
   try {
     const res = await listOrder({
@@ -383,6 +423,12 @@ function statusTagType(status: string): string {
   return map[status] || 'info'
 }
 
+/** 表格行 CSS 类名（用于逐行动画） */
+let rowIndexCounter = 0
+function getRowClass() {
+  return `row-enter row-enter--${rowIndexCounter++}`
+}
+
 /** 根据商品名称生成固定颜色 */
 function nameColor(name: string): string {
   const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316']
@@ -398,14 +444,23 @@ function onExpandImgError(e: Event) {
 }
 
 /** 展开行时异步加载商品明细 */
-async function onExpandChange(row: OrderItem, expanded: boolean) {
-  if (!expanded || expandProducts[row.id]) return
+async function onExpandChange(row: OrderItem, expandedRows: OrderItem[]) {
+  // expandedRows 是当前展开的行列表，通过 row.id 是否在列表中判断展开/折叠
+  const isExpanded = expandedRows.some(r => r.id === row.id)
+
+  if (!isExpanded) {
+    // 折叠 - 清空商品缓存，让「商品」列恢复为「查看商品」
+    expandProducts.set(row.id, [])
+    return
+  }
+  // 已有缓存则直接复用
+  if (expandProducts.get(row.id)?.length) return
   expandLoading.add(row.id)
   try {
     const res = await getOrder(row.id)
-    expandProducts[row.id] = res.order.products || []
+    expandProducts.set(row.id, res.order.products || [])
   } catch {
-    expandProducts[row.id] = []
+    expandProducts.set(row.id, [])
   } finally {
     expandLoading.delete(row.id)
   }
@@ -570,6 +625,7 @@ onUnmounted(() => {
 onMounted(() => {
   loadOrders()
   loadStats()
+  updateSlider()
 })
 </script>
 
@@ -649,32 +705,123 @@ onMounted(() => {
   color: var(--shop-foreground, #1e293b);
 }
 
-/* ---- 标签页 ---- */
+/* ========================================
+   动效
+   ======================================== */
+
+/* ---- 统计卡片错落入场 ---- */
+@keyframes cardSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-card {
+  animation: cardSlideUp 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--i, 0) * 80ms);
+}
+
+/* ---- 标签切换 - 内容淡入淡出 ---- */
+.tab-content-enter-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.tab-content-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.tab-content-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.tab-content-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* ---- 表格行逐行淡入 ---- */
+@keyframes rowFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 通过 CSS 计数器实现错落延迟 */
+.el-table__body {
+  counter-reset: row-counter;
+}
+.el-table__body tr.row-enter {
+  counter-increment: row-counter;
+  animation: rowFadeIn 0.35s ease both;
+  animation-delay: calc(counter(row-counter) * 30ms);
+}
+
+/* ---- 统计卡片悬停增强 ---- */
+.stat-card {
+  cursor: default;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+/* ---- 精美标签页 ---- */
 .tab-bar-wrap {
-  display: flex;
-  gap: 2px;
   margin-bottom: 16px;
-  border-bottom: 1px solid var(--shop-border, #e8e8e8);
-  background: #fff;
-  border-radius: var(--shop-radius-lg, 0.75rem) var(--shop-radius-lg, 0.75rem) 0 0;
+}
+
+.tab-bar-inner {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  background: #f1f5f9;
+  border-radius: var(--shop-radius-lg, 0.75rem);
   border: 1px solid var(--shop-border, #e8e8e8);
-  border-bottom: none;
-  padding: 0 4px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 滑动指示器 */
+.tab-slider {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  border-radius: var(--shop-radius-md, 0.5rem);
+  background: var(--shop-primary, #3b82f6);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+  transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.2s ease;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .tab-item {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 12px 18px;
+  padding: 8px 16px;
+  border-radius: var(--shop-radius-md, 0.5rem);
   cursor: pointer;
   color: var(--shop-muted-foreground, #64748b);
-  font-size: 0.875rem;
-  border-bottom: 2px solid transparent;
-  transition: all var(--shop-transition, 0.2s);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
   user-select: none;
   white-space: nowrap;
+  background: transparent;
+  border: none;
 }
 
 .tab-item:hover {
@@ -682,28 +829,12 @@ onMounted(() => {
 }
 
 .tab-item.active {
-  color: var(--shop-primary, #3b82f6);
-  border-bottom-color: var(--shop-primary, #3b82f6);
+  color: #fff;
   font-weight: 600;
 }
 
-.tab-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 18px;
-  padding: 0 6px;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  border-radius: 10px;
-  background: var(--shop-muted, #f1f5f9);
-  color: var(--shop-muted-foreground, #64748b);
-}
-
-.tab-item.active .tab-count {
-  background: var(--shop-primary-bg, #eef4ff);
-  color: var(--shop-primary, #3b82f6);
+.tab-item.active :deep(svg) {
+  color: #fff;
 }
 
 /* ---- 筛选栏 ---- */

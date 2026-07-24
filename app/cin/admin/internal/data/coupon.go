@@ -55,13 +55,13 @@ func (r *couponRepo) GetCoupon(ctx context.Context, couponID int64) (*biz.Coupon
 
 func (r *couponRepo) CreateCoupon(ctx context.Context, coupon *biz.Coupon) (*biz.Coupon, error) {
 	reply, err := r.data.mc.CreateCoupon(ctx, &marketingRpc.CreateCouponRequest{
-		Name:       coupon.Name,
-		Type:       coupon.Type,
-		Value:      coupon.Value,
-		MinAmount:  coupon.MinAmount,
-		Quantity:   coupon.Quantity,
-		ValidStart: coupon.ValidStart,
-		ValidEnd:   coupon.ValidEnd,
+		Name:        coupon.Name,
+		Type:        coupon.Type,
+		Value:       coupon.Value,
+		MinAmount:   coupon.MinAmount,
+		Quantity:    coupon.Quantity,
+		ValidStart:  coupon.ValidStart,
+		ValidEnd:    coupon.ValidEnd,
 	})
 	if err != nil {
 		return nil, err
@@ -72,15 +72,15 @@ func (r *couponRepo) CreateCoupon(ctx context.Context, coupon *biz.Coupon) (*biz
 
 func (r *couponRepo) UpdateCoupon(ctx context.Context, couponID int64, coupon *biz.Coupon) (*biz.Coupon, error) {
 	_, err := r.data.mc.UpdateCoupon(ctx, &marketingRpc.UpdateCouponRequest{
-		Id:         couponID,
-		Name:       coupon.Name,
-		Type:       coupon.Type,
-		Value:      coupon.Value,
-		MinAmount:  coupon.MinAmount,
-		Quantity:   coupon.Quantity,
-		ValidStart: coupon.ValidStart,
-		ValidEnd:   coupon.ValidEnd,
-		Enabled:    coupon.Enabled,
+		Id:          couponID,
+		Name:        coupon.Name,
+		Type:        coupon.Type,
+		Value:       coupon.Value,
+		MinAmount:   coupon.MinAmount,
+		Quantity:    coupon.Quantity,
+		ValidStart:  coupon.ValidStart,
+		ValidEnd:    coupon.ValidEnd,
+		Enabled:     coupon.Enabled,
 	})
 	if err != nil {
 		return nil, err
@@ -110,28 +110,28 @@ func (r *couponRepo) CouponStats(ctx context.Context) (*biz.CouponStats, error) 
 	}
 
 	return &biz.CouponStats{
-		Total:  reply.TotalCount,
-		Active: reply.ActiveCount,
-		Issued: reply.IssuedCount,
-		Ended:  reply.ExpiredCount,
+		Total:   reply.TotalCount,
+		Active:  reply.ActiveCount,
+		Issued:  reply.IssuedCount,
+		Ended:   reply.ExpiredCount,
 	}, nil
 }
 
 func rpcToBizCoupon(c *marketingRpc.Coupon) *biz.Coupon {
 	return &biz.Coupon{
-		ID:          c.Id,
-		Name:        c.Name,
-		Type:        c.Type,
-		Value:       c.Value,
-		MinAmount:   c.MinAmount,
-		Quantity:    c.Quantity,
-		IssuedCount: c.IssuedCount,
-		UsedCount:   c.UsedCount,
-		ValidStart:  c.ValidStart,
-		ValidEnd:    c.ValidEnd,
-		Status:      c.Status,
-		Enabled:     c.Enabled,
-		CreateTime:  c.CreateTime,
-		UpdateTime:  c.UpdateTime,
+		ID:           c.Id,
+		Name:         c.Name,
+		Type:         c.Type,
+		Value:        c.Value,
+		MinAmount:    c.MinAmount,
+		Quantity:     c.Quantity,
+		IssuedCount:  c.IssuedCount,
+		UsedCount:    c.UsedCount,
+		ValidStart:   c.ValidStart,
+		ValidEnd:     c.ValidEnd,
+		Status:       c.Status,
+		Enabled:      c.Enabled,
+		CreateTime:   c.CreateTime,
+		UpdateTime:   c.UpdateTime,
 	}
 }

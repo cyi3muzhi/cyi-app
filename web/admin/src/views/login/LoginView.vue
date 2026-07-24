@@ -18,7 +18,7 @@
             <path d="M2 12l10 5 10-5"/>
           </svg>
         </div>
-        <h1 class="brand-title">悦选商城</h1>
+        <h1 class="brand-title">{{ store.shopName }}</h1>
         <div class="brand-divider"></div>
         <p class="brand-subtitle">高效管理您的商城运营</p>
 
@@ -51,7 +51,7 @@
       <div class="form-card">
         <!-- 移动端品牌提示 -->
         <div class="mobile-brand">
-          <span class="mobile-brand-name">悦选商城</span>
+          <span class="mobile-brand-name">{{ store.shopName }}</span>
           <p class="mobile-brand-sub">管理后台</p>
         </div>
 
@@ -125,7 +125,7 @@
 
         <!-- 版权信息 -->
         <div class="form-footer">
-          <p>&copy; 2026 悦选商城 版权所有 · 京ICP备2026XXXXXXXX号-1</p>
+          <p>&copy; 2026 {{ store.shopName }} 版权所有 · 京ICP备2026XXXXXXXX号-1</p>
         </div>
       </div>
     </section>
@@ -138,7 +138,7 @@
  * 左侧深色品牌展示 + 右侧白色登录表单卡片
  * 支持表单验证、密码显示/隐藏切换、记住密码
  */
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock, View, Hide } from '@element-plus/icons-vue'
@@ -166,6 +166,11 @@ const loading = ref(false)
 
 /** 错误消息 */
 const errorMsg = ref('')
+
+/** 页面加载时获取商城名称 */
+onMounted(() => {
+  store.fetchShopName()
+})
 
 /** 表单验证规则 */
 const rules = {
@@ -249,6 +254,39 @@ async function handleLogin() {
 </script>
 
 <style scoped>
+/* ========================================
+   通用动效
+   ======================================== */
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeSlideLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeSlideRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-12px) rotate(2deg); }
+}
+
+@keyframes logoPulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(26, 86, 219, 0.35); }
+  50%      { box-shadow: 0 8px 48px rgba(26, 86, 219, 0.55); }
+}
+
+/* ========================================
+   登录页容器
+   ======================================== */
+
 .login-container {
   display: flex;
   min-height: 100vh;
@@ -266,6 +304,7 @@ async function handleLogin() {
   justify-content: center;
   overflow: hidden;
   background: linear-gradient(160deg, hsl(224, 48%, 14%) 0%, hsl(223, 42%, 20%) 50%, hsl(222, 48%, 16%) 100%);
+  animation: fadeSlideLeft 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 @media (min-width: 1024px) {
@@ -281,9 +320,9 @@ async function handleLogin() {
   pointer-events: none;
 }
 
-.deco-circle-1 { width: 480px; height: 480px; top: -120px; right: -80px; opacity: 0.6; }
-.deco-circle-2 { width: 320px; height: 320px; bottom: -60px; left: -100px; opacity: 0.4; }
-.deco-circle-3 { width: 160px; height: 160px; bottom: 25%; right: 15%; opacity: 0.3; }
+.deco-circle-1 { width: 480px; height: 480px; top: -120px; right: -80px; opacity: 0.6; animation: floatSlow 8s ease-in-out infinite; }
+.deco-circle-2 { width: 320px; height: 320px; bottom: -60px; left: -100px; opacity: 0.4; animation: floatSlow 10s ease-in-out infinite reverse; }
+.deco-circle-3 { width: 160px; height: 160px; bottom: 25%; right: 15%; opacity: 0.3; animation: floatSlow 6s ease-in-out infinite 1s; }
 
 .dots-bg {
   position: absolute;
@@ -300,6 +339,17 @@ async function handleLogin() {
   text-align: center;
 }
 
+.brand-content > * {
+  animation: fadeSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.brand-logo     { animation-delay: 0.05s; }
+.brand-title    { animation-delay: 0.15s; }
+.brand-divider  { animation-delay: 0.25s; }
+.brand-subtitle { animation-delay: 0.30s; }
+.feature-list   { animation-delay: 0.40s; }
+.version-badge  { animation-delay: 0.55s; }
+
 .brand-logo {
   width: 80px;
   height: 80px;
@@ -310,6 +360,8 @@ async function handleLogin() {
   justify-content: center;
   background: linear-gradient(135deg, var(--shop-primary), hsl(217, 91%, 38%));
   box-shadow: 0 8px 32px rgba(26, 86, 219, 0.35);
+  animation: logoPulse 3s ease-in-out infinite 1s, fadeSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 1s, 0.05s;
 }
 
 .brand-title {
@@ -395,7 +447,17 @@ async function handleLogin() {
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.97);
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.30);
+  animation: fadeSlideRight 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
+
+/* 表单内容错落入场 */
+.form-card > * {
+  animation: fadeSlideUp 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.mobile-brand { animation-delay: 0.05s; }
+.form-header  { animation-delay: 0.15s; }
+.login-form   { animation-delay: 0.25s; }
+.form-footer  { animation-delay: 0.40s; }
 
 @media (min-width: 640px) {
   .form-card {

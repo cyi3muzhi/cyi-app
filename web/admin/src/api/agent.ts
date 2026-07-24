@@ -1,5 +1,6 @@
 /**
  * 悦选商城管理后台 - 智能体 API 封装
+ * 接口由 admin BFF (cin/admin) 提供，路径前缀 /admin/v1/agent
  */
 import request from './index'
 
@@ -10,13 +11,32 @@ export interface ChatMessage {
 }
 
 /**
- * 发送聊天消息（模拟流式响应）
+ * 清除当前管理员的聊天历史
+ */
+export async function clearChatHistory(): Promise<void> {
+  await request.post('/admin/v1/agent/chat/clear')
+}
+
+/**
+ * 获取当前管理员的聊天历史
+ */
+export async function getChatHistory(): Promise<ChatMessage[]> {
+  try {
+    const res = await request.get<any, any[]>('/admin/v1/agent/chat/history')
+    return res || []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * 发送聊天消息（非流式）
  * @param message 用户输入消息
  * @returns Promise<string> AI 回复内容
  */
 export async function sendChatMessage(message: string): Promise<string> {
   try {
-    const res = await request.post<any, { message: string }>('/blades/v1/chat', { message })
+    const res = await request.post<any, { message: string }>('/admin/v1/agent/chat', { message })
     return res.message || ''
   } catch (error) {
     console.error('智能体聊天失败:', error)
@@ -25,7 +45,7 @@ export async function sendChatMessage(message: string): Promise<string> {
 }
 
 /**
- * 发送聊天消息（流式模式）
+ * 发送聊天消息（SSE 流式模式）
  * @param message 用户输入消息
  * @param onChunk 接收流式数据的回调函数
  * @param onError 错误回调函数
@@ -37,7 +57,9 @@ export async function sendChatMessageStream(
 ): Promise<void> {
   try {
     const token = localStorage.getItem('admin_token')
-    const response = await fetch('/blades/v1/chat', {
+    const baseURL = window.location.origin
+    const url = `${baseURL}/admin/v1/agent/chat/stream`
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -78,20 +100,35 @@ export async function sendChatMessageStream(
             const json = JSON.parse(data)
             if (json.message) {
               onChunk(json.message)
+            } else if (json.chunk) {
+              onChunk(json.chunk)
             }
           } catch {
+            // data 不是 JSON 时，直接输出文本
             if (data) {
               onChunk(data)
             }
           }
-        } else if (trimmed && !trimmed.startsWith('event:')) {
-          onChunk(trimmed)
         }
+        // event: 行、空行等非 data 行直接忽略，不传给用户
       }
     }
 
+    // 剩余 buffer 只输出 data 行内容
     if (buffer) {
-      onChunk(buffer)
+      const trimmed = buffer.trim()
+      if (trimmed.startsWith('data:')) {
+        const data = trimmed.slice(5).trim()
+        if (data && data !== '[DONE]') {
+          try {
+            const json = JSON.parse(data)
+            if (json.chunk) onChunk(json.chunk)
+            else if (json.message) onChunk(json.message)
+          } catch {
+            onChunk(data)
+          }
+        }
+      }
     }
   } catch (error) {
     console.error('智能体流式聊天失败:', error)

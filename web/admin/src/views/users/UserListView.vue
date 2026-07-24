@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <!-- 用户管理页面 - 统计卡片 + 搜索筛选 + 用户表格 + 分页 -->
   <div class="user-list">
     <!-- 统计卡片 -->
@@ -302,8 +302,14 @@ function handleExport() {
 </script>
 
 <style scoped>
+/* ---- 动效 ---- */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .user-list {
-  width: 100%;
+  animation: fadeSlideUp 0.35s ease both;
 }
 
 /* 统计卡片 */
@@ -321,7 +327,12 @@ function handleExport() {
   box-shadow: var(--shop-shadow-sm);
   border: 1px solid var(--shop-border);
   transition: box-shadow 0.2s ease, transform 0.2s ease;
+  animation: fadeSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
+.stat-card:nth-child(1) { animation-delay: 0s; }
+.stat-card:nth-child(2) { animation-delay: 0.08s; }
+.stat-card:nth-child(3) { animation-delay: 0.16s; }
+.stat-card:nth-child(4) { animation-delay: 0.24s; }
 
 .stat-card:hover {
   box-shadow: var(--shop-shadow-md);
@@ -463,6 +474,21 @@ function handleExport() {
   justify-content: center;
   padding: 20px 0 8px;
 }
+
+/* 表格行入场动画 */
+.el-table__body-wrapper tbody tr {
+  animation: fadeSlideUp 0.3s ease both;
+}
+.el-table__body-wrapper tbody tr:nth-child(1) { animation-delay: 0.02s; }
+.el-table__body-wrapper tbody tr:nth-child(2) { animation-delay: 0.04s; }
+.el-table__body-wrapper tbody tr:nth-child(3) { animation-delay: 0.06s; }
+.el-table__body-wrapper tbody tr:nth-child(4) { animation-delay: 0.08s; }
+.el-table__body-wrapper tbody tr:nth-child(5) { animation-delay: 0.10s; }
+.el-table__body-wrapper tbody tr:nth-child(6) { animation-delay: 0.12s; }
+.el-table__body-wrapper tbody tr:nth-child(7) { animation-delay: 0.14s; }
+.el-table__body-wrapper tbody tr:nth-child(8) { animation-delay: 0.16s; }
+.el-table__body-wrapper tbody tr:nth-child(9) { animation-delay: 0.18s; }
+.el-table__body-wrapper tbody tr:nth-child(10) { animation-delay: 0.20s; }
 
 @media (max-width: 1024px) {
   .stats-grid {

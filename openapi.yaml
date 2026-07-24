@@ -1003,25 +1003,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.UpdateSettingsReply'
-    /admin/v1/settings/change_password:
-        post:
-            tags:
-                - Settings
-            description: 修改密码
-            operationId: Settings_ChangePassword
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/api.cin.admin.v1.ChangePasswordRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/api.cin.admin.v1.ChangePasswordReply'
     /admin/v1/staff:
         get:
             tags:
@@ -1811,20 +1792,6 @@ components:
                 avatarBase64:
                     type: string
                     description: 头像图片 Base64 编码
-        api.cin.admin.v1.ChangePasswordReply:
-            type: object
-            properties:
-                success:
-                    type: boolean
-        api.cin.admin.v1.ChangePasswordRequest:
-            type: object
-            properties:
-                oldPassword:
-                    type: string
-                newPassword:
-                    type: string
-                confirmPassword:
-                    type: string
         api.cin.admin.v1.CouponCreateReply:
             type: object
             properties:
@@ -2236,6 +2203,8 @@ components:
             properties:
                 shopName:
                     type: string
+                shopLogo:
+                    type: string
                 shopDescription:
                     type: string
                 contactPhone:
@@ -2244,12 +2213,48 @@ components:
                     type: string
                 icpRecord:
                     type: string
-                orderNotification:
+                autoConfirmDays:
+                    type: integer
+                    format: int32
+                autoCloseMinutes:
+                    type: integer
+                    format: int32
+                refundTimeoutDays:
+                    type: integer
+                    format: int32
+                stockAlertThreshold:
+                    type: integer
+                    format: int32
+                newProductOnline:
                     type: boolean
-                registerNotification:
+                productApproval:
                     type: boolean
-                systemNotification:
+                newOrderNotify:
                     type: boolean
+                refundNotify:
+                    type: boolean
+                userRegisterNotify:
+                    type: boolean
+                stockAlertNotify:
+                    type: boolean
+                loginAttemptLimit:
+                    type: boolean
+                loginCaptcha:
+                    type: boolean
+                sessionTimeoutMinutes:
+                    type: integer
+                    format: int32
+                enabledPayments:
+                    type: array
+                    items:
+                        type: string
+                defaultPayment:
+                    type: string
+                freeShippingThreshold:
+                    type: number
+                    format: double
+                defaultShippingCompany:
+                    type: string
         api.cin.admin.v1.GetUploadTokenReply:
             type: object
             properties:
@@ -2831,6 +2836,8 @@ components:
             properties:
                 shopName:
                     type: string
+                shopLogo:
+                    type: string
                 shopDescription:
                     type: string
                 contactPhone:
@@ -2839,12 +2846,48 @@ components:
                     type: string
                 icpRecord:
                     type: string
-                orderNotification:
+                autoConfirmDays:
+                    type: integer
+                    format: int32
+                autoCloseMinutes:
+                    type: integer
+                    format: int32
+                refundTimeoutDays:
+                    type: integer
+                    format: int32
+                stockAlertThreshold:
+                    type: integer
+                    format: int32
+                newProductOnline:
                     type: boolean
-                registerNotification:
+                productApproval:
                     type: boolean
-                systemNotification:
+                newOrderNotify:
                     type: boolean
+                refundNotify:
+                    type: boolean
+                userRegisterNotify:
+                    type: boolean
+                stockAlertNotify:
+                    type: boolean
+                loginAttemptLimit:
+                    type: boolean
+                loginCaptcha:
+                    type: boolean
+                sessionTimeoutMinutes:
+                    type: integer
+                    format: int32
+                enabledPayments:
+                    type: array
+                    items:
+                        type: string
+                defaultPayment:
+                    type: string
+                freeShippingThreshold:
+                    type: number
+                    format: double
+                defaultShippingCompany:
+                    type: string
         api.cin.admin.v1.UpdateStaffReply:
             type: object
             properties:

@@ -48,13 +48,14 @@
         </div>
       </div>
 
-      <!-- Tab 内容: 角色列表 -->
-      <div v-show="activeTab === 'list'" class="tab-content">
-        <div class="tab-header">
-          <span style="font-weight:600;font-size:0.9375rem;">所有角色</span>
-          <span class="tab-total">共 {{ roles.length }} 个角色</span>
-        </div>
-        <el-table :data="roles" stripe highlight-current-row>
+      <!-- Tab 内容 -->
+      <Transition name="tab-fade" mode="out-in">
+        <div v-if="activeTab === 'list'" key="list" class="tab-content">
+          <div class="tab-header">
+            <span style="font-weight:600;font-size:0.9375rem;">所有角色</span>
+            <span class="tab-total">共 {{ roles.length }} 个角色</span>
+          </div>
+          <el-table :data="roles" stripe highlight-current-row row-class-name="row-enter">
           <el-table-column prop="name" label="角色名称" min-width="120">
             <template #default="{ row }">
               <el-tag :color="row.color" effect="dark" size="small" class="color-tag">{{ row.name }}</el-tag>
@@ -97,7 +98,8 @@
       </div>
 
       <!-- Tab 内容: 权限配置 -->
-      <div v-if="currentRole && activeTab === 'permission'" class="tab-content">
+      <div v-else key="permission" class="tab-content">
+        <template v-if="currentRole">
         <div class="perm-header">
           <h3>权限配置</h3>
           <div class="perm-summary">
@@ -110,7 +112,8 @@
           type="info" :closable="false" show-icon class="perm-hint" />
         <div class="perm-body">
           <div class="perm-grid">
-            <div class="perm-module" v-for="mod in permModules" :key="mod.key">
+            <div class="perm-module" v-for="(mod, idx) in permModules" :key="mod.key"
+              :style="{ animationDelay: `${0.02 + idx * 0.05}s` }">
               <div class="perm-module-header">
                 <span class="perm-module-title">{{ mod.title }}</span>
                 <el-button
@@ -143,7 +146,8 @@
           <el-button @click="resetPermissions" :disabled="isSuperAdmin">重置</el-button>
           <el-button type="primary" @click="savePermissions" :disabled="isSuperAdmin">保存权限</el-button>
         </div>
-      </div>
+        </template>
+      </div></Transition>
     </el-card>
 
     <!-- 添加/编辑角色对话框 -->
@@ -520,12 +524,54 @@ async function confirmDelete() {
 </script>
 
 <style scoped>
+/* ---- 动效 ---- */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes rowFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.roles-page {
+  animation: fadeSlideUp 0.35s ease both;
+  padding-bottom: 24px;
+}
+
+/* 统计卡片错落入场 */
+.stat-card {
+  animation: fadeSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.stat-card:nth-child(1) { animation-delay: 0s; }
+.stat-card:nth-child(2) { animation-delay: 0.08s; }
+.stat-card:nth-child(3) { animation-delay: 0.16s; }
+.stat-card:nth-child(4) { animation-delay: 0.24s; }
+
+/* 表格行逐行淡入 */
+.el-table__body {
+  counter-reset: row-counter;
+}
+.el-table__body tr.row-enter {
+  counter-increment: row-counter;
+  animation: rowFadeIn 0.35s ease both;
+  animation-delay: calc(counter(row-counter) * 25ms);
+}
+
+/* 权限模块错落入场（延迟由内联 style 计算） */
+.perm-module {
+  animation: fadeSlideUp 0.35s ease both;
+}
+
+/* Tab 切换淡入淡出 */
+.tab-fade-enter-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.tab-fade-leave-active { transition: opacity 0.15s ease, transform 0.15s ease; }
+.tab-fade-enter-from { opacity: 0; transform: translateY(6px); }
+.tab-fade-leave-to { opacity: 0; transform: translateY(-4px); }
+
 /* 自定义颜色标签去掉 Element Plus 默认蓝色边框 */
 .color-tag {
   border: none !important;
-}
-.roles-page {
-  padding-bottom: 24px;
 }
 
 .page-header {

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -67,6 +68,13 @@ func (m *DeepSeekModel) Generate(ctx context.Context, req *blades.ModelRequest) 
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
 	defer resp.Body.Close()
+
+	// 检查 HTTP 状态码
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("deepseek api error: status=%d, body=%s", resp.StatusCode, string(bodyBytes))
+	}
+
 	var apiResp struct {
 		Choices []struct {
 			Message struct {
@@ -127,6 +135,15 @@ func (m *DeepSeekModel) NewStreaming(ctx context.Context, req *blades.ModelReque
 			return
 		}
 		defer resp.Body.Close()
+
+		// 检查 HTTP 状态码
+		if resp.StatusCode != http.StatusOK {
+			bodyBytes, _ := io.ReadAll(resp.Body)
+			errMsg := fmt.Sprintf("deepseek api error: status=%d, body=%s", resp.StatusCode, string(bodyBytes))
+			yield(nil, fmt.Errorf(errMsg))
+			return
+		}
+
 		scanner := NewSSEScanner(resp.Body)
 		for scanner.Scan() {
 			data := scanner.Data()

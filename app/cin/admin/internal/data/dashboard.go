@@ -3,9 +3,12 @@ package data
 import (
 	"context"
 
+	orderRpc "cyi-app/api/service/order/v1"
+	productRpc "cyi-app/api/service/product/v1"
 	"cyi-app/app/cin/admin/internal/biz"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type dashboardRepo struct {
@@ -13,7 +16,7 @@ type dashboardRepo struct {
 	data *Data
 }
 
-// NewDashboardRepo 创建仪表盘数据仓库，返回 mock 数据
+// NewDashboardRepo 创建仪表盘数据仓库
 func NewDashboardRepo(data *Data, logger log.Logger) biz.DashboardRepo {
 	return &dashboardRepo{
 		log:  log.NewHelper(logger),
@@ -21,18 +24,69 @@ func NewDashboardRepo(data *Data, logger log.Logger) biz.DashboardRepo {
 	}
 }
 
-// GetDashboardStats 获取仪表盘统计数据（mock 数据）
+// GetDashboardStats 获取仪表盘统计数据（实时数据）
 func (r *dashboardRepo) GetDashboardStats(ctx context.Context) (*biz.DashboardStats, error) {
-	return &biz.DashboardStats{
-		TodayOrders:    128,
-		TodayRevenue:   "45680",
-		TotalUsers:     23568,
-		TotalProducts:  1286,
-		OrdersGrowth:   12.5,
-		RevenueGrowth:  8.3,
-		UsersGrowth:    5.2,
-		ProductsGrowth: 3.1,
-	}, nil
+	// 并行查询各服务
+	type statsResult struct {
+		orderStats *orderRpc.OrderStatsReply
+		userCount  int64
+		prodCount  int32
+	}
+
+	result := &statsResult{}
+	errCh := make(chan error, 3)
+
+	// 查询订单统计
+	go func() {
+		stats, err := r.data.oc.OrderStats(ctx, &orderRpc.OrderStatsRequest{})
+		if err != nil {
+			errCh <- err
+			return
+		}
+		result.orderStats = stats
+		errCh <- nil
+	}()
+
+	// 查询用户总数
+	go func() {
+		rep, err := r.data.uc.UserCount(ctx, &emptypb.Empty{})
+		if err != nil {
+			errCh <- err
+			return
+		}
+		result.userCount = rep.Count
+		errCh <- nil
+	}()
+
+	// 查询商品总数（取第一页拿到 total）
+	go func() {
+		rep, err := r.data.pc.ListProduct(ctx, &productRpc.ListProductRequest{Page: 1, PageSize: 1})
+		if err != nil {
+			errCh <- err
+			return
+		}
+		result.prodCount = rep.Total
+		errCh <- nil
+	}()
+
+	// 等待所有查询完成
+	for i := 0; i < 3; i++ {
+		if err := <-errCh; err != nil {
+			r.log.Warnf("获取仪表盘数据部分失败: %v", err)
+		}
+	}
+
+	stats := &biz.DashboardStats{}
+	if result.orderStats != nil {
+		stats.TodayOrders = int64(result.orderStats.TodayCount)
+		stats.TotalProducts = int64(result.prodCount)
+	}
+	stats.TotalUsers = result.userCount
+	if result.prodCount > 0 {
+		stats.TotalProducts = int64(result.prodCount)
+	}
+
+	return stats, nil
 }
 
 // GetOrderTrend 获取近14日订单趋势（mock 数据）

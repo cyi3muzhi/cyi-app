@@ -23,12 +23,21 @@
             </span>
           </div>
         </div>
-        <button class="agent-close" @click="store.toggleAgentPanel()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
+        <div class="agent-header-actions">
+          <el-button class="agent-clear-btn" size="small" @click="handleClearHistory">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            新对话
+          </el-button>
+          <button class="agent-close" @click="store.toggleAgentPanel()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div class="agent-messages" ref="messagesContainer">
@@ -56,7 +65,12 @@
               </svg>
             </div>
             <div v-else class="avatar-user">
-              {{ store.adminInfo?.avatar?.charAt(0) || '管' }}
+              <img
+                v-if="store.adminInfo?.avatar && store.adminInfo.avatar.startsWith('http')"
+                :src="store.adminInfo.avatar"
+                class="avatar-user-img"
+              />
+              <span v-else>{{ store.adminInfo?.name?.charAt(0) || '管' }}</span>
             </div>
           </div>
           <div class="message-content">
@@ -134,7 +148,7 @@
 <script setup lang="ts">
 import { ref, nextTick, watch, onMounted } from 'vue'
 import { useAppStore } from '../store/app'
-import { sendChatMessage, type ChatMessage } from '../api/agent'
+import { sendChatMessageStream, clearChatHistory, getChatHistory, type ChatMessage } from '../api/agent'
 
 const store = useAppStore()
 const inputMessage = ref('')
@@ -153,14 +167,20 @@ const quickActions = [
   { label: '用户增长', query: '本月用户增长情况如何？' }
 ]
 
-onMounted(() => {
-  messages.value = [
-    {
-      role: 'assistant',
-      content: '您好！我是悦选商城的智能助手，请问有什么可以帮助您的？',
-      timestamp: Date.now()
-    }
-  ]
+onMounted(async () => {
+  // 尝试从后端加载聊天历史
+  const history = await getChatHistory()
+  if (history && history.length > 0) {
+    messages.value = history
+  } else {
+    messages.value = [
+      {
+        role: 'assistant',
+        content: '您好！我是悦选商城的智能助手，请问有什么可以帮助您的？',
+        timestamp: Date.now()
+      }
+    ]
+  }
 
   const container = messagesContainer.value
   if (container) {
@@ -210,19 +230,48 @@ async function handleSend() {
   await nextTick()
   scrollToBottom()
 
+  // 先插入一条空的助手消息，后续流式追加内容
+  const assistantMsg: ChatMessage = {
+    role: 'assistant',
+    content: '',
+    timestamp: Date.now()
+  }
+  messages.value.push(assistantMsg)
+
+  // 批量更新：将多个 chunk 合并到同一帧更新，减少重排次数
+  let pendingContent = ''
+  let rafBatchId = 0
+
+  function flushBatch() {
+    if (!pendingContent) return
+    assistantMsg.content += pendingContent
+    pendingContent = ''
+    messages.value = [...messages.value]
+    scrollToBottom()
+  }
+
   try {
-    const reply = await sendChatMessage(msg)
-    messages.value.push({
-      role: 'assistant',
-      content: reply,
-      timestamp: Date.now()
+    await sendChatMessageStream(msg, (chunk) => {
+      pendingContent += chunk
+      if (!rafBatchId) {
+        rafBatchId = requestAnimationFrame(() => {
+          rafBatchId = 0
+          flushBatch()
+        })
+      }
     })
+    // 流结束后，确保最后一批内容已刷新
+    if (rafBatchId) {
+      cancelAnimationFrame(rafBatchId)
+      rafBatchId = 0
+    }
+    flushBatch()
   } catch (error) {
-    messages.value.push({
-      role: 'assistant',
-      content: '抱歉，服务暂时不可用，请稍后再试。',
-      timestamp: Date.now()
-    })
+    // 如果完全没有内容，显示错误提示
+    if (!assistantMsg.content) {
+      assistantMsg.content = '抱歉，服务暂时不可用，请稍后再试。'
+      messages.value = [...messages.value]
+    }
   } finally {
     isLoading.value = false
     await nextTick()
@@ -233,6 +282,22 @@ async function handleSend() {
 function handleQuickAction(query: string) {
   inputMessage.value = query
   handleSend()
+}
+
+/** 清除聊天历史，开始新对话 */
+async function handleClearHistory() {
+  messages.value = [
+    {
+      role: 'assistant',
+      content: '您好！我是悦选商城的智能助手，请问有什么可以帮助您的？',
+      timestamp: Date.now()
+    }
+  ]
+  try {
+    await clearChatHistory()
+  } catch {
+    // 静默失败
+  }
 }
 
 /* ────────── 消息元素 ref ────────── */
@@ -357,11 +422,11 @@ function handleScroll() {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0);
-  transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .agent-panel.open .agent-overlay {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .agent-drawer {
@@ -391,13 +456,38 @@ function handleScroll() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px;
+  padding: 16px 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
   background-size: 200% 200%;
   animation: headerGradient 8s ease infinite;
   position: relative;
   z-index: 10;
   overflow: hidden;
+}
+
+.agent-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+.agent-clear-btn {
+  color: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  font-size: 0.75rem !important;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.agent-clear-btn:hover {
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
 }
 
 @keyframes headerGradient {
@@ -654,6 +744,14 @@ function handleScroll() {
   box-shadow: 
     0 4px 12px rgba(16, 185, 129, 0.3),
     0 0 20px rgba(16, 185, 129, 0.1);
+  overflow: hidden;
+}
+
+.avatar-user-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
 }
 
 .message-content {

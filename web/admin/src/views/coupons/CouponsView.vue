@@ -62,6 +62,7 @@
       style="width: 100%"
       size="small"
       v-loading="loading"
+      row-class-name="row-enter"
     >
       <el-table-column type="expand">
         <template #default="{ row }">
@@ -521,6 +522,38 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ---- 动效 ---- */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes rowFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.coupon-list {
+  animation: fadeSlideUp 0.35s ease both;
+}
+
+.stat-card {
+  animation: fadeSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.stat-card:nth-child(1) { animation-delay: 0s; }
+.stat-card:nth-child(2) { animation-delay: 0.08s; }
+.stat-card:nth-child(3) { animation-delay: 0.16s; }
+.stat-card:nth-child(4) { animation-delay: 0.24s; }
+
+/* 表格行逐行淡入 */
+.el-table__body {
+  counter-reset: row-counter;
+}
+.el-table__body tr.row-enter {
+  counter-increment: row-counter;
+  animation: rowFadeIn 0.35s ease both;
+  animation-delay: calc(counter(row-counter) * 25ms);
+}
+
 .coupon-list {
   width: 100%;
 }

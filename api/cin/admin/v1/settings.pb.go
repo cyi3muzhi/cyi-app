@@ -59,17 +59,32 @@ func (*GetSettingsRequest) Descriptor() ([]byte, []int) {
 }
 
 type GetSettingsReply struct {
-	state                protoimpl.MessageState `protogen:"open.v1"`
-	ShopName             string                 `protobuf:"bytes,1,opt,name=shop_name,json=shopName,proto3" json:"shop_name,omitempty"`
-	ShopDescription      string                 `protobuf:"bytes,2,opt,name=shop_description,json=shopDescription,proto3" json:"shop_description,omitempty"`
-	ContactPhone         string                 `protobuf:"bytes,3,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`
-	ContactEmail         string                 `protobuf:"bytes,4,opt,name=contact_email,json=contactEmail,proto3" json:"contact_email,omitempty"`
-	IcpRecord            string                 `protobuf:"bytes,5,opt,name=icp_record,json=icpRecord,proto3" json:"icp_record,omitempty"`
-	OrderNotification    bool                   `protobuf:"varint,6,opt,name=order_notification,json=orderNotification,proto3" json:"order_notification,omitempty"`
-	RegisterNotification bool                   `protobuf:"varint,7,opt,name=register_notification,json=registerNotification,proto3" json:"register_notification,omitempty"`
-	SystemNotification   bool                   `protobuf:"varint,8,opt,name=system_notification,json=systemNotification,proto3" json:"system_notification,omitempty"`
-	unknownFields        protoimpl.UnknownFields
-	sizeCache            protoimpl.SizeCache
+	state                  protoimpl.MessageState `protogen:"open.v1"`
+	ShopName               string                 `protobuf:"bytes,1,opt,name=shop_name,json=shopName,proto3" json:"shop_name,omitempty"`
+	ShopLogo               string                 `protobuf:"bytes,2,opt,name=shop_logo,json=shopLogo,proto3" json:"shop_logo,omitempty"`
+	ShopDescription        string                 `protobuf:"bytes,3,opt,name=shop_description,json=shopDescription,proto3" json:"shop_description,omitempty"`
+	ContactPhone           string                 `protobuf:"bytes,4,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`
+	ContactEmail           string                 `protobuf:"bytes,5,opt,name=contact_email,json=contactEmail,proto3" json:"contact_email,omitempty"`
+	IcpRecord              string                 `protobuf:"bytes,6,opt,name=icp_record,json=icpRecord,proto3" json:"icp_record,omitempty"`
+	AutoConfirmDays        int32                  `protobuf:"varint,7,opt,name=auto_confirm_days,json=autoConfirmDays,proto3" json:"auto_confirm_days,omitempty"`
+	AutoCloseMinutes       int32                  `protobuf:"varint,8,opt,name=auto_close_minutes,json=autoCloseMinutes,proto3" json:"auto_close_minutes,omitempty"`
+	RefundTimeoutDays      int32                  `protobuf:"varint,9,opt,name=refund_timeout_days,json=refundTimeoutDays,proto3" json:"refund_timeout_days,omitempty"`
+	StockAlertThreshold    int32                  `protobuf:"varint,10,opt,name=stock_alert_threshold,json=stockAlertThreshold,proto3" json:"stock_alert_threshold,omitempty"`
+	NewProductOnline       bool                   `protobuf:"varint,11,opt,name=new_product_online,json=newProductOnline,proto3" json:"new_product_online,omitempty"`
+	ProductApproval        bool                   `protobuf:"varint,12,opt,name=product_approval,json=productApproval,proto3" json:"product_approval,omitempty"`
+	NewOrderNotify         bool                   `protobuf:"varint,13,opt,name=new_order_notify,json=newOrderNotify,proto3" json:"new_order_notify,omitempty"`
+	RefundNotify           bool                   `protobuf:"varint,14,opt,name=refund_notify,json=refundNotify,proto3" json:"refund_notify,omitempty"`
+	UserRegisterNotify     bool                   `protobuf:"varint,15,opt,name=user_register_notify,json=userRegisterNotify,proto3" json:"user_register_notify,omitempty"`
+	StockAlertNotify       bool                   `protobuf:"varint,16,opt,name=stock_alert_notify,json=stockAlertNotify,proto3" json:"stock_alert_notify,omitempty"`
+	LoginAttemptLimit      bool                   `protobuf:"varint,17,opt,name=login_attempt_limit,json=loginAttemptLimit,proto3" json:"login_attempt_limit,omitempty"`
+	LoginCaptcha           bool                   `protobuf:"varint,18,opt,name=login_captcha,json=loginCaptcha,proto3" json:"login_captcha,omitempty"`
+	SessionTimeoutMinutes  int32                  `protobuf:"varint,19,opt,name=session_timeout_minutes,json=sessionTimeoutMinutes,proto3" json:"session_timeout_minutes,omitempty"`
+	EnabledPayments        []string               `protobuf:"bytes,20,rep,name=enabled_payments,json=enabledPayments,proto3" json:"enabled_payments,omitempty"`
+	DefaultPayment         string                 `protobuf:"bytes,21,opt,name=default_payment,json=defaultPayment,proto3" json:"default_payment,omitempty"`
+	FreeShippingThreshold  float64                `protobuf:"fixed64,22,opt,name=free_shipping_threshold,json=freeShippingThreshold,proto3" json:"free_shipping_threshold,omitempty"`
+	DefaultShippingCompany string                 `protobuf:"bytes,23,opt,name=default_shipping_company,json=defaultShippingCompany,proto3" json:"default_shipping_company,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *GetSettingsReply) Reset() {
@@ -109,6 +124,13 @@ func (x *GetSettingsReply) GetShopName() string {
 	return ""
 }
 
+func (x *GetSettingsReply) GetShopLogo() string {
+	if x != nil {
+		return x.ShopLogo
+	}
+	return ""
+}
+
 func (x *GetSettingsReply) GetShopDescription() string {
 	if x != nil {
 		return x.ShopDescription
@@ -137,39 +159,152 @@ func (x *GetSettingsReply) GetIcpRecord() string {
 	return ""
 }
 
-func (x *GetSettingsReply) GetOrderNotification() bool {
+func (x *GetSettingsReply) GetAutoConfirmDays() int32 {
 	if x != nil {
-		return x.OrderNotification
+		return x.AutoConfirmDays
+	}
+	return 0
+}
+
+func (x *GetSettingsReply) GetAutoCloseMinutes() int32 {
+	if x != nil {
+		return x.AutoCloseMinutes
+	}
+	return 0
+}
+
+func (x *GetSettingsReply) GetRefundTimeoutDays() int32 {
+	if x != nil {
+		return x.RefundTimeoutDays
+	}
+	return 0
+}
+
+func (x *GetSettingsReply) GetStockAlertThreshold() int32 {
+	if x != nil {
+		return x.StockAlertThreshold
+	}
+	return 0
+}
+
+func (x *GetSettingsReply) GetNewProductOnline() bool {
+	if x != nil {
+		return x.NewProductOnline
 	}
 	return false
 }
 
-func (x *GetSettingsReply) GetRegisterNotification() bool {
+func (x *GetSettingsReply) GetProductApproval() bool {
 	if x != nil {
-		return x.RegisterNotification
+		return x.ProductApproval
 	}
 	return false
 }
 
-func (x *GetSettingsReply) GetSystemNotification() bool {
+func (x *GetSettingsReply) GetNewOrderNotify() bool {
 	if x != nil {
-		return x.SystemNotification
+		return x.NewOrderNotify
 	}
 	return false
+}
+
+func (x *GetSettingsReply) GetRefundNotify() bool {
+	if x != nil {
+		return x.RefundNotify
+	}
+	return false
+}
+
+func (x *GetSettingsReply) GetUserRegisterNotify() bool {
+	if x != nil {
+		return x.UserRegisterNotify
+	}
+	return false
+}
+
+func (x *GetSettingsReply) GetStockAlertNotify() bool {
+	if x != nil {
+		return x.StockAlertNotify
+	}
+	return false
+}
+
+func (x *GetSettingsReply) GetLoginAttemptLimit() bool {
+	if x != nil {
+		return x.LoginAttemptLimit
+	}
+	return false
+}
+
+func (x *GetSettingsReply) GetLoginCaptcha() bool {
+	if x != nil {
+		return x.LoginCaptcha
+	}
+	return false
+}
+
+func (x *GetSettingsReply) GetSessionTimeoutMinutes() int32 {
+	if x != nil {
+		return x.SessionTimeoutMinutes
+	}
+	return 0
+}
+
+func (x *GetSettingsReply) GetEnabledPayments() []string {
+	if x != nil {
+		return x.EnabledPayments
+	}
+	return nil
+}
+
+func (x *GetSettingsReply) GetDefaultPayment() string {
+	if x != nil {
+		return x.DefaultPayment
+	}
+	return ""
+}
+
+func (x *GetSettingsReply) GetFreeShippingThreshold() float64 {
+	if x != nil {
+		return x.FreeShippingThreshold
+	}
+	return 0
+}
+
+func (x *GetSettingsReply) GetDefaultShippingCompany() string {
+	if x != nil {
+		return x.DefaultShippingCompany
+	}
+	return ""
 }
 
 type UpdateSettingsRequest struct {
-	state                protoimpl.MessageState `protogen:"open.v1"`
-	ShopName             string                 `protobuf:"bytes,1,opt,name=shop_name,json=shopName,proto3" json:"shop_name,omitempty"`
-	ShopDescription      string                 `protobuf:"bytes,2,opt,name=shop_description,json=shopDescription,proto3" json:"shop_description,omitempty"`
-	ContactPhone         string                 `protobuf:"bytes,3,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`
-	ContactEmail         string                 `protobuf:"bytes,4,opt,name=contact_email,json=contactEmail,proto3" json:"contact_email,omitempty"`
-	IcpRecord            string                 `protobuf:"bytes,5,opt,name=icp_record,json=icpRecord,proto3" json:"icp_record,omitempty"`
-	OrderNotification    bool                   `protobuf:"varint,6,opt,name=order_notification,json=orderNotification,proto3" json:"order_notification,omitempty"`
-	RegisterNotification bool                   `protobuf:"varint,7,opt,name=register_notification,json=registerNotification,proto3" json:"register_notification,omitempty"`
-	SystemNotification   bool                   `protobuf:"varint,8,opt,name=system_notification,json=systemNotification,proto3" json:"system_notification,omitempty"`
-	unknownFields        protoimpl.UnknownFields
-	sizeCache            protoimpl.SizeCache
+	state                  protoimpl.MessageState `protogen:"open.v1"`
+	ShopName               string                 `protobuf:"bytes,1,opt,name=shop_name,json=shopName,proto3" json:"shop_name,omitempty"`
+	ShopLogo               string                 `protobuf:"bytes,2,opt,name=shop_logo,json=shopLogo,proto3" json:"shop_logo,omitempty"`
+	ShopDescription        string                 `protobuf:"bytes,3,opt,name=shop_description,json=shopDescription,proto3" json:"shop_description,omitempty"`
+	ContactPhone           string                 `protobuf:"bytes,4,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`
+	ContactEmail           string                 `protobuf:"bytes,5,opt,name=contact_email,json=contactEmail,proto3" json:"contact_email,omitempty"`
+	IcpRecord              string                 `protobuf:"bytes,6,opt,name=icp_record,json=icpRecord,proto3" json:"icp_record,omitempty"`
+	AutoConfirmDays        int32                  `protobuf:"varint,7,opt,name=auto_confirm_days,json=autoConfirmDays,proto3" json:"auto_confirm_days,omitempty"`
+	AutoCloseMinutes       int32                  `protobuf:"varint,8,opt,name=auto_close_minutes,json=autoCloseMinutes,proto3" json:"auto_close_minutes,omitempty"`
+	RefundTimeoutDays      int32                  `protobuf:"varint,9,opt,name=refund_timeout_days,json=refundTimeoutDays,proto3" json:"refund_timeout_days,omitempty"`
+	StockAlertThreshold    int32                  `protobuf:"varint,10,opt,name=stock_alert_threshold,json=stockAlertThreshold,proto3" json:"stock_alert_threshold,omitempty"`
+	NewProductOnline       bool                   `protobuf:"varint,11,opt,name=new_product_online,json=newProductOnline,proto3" json:"new_product_online,omitempty"`
+	ProductApproval        bool                   `protobuf:"varint,12,opt,name=product_approval,json=productApproval,proto3" json:"product_approval,omitempty"`
+	NewOrderNotify         bool                   `protobuf:"varint,13,opt,name=new_order_notify,json=newOrderNotify,proto3" json:"new_order_notify,omitempty"`
+	RefundNotify           bool                   `protobuf:"varint,14,opt,name=refund_notify,json=refundNotify,proto3" json:"refund_notify,omitempty"`
+	UserRegisterNotify     bool                   `protobuf:"varint,15,opt,name=user_register_notify,json=userRegisterNotify,proto3" json:"user_register_notify,omitempty"`
+	StockAlertNotify       bool                   `protobuf:"varint,16,opt,name=stock_alert_notify,json=stockAlertNotify,proto3" json:"stock_alert_notify,omitempty"`
+	LoginAttemptLimit      bool                   `protobuf:"varint,17,opt,name=login_attempt_limit,json=loginAttemptLimit,proto3" json:"login_attempt_limit,omitempty"`
+	LoginCaptcha           bool                   `protobuf:"varint,18,opt,name=login_captcha,json=loginCaptcha,proto3" json:"login_captcha,omitempty"`
+	SessionTimeoutMinutes  int32                  `protobuf:"varint,19,opt,name=session_timeout_minutes,json=sessionTimeoutMinutes,proto3" json:"session_timeout_minutes,omitempty"`
+	EnabledPayments        []string               `protobuf:"bytes,20,rep,name=enabled_payments,json=enabledPayments,proto3" json:"enabled_payments,omitempty"`
+	DefaultPayment         string                 `protobuf:"bytes,21,opt,name=default_payment,json=defaultPayment,proto3" json:"default_payment,omitempty"`
+	FreeShippingThreshold  float64                `protobuf:"fixed64,22,opt,name=free_shipping_threshold,json=freeShippingThreshold,proto3" json:"free_shipping_threshold,omitempty"`
+	DefaultShippingCompany string                 `protobuf:"bytes,23,opt,name=default_shipping_company,json=defaultShippingCompany,proto3" json:"default_shipping_company,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *UpdateSettingsRequest) Reset() {
@@ -209,6 +344,13 @@ func (x *UpdateSettingsRequest) GetShopName() string {
 	return ""
 }
 
+func (x *UpdateSettingsRequest) GetShopLogo() string {
+	if x != nil {
+		return x.ShopLogo
+	}
+	return ""
+}
+
 func (x *UpdateSettingsRequest) GetShopDescription() string {
 	if x != nil {
 		return x.ShopDescription
@@ -237,25 +379,123 @@ func (x *UpdateSettingsRequest) GetIcpRecord() string {
 	return ""
 }
 
-func (x *UpdateSettingsRequest) GetOrderNotification() bool {
+func (x *UpdateSettingsRequest) GetAutoConfirmDays() int32 {
 	if x != nil {
-		return x.OrderNotification
+		return x.AutoConfirmDays
+	}
+	return 0
+}
+
+func (x *UpdateSettingsRequest) GetAutoCloseMinutes() int32 {
+	if x != nil {
+		return x.AutoCloseMinutes
+	}
+	return 0
+}
+
+func (x *UpdateSettingsRequest) GetRefundTimeoutDays() int32 {
+	if x != nil {
+		return x.RefundTimeoutDays
+	}
+	return 0
+}
+
+func (x *UpdateSettingsRequest) GetStockAlertThreshold() int32 {
+	if x != nil {
+		return x.StockAlertThreshold
+	}
+	return 0
+}
+
+func (x *UpdateSettingsRequest) GetNewProductOnline() bool {
+	if x != nil {
+		return x.NewProductOnline
 	}
 	return false
 }
 
-func (x *UpdateSettingsRequest) GetRegisterNotification() bool {
+func (x *UpdateSettingsRequest) GetProductApproval() bool {
 	if x != nil {
-		return x.RegisterNotification
+		return x.ProductApproval
 	}
 	return false
 }
 
-func (x *UpdateSettingsRequest) GetSystemNotification() bool {
+func (x *UpdateSettingsRequest) GetNewOrderNotify() bool {
 	if x != nil {
-		return x.SystemNotification
+		return x.NewOrderNotify
 	}
 	return false
+}
+
+func (x *UpdateSettingsRequest) GetRefundNotify() bool {
+	if x != nil {
+		return x.RefundNotify
+	}
+	return false
+}
+
+func (x *UpdateSettingsRequest) GetUserRegisterNotify() bool {
+	if x != nil {
+		return x.UserRegisterNotify
+	}
+	return false
+}
+
+func (x *UpdateSettingsRequest) GetStockAlertNotify() bool {
+	if x != nil {
+		return x.StockAlertNotify
+	}
+	return false
+}
+
+func (x *UpdateSettingsRequest) GetLoginAttemptLimit() bool {
+	if x != nil {
+		return x.LoginAttemptLimit
+	}
+	return false
+}
+
+func (x *UpdateSettingsRequest) GetLoginCaptcha() bool {
+	if x != nil {
+		return x.LoginCaptcha
+	}
+	return false
+}
+
+func (x *UpdateSettingsRequest) GetSessionTimeoutMinutes() int32 {
+	if x != nil {
+		return x.SessionTimeoutMinutes
+	}
+	return 0
+}
+
+func (x *UpdateSettingsRequest) GetEnabledPayments() []string {
+	if x != nil {
+		return x.EnabledPayments
+	}
+	return nil
+}
+
+func (x *UpdateSettingsRequest) GetDefaultPayment() string {
+	if x != nil {
+		return x.DefaultPayment
+	}
+	return ""
+}
+
+func (x *UpdateSettingsRequest) GetFreeShippingThreshold() float64 {
+	if x != nil {
+		return x.FreeShippingThreshold
+	}
+	return 0
+}
+
+func (x *UpdateSettingsRequest) GetDefaultShippingCompany() string {
+	if x != nil {
+		return x.DefaultShippingCompany
+	}
+	return ""
 }
 
 type UpdateSettingsReply struct {
@@ -302,148 +542,69 @@ func (x *UpdateSettingsReply) GetSuccess() bool {
 	return false
 }
 
-type ChangePasswordRequest struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	OldPassword     string                 `protobuf:"bytes,1,opt,name=old_password,json=oldPassword,proto3" json:"old_password,omitempty"`
-	NewPassword     string                 `protobuf:"bytes,2,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
-	ConfirmPassword string                 `protobuf:"bytes,3,opt,name=confirm_password,json=confirmPassword,proto3" json:"confirm_password,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
-}
-
-func (x *ChangePasswordRequest) Reset() {
-	*x = ChangePasswordRequest{}
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ChangePasswordRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ChangePasswordRequest) ProtoMessage() {}
-
-func (x *ChangePasswordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ChangePasswordRequest.ProtoReflect.Descriptor instead.
-func (*ChangePasswordRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_settings_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *ChangePasswordRequest) GetOldPassword() string {
-	if x != nil {
-		return x.OldPassword
-	}
-	return ""
-}
-
-func (x *ChangePasswordRequest) GetNewPassword() string {
-	if x != nil {
-		return x.NewPassword
-	}
-	return ""
-}
-
-func (x *ChangePasswordRequest) GetConfirmPassword() string {
-	if x != nil {
-		return x.ConfirmPassword
-	}
-	return ""
-}
-
-type ChangePasswordReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ChangePasswordReply) Reset() {
-	*x = ChangePasswordReply{}
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ChangePasswordReply) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ChangePasswordReply) ProtoMessage() {}
-
-func (x *ChangePasswordReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ChangePasswordReply.ProtoReflect.Descriptor instead.
-func (*ChangePasswordReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_admin_v1_settings_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *ChangePasswordReply) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
 var File_api_cin_admin_v1_settings_proto protoreflect.FileDescriptor
 
 const file_api_cin_admin_v1_settings_proto_rawDesc = "" +
 	"\n" +
 	"\x1fapi/cin/admin/v1/settings.proto\x12\x10api.cin.admin.v1\x1a\x1cgoogle/api/annotations.proto\"\x14\n" +
-	"\x12GetSettingsRequest\"\xd8\x02\n" +
+	"\x12GetSettingsRequest\"\xf9\a\n" +
 	"\x10GetSettingsReply\x12\x1b\n" +
-	"\tshop_name\x18\x01 \x01(\tR\bshopName\x12)\n" +
-	"\x10shop_description\x18\x02 \x01(\tR\x0fshopDescription\x12#\n" +
-	"\rcontact_phone\x18\x03 \x01(\tR\fcontactPhone\x12#\n" +
-	"\rcontact_email\x18\x04 \x01(\tR\fcontactEmail\x12\x1d\n" +
+	"\tshop_name\x18\x01 \x01(\tR\bshopName\x12\x1b\n" +
+	"\tshop_logo\x18\x02 \x01(\tR\bshopLogo\x12)\n" +
+	"\x10shop_description\x18\x03 \x01(\tR\x0fshopDescription\x12#\n" +
+	"\rcontact_phone\x18\x04 \x01(\tR\fcontactPhone\x12#\n" +
+	"\rcontact_email\x18\x05 \x01(\tR\fcontactEmail\x12\x1d\n" +
 	"\n" +
-	"icp_record\x18\x05 \x01(\tR\ticpRecord\x12-\n" +
-	"\x12order_notification\x18\x06 \x01(\bR\x11orderNotification\x123\n" +
-	"\x15register_notification\x18\a \x01(\bR\x14registerNotification\x12/\n" +
-	"\x13system_notification\x18\b \x01(\bR\x12systemNotification\"\xdd\x02\n" +
+	"icp_record\x18\x06 \x01(\tR\ticpRecord\x12*\n" +
+	"\x11auto_confirm_days\x18\a \x01(\x05R\x0fautoConfirmDays\x12,\n" +
+	"\x12auto_close_minutes\x18\b \x01(\x05R\x10autoCloseMinutes\x12.\n" +
+	"\x13refund_timeout_days\x18\t \x01(\x05R\x11refundTimeoutDays\x122\n" +
+	"\x15stock_alert_threshold\x18\n" +
+	" \x01(\x05R\x13stockAlertThreshold\x12,\n" +
+	"\x12new_product_online\x18\v \x01(\bR\x10newProductOnline\x12)\n" +
+	"\x10product_approval\x18\f \x01(\bR\x0fproductApproval\x12(\n" +
+	"\x10new_order_notify\x18\r \x01(\bR\x0enewOrderNotify\x12#\n" +
+	"\rrefund_notify\x18\x0e \x01(\bR\frefundNotify\x120\n" +
+	"\x14user_register_notify\x18\x0f \x01(\bR\x12userRegisterNotify\x12,\n" +
+	"\x12stock_alert_notify\x18\x10 \x01(\bR\x10stockAlertNotify\x12.\n" +
+	"\x13login_attempt_limit\x18\x11 \x01(\bR\x11loginAttemptLimit\x12#\n" +
+	"\rlogin_captcha\x18\x12 \x01(\bR\floginCaptcha\x126\n" +
+	"\x17session_timeout_minutes\x18\x13 \x01(\x05R\x15sessionTimeoutMinutes\x12)\n" +
+	"\x10enabled_payments\x18\x14 \x03(\tR\x0fenabledPayments\x12'\n" +
+	"\x0fdefault_payment\x18\x15 \x01(\tR\x0edefaultPayment\x126\n" +
+	"\x17free_shipping_threshold\x18\x16 \x01(\x01R\x15freeShippingThreshold\x128\n" +
+	"\x18default_shipping_company\x18\x17 \x01(\tR\x16defaultShippingCompany\"\xfe\a\n" +
 	"\x15UpdateSettingsRequest\x12\x1b\n" +
-	"\tshop_name\x18\x01 \x01(\tR\bshopName\x12)\n" +
-	"\x10shop_description\x18\x02 \x01(\tR\x0fshopDescription\x12#\n" +
-	"\rcontact_phone\x18\x03 \x01(\tR\fcontactPhone\x12#\n" +
-	"\rcontact_email\x18\x04 \x01(\tR\fcontactEmail\x12\x1d\n" +
+	"\tshop_name\x18\x01 \x01(\tR\bshopName\x12\x1b\n" +
+	"\tshop_logo\x18\x02 \x01(\tR\bshopLogo\x12)\n" +
+	"\x10shop_description\x18\x03 \x01(\tR\x0fshopDescription\x12#\n" +
+	"\rcontact_phone\x18\x04 \x01(\tR\fcontactPhone\x12#\n" +
+	"\rcontact_email\x18\x05 \x01(\tR\fcontactEmail\x12\x1d\n" +
 	"\n" +
-	"icp_record\x18\x05 \x01(\tR\ticpRecord\x12-\n" +
-	"\x12order_notification\x18\x06 \x01(\bR\x11orderNotification\x123\n" +
-	"\x15register_notification\x18\a \x01(\bR\x14registerNotification\x12/\n" +
-	"\x13system_notification\x18\b \x01(\bR\x12systemNotification\"/\n" +
+	"icp_record\x18\x06 \x01(\tR\ticpRecord\x12*\n" +
+	"\x11auto_confirm_days\x18\a \x01(\x05R\x0fautoConfirmDays\x12,\n" +
+	"\x12auto_close_minutes\x18\b \x01(\x05R\x10autoCloseMinutes\x12.\n" +
+	"\x13refund_timeout_days\x18\t \x01(\x05R\x11refundTimeoutDays\x122\n" +
+	"\x15stock_alert_threshold\x18\n" +
+	" \x01(\x05R\x13stockAlertThreshold\x12,\n" +
+	"\x12new_product_online\x18\v \x01(\bR\x10newProductOnline\x12)\n" +
+	"\x10product_approval\x18\f \x01(\bR\x0fproductApproval\x12(\n" +
+	"\x10new_order_notify\x18\r \x01(\bR\x0enewOrderNotify\x12#\n" +
+	"\rrefund_notify\x18\x0e \x01(\bR\frefundNotify\x120\n" +
+	"\x14user_register_notify\x18\x0f \x01(\bR\x12userRegisterNotify\x12,\n" +
+	"\x12stock_alert_notify\x18\x10 \x01(\bR\x10stockAlertNotify\x12.\n" +
+	"\x13login_attempt_limit\x18\x11 \x01(\bR\x11loginAttemptLimit\x12#\n" +
+	"\rlogin_captcha\x18\x12 \x01(\bR\floginCaptcha\x126\n" +
+	"\x17session_timeout_minutes\x18\x13 \x01(\x05R\x15sessionTimeoutMinutes\x12)\n" +
+	"\x10enabled_payments\x18\x14 \x03(\tR\x0fenabledPayments\x12'\n" +
+	"\x0fdefault_payment\x18\x15 \x01(\tR\x0edefaultPayment\x126\n" +
+	"\x17free_shipping_threshold\x18\x16 \x01(\x01R\x15freeShippingThreshold\x128\n" +
+	"\x18default_shipping_company\x18\x17 \x01(\tR\x16defaultShippingCompany\"/\n" +
 	"\x13UpdateSettingsReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x88\x01\n" +
-	"\x15ChangePasswordRequest\x12!\n" +
-	"\fold_password\x18\x01 \x01(\tR\voldPassword\x12!\n" +
-	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\x12)\n" +
-	"\x10confirm_password\x18\x03 \x01(\tR\x0fconfirmPassword\"/\n" +
-	"\x13ChangePasswordReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\x92\x03\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\x80\x02\n" +
 	"\bSettings\x12s\n" +
 	"\vGetSettings\x12$.api.cin.admin.v1.GetSettingsRequest\x1a\".api.cin.admin.v1.GetSettingsReply\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/admin/v1/settings\x12\x7f\n" +
-	"\x0eUpdateSettings\x12'.api.cin.admin.v1.UpdateSettingsRequest\x1a%.api.cin.admin.v1.UpdateSettingsReply\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\x1a\x12/admin/v1/settings\x12\x8f\x01\n" +
-	"\x0eChangePassword\x12'.api.cin.admin.v1.ChangePasswordRequest\x1a%.api.cin.admin.v1.ChangePasswordReply\"-\x82\xd3\xe4\x93\x02':\x01*\"\"/admin/v1/settings/change_passwordB6\n" +
+	"\x0eUpdateSettings\x12'.api.cin.admin.v1.UpdateSettingsRequest\x1a%.api.cin.admin.v1.UpdateSettingsReply\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\x1a\x12/admin/v1/settingsB6\n" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (
@@ -458,24 +619,20 @@ func file_api_cin_admin_v1_settings_proto_rawDescGZIP() []byte {
 	return file_api_cin_admin_v1_settings_proto_rawDescData
 }
 
-var file_api_cin_admin_v1_settings_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_api_cin_admin_v1_settings_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_api_cin_admin_v1_settings_proto_goTypes = []any{
 	(*GetSettingsRequest)(nil),    // 0: api.cin.admin.v1.GetSettingsRequest
 	(*GetSettingsReply)(nil),      // 1: api.cin.admin.v1.GetSettingsReply
 	(*UpdateSettingsRequest)(nil), // 2: api.cin.admin.v1.UpdateSettingsRequest
 	(*UpdateSettingsReply)(nil),   // 3: api.cin.admin.v1.UpdateSettingsReply
-	(*ChangePasswordRequest)(nil), // 4: api.cin.admin.v1.ChangePasswordRequest
-	(*ChangePasswordReply)(nil),   // 5: api.cin.admin.v1.ChangePasswordReply
 }
 var file_api_cin_admin_v1_settings_proto_depIdxs = []int32{
 	0, // 0: api.cin.admin.v1.Settings.GetSettings:input_type -> api.cin.admin.v1.GetSettingsRequest
 	2, // 1: api.cin.admin.v1.Settings.UpdateSettings:input_type -> api.cin.admin.v1.UpdateSettingsRequest
-	4, // 2: api.cin.admin.v1.Settings.ChangePassword:input_type -> api.cin.admin.v1.ChangePasswordRequest
-	1, // 3: api.cin.admin.v1.Settings.GetSettings:output_type -> api.cin.admin.v1.GetSettingsReply
-	3, // 4: api.cin.admin.v1.Settings.UpdateSettings:output_type -> api.cin.admin.v1.UpdateSettingsReply
-	5, // 5: api.cin.admin.v1.Settings.ChangePassword:output_type -> api.cin.admin.v1.ChangePasswordReply
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	1, // 2: api.cin.admin.v1.Settings.GetSettings:output_type -> api.cin.admin.v1.GetSettingsReply
+	3, // 3: api.cin.admin.v1.Settings.UpdateSettings:output_type -> api.cin.admin.v1.UpdateSettingsReply
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -492,7 +649,7 @@ func file_api_cin_admin_v1_settings_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_settings_proto_rawDesc), len(file_api_cin_admin_v1_settings_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

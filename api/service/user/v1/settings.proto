@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package api.service.user.v1;
+
+option go_package = "cyi-app/api/service/user/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.service.user.v1";
+
+// 用户服务 - 系统设置管理
+service AdminSettings {
+  // 获取系统设置
+  rpc GetSettings (GetSettingsRequest) returns (GetSettingsReply);
+  // 更新系统设置
+  rpc UpdateSettings (UpdateSettingsRequest) returns (UpdateSettingsReply);
+}
+
+message GetSettingsRequest {}
+
+message GetSettingsReply {
+  string shop_name = 1;
+  string shop_logo = 2;
+  string shop_description = 3;
+  string contact_phone = 4;
+  string contact_email = 5;
+  string icp_record = 6;
+  int32 auto_confirm_days = 7;
+  int32 auto_close_minutes = 8;
+  int32 refund_timeout_days = 9;
+  int32 stock_alert_threshold = 10;
+  bool new_product_online = 11;
+  bool product_approval = 12;
+  bool new_order_notify = 13;
+  bool refund_notify = 14;
+  bool user_register_notify = 15;
+  bool stock_alert_notify = 16;
+  bool login_attempt_limit = 17;
+  bool login_captcha = 18;
+  int32 session_timeout_minutes = 19;
+  repeated string enabled_payments = 20;
+  string default_payment = 21;
+  double free_shipping_threshold = 22;
+  string default_shipping_company = 23;
+}
+
+message UpdateSettingsRequest {
+  string shop_name = 1;
+  string shop_logo = 2;
+  string shop_description = 3;
+  string contact_phone = 4;
+  string contact_email = 5;
+  string icp_record = 6;
+  int32 auto_confirm_days = 7;
+  int32 auto_close_minutes = 8;
+  int32 refund_timeout_days = 9;
+  int32 stock_alert_threshold = 10;
+  bool new_product_online = 11;
+  bool product_approval = 12;
+  bool new_order_notify = 13;
+  bool refund_notify = 14;
+  bool user_register_notify = 15;
+  bool stock_alert_notify = 16;
+  bool login_attempt_limit = 17;
+  bool login_captcha = 18;
+  int32 session_timeout_minutes = 19;
+  repeated string enabled_payments = 20;
+  string default_payment = 21;
+  double free_shipping_threshold = 22;
+  string default_shipping_company = 23;
+}
+
+message UpdateSettingsReply {
+  bool success = 1;
+}

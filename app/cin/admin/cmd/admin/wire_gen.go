@@ -25,7 +25,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, meter *middleware.Meter) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blades *conf.Blades, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, meter *middleware.Meter) (*kratos.App, func(), error) {
 	traceTracerProvider := provideTracerProvider(tracerProvider)
 	discovery := server.NewDiscovery(registry)
 	adminRoleClient := data.NewAdminRoleClient(discovery, confServer, auth, traceTracerProvider, meter)
@@ -68,11 +68,20 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	couponRepo := data.NewCouponRepo(dataData, logger)
 	couponUseCase := biz.NewCouponUseCase(couponRepo, logger)
 	uploadRepo := data.NewUploadRepo(dataData, logger)
-	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, staffUseCase, categoryUseCase, orderUseCase, exportUseCase, couponUseCase, uploadRepo, logger)
+	universalClient := data.ProvideUniversalClient(client)
+	agentUseCase, err := biz.NewAgentUseCase(blades, universalClient, dashboardUseCase, orderUseCase, enforcerProvider, logger)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	adminSettingsClient := data.NewAdminSettingsClient(discovery, confServer, auth, traceTracerProvider, meter)
+	settingsRepo := data.NewSettingsRepo(adminSettingsClient, logger)
+	settingsUseCase := biz.NewSettingsUseCase(settingsRepo, logger)
+	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, staffUseCase, categoryUseCase, orderUseCase, exportUseCase, couponUseCase, uploadRepo, agentUseCase, settingsUseCase, logger)
 	server2 := server.NewGRPCServer(grpcServer, adminService)
 	tokenValidator := data.NewTokenValidator(client)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth, tokenValidator, enforcerProvider)
-	server3 := server.NewHTTPServer(httpServer, adminService)
+	server3 := server.NewHTTPServer(httpServer, adminService, auth)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, server2, server3, registrar)
 	return app, func() {

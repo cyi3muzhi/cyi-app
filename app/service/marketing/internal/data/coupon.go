@@ -176,11 +176,15 @@ func (r *couponRepo) CouponStats(ctx context.Context) (*biz.CouponStats, error) 
 		return nil, err
 	}
 
-	var issuedCount int64
+	var issuedCount *int64
 	err = curd.Q.Coupon.WithContext(ctx).
 		Select(curd.Coupon.IssuedCount.Sum()).Scan(&issuedCount)
 	if err != nil {
 		return nil, err
+	}
+	issuedVal := int64(0)
+	if issuedCount != nil {
+		issuedVal = *issuedCount
 	}
 
 	expiredCount, err := curd.Q.Coupon.WithContext(ctx).
@@ -193,7 +197,7 @@ func (r *couponRepo) CouponStats(ctx context.Context) (*biz.CouponStats, error) 
 	return &biz.CouponStats{
 		TotalCount:   int32(total),
 		ActiveCount:  int32(activeCount),
-		IssuedCount:  issuedCount,
+		IssuedCount:  issuedVal,
 		ExpiredCount: int32(expiredCount),
 	}, nil
 }

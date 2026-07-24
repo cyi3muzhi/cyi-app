@@ -11,7 +11,7 @@
     <AppSidebar />
 
     <!-- 主区域 -->
-    <div class="main-wrapper" :style="{ marginLeft: store.sidebarWidth }">
+    <div class="main-wrapper" :class="{ 'glass-blur': store.agentPanelOpen }" :style="{ marginLeft: store.sidebarWidth }">
       <AppTopbar />
 
       <main class="content-area">
@@ -19,7 +19,7 @@
       </main>
 
       <footer class="admin-footer">
-        &copy; 2026 悦选商城 - All Rights Reserved. 管理后台 v2.0
+        &copy; 2026 {{ store.shopName }} - All Rights Reserved. 管理后台 v2.0
       </footer>
     </div>
 
@@ -91,6 +91,13 @@ onUnmounted(() => {
 .content-area {
   flex: 1;
   padding: 24px;
+}
+
+.main-wrapper.glass-blur {
+  filter: blur(5px);
+  pointer-events: none;
+  user-select: none;
+  transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-footer {

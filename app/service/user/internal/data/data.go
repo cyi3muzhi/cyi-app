@@ -28,6 +28,7 @@ var ProviderSet = wire.NewSet(
 	NewUserRepo,
 	NewAdminUserRepo,
 	NewRoleRepo,
+	NewSettingsRepo,
 	NewData,
 	NewDB,
 	NewRedisClient,
@@ -73,7 +74,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 	// 仅在非生产环境自动迁移表结构（生产环境禁止使用 AutoMigrate）
 	env := os.Getenv("SERVICE_ENV")
 	if env != "production" {
-		if err := db.AutoMigrate(&mod.User{}, &mod.AdminUser{}, &mod.CasbinRule{}, &mod.RoleMeta{}); err != nil {
+		if err := db.AutoMigrate(&mod.User{}, &mod.AdminUser{}, &mod.CasbinRule{}, &mod.RoleMeta{}, &mod.SettingsRow{}); err != nil {
 			panic(err)
 		}
 

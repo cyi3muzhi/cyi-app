@@ -31,16 +31,19 @@ var ProviderSet = wire.NewSet(
 	NewUploadRepo,
 	NewOrderRepo,
 	NewCouponRepo,
+	NewSettingsRepo,
 	NewProductServiceClient,
 	NewCategoryServiceClient,
 	NewAdminUserServiceClient,
 	NewAdminRoleClient,
+	NewAdminSettingsClient,
 	NewOrderServiceClient,
 	NewUserServiceClient,
 	NewCouponServiceClient,
 	NewTokenValidator,
 	NewOssClient,
 	NewRedisClient,
+	ProvideUniversalClient,
 	NewRoleRepo,
 	NewRemoteEnforcer,
 	ProvideEnforcerProvider,
@@ -107,4 +110,9 @@ func NewTokenValidator(rdb *redis.Client) mid.TokenValidator {
 		}
 		return nil
 	}
+}
+
+// ProvideUniversalClient 将 *redis.Client 转换为 redis.UniversalClient（供 wire 注入）
+func ProvideUniversalClient(client *redis.Client) redis.UniversalClient {
+	return client
 }

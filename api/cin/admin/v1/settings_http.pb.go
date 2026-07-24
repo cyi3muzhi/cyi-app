@@ -19,13 +19,10 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationSettingsChangePassword = "/api.cin.admin.v1.Settings/ChangePassword"
 const OperationSettingsGetSettings = "/api.cin.admin.v1.Settings/GetSettings"
 const OperationSettingsUpdateSettings = "/api.cin.admin.v1.Settings/UpdateSettings"
 
 type SettingsHTTPServer interface {
-	// ChangePassword 修改密码
-	ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordReply, error)
 	// GetSettings 获取系统设置
 	GetSettings(context.Context, *GetSettingsRequest) (*GetSettingsReply, error)
 	// UpdateSettings 更新系统设置
@@ -36,7 +33,6 @@ func RegisterSettingsHTTPServer(s *http.Server, srv SettingsHTTPServer) {
 	r := s.Route("/")
 	r.GET("/admin/v1/settings", _Settings_GetSettings0_HTTP_Handler(srv))
 	r.PUT("/admin/v1/settings", _Settings_UpdateSettings0_HTTP_Handler(srv))
-	r.POST("/admin/v1/settings/change_password", _Settings_ChangePassword0_HTTP_Handler(srv))
 }
 
 func _Settings_GetSettings0_HTTP_Handler(srv SettingsHTTPServer) func(ctx http.Context) error {
@@ -80,31 +76,7 @@ func _Settings_UpdateSettings0_HTTP_Handler(srv SettingsHTTPServer) func(ctx htt
 	}
 }
 
-func _Settings_ChangePassword0_HTTP_Handler(srv SettingsHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in ChangePasswordRequest
-		if err := ctx.Bind(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationSettingsChangePassword)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.ChangePassword(ctx, req.(*ChangePasswordRequest))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*ChangePasswordReply)
-		return ctx.Result(200, reply)
-	}
-}
-
 type SettingsHTTPClient interface {
-	// ChangePassword 修改密码
-	ChangePassword(ctx context.Context, req *ChangePasswordRequest, opts ...http.CallOption) (rsp *ChangePasswordReply, err error)
 	// GetSettings 获取系统设置
 	GetSettings(ctx context.Context, req *GetSettingsRequest, opts ...http.CallOption) (rsp *GetSettingsReply, err error)
 	// UpdateSettings 更新系统设置
@@ -117,20 +89,6 @@ type SettingsHTTPClientImpl struct {
 
 func NewSettingsHTTPClient(client *http.Client) SettingsHTTPClient {
 	return &SettingsHTTPClientImpl{client}
-}
-
-// ChangePassword 修改密码
-func (c *SettingsHTTPClientImpl) ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...http.CallOption) (*ChangePasswordReply, error) {
-	var out ChangePasswordReply
-	pattern := "/admin/v1/settings/change_password"
-	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationSettingsChangePassword))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
 }
 
 // GetSettings 获取系统设置

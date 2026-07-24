@@ -53,7 +53,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	roleRepo := data.NewRoleRepo(enforcer, db, logger)
 	roleUseCase := biz.NewRoleUseCase(roleRepo, logger)
 	adminRoleService := service.NewAdminRoleService(roleUseCase, logger)
-	server2 := server.NewServer(grpcServer, userService, adminUserService, adminRoleService)
+	settingsRepo := data.NewSettingsRepo(dataData, logger)
+	settingsUseCase := biz.NewSettingsUseCase(settingsRepo, logger)
+	adminSettingsService := service.NewAdminSettingsService(settingsUseCase)
+	server2 := server.NewServer(grpcServer, userService, adminUserService, adminRoleService, adminSettingsService)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, server2, registrar)
 	return app, func() {

@@ -29,11 +29,18 @@
     </div>
 
     <!-- Tabs -->
-    <div class="tab-bar">
-      <div v-for="tab in tabItems" :key="tab.key"
-        :class="['tab-item', { active: currentTab === tab.key }]"
-        @click="switchTab(tab.key)">
-        {{ tab.label }}
+    <div class="tab-bar-wrap">
+      <div class="tab-bar-inner" ref="barInner">
+        <div class="tab-slider" :style="sliderStyle" />
+        <div v-for="tab in tabItems" :key="tab.key"
+          :ref="el => setTabRef(tab.key, el)"
+          :class="['tab-item', { active: currentTab === tab.key }]"
+          @click="switchTab(tab.key)">
+          <el-icon :size="16">
+            <component :is="tab.icon" />
+          </el-icon>
+          {{ tab.label }}
+        </div>
       </div>
     </div>
 
@@ -104,8 +111,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { Plus, Search } from '@element-plus/icons-vue'
+import { ref, onMounted, nextTick } from 'vue'
+import { Plus, Search, Grid, Upload, Download, WarningFilled } from '@element-plus/icons-vue'
 import { listCategoryTree } from '../../api/category'
 import { useProductList } from '../../composables/useProductList'
 
@@ -123,13 +130,36 @@ function previewImage(url: string) {
 }
 
 const tabItems = [
-  { key: '', label: '全部' },
-  { key: '上架', label: '上架' },
-  { key: '下架', label: '下架' },
-  { key: '缺货', label: '缺货' },
+  { key: '', label: '全部', icon: Grid },
+  { key: '上架', label: '上架', icon: Upload },
+  { key: '下架', label: '下架', icon: Download },
+  { key: '缺货', label: '缺货', icon: WarningFilled },
 ]
 
 const currentTab = ref('')
+
+/** 滑动指示器 */
+const barInner = ref<HTMLElement | null>(null)
+const tabRefs = ref<Record<string, HTMLElement>>({})
+const sliderStyle = ref({ width: '0px', left: '0px', opacity: 0 })
+
+function setTabRef(key: string, el: any) {
+  if (el) tabRefs.value[key] = el
+}
+
+async function updateSlider() {
+  await nextTick()
+  const activeEl = tabRefs.value[currentTab.value]
+  if (activeEl && barInner.value) {
+    const containerRect = barInner.value.getBoundingClientRect()
+    const elRect = activeEl.getBoundingClientRect()
+    sliderStyle.value = {
+      width: `${elRect.width}px`,
+      left: `${elRect.left - containerRect.left}px`,
+      opacity: 1,
+    }
+  }
+}
 
 function switchTab(tab: string) {
   currentTab.value = tab
@@ -140,6 +170,7 @@ function switchTab(tab: string) {
     filters.value.status = tab
     filters.value.stock_eq = -1  // -1 表示不按库存筛选
   }
+  updateSlider()
   handleFilter()
 }
 
@@ -191,6 +222,7 @@ onMounted(async () => {
     categoryTree.value = []
   }
   loadProducts()
+  nextTick(() => updateSlider())
 })
 </script>
 
@@ -206,10 +238,62 @@ onMounted(async () => {
 .bulk-bar { display: flex; align-items: center; gap: 16px; padding: 8px 16px; background: #e6f7ff; border: 1px solid #91d5ff; border-radius: 6px; font-size: 14px; }
 .bulk-count { color: #1890ff; }
 .bulk-actions { display: flex; gap: 8px; }
-.tab-bar { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid #e8e8e8; }
-.tab-item { padding: 8px 20px; cursor: pointer; color: #666; font-size: 14px; border-bottom: 2px solid transparent; transition: all 0.2s; user-select: none; }
-.tab-item:hover { color: #409eff; }
-.tab-item.active { color: #409eff; border-bottom-color: #409eff; font-weight: 600; }
+.tab-bar-wrap {
+  margin-bottom: 16px;
+}
+
+.tab-bar-inner {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  background: #f1f5f9;
+  border-radius: var(--shop-radius-lg, 0.75rem);
+  border: 1px solid var(--shop-border, #e8e8e8);
+}
+
+/* 滑动指示器 */
+.tab-slider {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  border-radius: var(--shop-radius-md, 0.5rem);
+  background: var(--shop-primary, #3b82f6);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+  transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.2s ease;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.tab-item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: var(--shop-radius-md, 0.5rem);
+  cursor: pointer;
+  color: var(--shop-muted-foreground, #64748b);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  user-select: none;
+  white-space: nowrap;
+  background: transparent;
+  border: none;
+}
+
+.tab-item:hover {
+  color: var(--shop-primary, #3b82f6);
+}
+
+.tab-item.active {
+  color: #fff;
+  font-weight: 600;
+}
 .pagination-wrap { display: flex; justify-content: flex-end; padding: 16px 0; }
 .img-placeholder { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; color: #ccc; font-size: 12px; border-radius: 4px; }
 .stock-warning { color: #f56c6c; font-weight: 600; }
