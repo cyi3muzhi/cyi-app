@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <header class="topbar">
     <div class="topbar-left">
       <el-button class="hamburger-btn" @click="store.toggleSidebar" text>
@@ -18,6 +18,23 @@
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
           </svg>
         </el-badge>
+      </el-button>
+
+      <el-button
+        class="agent-btn"
+        circle
+        @click="store.toggleAgentPanel()"
+        :class="{ active: store.agentPanelOpen }"
+      >
+        <span class="agent-icon-wrapper">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="4"/>
+            <line x1="21.17" y1="8" x2="12" y2="8"/>
+            <line x1="3.95" y1="6.06" x2="8.54" y2="14"/>
+            <line x1="10.88" y1="21.94" x2="15.46" y2="14"/>
+          </svg>
+        </span>
       </el-button>
 
       <el-dropdown trigger="click">
@@ -203,6 +220,89 @@ function goProfile() {
   border: none;
   font-size: 1.25rem;
   color: var(--shop-muted-foreground);
+}
+
+.agent-btn {
+  border: none;
+  font-size: 1.25rem;
+  color: #fff;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  animation: agentRotate 3s linear infinite;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.agent-btn::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  opacity: 0.5;
+  animation: agentRotate 3s linear infinite;
+  filter: blur(8px);
+  z-index: -1;
+}
+
+.agent-btn::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent, #667eea, #764ba2, #f093fb, transparent);
+  opacity: 0.3;
+  animation: agentRotate 4s linear infinite;
+  filter: blur(12px);
+  z-index: -2;
+}
+
+.agent-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px rgba(102, 126, 234, 0.6);
+}
+
+.agent-btn.active {
+  animation: none;
+  background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+}
+
+.agent-btn.active::before {
+  animation: none;
+  background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+}
+
+.agent-btn.active::after {
+  animation: none;
+  background: conic-gradient(from 0deg, transparent, #10b981, #3b82f6, transparent);
+}
+
+.agent-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: agentCounterRotate 3s linear infinite;
+}
+
+.agent-btn.active .agent-icon-wrapper {
+  animation: none;
+}
+
+@keyframes agentRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes agentCounterRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+@keyframes agentPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
 .admin-avatar-wrap {

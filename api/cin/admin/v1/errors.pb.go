@@ -44,6 +44,12 @@ const (
 	AdminErrorReason_USER_CREATE_FAILED        AdminErrorReason = 301
 	AdminErrorReason_USER_UPDATE_FAILED_ADMIN  AdminErrorReason = 302
 	AdminErrorReason_USER_TOGGLE_STATUS_FAILED AdminErrorReason = 303
+	// 优惠券模块 400-499
+	AdminErrorReason_COUPON_NOT_FOUND      AdminErrorReason = 400
+	AdminErrorReason_COUPON_CREATE_FAILED  AdminErrorReason = 401
+	AdminErrorReason_COUPON_UPDATE_FAILED  AdminErrorReason = 402
+	AdminErrorReason_COUPON_DELETE_FAILED  AdminErrorReason = 403
+	AdminErrorReason_COUPON_STATUS_INVALID AdminErrorReason = 404
 )
 
 // Enum value maps for AdminErrorReason.
@@ -63,6 +69,11 @@ var (
 		301: "USER_CREATE_FAILED",
 		302: "USER_UPDATE_FAILED_ADMIN",
 		303: "USER_TOGGLE_STATUS_FAILED",
+		400: "COUPON_NOT_FOUND",
+		401: "COUPON_CREATE_FAILED",
+		402: "COUPON_UPDATE_FAILED",
+		403: "COUPON_DELETE_FAILED",
+		404: "COUPON_STATUS_INVALID",
 	}
 	AdminErrorReason_value = map[string]int32{
 		"UNAUTHORIZED":              0,
@@ -79,6 +90,11 @@ var (
 		"USER_CREATE_FAILED":        301,
 		"USER_UPDATE_FAILED_ADMIN":  302,
 		"USER_TOGGLE_STATUS_FAILED": 303,
+		"COUPON_NOT_FOUND":          400,
+		"COUPON_CREATE_FAILED":      401,
+		"COUPON_UPDATE_FAILED":      402,
+		"COUPON_DELETE_FAILED":      403,
+		"COUPON_STATUS_INVALID":     404,
 	}
 )
 
@@ -113,7 +129,7 @@ var File_api_cin_admin_v1_errors_proto protoreflect.FileDescriptor
 
 const file_api_cin_admin_v1_errors_proto_rawDesc = "" +
 	"\n" +
-	"\x1dapi/cin/admin/v1/errors.proto\x12\x10api.cin.admin.v1\x1a\x13errors/errors.proto*\xbf\x03\n" +
+	"\x1dapi/cin/admin/v1/errors.proto\x12\x10api.cin.admin.v1\x1a\x13errors/errors.proto*\xe1\x04\n" +
 	"\x10AdminErrorReason\x12\x16\n" +
 	"\fUNAUTHORIZED\x10\x00\x1a\x04\xa8E\x91\x03\x12\x13\n" +
 	"\tFORBIDDEN\x10\x01\x1a\x04\xa8E\x93\x03\x12\x13\n" +
@@ -128,7 +144,12 @@ const file_api_cin_admin_v1_errors_proto_rawDesc = "" +
 	"\x14USER_NOT_FOUND_ADMIN\x10\xac\x02\x1a\x04\xa8E\x94\x03\x12\x1d\n" +
 	"\x12USER_CREATE_FAILED\x10\xad\x02\x1a\x04\xa8E\xa6\x03\x12#\n" +
 	"\x18USER_UPDATE_FAILED_ADMIN\x10\xae\x02\x1a\x04\xa8E\xa6\x03\x12$\n" +
-	"\x19USER_TOGGLE_STATUS_FAILED\x10\xaf\x02\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\x90\x03B6\n" +
+	"\x19USER_TOGGLE_STATUS_FAILED\x10\xaf\x02\x1a\x04\xa8E\xa6\x03\x12\x1b\n" +
+	"\x10COUPON_NOT_FOUND\x10\x90\x03\x1a\x04\xa8E\x94\x03\x12\x1f\n" +
+	"\x14COUPON_CREATE_FAILED\x10\x91\x03\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
+	"\x14COUPON_UPDATE_FAILED\x10\x92\x03\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
+	"\x14COUPON_DELETE_FAILED\x10\x93\x03\x1a\x04\xa8E\xa6\x03\x12 \n" +
+	"\x15COUPON_STATUS_INVALID\x10\x94\x03\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\x90\x03B6\n" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (

@@ -8,6 +8,7 @@ import (
 	orderRpc "cyi-app/api/service/order/v1"
 	productRpc "cyi-app/api/service/product/v1"
 	userRpc "cyi-app/api/service/user/v1"
+	marketingRpc "cyi-app/api/service/marketing/v1"
 	"cyi-app/app/cin/admin/internal/conf"
 	"cyi-app/pkg/util/rustfs"
 
@@ -29,12 +30,14 @@ var ProviderSet = wire.NewSet(
 	NewStaffRepo,
 	NewUploadRepo,
 	NewOrderRepo,
+	NewCouponRepo,
 	NewProductServiceClient,
 	NewCategoryServiceClient,
 	NewAdminUserServiceClient,
 	NewAdminRoleClient,
 	NewOrderServiceClient,
 	NewUserServiceClient,
+	NewCouponServiceClient,
 	NewTokenValidator,
 	NewOssClient,
 	NewRedisClient,
@@ -53,6 +56,7 @@ type Data struct {
 	auc         userRpc.AdminUserClient
 	oc          orderRpc.OrderClient
 	uc          userRpc.UserClient
+	mc          marketingRpc.CouponServiceClient
 	oss         *rustfs.RustFSClient
 	redis       *redis.Client
 	asynqClient *asynq.Client
@@ -61,12 +65,12 @@ type Data struct {
 // NewData 创建数据层实例
 // admin 仅持有 asynq.Client 用于投递任务，不持有 asynq.Server；
 // cleanup 时关闭 asynq 客户端连接。
-func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, auc userRpc.AdminUserClient, oc orderRpc.OrderClient, uc userRpc.UserClient, oss *rustfs.RustFSClient, redis *redis.Client, asynqClient *asynq.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, auc userRpc.AdminUserClient, oc orderRpc.OrderClient, uc userRpc.UserClient, mc marketingRpc.CouponServiceClient, oss *rustfs.RustFSClient, redis *redis.Client, asynqClient *asynq.Client, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		asynqClient.Close()
 		log.NewHelper(logger).Info("closing the admin data resources")
 	}
-	return &Data{pc: pc, cc: cc, auc: auc, oc: oc, uc: uc, oss: oss, redis: redis, asynqClient: asynqClient}, cleanup, nil
+	return &Data{pc: pc, cc: cc, auc: auc, oc: oc, uc: uc, mc: mc, oss: oss, redis: redis, asynqClient: asynqClient}, cleanup, nil
 }
 
 // NewOssClient 创建 OSS 客户端

@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package api.service.marketing.v1;
+
+option go_package = "cyi-app/api/service/marketing/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.service.marketing.v1";
+
+service CouponService {
+  rpc CreateCoupon (CreateCouponRequest) returns (CreateCouponReply);
+  rpc UpdateCoupon (UpdateCouponRequest) returns (UpdateCouponReply);
+  rpc DeleteCoupon (DeleteCouponRequest) returns (DeleteCouponReply);
+  rpc GetCoupon (GetCouponRequest) returns (GetCouponReply);
+  rpc ListCoupon (ListCouponRequest) returns (ListCouponReply);
+  rpc ToggleCouponStatus (ToggleCouponStatusRequest) returns (ToggleCouponStatusReply);
+  rpc CouponStats (CouponStatsRequest) returns (CouponStatsReply);
+}
+
+message Coupon {
+  int64 id = 1;
+  string name = 2;
+  int32 type = 3;
+  int64 value = 4;
+  int64 min_amount = 5;
+  int32 quantity = 6;
+  int32 issued_count = 7;
+  int32 used_count = 8;
+  int64 valid_start = 9;
+  int64 valid_end = 10;
+  int32 status = 11;
+  bool enabled = 12;
+  int64 create_time = 13;
+  int64 update_time = 14;
+}
+
+message CreateCouponRequest {
+  string name = 1;
+  int32 type = 2;
+  int64 value = 3;
+  int64 min_amount = 4;
+  int32 quantity = 5;
+  int64 valid_start = 6;
+  int64 valid_end = 7;
+}
+
+message CreateCouponReply {
+  int64 coupon_id = 1;
+}
+
+message UpdateCouponRequest {
+  int64 id = 1;
+  string name = 2;
+  int32 type = 3;
+  int64 value = 4;
+  int64 min_amount = 5;
+  int32 quantity = 6;
+  int64 valid_start = 7;
+  int64 valid_end = 8;
+  bool enabled = 9;
+}
+
+message UpdateCouponReply {
+  bool success = 1;
+}
+
+message DeleteCouponRequest {
+  int64 id = 1;
+}
+
+message DeleteCouponReply {
+  bool success = 1;
+}
+
+message GetCouponRequest {
+  int64 id = 1;
+}
+
+message GetCouponReply {
+  Coupon coupon = 1;
+}
+
+message ListCouponRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string status = 3;
+  string keyword = 4;
+  string date_from = 5;
+  string date_to = 6;
+}
+
+message ListCouponReply {
+  repeated Coupon items = 1;
+  int32 total = 2;
+}
+
+message ToggleCouponStatusRequest {
+  int64 id = 1;
+  int32 action = 2;
+}
+
+message ToggleCouponStatusReply {
+  bool success = 1;
+}
+
+message CouponStatsRequest {}
+
+message CouponStatsReply {
+  int32 total_count = 1;
+  int32 active_count = 2;
+  int64 issued_count = 3;
+  int32 expired_count = 4;
+}

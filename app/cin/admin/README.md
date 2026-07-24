@@ -7,7 +7,7 @@
 | 组件 | 技术 |
 |------|------|
 | 框架 | Kratos v2 |
-| 语言 | Go 1.21+ |
+| 语言 | Go 1.25 |
 | 数据库 | Redis |
 | 对象存储 | RustFS |
 | 服务发现 | Consul |
@@ -31,26 +31,34 @@ app/cin/admin/
 │   └── register.yaml    # 注册配置
 ├── internal/
 │   ├── biz/
-│   │   ├── auth.go      # 认证业务逻辑（登录、登出、头像、在线管理）
-│   │   ├── biz.go       # 业务层依赖注入
-│   │   ├── category.go  # 商品分类管理业务逻辑
-│   │   ├── dashboard.go # 仪表盘业务逻辑
-│   │   ├── product.go   # 商品业务逻辑
-│   │   ├── role.go      # 角色与权限管理业务逻辑
-│   │   └── staff.go     # 员工管理业务逻辑
+│   │   ├── auth.go       # 认证业务逻辑（登录、登出、头像、在线管理）
+│   │   ├── biz.go        # 业务层依赖注入
+│   │   ├── category.go   # 商品分类管理业务逻辑
+│   │   ├── dashboard.go  # 仪表盘业务逻辑
+│   │   ├── export.go     # 订单导出业务逻辑（投递异步任务、查询状态、生成下载链接）
+│   │   ├── order.go      # 订单管理业务逻辑（列表、详情、发货、取消、统计）
+│   │   ├── product.go    # 商品业务逻辑
+│   │   ├── role.go       # 角色与权限管理业务逻辑
+│   │   ├── staff.go      # 员工管理业务逻辑
+│   │   └── staff_test.go # 员工管理单元测试
 │   ├── conf/
 │   │   ├── conf.pb.go   # 配置结构体
 │   │   └── conf.proto   # 配置定义
 │   ├── data/
-│   │   ├── auth.go      # 认证数据访问（gRPC 调用 user service、OSS 上传）
-│   │   ├── casbin.go    # Casbin Enforcer 和远程权限校验器
-│   │   ├── category.go  # 分类数据访问（gRPC 调用 product service）
+│   │   ├── asynq.go       # Asynq 客户端初始化（投递导出任务）
+│   │   ├── auth.go        # 认证数据访问（gRPC 调用 user service、OSS 上传）
+│   │   ├── casbin.go      # Casbin Enforcer 和远程权限校验器
+│   │   ├── category.go    # 分类数据访问（gRPC 调用 product service）
 │   │   ├── client_conn.go # 下游微服务 gRPC 客户端连接
-│   │   ├── dashboard.go # 仪表盘数据访问（mock 数据）
-│   │   ├── data.go      # 数据层初始化与依赖注入
-│   │   ├── product.go   # 商品数据访问（mock 数据）
-│   │   ├── role.go      # 角色数据访问（gRPC 调用 user service）
-│   │   └── staff.go     # 员工数据访问（gRPC 调用 user service）
+│   │   ├── dashboard.go   # 仪表盘数据访问
+│   │   ├── data.go        # 数据层初始化与依赖注入
+│   │   ├── export.go      # 导出数据访问（Asynq 投递、Redis 状态读写、OSS 下载链接缓存）
+│   │   ├── order.go       # 订单数据访问（gRPC 调用 order service）
+│   │   ├── product.go     # 商品数据访问（gRPC 调用 product service）
+│   │   ├── role.go        # 角色数据访问（gRPC 调用 user service）
+│   │   ├── staff.go       # 员工数据访问（gRPC 调用 user service）
+│   │   ├── upload.go      # 文件上传数据访问（OSS）
+│   │   └── upload_test.go # 文件上传单元测试
 │   ├── server/
 │   │   ├── grpc.go      # gRPC 服务注册
 │   │   ├── http.go      # HTTP 服务注册
@@ -59,13 +67,15 @@ app/cin/admin/
 │       ├── auth.go      # 认证服务（登录、登出、个人信息、权限查询）
 │       ├── category.go  # 分类服务
 │       ├── dashboard.go # 仪表盘服务
-│       ├── order.go     # 订单服务（mock 数据）
+│       ├── export.go    # 订单导出服务（投递任务、查询状态）
+│       ├── order.go     # 订单服务（列表、详情、发货、取消、统计）
 │       ├── product.go   # 商品服务
 │       ├── role.go      # 角色与权限服务
 │       ├── service.go   # 服务层依赖注入
-│       ├── settings.go  # 系统设置服务（mock 数据）
+│       ├── settings.go  # 系统设置服务
 │       ├── staff.go     # 员工管理服务
-│       └── user.go      # 用户管理服务（mock 数据）
+│       ├── upload.go    # 文件上传服务
+│       └── user.go      # 用户管理服务
 ├── Makefile             # 构建脚本
 └── openapi.yaml         # OpenAPI 文档
 ```
@@ -102,6 +112,8 @@ app/cin/admin/
 |---------|------|
 | `AuthUseCase` | 管理员认证（登录、登出、头像管理、在线管理、信息更新） |
 | `DashboardUseCase` | 仪表盘数据统计、订单趋势、营收分类占比 |
+| `OrderUseCase` | 订单管理（列表、详情、发货、取消、统计） |
+| `ExportUseCase` | 订单导出（投递异步任务到 task 服务、查询任务状态、生成下载链接） |
 | `ProductUseCase` | 商品管理（CRUD、批量操作） |
 | `CategoryUseCase` | 商品分类管理（分类树、CRUD、排序、状态、批量操作） |
 | `RoleUseCase` | 角色管理（CRUD、权限管理、权限校验） |
@@ -199,11 +211,13 @@ app/cin/admin/
 
 | 接口 | 方法 | 路径 | 说明 |
 |------|------|------|------|
-| `ListOrder` | GET | `/admin/v1/order/list` | 订单列表 |
-| `GetOrder` | GET | `/admin/v1/order/{order_id}` | 订单详情 |
-| `ShipOrder` | POST | `/admin/v1/order/ship` | 发货 |
-| `CancelOrder` | POST | `/admin/v1/order/cancel` | 取消订单 |
-| `ExportOrder` | GET | `/admin/v1/order/export` | 导出订单（投递异步任务到 task 服务消费） |
+| `ListOrder` | GET | `/admin/v1/orders` | 订单列表 |
+| `OrderStats` | GET | `/admin/v1/orders/stats` | 订单统计（顶部统计卡片） |
+| `ExportOrder` | GET | `/admin/v1/orders/export` | 导出订单（投递异步任务到 task 服务消费，返回 task_id） |
+| `ExportTaskStatus` | GET | `/admin/v1/orders/export/{task_id}` | 查询导出任务状态（completed 时返回下载链接） |
+| `GetOrder` | GET | `/admin/v1/orders/{order_id}` | 订单详情 |
+| `ShipOrder` | POST | `/admin/v1/orders/{order_id}/ship` | 发货 |
+| `CancelOrder` | POST | `/admin/v1/orders/{order_id}/cancel` | 取消订单 |
 
 #### 用户接口（AdminUser）
 
@@ -278,6 +292,31 @@ make build
 |--------|----------|------|
 | admin BFF | User Service | gRPC |
 | admin BFF | Product Service | gRPC |
+| admin BFF | Order Service | gRPC |
+| admin BFF | Redis（Asynq） | 投递导出任务到 `export` 队列，由 task 服务消费 |
+
+### 订单导出流程（异步）
+
+admin 服务仅作为**投递端**，不处理导出任务本身（任务处理由 task 服务消费完成）：
+
+```
+前端 GET /admin/v1/orders/export
+      ↓
+admin ExportUseCase.SubmitExport
+  1. 生成 task_id（UUID）
+  2. 写 Redis 任务状态 = pending（key: admin:export:{task_id}，TTL 24h）
+  3. 通过 asynq.Client 投递任务到 export 队列
+  4. 立即返回 task_id 给前端
+      ↓
+前端轮询 GET /admin/v1/orders/export/{task_id}
+      ↓
+admin ExportUseCase.GetTaskStatus
+  - 从 Redis 读取任务状态
+  - 若 completed：根据 object_key 生成 presigned 下载 URL（带 6h Redis 缓存）
+  - 返回状态 + 下载链接
+```
+
+> 任务状态结构与 Redis key 前缀由共享包 `pkg/exporttask` 定义，admin（投递端）与 task（消费端）共同引用以保证一致。
 
 ## 监控指标
 

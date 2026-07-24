@@ -33,4 +33,11 @@ enum AdminErrorReason {
   USER_CREATE_FAILED = 301 [(errors.code) = 422];
   USER_UPDATE_FAILED_ADMIN = 302 [(errors.code) = 422];
   USER_TOGGLE_STATUS_FAILED = 303 [(errors.code) = 422];
+
+  // 优惠券模块 400-499
+  COUPON_NOT_FOUND = 400 [(errors.code) = 404];
+  COUPON_CREATE_FAILED = 401 [(errors.code) = 422];
+  COUPON_UPDATE_FAILED = 402 [(errors.code) = 422];
+  COUPON_DELETE_FAILED = 403 [(errors.code) = 422];
+  COUPON_STATUS_INVALID = 404 [(errors.code) = 422];
 }

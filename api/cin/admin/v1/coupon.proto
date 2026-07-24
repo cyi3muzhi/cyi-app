@@ -1,0 +1,156 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+option java_multiple_files = true;
+option java_package = "api.cin.admin.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+service AdminCoupon {
+  rpc ListCoupon (CouponListRequest) returns (CouponListReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/coupons"
+    };
+  }
+  rpc CouponStats (CouponStatsRequest) returns (CouponStatsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/coupons/stats"
+    };
+  }
+  rpc GetCoupon (CouponGetRequest) returns (CouponGetReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/coupons/{coupon_id}"
+    };
+  }
+  rpc CreateCoupon (CouponCreateRequest) returns (CouponCreateReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/coupons"
+      body: "*"
+    };
+  }
+  rpc UpdateCoupon (CouponUpdateRequest) returns (CouponUpdateReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/coupons/{coupon_id}"
+      body: "*"
+    };
+  }
+  rpc DeleteCoupon (CouponDeleteRequest) returns (CouponDeleteReply) {
+    option (google.api.http) = {
+      delete: "/admin/v1/coupons/{coupon_id}"
+    };
+  }
+  rpc ToggleCouponStatus (CouponToggleStatusRequest) returns (CouponToggleStatusReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/coupons/{coupon_id}/toggle"
+      body: "*"
+    };
+  }
+}
+
+message CouponItem {
+  int64 id = 1;
+  string name = 2;
+  string type = 3;
+  int64 value = 4;
+  int64 min_amount = 5;
+  int32 quantity = 6;
+  int32 issued_count = 7;
+  int32 used_count = 8;
+  string valid_start = 9;
+  string valid_end = 10;
+  string status = 11;
+  bool enabled = 12;
+  int64 create_time = 13;
+  int64 update_time = 14;
+  repeated DistRecord dist_records = 15;
+}
+
+message DistRecord {
+  int64 id = 1;
+  int64 user_id = 2;
+  string source = 3;
+  string status = 4;
+  int64 used_time = 5;
+  int64 order_id = 6;
+}
+
+message CouponListRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string status = 3;
+  string keyword = 4;
+  string date_from = 5;
+  string date_to = 6;
+}
+
+message CouponListReply {
+  repeated CouponItem items = 1;
+  int32 total = 2;
+}
+
+message CouponGetRequest {
+  int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message CouponGetReply {
+  CouponItem coupon = 1;
+}
+
+message CouponCreateRequest {
+  string name = 1 [(validate.rules).string.min_len = 1];
+  string type = 2 [(validate.rules).string.min_len = 1];
+  int64 value = 3 [(validate.rules).int64 = {gt: 0}];
+  int64 min_amount = 4;
+  int32 quantity = 5 [(validate.rules).int32 = {gt: 0}];
+  string valid_start = 6 [(validate.rules).string.min_len = 1];
+  string valid_end = 7 [(validate.rules).string.min_len = 1];
+}
+
+message CouponCreateReply {
+  int64 coupon_id = 1;
+}
+
+message CouponUpdateRequest {
+  int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
+  string name = 2;
+  string type = 3;
+  int64 value = 4;
+  int64 min_amount = 5;
+  int32 quantity = 6;
+  string valid_start = 7;
+  string valid_end = 8;
+  bool enabled = 9;
+}
+
+message CouponUpdateReply {
+  bool success = 1;
+}
+
+message CouponDeleteRequest {
+  int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message CouponDeleteReply {
+  bool success = 1;
+}
+
+message CouponToggleStatusRequest {
+  int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 action = 2 [(validate.rules).int32 = {in: [1, 2]}];
+}
+
+message CouponToggleStatusReply {
+  bool success = 1;
+}
+
+message CouponStatsRequest {}
+
+message CouponStatsReply {
+  int32 total_count = 1;
+  int32 active_count = 2;
+  int64 issued_count = 3;
+  int32 expired_count = 4;
+}

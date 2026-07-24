@@ -32,6 +32,9 @@ export const useAppStore = defineStore('app', () => {
   // 通知数量
   const notificationCount = ref(3)
 
+  // 智能体面板打开状态
+  const agentPanelOpen = ref(false)
+
   // 已上架商品数量
   const productOnlineCount = ref('')
 
@@ -131,11 +134,13 @@ export const useAppStore = defineStore('app', () => {
     adminInfo,
     userPermissions,
     notificationCount,
+    agentPanelOpen,
     productOnlineCount,
     orderPendingCount,
     sidebarWidth,
     isLoggedIn,
     toggleSidebar() { sidebarCollapsed.value = !sidebarCollapsed.value },
+    toggleAgentPanel() { agentPanelOpen.value = !agentPanelOpen.value },
     login,
     setPermissions,
     hasPerm,

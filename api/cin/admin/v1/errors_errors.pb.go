@@ -186,3 +186,65 @@ func IsUserToggleStatusFailed(err error) bool {
 func ErrorUserToggleStatusFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, AdminErrorReason_USER_TOGGLE_STATUS_FAILED.String(), fmt.Sprintf(format, args...))
 }
+
+// 优惠券模块 400-499
+func IsCouponNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == AdminErrorReason_COUPON_NOT_FOUND.String() && e.Code == 404
+}
+
+// 优惠券模块 400-499
+func ErrorCouponNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(404, AdminErrorReason_COUPON_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+}
+
+func IsCouponCreateFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == AdminErrorReason_COUPON_CREATE_FAILED.String() && e.Code == 422
+}
+
+func ErrorCouponCreateFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, AdminErrorReason_COUPON_CREATE_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+func IsCouponUpdateFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == AdminErrorReason_COUPON_UPDATE_FAILED.String() && e.Code == 422
+}
+
+func ErrorCouponUpdateFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, AdminErrorReason_COUPON_UPDATE_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+func IsCouponDeleteFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == AdminErrorReason_COUPON_DELETE_FAILED.String() && e.Code == 422
+}
+
+func ErrorCouponDeleteFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, AdminErrorReason_COUPON_DELETE_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+func IsCouponStatusInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == AdminErrorReason_COUPON_STATUS_INVALID.String() && e.Code == 422
+}
+
+func ErrorCouponStatusInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, AdminErrorReason_COUPON_STATUS_INVALID.String(), fmt.Sprintf(format, args...))
+}

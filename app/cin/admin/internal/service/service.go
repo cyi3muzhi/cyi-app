@@ -27,30 +27,33 @@ type AdminService struct {
 	adminv1.UnimplementedStaffServer
 	adminv1.UnimplementedAdminCategoryServer
 	adminv1.UnimplementedUploadServer
-	log  *log.Helper
-	dc   *biz.DashboardUseCase
-	pc   *biz.ProductUseCase
-	ac   *biz.AuthUseCase
-	rc   *biz.RoleUseCase
-	sc   *biz.StaffUseCase
-	cc   *biz.CategoryUseCase
-	oc   *biz.OrderUseCase
-	ec   *biz.ExportUseCase
-	ur   *data.UploadRepo
+	adminv1.UnimplementedAdminCouponServer
+	log       *log.Helper
+	dc        *biz.DashboardUseCase
+	pc        *biz.ProductUseCase
+	ac        *biz.AuthUseCase
+	rc        *biz.RoleUseCase
+	sc        *biz.StaffUseCase
+	cc        *biz.CategoryUseCase
+	oc        *biz.OrderUseCase
+	ec        *biz.ExportUseCase
+	couponUC  *biz.CouponUseCase
+	ur        *data.UploadRepo
 }
 
 // NewAdminService 创建 AdminService
-func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.AuthUseCase, rc *biz.RoleUseCase, sc *biz.StaffUseCase, cc *biz.CategoryUseCase, oc *biz.OrderUseCase, ec *biz.ExportUseCase, ur *data.UploadRepo, logger log.Logger) *AdminService {
+func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.AuthUseCase, rc *biz.RoleUseCase, sc *biz.StaffUseCase, cc *biz.CategoryUseCase, oc *biz.OrderUseCase, ec *biz.ExportUseCase, couponUC *biz.CouponUseCase, ur *data.UploadRepo, logger log.Logger) *AdminService {
 	return &AdminService{
-		log: log.NewHelper(logger),
-		dc:  dc,
-		pc:  pc,
-		ac:  ac,
-		rc:  rc,
-		sc:  sc,
-		cc:  cc,
-		oc:  oc,
-		ec:  ec,
-		ur:  ur,
+		log:       log.NewHelper(logger),
+		dc:        dc,
+		pc:        pc,
+		ac:        ac,
+		rc:        rc,
+		sc:        sc,
+		cc:        cc,
+		oc:        oc,
+		ec:        ec,
+		couponUC:  couponUC,
+		ur:        ur,
 	}
 }

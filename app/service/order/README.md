@@ -7,7 +7,7 @@
 | 组件 | 技术 |
 |------|------|
 | 框架 | Kratos v2 |
-| 语言 | Go 1.21+ |
+| 语言 | Go 1.25 |
 | 数据库 | MySQL（GORM + GORM Gen）、Redis |
 | 服务发现 | Consul |
 | 分布式追踪 | Jaeger (OpenTelemetry) |
@@ -23,21 +23,21 @@ app/service/order/
 │   └── wire_gen.go          # Wire 生成文件
 ├── internal/
 │   ├── biz/
-│   │   ├── biz.go           # 业务层依赖注入
-│   │   ├── order.go         # 订单聚合根
-│   │   ├── order_handle.go  # OrderUseCase 业务逻辑
-│   │   ├── order_item.go    # 订单行项目实体
-│   │   ├── order_value.go   # Money 值对象
-│   │   ├── order_status.go  # 订单状态接口、基类、工厂、Order 委托方法
-│   │   ├── wait_pay_status.go   # 待支付状态处理器
-│   │   ├── pay_status.go        # 已支付/待发货状态处理器
-│   │   ├── ship_status.go       # 已发货/待收货状态处理器
-│   │   ├── complete_status.go   # 已完成状态处理器
-│   │   ├── terminal_status.go   # 终端状态处理器（共享，替代已取消/已退款）
-│   │   ├── refunding_status.go  # 退款中状态处理器
-│   │   └── terminal_status.go   # 终端状态处理器
-│   │   ├── service.go       # ProductRepo、StockRepo 接口定义
-│   │   ├── order_test.go    # 订单单元测试
+│   │   ├── biz.go                       # 业务层依赖注入
+│   │   ├── order.go                     # 订单聚合根
+│   │   ├── order_handle.go              # OrderUseCase 业务逻辑
+│   │   ├── order_handle_test.go         # OrderUseCase 单元测试
+│   │   ├── order_item.go                # 订单行项目实体
+│   │   ├── order_value.go               # Money 值对象
+│   │   ├── order_status.go              # 订单状态接口、基类、工厂、Order 委托方法
+│   │   ├── wait_pay_status.go           # 待支付状态处理器
+│   │   ├── pay_status.go                # 已支付/待发货状态处理器
+│   │   ├── ship_status.go               # 已发货/待收货状态处理器
+│   │   ├── complete_status.go           # 已完成状态处理器
+│   │   ├── terminal_status.go           # 终端状态处理器（已取消/已退款）
+│   │   ├── refunding_status.go          # 退款中状态处理器
+│   │   ├── service.go                   # ProductRepo、StockRepo 接口定义
+│   │   ├── order_test.go                # 订单单元测试
 │   │   ├── order_status_test.go         # 状态机测试
 │   │   └── order_status_stock_test.go   # 状态机库存测试
 │   ├── conf/
@@ -48,7 +48,7 @@ app/service/order/
 │   │   ├── client_conn.go   # 商品/库存服务 gRPC 客户端连接
 │   │   ├── order.go         # 订单数据访问
 │   │   ├── product.go       # 商品仓储实现（远程调用商品服务）
-│   │   ├── stock.go         # 库存仓储实现（远程调用商品服务）
+│   │   ├── stock_nats.go    # 库存仓储实现（远程调用商品服务，NATS 事件广播库存变更）
 │   │   ├── curd/
 │   │   │   ├── gen.go           # GORM Gen 代码生成工具
 │   │   │   ├── order.gen.go     # 订单 CURD
@@ -127,6 +127,8 @@ app/service/order/
 | `GetOrder` | gRPC | 查询订单详情 |
 | `ListOrder` | gRPC | 订单列表 |
 | `PayOrder` | gRPC | 支付订单（含扣减库存） |
+| `OrderStats` | gRPC | 订单统计（按状态分组计数：总数/待处理/今日/退款） |
+| `BatchGetOrder` | gRPC | 批量获取订单详情（含商品明细，用于导出场景，1 次调用替代 N 次 GetOrder） |
 
 ### 订单状态机
 

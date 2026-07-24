@@ -5,44 +5,69 @@
 ## 架构图
 
 ```
-   ┌────────────────┐                ┌────────────────┐
-   │   用户端前端     │                │  管理后台前端    │
-   │  (H5/小程序等)  │                │  (web/admin)   │
-   └───────┬────────┘                └───────┬────────┘
-           │                                 │
-   ┌───────▼────────┐                ┌───────▼────────┐
-   │ CIN Interface  │                │   CIN Admin    │
-   │  接口网关       │                │  管理后台 BFF   │
-   │ HTTP/gRPC/WS/SSE│               │  HTTP          │
-   └──┬───┬───┬─────┘                └──┬───┬────────┘
-      │   │   │                         │   │
-      │   │   └──────────┬──────────────┘   │
-      │   │              │                  │
-      │   │     ┌────────▼────────┐         │
-      │   │     │  User Service   │◄────────┘
-      │   │     │    用户服务      │
-      │   │     └───────┬─────────┘
-      │   │              │
-   ┌──▼───▼──────┐  ┌───▼──────┐  ┌──────────────┐
-   │Order Service│  │ NATS     │  │Product Service│
-   │  订单服务    │  │ Consumer │  │   商品服务     │
-   └──────┬──────┘  └──────────┘  └──────┬───────┘
-          │                              │
-          │     ┌──────────┐             │
-          └────►│ RabbitMQ │◄────────────┘
-                │ Consumer │
-                └──────────┘
-
-          ┌────────────────┐
-          │ Blades Service │  ← AI 智能助手（DeepSeek）
-          └────────────────┘
-
-   ┌──────────────────────────────────────────────────┐
-   │                   基础设施层                       │
-   │  Consul │ Jaeger │ Prometheus │ Grafana │ ELK    │
-   │  MySQL  │ Redis  │ NATS      │ RabbitMQ │ RustFS │
-   └──────────────────────────────────────────────────┘
+┌──────────────────┐              ┌──────────────────┐
+│   用户端前端      │              │   管理后台前端    │
+│  (H5 / 小程序等)  │              │   (web/admin)    │
+└────────┬─────────┘              └────────┬─────────┘
+         │  HTTP/WS/SSE                    │  HTTP
+         ▼                                  ▼
+┌──────────────────┐              ┌──────────────────┐
+│  CIN Interface   │              │   CIN Admin      │
+│   接口网关        │              │  管理后台 BFF     │
+│ HTTP/gRPC/WS/SSE │              │  HTTP / gRPC     │
+└──┬───┬───┬───┬───┘              └──┬───┬───┬───┬──┘
+   │   │   │   │                     │   │   │   │
+   │   │   │   └─────┐               │   │   │   │
+   │   │   │         │               │   │   │   │
+   │   │   ▼         ▼               ▼   │   │   │
+   │   │ ┌─────────────────────────┐    │   │   │
+   │   │ │     User Service        │◄───┘   │   │
+   │   │ │      用户服务            │        │   │
+   │   │ └───────────┬─────────────┘        │   │
+   │   │             │                      │   │
+   │   ▼             │                      │   │
+   │ ┌───────────┐   │   ┌──────────────┐   │   │
+   │ │   Blades  │   │   │ Product      │   │   │
+   │ │  Service  │   │   │ Service      │◄──┘   │
+   │ │ AI 智能助手│   │   │  商品服务     │       │
+   │ └───────────┘   │   └──────┬───────┘       │
+   │                 │          │               │
+   ▼                 ▼          ▼               │
+┌───────────┐  ┌──────────┐  ┌──────────┐      │
+│   Order   │  │   NATS   │  │ RabbitMQ │      │
+│  Service  │  │ Consumer │  │ Consumer │      │
+│  订单服务   │  └────┬─────┘  └────┬─────┘      │
+└─────┬─────┘       │              │            │
+      │             │              │            │
+      └─────────────┴──────────────┘            │
+                         │                       │
+       ┌─────────────────┴───┬───────────────────┘
+       ▼                     ▼
+┌─────────────┐      ┌─────────────┐
+│  Task       │      │   Job       │
+│  Service    │      │  Service    │
+│ 异步任务消费 │      │ 定时任务调度 │
+│ (default/   │      │  (critical) │
+│  export)    │      │             │
+└──────┬──────┘      └──────┬──────┘
+       │                    │
+       └─────────┬──────────┘
+                 ▼
+┌───────────────────────────────────────────────────────┐
+│                     基础设施层                           │
+│  Consul  │  Jaeger  │  Prometheus  │  Grafana  │ ELK  │
+│  MySQL   │  Redis   │  NATS        │  RabbitMQ │ RustFS│
+│          │ (Asynq)  │              │           │       │
+└───────────────────────────────────────────────────────┘
 ```
+
+> **说明**：
+> - **CIN Interface**：用户端统一入口，聚合调用各业务服务
+> - **CIN Admin**：管理后台 BFF，独立生成 JWT、独立权限管控（Casbin RBAC）
+> - **Task Service**：消费 Asynq 的 `default`（一般异步任务）和 `export`（订单导出）队列
+> - **Job Service**：作为 Asynq Scheduler 调度 cron 任务，并消费 `critical` 队列（与 task 服务隔离，避免争抢）
+> - **Admin → Task**：管理后台导出订单时，通过 Asynq（Redis）投递任务，task 服务消费完成后写回 Redis，admin 轮询状态
+> - 所有服务通过 **Consul** 做服务发现与配置管理
 
 ## 技术栈
 
@@ -81,8 +106,8 @@
 
 | 服务 | 目录 | 说明 | 文档 |
 |------|------|------|------|
-| Job Service | `app/job` | 定时任务（Asynq Scheduler） | [README](app/job/README.md) |
-| Task Service | `app/task` | 异步任务（Asynq Server） | [README](app/task/README.md) |
+| Job Service | `app/job` | 定时任务（Asynq Scheduler，消费 critical 队列） | [README](app/job/README.md) |
+| Task Service | `app/task` | 异步任务（Asynq Server，消费 default/export 队列，含订单导出） | [README](app/task/README.md) |
 | NATS Consumer | `app/nats` | NATS 消息消费者 | [README](app/nats/README.md) |
 | RabbitMQ Consumer | `app/rabbit` | RabbitMQ 消息消费者 | [README](app/rabbit/README.md) |
 
@@ -133,6 +158,7 @@ cyi-app/
 │   └── task/               # 异步任务服务
 ├── pkg/                    # 公共包
 │   ├── blades/             # AI 助手封装（Agent、Session、SSE）
+│   ├── exporttask/         # 订单导出异步任务共享类型（admin 投递端 / task 消费端共用）
 │   ├── kratos/             # Kratos 扩展
 │   │   ├── client/         # gRPC 客户端 & 服务名常量
 │   │   ├── config/         # Consul 配置加载
@@ -140,16 +166,12 @@ cyi-app/
 │   │   ├── server/         # 中间件 & 传输器
 │   │   ├── service/        # 上下文 & 元数据
 │   │   └── tracing/        # Jaeger 追踪
-│   ├── mq/                 # 消息队列抽象
 │   ├── rmq/                # RabbitMQ 封装
 │   └── util/               # 工具包
-│       ├── asynq_helper/   # Asynq 工具
 │       ├── convert/        # 类型转换
 │       ├── gorm/           # GORM 模型基类
-│       ├── poolconfig/     # 连接池配置
 │       ├── redis/          # Redis 工具
-│       ├── rustfs/         # RustFS 对象存储
-│       └── toon/           # Toon 工具
+│       └── rustfs/         # RustFS 对象存储
 ├── deploy/                 # 部署配置
 │   └── docker-compose/     # Docker Compose 编排
 │       ├── docker-compose.yml          # 主配置（基础设施 + 应用）
@@ -247,9 +269,15 @@ make errors
 | CIN Interface | Order Service | gRPC |
 | CIN Interface | Product Service | gRPC |
 | CIN Interface | Blades Service | gRPC |
+| Admin BFF | User Service | gRPC |
+| Admin BFF | Product Service | gRPC |
+| Admin BFF | Order Service | gRPC |
+| Admin BFF | Redis | Asynq（投递导出任务到 export 队列，由 task 服务消费） |
 | NATS Consumer | NATS Server | NATS Protocol |
 | RabbitMQ Consumer | RabbitMQ Server | AMQP |
-| Job/Task Service | Redis | Asynq |
+| Job Service | Redis | Asynq（cron 调度 + 消费 critical 队列） |
+| Task Service | Redis | Asynq（消费 default/export 队列） |
+| Task Service | Order Service | gRPC（导出时拉取订单） |
 
 ## 配置管理
 

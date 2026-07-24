@@ -38,13 +38,14 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	adminUserClient := data.NewAdminUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	couponServiceClient := data.NewCouponServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	rustFSClient, err := data.NewOssClient(confData)
 	if err != nil {
 		return nil, nil, err
 	}
 	client := data.NewRedisClient(confData)
 	asynqClient := data.NewAsynqClient(confData, logger)
-	dataData, cleanup, err := data.NewData(productClient, categoryClient, adminUserClient, orderClient, userClient, rustFSClient, client, asynqClient, logger)
+	dataData, cleanup, err := data.NewData(productClient, categoryClient, adminUserClient, orderClient, userClient, couponServiceClient, rustFSClient, client, asynqClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -64,8 +65,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	orderUseCase := biz.NewOrderUseCase(orderRepo, logger)
 	exportRepo := data.NewExportRepo(dataData, asynqClient, logger)
 	exportUseCase := biz.NewExportUseCase(exportRepo, logger)
+	couponRepo := data.NewCouponRepo(dataData, logger)
+	couponUseCase := biz.NewCouponUseCase(couponRepo, logger)
 	uploadRepo := data.NewUploadRepo(dataData, logger)
-	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, staffUseCase, categoryUseCase, orderUseCase, exportUseCase, uploadRepo, logger)
+	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, staffUseCase, categoryUseCase, orderUseCase, exportUseCase, couponUseCase, uploadRepo, logger)
 	server2 := server.NewGRPCServer(grpcServer, adminService)
 	tokenValidator := data.NewTokenValidator(client)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth, tokenValidator, enforcerProvider)

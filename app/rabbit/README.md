@@ -7,7 +7,7 @@ RabbitMQ 消息消费者服务，订阅 RabbitMQ 队列并处理消息。
 | 组件 | 技术 |
 |------|------|
 | 框架 | Kratos v2 |
-| 语言 | Go 1.21+ |
+| 语言 | Go 1.25 |
 | 消息队列 | RabbitMQ |
 | 数据库 | MySQL、Redis |
 | 服务发现 | Consul |

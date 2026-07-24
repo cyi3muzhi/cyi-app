@@ -7,7 +7,7 @@
 | 组件 | 技术 |
 |------|------|
 | 框架 | Kratos v2 |
-| 语言 | Go 1.21+ |
+| 语言 | Go 1.25 |
 | 任务队列 | Asynq |
 | 数据库 | Redis |
 | 服务发现 | Consul |
@@ -81,11 +81,14 @@ app/job/
 1. **Asynq Server**: 处理队列中的任务
 2. **Asynq Scheduler**: 按 cron 表达式调度定时任务
 
-### 任务队列优先级
+### 任务队列（job 服务消费）
 
-- `critical`: 关键任务，最高优先级
-- `default`: 默认队列，中等优先级
-- `low`: 低优先级任务
+job 服务作为 cron 调度器，既投递 cron 任务到 `critical` 队列，也消费该队列（在 `server/server.go` 的 `NewTaskServer` 中声明）：
+
+- `critical`: cron 任务专用队列（与 task 服务隔离），权重 5
+
+> ⚠️ job 服务**只消费** `critical` 队列，确保 cron 任务不被 task 服务误消费。
+> `default`、`export` 队列由 task 服务消费。
 
 ## 运行方式
 

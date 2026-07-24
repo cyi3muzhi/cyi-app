@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package api.service.marketing.v1;
+
+option go_package = "cyi-app/api/service/marketing/v1;v1";
+import "errors/errors.proto";
+
+enum MarketingErrorReason {
+  option (errors.default_code) = 500;
+
+  COUPON_NOT_FOUND = 0 [(errors.code) = 422];
+  COUPON_VOIDED = 1 [(errors.code) = 422];
+  COUPON_INVALID_TYPE = 2 [(errors.code) = 422];
+  COUPON_INVALID_VALUE = 3 [(errors.code) = 422];
+  COUPON_DATE_INVALID = 4 [(errors.code) = 422];
+  COUPON_STATUS_INVALID = 5 [(errors.code) = 422];
+  COUPON_CREATE_FAILED = 6 [(errors.code) = 422];
+  COUPON_UPDATE_FAILED = 7 [(errors.code) = 422];
+  COUPON_DELETE_FAILED = 8 [(errors.code) = 422];
+}

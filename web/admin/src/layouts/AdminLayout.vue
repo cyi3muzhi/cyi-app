@@ -22,6 +22,9 @@
         &copy; 2026 悦选商城 - All Rights Reserved. 管理后台 v2.0
       </footer>
     </div>
+
+    <!-- 智能体面板 -->
+    <AppAgent />
   </div>
 </template>
 
@@ -33,6 +36,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import AppSidebar from '../components/AppSidebar.vue'
 import AppTopbar from '../components/AppTopbar.vue'
+import AppAgent from '../components/AppAgent.vue'
 import { useAppStore } from '../store/app'
 import { getMyPermissions } from '../api/auth'
 

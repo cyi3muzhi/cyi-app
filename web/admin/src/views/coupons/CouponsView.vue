@@ -1,7 +1,5 @@
-﻿<template>
-  <!-- 优惠券管理页面 - 统计卡片 + 筛选栏 + 优惠券表格（可展开发放记录）+ 新增/编辑弹窗 -->
+<template>
   <div class="coupon-list">
-    <!-- 统计卡片 -->
     <div class="stats-grid">
       <div
         class="stat-card"
@@ -18,7 +16,6 @@
       </div>
     </div>
 
-    <!-- 筛选栏 -->
     <div class="filter-bar">
       <div class="filter-left">
         <el-input
@@ -59,20 +56,18 @@
       </div>
     </div>
 
-    <!-- 优惠券表格 -->
     <el-table
-      :data="filteredCoupons"
+      :data="couponList"
       stripe
       style="width: 100%"
       size="small"
       v-loading="loading"
     >
-      <!-- 可展开的发放记录 -->
       <el-table-column type="expand">
         <template #default="{ row }">
           <div class="expand-records">
-            <div class="expand-header">发放记录（共 {{ row.distRecords.length }} 条）</div>
-            <el-table :data="row.distRecords" size="small" stripe>
+            <div class="expand-header">发放记录（共 {{ row.dist_records?.length || 0 }} 条）</div>
+            <el-table :data="row.dist_records || []" size="small" stripe>
               <el-table-column prop="time" label="发放时间" width="160" />
               <el-table-column prop="user" label="领取用户" width="120" />
               <el-table-column prop="source" label="来源" width="100" />
@@ -118,29 +113,29 @@
           <span class="value-text">{{ formatValue(row) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="minAmount" label="使用门槛" width="120">
+      <el-table-column prop="min_amount" label="使用门槛" width="120">
         <template #default="{ row }">
-          <span v-if="row.minAmount > 0">满 {{ row.minAmount }} 元可用</span>
+          <span v-if="row.min_amount > 0">满 {{ row.min_amount }} 元可用</span>
           <span v-else class="no-threshold">无门槛</span>
         </template>
       </el-table-column>
       <el-table-column label="发放数量/已用" width="140">
         <template #default="{ row }">
           <div class="qty-cell">
-            <span>已发 {{ row.totalDist }}</span>
+            <span>已发 {{ row.issued_count }}</span>
             <el-progress
               :percentage="usagePercent(row)"
               :stroke-width="6"
               size="small"
               :color="usagePercent(row) > 80 ? 'var(--shop-destructive)' : 'var(--shop-primary)'"
             />
-            <span class="used-text">已用 {{ row.usedCount }}</span>
+            <span class="used-text">已用 {{ row.used_count }}</span>
           </div>
         </template>
       </el-table-column>
       <el-table-column label="有效期" width="200">
         <template #default="{ row }">
-          <span class="date-text">{{ row.validStart }} ~ {{ row.validEnd }}</span>
+          <span class="date-text">{{ row.valid_start }} ~ {{ row.valid_end }}</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" width="100">
@@ -159,10 +154,10 @@
           <el-button
             text
             size="small"
-            :type="row.status === 'ended' || row.status === 'voided' ? 'primary' : 'warning'"
+            :type="row.status === '已结束' || row.status === '已作废' ? 'primary' : 'warning'"
             @click="handleToggleStatus(row)"
           >
-            {{ row.status === 'voided' ? '恢复' : row.status === 'ended' ? '恢复' : '作废' }}
+            {{ row.status === '已作废' ? '恢复' : row.status === '已结束' ? '恢复' : '作废' }}
           </el-button>
           <el-button text size="small" type="danger" @click="handleDelete(row)">
             删除
@@ -171,19 +166,19 @@
       </el-table-column>
     </el-table>
 
-    <!-- 分页 -->
     <div class="pagination-wrap">
       <el-pagination
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
-        :total="filteredCoupons.length"
+        :total="total"
         layout="total, prev, pager, next, jumper"
         background
         small
+        @current-change="loadCoupons"
+        @size-change="loadCoupons"
       />
     </div>
 
-    <!-- 新增/编辑优惠券弹窗 -->
     <el-dialog
       v-model="dialogVisible"
       :title="isEditing ? '编辑优惠券' : '新增优惠券'"
@@ -205,9 +200,9 @@
 
         <el-form-item label="优惠类型" prop="type">
           <el-radio-group v-model="formData.type">
-            <el-radio-button value="cash">立减</el-radio-button>
-            <el-radio-button value="discount">折扣</el-radio-button>
-            <el-radio-button value="full-reduce">满减</el-radio-button>
+            <el-radio-button value="立减">立减</el-radio-button>
+            <el-radio-button value="折扣">折扣</el-radio-button>
+            <el-radio-button value="满减">满减</el-radio-button>
           </el-radio-group>
         </el-form-item>
 
@@ -215,11 +210,11 @@
           <el-input-number
             v-model="formData.value"
             :min="1"
-            :max="formData.type === 'discount' ? 99 : 99999"
-            :precision="formData.type === 'discount' ? 0 : 0"
+            :max="formData.type === '折扣' ? 99 : 99999"
+            :precision="0"
             style="width: 200px"
           />
-          <span class="form-unit">{{ formData.type === 'discount' ? '%' : '元' }}</span>
+          <span class="form-unit">{{ formData.type === '折扣' ? '%' : '元' }}</span>
         </el-form-item>
 
         <el-form-item label="使用门槛" prop="minAmount">
@@ -276,79 +271,61 @@
 </template>
 
 <script setup lang="ts">
-/**
- * 优惠券管理页面
- * 支持统计概览、搜索筛选、新增/编辑弹窗、状态切换、删除确认、可展开发放记录
- */
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search } from '@element-plus/icons-vue'
+import {
+  listCoupons, createCoupon, updateCoupon, deleteCoupon,
+  toggleCouponStatus, getCouponStats
+} from '../../api/coupon'
+import type { CouponItem } from '../../types/coupon'
 
-/* ==================== 状态定义 ==================== */
-
-/** 搜索关键词 */
 const searchKeyword = ref('')
-
-/** 激活的状态筛选按钮 */
-const activeStatus = ref('all')
-
-/** 日期范围 */
-const dateRange = ref(null)
-
-/** 当前页 */
+const activeStatus = ref('')
+const dateRange = ref<string[] | null>(null)
 const currentPage = ref(1)
-
-/** 每页条数 */
 const pageSize = ref(10)
-
-/** 加载状态 */
 const loading = ref(false)
-
-/** 弹窗可见性 */
 const dialogVisible = ref(false)
-
-/** 是否编辑模式 */
 const isEditing = ref(false)
-
-/** 编辑中的优惠券 ID */
 const editingId = ref(null)
-
-/** 提交中 */
 const submitting = ref(false)
-
-/** 表单实例引用 */
 const formRef = ref(null)
 
-/* ==================== 数据定义 ==================== */
+const couponList = ref<CouponItem[]>([])
+const total = ref(0)
+const stats = ref({
+  total_count: 0,
+  active_count: 0,
+  issued_count: 0,
+  expired_count: 0
+})
 
-/** 状态筛选按钮配置 */
 const statusButtons = [
-  { key: 'all', label: '全部' },
-  { key: 'active', label: '进行中' },
-  { key: 'ended', label: '已结束' },
-  { key: 'voided', label: '已作废' }
+  { key: '', label: '全部' },
+  { key: '1', label: '进行中' },
+  { key: '2', label: '未开始' },
+  { key: '3', label: '已结束' },
+  { key: '4', label: '已作废' }
 ]
 
-/** 统计卡片配置 */
 const statsCards = computed(() => [
-  { key: 'all', label: '全部优惠券', count: couponData.length, unit: '张', color: 'blue' },
-  { key: 'active', label: '进行中', count: couponData.filter(c => c.status === 'active').length, unit: '张', color: 'green' },
-  { key: 'issued', label: '已发放', count: couponData.reduce((sum, c) => sum + c.totalDist, 0), unit: '张', color: 'orange' },
-  { key: 'expired', label: '已过期', count: couponData.filter(c => c.status === 'ended' || c.status === 'voided').length, unit: '张', color: 'red' }
+  { key: '', label: '全部优惠券', count: stats.value.total_count, unit: '张', color: 'blue' },
+  { key: '1', label: '进行中', count: stats.value.active_count, unit: '张', color: 'green' },
+  { key: '', label: '已发放', count: stats.value.issued_count, unit: '张', color: 'orange' },
+  { key: '', label: '已过期', count: stats.value.expired_count, unit: '张', color: 'red' }
 ])
 
-/** 表单数据 */
 const formData = reactive({
   name: '',
-  type: 'cash',
+  type: '立减',
   value: 10,
   minAmount: 0,
   quantity: 100,
-  validDate: null,
+  validDate: null as string[] | null,
   enabled: true
 })
 
-/** 表单校验规则 */
 const formRules = {
   name: [
     { required: true, message: '请输入优惠券名称', trigger: 'blur' },
@@ -360,253 +337,87 @@ const formRules = {
   validDate: [{ required: true, message: '请选择有效期', trigger: 'change' }]
 }
 
-/* ==================== 模拟数据 ==================== */
-
-/** 优惠券 Coupon 类型定义：
- *  @typedef {Object} Coupon
- *  @property {number} id - 优惠券 ID
- *  @property {string} name - 优惠券名称
- *  @property {'cash'|'discount'|'full-reduce'} type - 优惠类型
- *  @property {number} value - 面值（现金/满减为元，折扣为百分比）
- *  @property {number} minAmount - 使用门槛（元）
- *  @property {number} totalDist - 已发放数量
- *  @property {number} usedCount - 已使用数量
- *  @property {string} validStart - 有效期开始
- *  @property {string} validEnd - 有效期结束
- *  @property {'active'|'pending'|'ended'|'voided'} status - 状态
- *  @property {DistRecord[]} distRecords - 发放记录
- */
-const couponData = reactive([
-  {
-    id: 1,
-    name: '新人专享立减券',
-    type: 'cash',
-    value: 20,
-    minAmount: 0,
-    totalDist: 500,
-    usedCount: 320,
-    validStart: '2026-06-01',
-    validEnd: '2026-08-31',
-    status: 'active',
-    distRecords: [
-      { time: '2026-06-15 10:23', user: '张**', source: '新人礼包', status: '已使用', usedTime: '2026-06-20 14:30' },
-      { time: '2026-06-16 09:12', user: '李**', source: '新人礼包', status: '未使用', usedTime: null },
-      { time: '2026-06-18 15:45', user: '王**', source: '新人礼包', status: '已使用', usedTime: '2026-06-25 11:20' }
-    ]
-  },
-  {
-    id: 2,
-    name: '618 满 200 减 50',
-    type: 'full-reduce',
-    value: 50,
-    minAmount: 200,
-    totalDist: 1000,
-    usedCount: 680,
-    validStart: '2026-06-01',
-    validEnd: '2026-06-30',
-    status: 'ended',
-    distRecords: [
-      { time: '2026-06-01 00:05', user: '赵**', source: '活动领取', status: '已使用', usedTime: '2026-06-15 20:10' },
-      { time: '2026-06-02 08:30', user: '孙**', source: '活动领取', status: '已使用', usedTime: '2026-06-18 09:45' },
-      { time: '2026-06-05 14:22', user: '周**', source: '活动领取', status: '未使用', usedTime: null }
-    ]
-  },
-  {
-    id: 3,
-    name: '会员 8 折券',
-    type: 'discount',
-    value: 80,
-    minAmount: 100,
-    totalDist: 300,
-    usedCount: 156,
-    validStart: '2026-07-01',
-    validEnd: '2026-09-30',
-    status: 'active',
-    distRecords: [
-      { time: '2026-07-01 10:00', user: '吴**', source: '会员权益', status: '已使用', usedTime: '2026-07-05 16:30' },
-      { time: '2026-07-03 11:15', user: '郑**', source: '会员权益', status: '未使用', usedTime: null }
-    ]
-  },
-  {
-    id: 4,
-    name: '开学季满 100 减 15',
-    type: 'full-reduce',
-    value: 15,
-    minAmount: 100,
-    totalDist: 800,
-    usedCount: 210,
-    validStart: '2026-08-20',
-    validEnd: '2026-09-15',
-    status: 'pending',
-    distRecords: []
-  },
-  {
-    id: 5,
-    name: '全场通用 5 元券',
-    type: 'cash',
-    value: 5,
-    minAmount: 0,
-    totalDist: 2000,
-    usedCount: 1450,
-    validStart: '2026-05-01',
-    validEnd: '2026-07-31',
-    status: 'ended',
-    distRecords: [
-      { time: '2026-05-01 00:00', user: '陈**', source: '自动发放', status: '已使用', usedTime: '2026-05-10 12:00' },
-      { time: '2026-05-02 00:00', user: '林**', source: '自动发放', status: '已使用', usedTime: '2026-05-15 18:30' }
-    ]
-  },
-  {
-    id: 6,
-    name: '限时特惠 7 折券',
-    type: 'discount',
-    value: 70,
-    minAmount: 50,
-    totalDist: 150,
-    usedCount: 45,
-    validStart: '2026-07-10',
-    validEnd: '2026-08-10',
-    status: 'active',
-    distRecords: [
-      { time: '2026-07-10 10:00', user: '黄**', source: '限时抢购', status: '未使用', usedTime: null }
-    ]
-  },
-  {
-    id: 7,
-    name: '老用户回馈券',
-    type: 'cash',
-    value: 30,
-    minAmount: 150,
-    totalDist: 200,
-    usedCount: 30,
-    validStart: '2026-06-15',
-    validEnd: '2026-07-15',
-    status: 'voided',
-    distRecords: [
-      { time: '2026-06-15 09:00', user: '杨**', source: '短信领取', status: '已使用', usedTime: '2026-06-20 10:00' }
-    ]
-  },
-  {
-    id: 8,
-    name: '双 11 预售满 500 减 100',
-    type: 'full-reduce',
-    value: 100,
-    minAmount: 500,
-    totalDist: 50,
-    usedCount: 8,
-    validStart: '2026-10-20',
-    validEnd: '2026-11-15',
-    status: 'pending',
-    distRecords: []
+async function loadCoupons() {
+  loading.value = true
+  try {
+    const params: Record<string, any> = {
+      page: currentPage.value,
+      page_size: pageSize.value
+    }
+    if (activeStatus.value) {
+      params.status = activeStatus.value
+    }
+    if (searchKeyword.value) {
+      params.keyword = searchKeyword.value
+    }
+    if (dateRange.value && dateRange.value.length === 2) {
+      params.date_from = dateRange.value[0]
+      params.date_to = dateRange.value[1]
+    }
+    const res = await listCoupons(params)
+    couponList.value = res.items
+    total.value = res.total
+  } catch (error) {
+    ElMessage.error('获取优惠券列表失败')
+  } finally {
+    loading.value = false
   }
-])
+}
 
-/* ==================== 计算属性 ==================== */
-
-/** 根据筛选条件过滤优惠券列表 */
-const filteredCoupons = computed(() => {
-  let list = [...couponData]
-  // 状态筛选
-  if (activeStatus.value === 'issued') {
-    // "已发放" 按发放数量 > 0 筛选
-    list = list.filter(c => c.totalDist > 0)
-  } else if (activeStatus.value === 'expired') {
-    // "已过期" 包含已结束和已作废
-    list = list.filter(c => c.status === 'ended' || c.status === 'voided')
-  } else if (activeStatus.value !== 'all') {
-    list = list.filter(c => c.status === activeStatus.value)
+async function loadStats() {
+  try {
+    const res = await getCouponStats()
+    stats.value = res
+  } catch (error) {
+    console.error('获取统计数据失败', error)
   }
-  // 关键词搜索
-  if (searchKeyword.value) {
-    const kw = searchKeyword.value.toLowerCase()
-    list = list.filter(c => c.name.toLowerCase().includes(kw))
-  }
-  // 日期范围筛选
-  if (dateRange.value) {
-    const [start, end] = dateRange.value
-    list = list.filter(c => {
-      return c.validStart >= start && c.validStart <= end
-    })
-  }
-  return list
-})
+}
 
-/* ==================== 辅助方法 ==================== */
-
-/**
- * 获取优惠类型对应的 el-tag 类型
- * @param {string} type 优惠类型
- * @returns {string} tag 类型
- */
-function typeTagType(type) {
-  const map = {
-    cash: 'success',
-    discount: 'warning',
-    'full-reduce': 'primary'
+function typeTagType(type: string) {
+  const map: Record<string, string> = {
+    '立减': 'success',
+    '折扣': 'warning',
+    '满减': 'primary'
   }
   return map[type] || 'info'
 }
 
-/**
- * 获取优惠类型的中文标签
- * @param {string} type 优惠类型
- * @returns {string} 中文标签
- */
-function typeLabel(type) {
-  const map = {
-    cash: '立减',
-    discount: '折扣',
-    'full-reduce': '满减'
+function typeLabel(type: string) {
+  const map: Record<string, string> = {
+    '立减': '立减',
+    '折扣': '折扣',
+    '满减': '满减'
   }
   return map[type] || type
 }
 
-/**
- * 格式化面值显示
- * @param {Object} coupon 优惠券数据
- * @returns {string} 格式化后的面值
- */
-function formatValue(coupon) {
-  if (coupon.type === 'discount') {
+function formatValue(coupon: CouponItem) {
+  if (coupon.type === '折扣') {
     return `${coupon.value}%`
   }
   return `¥${coupon.value}`
 }
 
-/**
- * 计算使用率百分比
- * @param {Object} coupon 优惠券数据
- * @returns {number} 使用率
- */
-function usagePercent(coupon) {
-  if (coupon.totalDist === 0) return 0
-  return Math.round((coupon.usedCount / coupon.totalDist) * 100)
+function usagePercent(coupon: CouponItem) {
+  if (coupon.issued_count === 0) return 0
+  return Math.round((coupon.used_count / coupon.issued_count) * 100)
 }
 
-/**
- * 获取状态对应的中文标签
- * @param {string} status 状态
- * @returns {string} 中文标签
- */
-function statusLabel(status) {
-  const map = {
-    active: '进行中',
-    pending: '待生效',
-    ended: '已结束',
-    voided: '已作废'
+function statusLabel(status: string) {
+  const map: Record<string, string> = {
+    '进行中': '进行中',
+    '未开始': '待生效',
+    '已结束': '已结束',
+    '已作废': '已作废'
   }
   return map[status] || status
 }
 
-/* ==================== 事件处理 ==================== */
-
-/** 打开新增优惠券弹窗 */
 function handleAdd() {
   isEditing.value = false
   editingId.value = null
-  // 重置表单
   formData.name = ''
-  formData.type = 'cash'
+  formData.type = '立减'
   formData.value = 10
   formData.minAmount = 0
   formData.quantity = 100
@@ -615,74 +426,53 @@ function handleAdd() {
   dialogVisible.value = true
 }
 
-/**
- * 编辑优惠券
- * @param {Object} row 优惠券行数据
- */
-function handleEdit(row) {
+function handleEdit(row: CouponItem) {
   isEditing.value = true
   editingId.value = row.id
   formData.name = row.name
   formData.type = row.type
   formData.value = row.value
-  formData.minAmount = row.minAmount
-  formData.quantity = row.totalDist
-  formData.validDate = [row.validStart, row.validEnd]
-  formData.enabled = row.status === 'active' || row.status === 'pending'
+  formData.minAmount = row.min_amount
+  formData.quantity = row.quantity
+  formData.validDate = [row.valid_start, row.valid_end]
+  formData.enabled = row.enabled
   dialogVisible.value = true
 }
 
-/** 提交表单（新增/编辑） */
-function handleSubmit() {
-  formRef.value.validate((valid) => {
+async function handleSubmit() {
+  ;(formRef.value as any)?.validate((valid: boolean) => {
     if (!valid) return
     submitting.value = true
-    setTimeout(() => {
-      const [start, end] = formData.validDate
-      const status = formData.enabled ? 'active' : 'pending'
-      if (isEditing.value) {
-        // 编辑模式：更新现有数据
-        const idx = couponData.findIndex(c => c.id === editingId.value)
-        if (idx !== -1) {
-          couponData[idx].name = formData.name
-          couponData[idx].type = formData.type
-          couponData[idx].value = formData.value
-          couponData[idx].minAmount = formData.minAmount
-          couponData[idx].totalDist = formData.quantity
-          couponData[idx].validStart = start
-          couponData[idx].validEnd = end
-          couponData[idx].status = status
-        }
-        ElMessage.success('优惠券已更新')
-      } else {
-        // 新增模式：添加到列表
-        couponData.unshift({
-          id: Date.now(),
-          name: formData.name,
-          type: formData.type,
-          value: formData.value,
-          minAmount: formData.minAmount,
-          totalDist: formData.quantity,
-          usedCount: 0,
-          validStart: start,
-          validEnd: end,
-          status: status,
-          distRecords: []
-        })
-        ElMessage.success('优惠券已创建')
-      }
-      submitting.value = false
+    const [start, end] = formData.validDate || []
+    const data = {
+      name: formData.name,
+      type: formData.type,
+      value: formData.value,
+      min_amount: formData.minAmount,
+      quantity: formData.quantity,
+      valid_start: start,
+      valid_end: end,
+      enabled: formData.enabled
+    }
+    const promise = isEditing.value
+      ? updateCoupon(editingId.value, data)
+      : createCoupon(data)
+
+    promise.then(() => {
+      ElMessage.success(isEditing.value ? '优惠券已更新' : '优惠券已创建')
       dialogVisible.value = false
-    }, 500)
+      loadCoupons()
+      loadStats()
+    }).catch(() => {
+      ElMessage.error(isEditing.value ? '更新优惠券失败' : '创建优惠券失败')
+    }).finally(() => {
+      submitting.value = false
+    })
   })
 }
 
-/**
- * 切换优惠券状态（作废/恢复）
- * @param {Object} row 优惠券行数据
- */
-function handleToggleStatus(row) {
-  const isVoiding = row.status !== 'voided' && row.status !== 'ended'
+function handleToggleStatus(row: CouponItem) {
+  const isVoiding = row.status !== '已作废' && row.status !== '已结束'
   const title = isVoiding ? '作废确认' : '恢复确认'
   const message = isVoiding
     ? `确定要将优惠券「${row.name}」作废吗？作废后用户将无法使用。`
@@ -693,28 +483,41 @@ function handleToggleStatus(row) {
     cancelButtonText: '取消',
     type: isVoiding ? 'warning' : 'info'
   }).then(() => {
-    row.status = isVoiding ? 'voided' : 'active'
-    ElMessage.success(isVoiding ? '优惠券已作废' : '优惠券已恢复')
+    toggleCouponStatus(row.id, isVoiding ? 2 : 1).then(() => {
+      ElMessage.success(isVoiding ? '优惠券已作废' : '优惠券已恢复')
+      loadCoupons()
+      loadStats()
+    }).catch(() => {
+      ElMessage.error('操作失败')
+    })
   }).catch(() => {})
 }
 
-/**
- * 删除优惠券（确认弹窗）
- * @param {Object} row 优惠券行数据
- */
-function handleDelete(row) {
+function handleDelete(row: CouponItem) {
   ElMessageBox.confirm(
     `确定要删除优惠券「${row.name}」吗？此操作不可撤销。`,
     '删除确认',
     { confirmButtonText: '确定', cancelButtonText: '取消', type: 'error' }
   ).then(() => {
-    const idx = couponData.findIndex(c => c.id === row.id)
-    if (idx !== -1) {
-      couponData.splice(idx, 1)
-    }
-    ElMessage.success('优惠券已删除')
+    deleteCoupon(row.id).then(() => {
+      ElMessage.success('优惠券已删除')
+      loadCoupons()
+      loadStats()
+    }).catch(() => {
+      ElMessage.error('删除失败')
+    })
   }).catch(() => {})
 }
+
+watch([searchKeyword, activeStatus, dateRange], () => {
+  currentPage.value = 1
+  loadCoupons()
+})
+
+onMounted(() => {
+  loadCoupons()
+  loadStats()
+})
 </script>
 
 <style scoped>
@@ -722,7 +525,6 @@ function handleDelete(row) {
   width: 100%;
 }
 
-/* ==================== 统计卡片 ==================== */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -782,7 +584,6 @@ function handleDelete(row) {
   margin-top: 0.125rem;
 }
 
-/* ==================== 筛选栏 ==================== */
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
@@ -808,7 +609,6 @@ function handleDelete(row) {
   gap: 4px;
 }
 
-/* ==================== 表格 ==================== */
 .coupon-name {
   font-weight: 600;
   color: var(--shop-foreground);
@@ -848,7 +648,6 @@ function handleDelete(row) {
   font-family: var(--shop-font-mono);
 }
 
-/* ==================== 状态指示器 ==================== */
 .status-cell {
   display: flex;
   align-items: center;
@@ -863,12 +662,11 @@ function handleDelete(row) {
   border-radius: 50%;
 }
 
-.status-dot.active { background: var(--shop-success); }
-.status-dot.pending { background: var(--shop-warning); }
-.status-dot.ended { background: #999; }
-.status-dot.voided { background: var(--shop-destructive); }
+.status-dot.进行中 { background: var(--shop-success); }
+.status-dot.未开始 { background: var(--shop-warning); }
+.status-dot.已结束 { background: #999; }
+.status-dot.已作废 { background: var(--shop-destructive); }
 
-/* ==================== 展开区域（发放记录） ==================== */
 .expand-records {
   padding: 16px 24px;
   background: hsl(220, 14%, 97%);
@@ -881,21 +679,18 @@ function handleDelete(row) {
   margin-bottom: 12px;
 }
 
-/* ==================== 弹窗表单 ==================== */
 .form-unit {
   margin-left: 8px;
   font-size: 0.8125rem;
   color: var(--shop-muted-foreground);
 }
 
-/* ==================== 分页 ==================== */
 .pagination-wrap {
   display: flex;
   justify-content: center;
   padding: 20px 0 8px;
 }
 
-/* ==================== 响应式 ==================== */
 @media (max-width: 1024px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .filter-bar { flex-direction: column; align-items: flex-start; }
@@ -914,5 +709,4 @@ function handleDelete(row) {
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }
 }
-
 </style>

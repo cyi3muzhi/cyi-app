@@ -7,7 +7,7 @@
 | 组件 | 技术 |
 |------|------|
 | 框架 | Kratos v2 |
-| 语言 | Go 1.21+ |
+| 语言 | Go 1.25 |
 | 任务队列 | Asynq |
 | 数据库 | Redis |
 | 服务发现 | Consul |
@@ -102,11 +102,15 @@ admin 通过 `task_id` 从 Redis 读取任务状态，`completed` 时根据 `obj
 
 > 任务状态结构与 key 前缀由共享包 `pkg/exporttask` 定义，admin 与 task 共同引用以保证一致。
 
-### 任务队列优先级
+### 任务队列（task 服务消费）
 
-- `critical`: 关键任务，最高优先级
-- `default`: 默认队列，中等优先级
-- `export`: 导出任务，较低优先级（订单导出）
+task 服务消费以下队列（在 `server/server.go` 的 `NewTaskServer` 中声明）：
+
+- `default`: 默认队列（`email:send`、`create_user` 等异步任务），权重 3
+- `export`: 导出队列（订单导出任务），权重 2
+
+> ⚠️ task 服务**不消费** `critical` 队列。该队列由 job 服务独占消费（cron 定时任务），
+> 若 task 也消费 critical 队列会抢到 `cron:user_count` 等任务但因未注册 handler 而报错。
 
 ## 运行方式
 

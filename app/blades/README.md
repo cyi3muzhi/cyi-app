@@ -7,7 +7,7 @@ AI 智能助手服务，基于 DeepSeek API 提供聊天对话能力。
 | 组件 | 技术 |
 |------|------|
 | 框架 | Kratos v2 |
-| 语言 | Go 1.21+ |
+| 语言 | Go 1.25 |
 | 数据库 | MySQL、Redis、OSS |
 | 服务发现 | Consul |
 | 分布式追踪 | Jaeger |

@@ -324,6 +324,156 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.UpdateCategoryStatusReply'
+    /admin/v1/coupons:
+        get:
+            tags:
+                - AdminCoupon
+            operationId: AdminCoupon_ListCoupon
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: status
+                  in: query
+                  schema:
+                    type: string
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+                - name: dateFrom
+                  in: query
+                  schema:
+                    type: string
+                - name: dateTo
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CouponListReply'
+        post:
+            tags:
+                - AdminCoupon
+            operationId: AdminCoupon_CreateCoupon
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.CouponCreateRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CouponCreateReply'
+    /admin/v1/coupons/stats:
+        get:
+            tags:
+                - AdminCoupon
+            operationId: AdminCoupon_CouponStats
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CouponStatsReply'
+    /admin/v1/coupons/{couponId}:
+        get:
+            tags:
+                - AdminCoupon
+            operationId: AdminCoupon_GetCoupon
+            parameters:
+                - name: couponId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CouponGetReply'
+        put:
+            tags:
+                - AdminCoupon
+            operationId: AdminCoupon_UpdateCoupon
+            parameters:
+                - name: couponId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.CouponUpdateRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CouponUpdateReply'
+        delete:
+            tags:
+                - AdminCoupon
+            operationId: AdminCoupon_DeleteCoupon
+            parameters:
+                - name: couponId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CouponDeleteReply'
+    /admin/v1/coupons/{couponId}/toggle:
+        post:
+            tags:
+                - AdminCoupon
+            operationId: AdminCoupon_ToggleCouponStatus
+            parameters:
+                - name: couponId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.CouponToggleStatusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CouponToggleStatusReply'
     /admin/v1/dashboard/order_trend:
         get:
             tags:
@@ -1675,6 +1825,141 @@ components:
                     type: string
                 confirmPassword:
                     type: string
+        api.cin.admin.v1.CouponCreateReply:
+            type: object
+            properties:
+                couponId:
+                    type: string
+        api.cin.admin.v1.CouponCreateRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                type:
+                    type: string
+                value:
+                    type: string
+                minAmount:
+                    type: string
+                quantity:
+                    type: integer
+                    format: int32
+                validStart:
+                    type: string
+                validEnd:
+                    type: string
+        api.cin.admin.v1.CouponDeleteReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.CouponGetReply:
+            type: object
+            properties:
+                coupon:
+                    $ref: '#/components/schemas/api.cin.admin.v1.CouponItem'
+        api.cin.admin.v1.CouponItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                type:
+                    type: string
+                value:
+                    type: string
+                minAmount:
+                    type: string
+                quantity:
+                    type: integer
+                    format: int32
+                issuedCount:
+                    type: integer
+                    format: int32
+                usedCount:
+                    type: integer
+                    format: int32
+                validStart:
+                    type: string
+                validEnd:
+                    type: string
+                status:
+                    type: string
+                enabled:
+                    type: boolean
+                createTime:
+                    type: string
+                updateTime:
+                    type: string
+                distRecords:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.DistRecord'
+        api.cin.admin.v1.CouponListReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.CouponItem'
+                total:
+                    type: integer
+                    format: int32
+        api.cin.admin.v1.CouponStatsReply:
+            type: object
+            properties:
+                totalCount:
+                    type: integer
+                    format: int32
+                activeCount:
+                    type: integer
+                    format: int32
+                issuedCount:
+                    type: string
+                expiredCount:
+                    type: integer
+                    format: int32
+        api.cin.admin.v1.CouponToggleStatusReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.CouponToggleStatusRequest:
+            type: object
+            properties:
+                couponId:
+                    type: string
+                action:
+                    type: integer
+                    format: int32
+        api.cin.admin.v1.CouponUpdateReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.CouponUpdateRequest:
+            type: object
+            properties:
+                couponId:
+                    type: string
+                name:
+                    type: string
+                type:
+                    type: string
+                value:
+                    type: string
+                minAmount:
+                    type: string
+                quantity:
+                    type: integer
+                    format: int32
+                validStart:
+                    type: string
+                validEnd:
+                    type: string
+                enabled:
+                    type: boolean
         api.cin.admin.v1.CreateCategoryReply:
             type: object
             properties:
@@ -1815,6 +2100,21 @@ components:
             properties:
                 success:
                     type: boolean
+        api.cin.admin.v1.DistRecord:
+            type: object
+            properties:
+                id:
+                    type: string
+                userId:
+                    type: string
+                source:
+                    type: string
+                status:
+                    type: string
+                usedTime:
+                    type: string
+                orderId:
+                    type: string
         api.cin.admin.v1.ExportOrderReply:
             type: object
             properties:
@@ -2887,6 +3187,7 @@ tags:
       description: 管理后台 - 认证服务
     - name: AdminCategory
       description: 管理后台 - 商品分类管理服务
+    - name: AdminCoupon
     - name: AdminOrder
       description: 管理后台 - 订单管理服务
     - name: AdminProduct
