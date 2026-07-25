@@ -142,8 +142,7 @@ func (m *DeepSeekModel) NewStreaming(ctx context.Context, req *blades.ModelReque
 
 		if resp.StatusCode != http.StatusOK {
 			bodyBytes, _ := io.ReadAll(resp.Body)
-			errMsg := fmt.Sprintf("deepseek api error: status=%d, body=%s", resp.StatusCode, string(bodyBytes))
-			yield(nil, fmt.Errorf(errMsg))
+			yield(nil, fmt.Errorf("deepseek api error: status=%d, body=%s", resp.StatusCode, string(bodyBytes)))
 			return
 		}
 
