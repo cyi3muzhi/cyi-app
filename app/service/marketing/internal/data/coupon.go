@@ -33,17 +33,18 @@ func parseInt32(s string) (int32, error) {
 
 func (r *couponRepo) CreateCoupon(ctx context.Context, in *biz.Coupon) error {
 	coupon := &mod.Coupon{
-		Name:        in.Name,
-		Type:        in.Type,
-		Value:       in.Value,
-		MinAmount:   in.MinAmount,
-		Quantity:    in.Quantity,
-		IssuedCount: in.IssuedCount,
-		UsedCount:   in.UsedCount,
-		ValidStart:  in.ValidStart,
-		ValidEnd:    in.ValidEnd,
-		Status:      in.Status,
-		Enabled:     in.Enabled,
+		Name:         in.Name,
+		Type:         in.Type,
+		Value:        in.Value,
+		MinAmount:    in.MinAmount,
+		Quantity:     in.Quantity,
+		IssuedCount:  in.IssuedCount,
+		UsedCount:    in.UsedCount,
+		ValidStart:   in.ValidStart,
+		ValidEnd:     in.ValidEnd,
+		Status:       in.Status,
+		Enabled:      in.Enabled,
+		LimitPerUser: in.LimitPerUser,
 	}
 	if err := curd.Q.Coupon.WithContext(ctx).Create(coupon); err != nil {
 		return err
@@ -53,18 +54,19 @@ func (r *couponRepo) CreateCoupon(ctx context.Context, in *biz.Coupon) error {
 }
 
 func (r *couponRepo) UpdateCoupon(ctx context.Context, in *biz.Coupon) error {
-	coupon := &mod.Coupon{
-		Name:        in.Name,
-		Type:        in.Type,
-		Value:       in.Value,
-		MinAmount:   in.MinAmount,
-		Quantity:    in.Quantity,
-		ValidStart:  in.ValidStart,
-		ValidEnd:    in.ValidEnd,
-		Enabled:     in.Enabled,
-	}
-	coupon.ID = in.ID
-	result, err := curd.Q.Coupon.WithContext(ctx).Where(curd.Coupon.ID.Eq(in.ID)).Updates(coupon)
+	// 使用 map 进行更新，避免 struct Updates 跳过零值（如 Enabled=false）
+	result, err := curd.Q.Coupon.WithContext(ctx).
+		Where(curd.Coupon.ID.Eq(in.ID)).
+		UpdateSimple(
+			curd.Coupon.Name.Value(in.Name),
+			curd.Coupon.Type.Value(in.Type),
+			curd.Coupon.Value.Value(in.Value),
+			curd.Coupon.MinAmount.Value(in.MinAmount),
+			curd.Coupon.Quantity.Value(in.Quantity),
+			curd.Coupon.ValidStart.Value(in.ValidStart),
+			curd.Coupon.ValidEnd.Value(in.ValidEnd),
+			curd.Coupon.Enabled.Value(in.Enabled),
+		)
 	if err != nil {
 		return err
 	}
@@ -216,7 +218,258 @@ func modelToBiz(coupon *mod.Coupon) *biz.Coupon {
 		ValidEnd:     coupon.ValidEnd,
 		Status:       coupon.Status,
 		Enabled:      coupon.Enabled,
+		LimitPerUser: coupon.LimitPerUser,
 		CreateTime:   coupon.CreateTime,
 		UpdateTime:   coupon.UpdateTime,
 	}
+}
+
+// modelToUserCouponItem 将发放记录模型转为业务对象
+func modelToUserCouponItem(record *mod.CouponDistRecord, coupon *mod.Coupon) *biz.UserCouponItem {
+	return &biz.UserCouponItem{
+		RecordID:     record.ID,
+		CouponID:     record.CouponID,
+		Name:         coupon.Name,
+		Type:         coupon.Type,
+		Value:        coupon.Value,
+		MinAmount:    coupon.MinAmount,
+		ValidStart:   coupon.ValidStart,
+		ValidEnd:     coupon.ValidEnd,
+		RecordStatus: record.Status,
+		UsedTime:     record.UsedTime,
+		OrderID:      record.OrderID,
+		Source:       record.Source,
+		CreateTime:   record.CreateTime,
+	}
+}
+
+// GetCouponByID 根据ID获取优惠券
+func (r *couponRepo) GetCouponByID(ctx context.Context, id int64) (*biz.Coupon, error) {
+	coupon, err := curd.Q.Coupon.WithContext(ctx).Where(curd.Coupon.ID.Eq(id)).First()
+	if err != nil {
+		return nil, v1.ErrorCouponNotFound("coupon not found")
+	}
+	return modelToBiz(coupon), nil
+}
+
+// CountUserCoupons 统计用户领取某张优惠券的数量
+func (r *couponRepo) CountUserCoupons(ctx context.Context, couponID, userID int64) (int32, error) {
+	count, err := curd.Q.CouponDistRecord.WithContext(ctx).
+		Where(curd.CouponDistRecord.CouponID.Eq(couponID)).
+		Where(curd.CouponDistRecord.UserID.Eq(userID)).
+		Count()
+	if err != nil {
+		return 0, err
+	}
+	return int32(count), nil
+}
+
+// UpdateIssuedCount 原子更新发放数量（带库存条件）
+// 执行 UPDATE coupon SET issued_count = issued_count + 1 WHERE id = ? AND issued_count < quantity
+func (r *couponRepo) UpdateIssuedCount(ctx context.Context, id int64) error {
+	result, err := curd.Q.Coupon.WithContext(ctx).
+		Where(curd.Coupon.ID.Eq(id)).
+		Where(curd.Coupon.IssuedCount.LtCol(curd.Coupon.Quantity)).
+		UpdateColumn(curd.Coupon.IssuedCount, curd.Coupon.IssuedCount.Add(1))
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected == 0 {
+		return v1.ErrorCouponInvalidValue("coupon is sold out")
+	}
+	return nil
+}
+
+// ClaimCoupon 用户领券（事务中原子更新库存并插入发放记录）
+func (r *couponRepo) ClaimCoupon(ctx context.Context, couponID, userID int64, source string) (int64, error) {
+	var recordID int64
+
+	err := curd.Q.Transaction(func(tx *curd.Query) error {
+		// 1. 原子更新发放数量（带库存条件）
+		result, err := tx.Coupon.WithContext(ctx).
+			Where(tx.Coupon.ID.Eq(couponID)).
+			Where(tx.Coupon.IssuedCount.LtCol(tx.Coupon.Quantity)).
+			UpdateColumn(tx.Coupon.IssuedCount, tx.Coupon.IssuedCount.Add(1))
+		if err != nil {
+			return err
+		}
+		if result.RowsAffected == 0 {
+			return v1.ErrorCouponInvalidValue("coupon is sold out")
+		}
+
+		// 2. 创建发放记录
+		record := &mod.CouponDistRecord{
+			CouponID: couponID,
+			UserID:   userID,
+			Source:   source,
+			Status:   0, // 未使用
+		}
+		if err := tx.CouponDistRecord.WithContext(ctx).Create(record); err != nil {
+			return err
+		}
+		recordID = record.ID
+		return nil
+	})
+
+	if err != nil {
+		return 0, err
+	}
+	return recordID, nil
+}
+
+// ListUserCoupons 查询用户优惠券列表（含优惠券基本信息）
+func (r *couponRepo) ListUserCoupons(ctx context.Context, userID int64, status int32, page, pageSize int32) ([]*biz.UserCouponItem, int32, error) {
+	do := curd.Q.CouponDistRecord.WithContext(ctx).Where(curd.CouponDistRecord.UserID.Eq(userID))
+
+	// 按状态筛选：0=全部 1=未使用 2=已使用 3=已过期
+	if status > 0 {
+		do = do.Where(curd.CouponDistRecord.Status.Eq(status))
+	}
+
+	// 查询总数
+	total, err := do.Count()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// 分页查询记录
+	offset := int((page - 1) * pageSize)
+	limit := int(pageSize)
+	records, err := do.Offset(offset).Limit(limit).Order(curd.CouponDistRecord.ID.Desc()).Find()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// 批量加载优惠券信息
+	items := make([]*biz.UserCouponItem, 0, len(records))
+	for _, record := range records {
+		coupon, err := curd.Q.Coupon.WithContext(ctx).
+			Where(curd.Coupon.ID.Eq(record.CouponID)).
+			First()
+		if err != nil {
+			// 如果优惠券已被删除，使用空名称
+			coupon = &mod.Coupon{}
+		}
+		items = append(items, modelToUserCouponItem(record, coupon))
+	}
+
+	return items, int32(total), nil
+}
+
+// GetUserCouponRecord 根据记录ID和用户ID查询单条发放记录
+func (r *couponRepo) GetUserCouponRecord(ctx context.Context, recordID, userID int64) (*biz.UserCouponItem, error) {
+	record, err := curd.Q.CouponDistRecord.WithContext(ctx).
+		Where(curd.CouponDistRecord.ID.Eq(recordID)).
+		Where(curd.CouponDistRecord.UserID.Eq(userID)).
+		First()
+	if err != nil {
+		return nil, v1.ErrorCouponNotFound("coupon record not found")
+	}
+
+	coupon, err := curd.Q.Coupon.WithContext(ctx).
+		Where(curd.Coupon.ID.Eq(record.CouponID)).
+		First()
+	if err != nil {
+		return nil, v1.ErrorCouponNotFound("coupon not found")
+	}
+
+	return modelToUserCouponItem(record, coupon), nil
+}
+
+// UseCoupon 核销优惠券
+func (r *couponRepo) UseCoupon(ctx context.Context, recordID, userID, orderID int64) error {
+	err := curd.Q.Transaction(func(tx *curd.Query) error {
+		// 1. 先查询发放记录，获取 coupon_id
+		record, err := tx.CouponDistRecord.WithContext(ctx).
+			Where(tx.CouponDistRecord.ID.Eq(recordID)).
+			Where(tx.CouponDistRecord.UserID.Eq(userID)).
+			Where(tx.CouponDistRecord.Status.Eq(0)). // 仅更新未使用的
+			First()
+		if err != nil {
+			return v1.ErrorCouponInvalidValue("coupon record not found or already used")
+		}
+
+		// 2. 更新发放记录状态为已使用
+		now := time.Now().Unix()
+		record.Status = 1 // 已使用
+		record.UsedTime = now
+		record.OrderID = orderID
+		if _, err := tx.CouponDistRecord.WithContext(ctx).
+			Where(tx.CouponDistRecord.ID.Eq(recordID)).
+			Updates(record); err != nil {
+			return err
+		}
+
+		// 3. 递增 coupon 表的 used_count
+		_, err = tx.Coupon.WithContext(ctx).
+			Where(tx.Coupon.ID.Eq(record.CouponID)).
+			UpdateColumn(tx.Coupon.UsedCount, tx.Coupon.UsedCount.Add(1))
+		return err
+	})
+	return err
+}
+
+// BatchExpireCoupons 批量过期已过期的优惠券发放记录
+// 找出所有已过期（coupon.valid_end < now）但状态还是"未使用"的发放记录，批量更新状态为"已过期"
+func (r *couponRepo) BatchExpireCoupons(ctx context.Context, batchSize int64) (int32, error) {
+	now := time.Now().Unix()
+
+	// 子查询：找出已过期的优惠券ID列表
+	var expiredCouponIDs []int64
+	err := curd.Q.Coupon.WithContext(ctx).
+		Select(curd.Coupon.ID).
+		Where(curd.Coupon.ValidEnd.Lt(now)).
+		Scan(&expiredCouponIDs)
+	if err != nil {
+		return 0, err
+	}
+
+	if len(expiredCouponIDs) == 0 {
+		return 0, nil
+	}
+
+	// 批量更新状态为"已过期"（status=2），限制处理数量
+	result, err := curd.Q.CouponDistRecord.WithContext(ctx).
+		Where(curd.CouponDistRecord.CouponID.In(expiredCouponIDs...)).
+		Where(curd.CouponDistRecord.Status.Eq(0)). // 仅更新未使用的
+		Where(curd.CouponDistRecord.UsedTime.Eq(0)).
+		Limit(int(batchSize)).
+		UpdateColumn(curd.CouponDistRecord.Status, 2) // 已过期
+
+	if err != nil {
+		return 0, err
+	}
+
+	return int32(result.RowsAffected), nil
+}
+
+// ListDistRecords 按优惠券ID查询发放记录列表
+func (r *couponRepo) ListDistRecords(ctx context.Context, couponID int64, page, pageSize int32) ([]*biz.DistRecord, int32, error) {
+	do := curd.Q.CouponDistRecord.WithContext(ctx).Where(curd.CouponDistRecord.CouponID.Eq(couponID))
+
+	total, err := do.Count()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	offset := int((page - 1) * pageSize)
+	limit := int(pageSize)
+	records, err := do.Offset(offset).Limit(limit).Order(curd.CouponDistRecord.ID.Desc()).Find()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	items := make([]*biz.DistRecord, 0, len(records))
+	for _, r := range records {
+		items = append(items, &biz.DistRecord{
+			ID:         r.ID,
+			UserID:     r.UserID,
+			Source:     r.Source,
+			Status:     r.Status,
+			UsedTime:   r.UsedTime,
+			OrderID:    r.OrderID,
+			CreateTime: r.CreateTime,
+		})
+	}
+	return items, int32(total), nil
 }

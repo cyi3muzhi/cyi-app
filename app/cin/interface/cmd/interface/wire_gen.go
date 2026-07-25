@@ -34,9 +34,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	stockClient := data.NewStockServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	couponServiceClient := data.NewMarketingCouponServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	universalClient := data.NewRedisClient(confData, logger)
 	client := data.NewAsynqClient(universalClient)
-	dataData, cleanup, err := data.NewData(confData, userClient, orderClient, productClient, stockClient, universalClient, logger, client)
+	dataData, cleanup, err := data.NewData(confData, userClient, orderClient, productClient, stockClient, couponServiceClient, universalClient, logger, client)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -49,7 +50,9 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	stockRepo := data.NewStockRepo(dataData, logger)
 	stockUseCase := biz.NewStockUseCase(stockRepo, logger)
 	bladesUseCase := biz.NewBladesUseCase(blades, universalClient)
-	cinInterface := service.NewCinInterface(userUseCase, orderUseCase, productUseCase, stockUseCase, bladesUseCase, logger, auth)
+	couponRepo := data.NewCouponRepo(dataData, logger)
+	couponUseCase := biz.NewCouponUseCase(couponRepo, logger)
+	cinInterface := service.NewCinInterface(userUseCase, orderUseCase, productUseCase, stockUseCase, bladesUseCase, couponUseCase, logger, auth)
 	server2 := server.NewGRPCServer(grpcServer, cinInterface)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	server3 := server.NewHTTPServer(httpServer, cinInterface, auth)

@@ -47,3 +47,23 @@ func (s *CouponService) ToggleCouponStatus(ctx context.Context, req *v1.ToggleCo
 func (s *CouponService) CouponStats(ctx context.Context, req *v1.CouponStatsRequest) (*v1.CouponStatsReply, error) {
 	return s.uc.CouponStats(ctx, req)
 }
+
+func (s *CouponService) ClaimCoupon(ctx context.Context, req *v1.ClaimCouponRequest) (*v1.ClaimCouponReply, error) {
+	return s.uc.ClaimCoupon(ctx, req)
+}
+
+func (s *CouponService) ListUserCoupons(ctx context.Context, req *v1.ListUserCouponsRequest) (*v1.ListUserCouponsReply, error) {
+	return s.uc.ListUserCoupons(ctx, req)
+}
+
+func (s *CouponService) UseCoupon(ctx context.Context, req *v1.UseCouponRequest) (*v1.UseCouponReply, error) {
+	return s.uc.UseCoupon(ctx, req)
+}
+
+func (s *CouponService) BatchExpireCoupons(ctx context.Context, req *v1.BatchExpireCouponsRequest) (*v1.BatchExpireCouponsReply, error) {
+	return s.uc.BatchExpireCoupons(ctx, req)
+}
+
+func (s *CouponService) ListDistRecords(ctx context.Context, req *v1.ListDistRecordsRequest) (*v1.ListDistRecordsReply, error) {
+	return s.uc.ListDistRecords(ctx, req)
+}

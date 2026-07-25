@@ -38,14 +38,16 @@ func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Regist
 	asynqScheduler := server.RegisterScheduler(arg, scheduler, taskServer)
 	discovery := server.NewDiscovery(registry)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
-	dataData, cleanup, err := data.NewData(confData, universalClient, logger, asynqServer, asynqScheduler, userClient)
+	couponServiceClient := data.NewMarketingCouponServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	dataData, cleanup, err := data.NewData(confData, universalClient, logger, asynqServer, asynqScheduler, userClient, couponServiceClient)
 	if err != nil {
 		return nil, nil, err
 	}
 	jobRepo := data.NewJobRepo(dataData, logger)
 	jobUseCase := biz.NewJobUseCase(jobRepo)
 	userRepo := data.NewUserRepo(dataData)
-	jobService := service.NewJobService(jobUseCase, userRepo, logger)
+	couponRepo := data.NewCouponRepo(dataData)
+	jobService := service.NewJobService(jobUseCase, userRepo, couponRepo, logger)
 	serveMux := server.ProcessTask(taskServer, jobService)
 	app := newApp(logger, server2, registrar, asynqServer, serveMux, asynqScheduler)
 	return app, func() {

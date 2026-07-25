@@ -24,16 +24,18 @@ type CinInterface struct {
 	v1.UnimplementedCartServer
 	v1.UnimplementedStockServer
 	v1.UnimplementedBladesServer
+	v1.UnimplementedUserCouponServer
 	log  *log.Helper
 	uc   *biz.UserUseCase
 	oc   *biz.OrderUseCase
 	pc   *biz.ProductUseCase
 	sc   *biz.StockUseCase
 	bc   *biz.BladesUseCase
+	cc   *biz.CouponUseCase
 	auth *conf.Auth
 }
 
-func NewCinInterface(uc *biz.UserUseCase, oc *biz.OrderUseCase, pc *biz.ProductUseCase, sc *biz.StockUseCase, bc *biz.BladesUseCase, logger log.Logger, auth *conf.Auth) *CinInterface {
+func NewCinInterface(uc *biz.UserUseCase, oc *biz.OrderUseCase, pc *biz.ProductUseCase, sc *biz.StockUseCase, bc *biz.BladesUseCase, cc *biz.CouponUseCase, logger log.Logger, auth *conf.Auth) *CinInterface {
 	return &CinInterface{
 		log:  log.NewHelper(logger),
 		uc:   uc,
@@ -41,6 +43,7 @@ func NewCinInterface(uc *biz.UserUseCase, oc *biz.OrderUseCase, pc *biz.ProductU
 		pc:   pc,
 		sc:   sc,
 		bc:   bc,
+		cc:   cc,
 		auth: auth,
 	}
 }

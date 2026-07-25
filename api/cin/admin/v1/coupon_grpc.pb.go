@@ -26,6 +26,7 @@ const (
 	AdminCoupon_UpdateCoupon_FullMethodName       = "/api.cin.admin.v1.AdminCoupon/UpdateCoupon"
 	AdminCoupon_DeleteCoupon_FullMethodName       = "/api.cin.admin.v1.AdminCoupon/DeleteCoupon"
 	AdminCoupon_ToggleCouponStatus_FullMethodName = "/api.cin.admin.v1.AdminCoupon/ToggleCouponStatus"
+	AdminCoupon_ListCouponRecords_FullMethodName  = "/api.cin.admin.v1.AdminCoupon/ListCouponRecords"
 )
 
 // AdminCouponClient is the client API for AdminCoupon service.
@@ -39,6 +40,8 @@ type AdminCouponClient interface {
 	UpdateCoupon(ctx context.Context, in *CouponUpdateRequest, opts ...grpc.CallOption) (*CouponUpdateReply, error)
 	DeleteCoupon(ctx context.Context, in *CouponDeleteRequest, opts ...grpc.CallOption) (*CouponDeleteReply, error)
 	ToggleCouponStatus(ctx context.Context, in *CouponToggleStatusRequest, opts ...grpc.CallOption) (*CouponToggleStatusReply, error)
+	// 获取优惠券发放记录（按需加载，展开行时调用）
+	ListCouponRecords(ctx context.Context, in *CouponRecordsRequest, opts ...grpc.CallOption) (*CouponRecordsReply, error)
 }
 
 type adminCouponClient struct {
@@ -119,6 +122,16 @@ func (c *adminCouponClient) ToggleCouponStatus(ctx context.Context, in *CouponTo
 	return out, nil
 }
 
+func (c *adminCouponClient) ListCouponRecords(ctx context.Context, in *CouponRecordsRequest, opts ...grpc.CallOption) (*CouponRecordsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CouponRecordsReply)
+	err := c.cc.Invoke(ctx, AdminCoupon_ListCouponRecords_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminCouponServer is the server API for AdminCoupon service.
 // All implementations must embed UnimplementedAdminCouponServer
 // for forward compatibility.
@@ -130,6 +143,8 @@ type AdminCouponServer interface {
 	UpdateCoupon(context.Context, *CouponUpdateRequest) (*CouponUpdateReply, error)
 	DeleteCoupon(context.Context, *CouponDeleteRequest) (*CouponDeleteReply, error)
 	ToggleCouponStatus(context.Context, *CouponToggleStatusRequest) (*CouponToggleStatusReply, error)
+	// 获取优惠券发放记录（按需加载，展开行时调用）
+	ListCouponRecords(context.Context, *CouponRecordsRequest) (*CouponRecordsReply, error)
 	mustEmbedUnimplementedAdminCouponServer()
 }
 
@@ -160,6 +175,9 @@ func (UnimplementedAdminCouponServer) DeleteCoupon(context.Context, *CouponDelet
 }
 func (UnimplementedAdminCouponServer) ToggleCouponStatus(context.Context, *CouponToggleStatusRequest) (*CouponToggleStatusReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ToggleCouponStatus not implemented")
+}
+func (UnimplementedAdminCouponServer) ListCouponRecords(context.Context, *CouponRecordsRequest) (*CouponRecordsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListCouponRecords not implemented")
 }
 func (UnimplementedAdminCouponServer) mustEmbedUnimplementedAdminCouponServer() {}
 func (UnimplementedAdminCouponServer) testEmbeddedByValue()                     {}
@@ -308,6 +326,24 @@ func _AdminCoupon_ToggleCouponStatus_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminCoupon_ListCouponRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CouponRecordsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminCouponServer).ListCouponRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminCoupon_ListCouponRecords_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminCouponServer).ListCouponRecords(ctx, req.(*CouponRecordsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminCoupon_ServiceDesc is the grpc.ServiceDesc for AdminCoupon service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -342,6 +378,10 @@ var AdminCoupon_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ToggleCouponStatus",
 			Handler:    _AdminCoupon_ToggleCouponStatus_Handler,
+		},
+		{
+			MethodName: "ListCouponRecords",
+			Handler:    _AdminCoupon_ListCouponRecords_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

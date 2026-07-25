@@ -24,6 +24,7 @@ const OperationAdminCouponCreateCoupon = "/api.cin.admin.v1.AdminCoupon/CreateCo
 const OperationAdminCouponDeleteCoupon = "/api.cin.admin.v1.AdminCoupon/DeleteCoupon"
 const OperationAdminCouponGetCoupon = "/api.cin.admin.v1.AdminCoupon/GetCoupon"
 const OperationAdminCouponListCoupon = "/api.cin.admin.v1.AdminCoupon/ListCoupon"
+const OperationAdminCouponListCouponRecords = "/api.cin.admin.v1.AdminCoupon/ListCouponRecords"
 const OperationAdminCouponToggleCouponStatus = "/api.cin.admin.v1.AdminCoupon/ToggleCouponStatus"
 const OperationAdminCouponUpdateCoupon = "/api.cin.admin.v1.AdminCoupon/UpdateCoupon"
 
@@ -33,6 +34,8 @@ type AdminCouponHTTPServer interface {
 	DeleteCoupon(context.Context, *CouponDeleteRequest) (*CouponDeleteReply, error)
 	GetCoupon(context.Context, *CouponGetRequest) (*CouponGetReply, error)
 	ListCoupon(context.Context, *CouponListRequest) (*CouponListReply, error)
+	// ListCouponRecords 获取优惠券发放记录（按需加载，展开行时调用）
+	ListCouponRecords(context.Context, *CouponRecordsRequest) (*CouponRecordsReply, error)
 	ToggleCouponStatus(context.Context, *CouponToggleStatusRequest) (*CouponToggleStatusReply, error)
 	UpdateCoupon(context.Context, *CouponUpdateRequest) (*CouponUpdateReply, error)
 }
@@ -46,6 +49,7 @@ func RegisterAdminCouponHTTPServer(s *http.Server, srv AdminCouponHTTPServer) {
 	r.PUT("/admin/v1/coupons/{coupon_id}", _AdminCoupon_UpdateCoupon0_HTTP_Handler(srv))
 	r.DELETE("/admin/v1/coupons/{coupon_id}", _AdminCoupon_DeleteCoupon0_HTTP_Handler(srv))
 	r.POST("/admin/v1/coupons/{coupon_id}/toggle", _AdminCoupon_ToggleCouponStatus0_HTTP_Handler(srv))
+	r.GET("/admin/v1/coupons/{coupon_id}/records", _AdminCoupon_ListCouponRecords0_HTTP_Handler(srv))
 }
 
 func _AdminCoupon_ListCoupon0_HTTP_Handler(srv AdminCouponHTTPServer) func(ctx http.Context) error {
@@ -202,12 +206,36 @@ func _AdminCoupon_ToggleCouponStatus0_HTTP_Handler(srv AdminCouponHTTPServer) fu
 	}
 }
 
+func _AdminCoupon_ListCouponRecords0_HTTP_Handler(srv AdminCouponHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CouponRecordsRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminCouponListCouponRecords)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListCouponRecords(ctx, req.(*CouponRecordsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CouponRecordsReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type AdminCouponHTTPClient interface {
 	CouponStats(ctx context.Context, req *CouponStatsRequest, opts ...http.CallOption) (rsp *CouponStatsReply, err error)
 	CreateCoupon(ctx context.Context, req *CouponCreateRequest, opts ...http.CallOption) (rsp *CouponCreateReply, err error)
 	DeleteCoupon(ctx context.Context, req *CouponDeleteRequest, opts ...http.CallOption) (rsp *CouponDeleteReply, err error)
 	GetCoupon(ctx context.Context, req *CouponGetRequest, opts ...http.CallOption) (rsp *CouponGetReply, err error)
 	ListCoupon(ctx context.Context, req *CouponListRequest, opts ...http.CallOption) (rsp *CouponListReply, err error)
+	// ListCouponRecords 获取优惠券发放记录（按需加载，展开行时调用）
+	ListCouponRecords(ctx context.Context, req *CouponRecordsRequest, opts ...http.CallOption) (rsp *CouponRecordsReply, err error)
 	ToggleCouponStatus(ctx context.Context, req *CouponToggleStatusRequest, opts ...http.CallOption) (rsp *CouponToggleStatusReply, err error)
 	UpdateCoupon(ctx context.Context, req *CouponUpdateRequest, opts ...http.CallOption) (rsp *CouponUpdateReply, err error)
 }
@@ -277,6 +305,20 @@ func (c *AdminCouponHTTPClientImpl) ListCoupon(ctx context.Context, in *CouponLi
 	pattern := "/admin/v1/coupons"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAdminCouponListCoupon))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ListCouponRecords 获取优惠券发放记录（按需加载，展开行时调用）
+func (c *AdminCouponHTTPClientImpl) ListCouponRecords(ctx context.Context, in *CouponRecordsRequest, opts ...http.CallOption) (*CouponRecordsReply, error) {
+	var out CouponRecordsReply
+	pattern := "/admin/v1/coupons/{coupon_id}/records"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminCouponListCouponRecords))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

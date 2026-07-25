@@ -12,6 +12,7 @@ import (
 	"cyi-app/app/service/order/internal/data/curd"
 	mod "cyi-app/app/service/order/internal/data/models"
 
+	marketingRpc "cyi-app/api/service/marketing/v1"
 	productRpc "cyi-app/api/service/product/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -27,15 +28,17 @@ var ProviderSet = wire.NewSet(
 	NewData,
 	NewDB,
 	NewProductServiceClient,
+	NewMarketingCouponServiceClient,
 	NewNATSConn,
 )
 
 type Data struct {
 	pc productRpc.ProductClient
+	mc marketingRpc.CouponServiceClient
 	nc *nats.Conn
 }
 
-func NewData(c *conf.Data, db *gorm.DB, logger log.Logger, pc productRpc.ProductClient, nc *nats.Conn) (*Data, func(), error) {
+func NewData(c *conf.Data, db *gorm.DB, logger log.Logger, pc productRpc.ProductClient, mc marketingRpc.CouponServiceClient, nc *nats.Conn) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 		if nc != nil {
@@ -45,6 +48,7 @@ func NewData(c *conf.Data, db *gorm.DB, logger log.Logger, pc productRpc.Product
 	curd.SetDefault(db)
 	return &Data{
 		pc: pc,
+		mc: mc,
 		nc: nc,
 	}, cleanup, nil
 }

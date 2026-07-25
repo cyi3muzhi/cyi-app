@@ -5,6 +5,7 @@ p, 管理员, /api.cin.admin.v1.Dashboard/GetDashboardStats, GET
 p, 管理员, /api.cin.admin.v1.AdminProduct/*, *
 p, 管理员, /api.cin.admin.v1.AdminOrder/ListOrders, GET
 p, 管理员, /api.cin.admin.v1.AdminOrder/GetOrder, GET
+p, 管理员, /api.cin.admin.v1.AdminCoupon/*, *
 p, 运营编辑, /api.cin.admin.v1.AdminProduct/*, GET
 p, 运营编辑, /api.cin.admin.v1.AdminProduct/CreateProduct, POST
 p, 运营编辑, /api.cin.admin.v1.AdminProduct/UpdateProduct, PUT

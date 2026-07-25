@@ -72,6 +72,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '优惠券管理' }
       },
       {
+        path: 'coupons/:id/records',
+        name: 'CouponRecords',
+        component: () => import('../views/coupons/CouponRecordsView.vue'),
+        meta: { title: '发放记录' }
+      },
+      {
         path: 'logs',
         name: 'Logs',
         component: () => import('../views/logs/LogsView.vue'),

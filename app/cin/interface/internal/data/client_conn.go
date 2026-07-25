@@ -10,6 +10,7 @@ import (
 
 	ts "cyi-app/pkg/kratos/server/transporter"
 
+	marketingV1 "cyi-app/api/service/marketing/v1"
 	orderRpc "cyi-app/api/service/order/v1"
 	productRpc "cyi-app/api/service/product/v1"
 	mid "cyi-app/pkg/kratos/server/middleware"
@@ -80,6 +81,25 @@ func NewProductServiceClient(r registry.Discovery, conf *conf.Server, auth *conf
 		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.PRODUCT_SERVICE, err))
 	}
 	return productRpc.NewProductClient(conn)
+}
+
+func NewMarketingCouponServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) marketingV1.CouponServiceClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.MARKETING_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			ServiceKey:     auth.ServiceKey[grpc.MARKETING_SERVICE],
+			Meter:          metric,
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.MARKETING_SERVICE, err))
+	}
+	return marketingV1.NewCouponServiceClient(conn)
 }
 
 func NewStockServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) productRpc.StockClient {

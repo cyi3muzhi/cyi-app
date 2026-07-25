@@ -20,6 +20,8 @@ type Order struct {
 	Status int32 `json:"status" gorm:"not null;default:0;comment:状态: 0-待付款 1-待发货 2-已发货 3-已完成 4-已取消 5-售后中"`
 	// 订单号
 	OrderNo string `json:"order_no" gorm:"uniqueIndex;not null;default:'';comment:订单号"`
+	// 优惠券发放记录ID
+	CouponRecordID int64 `json:"coupon_record_id" gorm:"default:0;comment:优惠券发放记录ID"`
 }
 
 type IOrder interface {

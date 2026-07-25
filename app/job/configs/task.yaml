@@ -8,3 +8,9 @@ tasks:
       queue: "critical"
       max_retry: 3
       timeout: 5s
+ - cron: "*/5 * * * *"
+   name: "coupon_expire"
+   options:
+      queue: "critical"
+      max_retry: 3
+      timeout: 30s

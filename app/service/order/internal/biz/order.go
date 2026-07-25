@@ -23,6 +23,7 @@ type Order struct {
 	CreateTime int64 // 创建时间（Unix 时间戳秒）
 
 	Items         []*OrderItem // 聚合内的实体
+	CouponRecordID int64       // 优惠券发放记录ID（可选）
 	statusHandler OrderStatus  // 状态模式
 }
 

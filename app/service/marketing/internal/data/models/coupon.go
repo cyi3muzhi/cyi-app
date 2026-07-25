@@ -17,6 +17,7 @@ type Coupon struct {
 	ValidEnd    int64  `json:"valid_end" gorm:"index;not null;comment:有效期结束（Unix秒）"`
 	Status      int32  `json:"status" gorm:"index;not null;default:1;comment:状态:1-active 2-pending 3-ended 4-voided"`
 	Enabled     bool   `json:"enabled" gorm:"not null;default:true;comment:启用开关"`
+	LimitPerUser int32 `json:"limit_per_user" gorm:"not null;default:0;comment:每人限领数量，0=不限制"`
 }
 
 type ICoupon interface {

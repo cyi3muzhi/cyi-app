@@ -35,6 +35,7 @@ func newOrder(db *gorm.DB) order {
 	_order.DiscountAmount = field.NewInt64(tableName, "discount_amount")
 	_order.Status = field.NewInt32(tableName, "status")
 	_order.OrderNo = field.NewString(tableName, "order_no")
+	_order.CouponRecordID = field.NewInt64(tableName, "coupon_record_id")
 
 	_order.fillFieldMap()
 
@@ -56,6 +57,7 @@ type order struct {
 	DiscountAmount field.Int64
 	Status         field.Int32
 	OrderNo        field.String
+	CouponRecordID field.Int64
 
 	fieldMap map[string]field.Expr
 }
@@ -83,6 +85,7 @@ func (o *order) updateTableName(table string) *order {
 	o.DiscountAmount = field.NewInt64(table, "discount_amount")
 	o.Status = field.NewInt32(table, "status")
 	o.OrderNo = field.NewString(table, "order_no")
+	o.CouponRecordID = field.NewInt64(table, "coupon_record_id")
 
 	o.fillFieldMap()
 
@@ -99,7 +102,7 @@ func (o *order) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (o *order) fillFieldMap() {
-	o.fieldMap = make(map[string]field.Expr, 11)
+	o.fieldMap = make(map[string]field.Expr, 12)
 	o.fieldMap["id"] = o.ID
 	o.fieldMap["create_time"] = o.CreateTime
 	o.fieldMap["update_time"] = o.UpdateTime
@@ -111,6 +114,7 @@ func (o *order) fillFieldMap() {
 	o.fieldMap["discount_amount"] = o.DiscountAmount
 	o.fieldMap["status"] = o.Status
 	o.fieldMap["order_no"] = o.OrderNo
+	o.fieldMap["coupon_record_id"] = o.CouponRecordID
 }
 
 func (o order) clone(db *gorm.DB) order {

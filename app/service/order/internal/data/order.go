@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	marketingRpc "cyi-app/api/service/marketing/v1"
 	v1 "cyi-app/api/service/order/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -43,11 +44,41 @@ func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
 			Freight:        in.Freight.Amount,
 			DiscountAmount: in.Discount.Amount,
 			Status:         int32(in.Status),
+			CouponRecordID: in.CouponRecordID,
 		}
 		if err := tx.Order.WithContext(ctx).Create(order); err != nil {
 			return errors.New("create order failed")
 		}
 		in.ID = order.ID
+
+		// 如果有优惠券，调用 marketing 服务的 UseCoupon 核销并更新优惠金额
+		if in.CouponRecordID > 0 {
+			reply, err := r.data.mc.UseCoupon(ctx, &marketingRpc.UseCouponRequest{
+				RecordId:    in.CouponRecordID,
+				UserId:      in.UserID,
+				OrderId:     order.ID,
+				OrderAmount: order.TotalPrice,
+			})
+			if err != nil {
+				r.log.Errorf("use coupon failed, recordID=%d, orderID=%d: %v", in.CouponRecordID, order.ID, err)
+				return errors.New("use coupon failed")
+			}
+			discountAmount := reply.DiscountAmount
+			// 更新数据库中的优惠金额和实付金额
+			order.PayAmount = order.TotalPrice + order.Freight - discountAmount
+			order.DiscountAmount = discountAmount
+			if _, err := tx.Order.WithContext(ctx).Where(tx.Order.ID.Eq(order.ID)).
+				UpdateColumn(tx.Order.PayAmount, order.PayAmount); err != nil {
+				return errors.New("update order pay_amount failed")
+			}
+			if _, err := tx.Order.WithContext(ctx).Where(tx.Order.ID.Eq(order.ID)).
+				UpdateColumn(tx.Order.DiscountAmount, order.DiscountAmount); err != nil {
+				return errors.New("update order discount_amount failed")
+			}
+			// 回写到 biz.Order，让调用方感知实际优惠和实付金额
+			in.Discount.Amount = discountAmount
+			in.PayAmount.Amount = order.PayAmount
+		}
 
 		for _, item := range in.Items {
 			oi := &mod.OrderItem{

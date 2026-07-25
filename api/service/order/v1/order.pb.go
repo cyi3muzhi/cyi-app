@@ -92,15 +92,16 @@ func (OrderStatus) EnumDescriptor() ([]byte, []int) {
 }
 
 type CreateOrderRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	ProductId     int64                  `protobuf:"varint,2,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 立即购买：单个商品ID（与 items 二选一）
-	Count         int32                  `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`                          // 立即购买：数量
-	Price         int64                  `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`                          // 立即购买：单价（单位：分）
-	Items         []*OrderItemProto      `protobuf:"bytes,5,rep,name=items,proto3" json:"items,omitempty"`                           // 购物车结算：多个商品（与 product_id 二选一）
-	SkuId         int64                  `protobuf:"varint,6,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`             // 立即购买：SKU ID
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	UserId         int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	ProductId      int64                  `protobuf:"varint,2,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`                  // 立即购买：单个商品ID（与 items 二选一）
+	Count          int32                  `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`                                           // 立即购买：数量
+	Price          int64                  `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`                                           // 立即购买：单价（单位：分）
+	Items          []*OrderItemProto      `protobuf:"bytes,5,rep,name=items,proto3" json:"items,omitempty"`                                            // 购物车结算：多个商品（与 product_id 二选一）
+	SkuId          int64                  `protobuf:"varint,6,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`                              // 立即购买：SKU ID
+	CouponRecordId int64                  `protobuf:"varint,7,opt,name=coupon_record_id,json=couponRecordId,proto3" json:"coupon_record_id,omitempty"` // 优惠券发放记录ID（可选）
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *CreateOrderRequest) Reset() {
@@ -171,6 +172,13 @@ func (x *CreateOrderRequest) GetItems() []*OrderItemProto {
 func (x *CreateOrderRequest) GetSkuId() int64 {
 	if x != nil {
 		return x.SkuId
+	}
+	return 0
+}
+
+func (x *CreateOrderRequest) GetCouponRecordId() int64 {
+	if x != nil {
+		return x.CouponRecordId
 	}
 	return 0
 }
@@ -1147,7 +1155,7 @@ var File_api_service_order_v1_order_proto protoreflect.FileDescriptor
 
 const file_api_service_order_v1_order_proto_rawDesc = "" +
 	"\n" +
-	" api/service/order/v1/order.proto\x12\x14api.service.order.v1\"\xcb\x01\n" +
+	" api/service/order/v1/order.proto\x12\x14api.service.order.v1\"\xf5\x01\n" +
 	"\x12CreateOrderRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1d\n" +
 	"\n" +
@@ -1155,7 +1163,8 @@ const file_api_service_order_v1_order_proto_rawDesc = "" +
 	"\x05count\x18\x03 \x01(\x05R\x05count\x12\x14\n" +
 	"\x05price\x18\x04 \x01(\x03R\x05price\x12:\n" +
 	"\x05items\x18\x05 \x03(\v2$.api.service.order.v1.OrderItemProtoR\x05items\x12\x15\n" +
-	"\x06sku_id\x18\x06 \x01(\x03R\x05skuId\"-\n" +
+	"\x06sku_id\x18\x06 \x01(\x03R\x05skuId\x12(\n" +
+	"\x10coupon_record_id\x18\a \x01(\x03R\x0ecouponRecordId\"-\n" +
 	"\x10CreateOrderReply\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\x03R\aorderId\"\x14\n" +
 	"\x12UpdateOrderRequest\"\x12\n" +

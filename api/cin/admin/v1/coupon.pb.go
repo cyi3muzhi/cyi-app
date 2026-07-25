@@ -40,6 +40,7 @@ type CouponItem struct {
 	CreateTime    int64                  `protobuf:"varint,13,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
 	UpdateTime    int64                  `protobuf:"varint,14,opt,name=update_time,json=updateTime,proto3" json:"update_time,omitempty"`
 	DistRecords   []*DistRecord          `protobuf:"bytes,15,rep,name=dist_records,json=distRecords,proto3" json:"dist_records,omitempty"`
+	LimitPerUser  int32                  `protobuf:"varint,16,opt,name=limit_per_user,json=limitPerUser,proto3" json:"limit_per_user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -179,6 +180,13 @@ func (x *CouponItem) GetDistRecords() []*DistRecord {
 	return nil
 }
 
+func (x *CouponItem) GetLimitPerUser() int32 {
+	if x != nil {
+		return x.LimitPerUser
+	}
+	return 0
+}
+
 type DistRecord struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -187,6 +195,9 @@ type DistRecord struct {
 	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
 	UsedTime      int64                  `protobuf:"varint,5,opt,name=used_time,json=usedTime,proto3" json:"used_time,omitempty"`
 	OrderId       int64                  `protobuf:"varint,6,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	Time          string                 `protobuf:"bytes,7,opt,name=time,proto3" json:"time,omitempty"` // 发放时间（格式化显示）
+	User          string                 `protobuf:"bytes,8,opt,name=user,proto3" json:"user,omitempty"` // 领取用户（显示用）
+	CreateTime    int64                  `protobuf:"varint,9,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -259,6 +270,27 @@ func (x *DistRecord) GetUsedTime() int64 {
 func (x *DistRecord) GetOrderId() int64 {
 	if x != nil {
 		return x.OrderId
+	}
+	return 0
+}
+
+func (x *DistRecord) GetTime() string {
+	if x != nil {
+		return x.Time
+	}
+	return ""
+}
+
+func (x *DistRecord) GetUser() string {
+	if x != nil {
+		return x.User
+	}
+	return ""
+}
+
+func (x *DistRecord) GetCreateTime() int64 {
+	if x != nil {
+		return x.CreateTime
 	}
 	return 0
 }
@@ -496,6 +528,7 @@ type CouponCreateRequest struct {
 	Quantity      int32                  `protobuf:"varint,5,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	ValidStart    string                 `protobuf:"bytes,6,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"`
 	ValidEnd      string                 `protobuf:"bytes,7,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`
+	LimitPerUser  int32                  `protobuf:"varint,11,opt,name=limit_per_user,json=limitPerUser,proto3" json:"limit_per_user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -579,6 +612,13 @@ func (x *CouponCreateRequest) GetValidEnd() string {
 	return ""
 }
 
+func (x *CouponCreateRequest) GetLimitPerUser() int32 {
+	if x != nil {
+		return x.LimitPerUser
+	}
+	return 0
+}
+
 type CouponCreateReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CouponId      int64                  `protobuf:"varint,1,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`
@@ -634,6 +674,7 @@ type CouponUpdateRequest struct {
 	ValidStart    string                 `protobuf:"bytes,7,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"`
 	ValidEnd      string                 `protobuf:"bytes,8,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`
 	Enabled       bool                   `protobuf:"varint,9,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	LimitPerUser  int32                  `protobuf:"varint,10,opt,name=limit_per_user,json=limitPerUser,proto3" json:"limit_per_user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -729,6 +770,13 @@ func (x *CouponUpdateRequest) GetEnabled() bool {
 		return x.Enabled
 	}
 	return false
+}
+
+func (x *CouponUpdateRequest) GetLimitPerUser() int32 {
+	if x != nil {
+		return x.LimitPerUser
+	}
+	return 0
 }
 
 type CouponUpdateReply struct {
@@ -1063,11 +1111,124 @@ func (x *CouponStatsReply) GetExpiredCount() int32 {
 	return 0
 }
 
+// 发放记录查询（按需加载）
+type CouponRecordsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CouponId      int64                  `protobuf:"varint,1,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`
+	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CouponRecordsRequest) Reset() {
+	*x = CouponRecordsRequest{}
+	mi := &file_api_cin_admin_v1_coupon_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CouponRecordsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CouponRecordsRequest) ProtoMessage() {}
+
+func (x *CouponRecordsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_coupon_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CouponRecordsRequest.ProtoReflect.Descriptor instead.
+func (*CouponRecordsRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_coupon_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *CouponRecordsRequest) GetCouponId() int64 {
+	if x != nil {
+		return x.CouponId
+	}
+	return 0
+}
+
+func (x *CouponRecordsRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *CouponRecordsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type CouponRecordsReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*DistRecord          `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CouponRecordsReply) Reset() {
+	*x = CouponRecordsReply{}
+	mi := &file_api_cin_admin_v1_coupon_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CouponRecordsReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CouponRecordsReply) ProtoMessage() {}
+
+func (x *CouponRecordsReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_coupon_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CouponRecordsReply.ProtoReflect.Descriptor instead.
+func (*CouponRecordsReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_coupon_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *CouponRecordsReply) GetItems() []*DistRecord {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *CouponRecordsReply) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
 var File_api_cin_admin_v1_coupon_proto protoreflect.FileDescriptor
 
 const file_api_cin_admin_v1_coupon_proto_rawDesc = "" +
 	"\n" +
-	"\x1dapi/cin/admin/v1/coupon.proto\x12\x10api.cin.admin.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\xca\x03\n" +
+	"\x1dapi/cin/admin/v1/coupon.proto\x12\x10api.cin.admin.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\xf0\x03\n" +
 	"\n" +
 	"CouponItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
@@ -1090,7 +1251,8 @@ const file_api_cin_admin_v1_coupon_proto_rawDesc = "" +
 	"createTime\x12\x1f\n" +
 	"\vupdate_time\x18\x0e \x01(\x03R\n" +
 	"updateTime\x12?\n" +
-	"\fdist_records\x18\x0f \x03(\v2\x1c.api.cin.admin.v1.DistRecordR\vdistRecords\"\x9d\x01\n" +
+	"\fdist_records\x18\x0f \x03(\v2\x1c.api.cin.admin.v1.DistRecordR\vdistRecords\x12$\n" +
+	"\x0elimit_per_user\x18\x10 \x01(\x05R\flimitPerUser\"\xe6\x01\n" +
 	"\n" +
 	"DistRecord\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x17\n" +
@@ -1098,7 +1260,11 @@ const file_api_cin_admin_v1_coupon_proto_rawDesc = "" +
 	"\x06source\x18\x03 \x01(\tR\x06source\x12\x16\n" +
 	"\x06status\x18\x04 \x01(\tR\x06status\x12\x1b\n" +
 	"\tused_time\x18\x05 \x01(\x03R\busedTime\x12\x19\n" +
-	"\border_id\x18\x06 \x01(\x03R\aorderId\"\xac\x01\n" +
+	"\border_id\x18\x06 \x01(\x03R\aorderId\x12\x12\n" +
+	"\x04time\x18\a \x01(\tR\x04time\x12\x12\n" +
+	"\x04user\x18\b \x01(\tR\x04user\x12\x1f\n" +
+	"\vcreate_time\x18\t \x01(\x03R\n" +
+	"createTime\"\xac\x01\n" +
 	"\x11CouponListRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x16\n" +
@@ -1112,7 +1278,7 @@ const file_api_cin_admin_v1_coupon_proto_rawDesc = "" +
 	"\x10CouponGetRequest\x12$\n" +
 	"\tcoupon_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\bcouponId\"F\n" +
 	"\x0eCouponGetReply\x124\n" +
-	"\x06coupon\x18\x01 \x01(\v2\x1c.api.cin.admin.v1.CouponItemR\x06coupon\"\x82\x02\n" +
+	"\x06coupon\x18\x01 \x01(\v2\x1c.api.cin.admin.v1.CouponItemR\x06coupon\"\xa8\x02\n" +
 	"\x13CouponCreateRequest\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04name\x12\x1b\n" +
 	"\x04type\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04type\x12\x1d\n" +
@@ -1122,9 +1288,10 @@ const file_api_cin_admin_v1_coupon_proto_rawDesc = "" +
 	"\bquantity\x18\x05 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\bquantity\x12(\n" +
 	"\vvalid_start\x18\x06 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\n" +
 	"validStart\x12$\n" +
-	"\tvalid_end\x18\a \x01(\tB\a\xfaB\x04r\x02\x10\x01R\bvalidEnd\"0\n" +
+	"\tvalid_end\x18\a \x01(\tB\a\xfaB\x04r\x02\x10\x01R\bvalidEnd\x12$\n" +
+	"\x0elimit_per_user\x18\v \x01(\x05R\flimitPerUser\"0\n" +
 	"\x11CouponCreateReply\x12\x1b\n" +
-	"\tcoupon_id\x18\x01 \x01(\x03R\bcouponId\"\x8c\x02\n" +
+	"\tcoupon_id\x18\x01 \x01(\x03R\bcouponId\"\xb2\x02\n" +
 	"\x13CouponUpdateRequest\x12$\n" +
 	"\tcoupon_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\bcouponId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
@@ -1136,7 +1303,9 @@ const file_api_cin_admin_v1_coupon_proto_rawDesc = "" +
 	"\vvalid_start\x18\a \x01(\tR\n" +
 	"validStart\x12\x1b\n" +
 	"\tvalid_end\x18\b \x01(\tR\bvalidEnd\x12\x18\n" +
-	"\aenabled\x18\t \x01(\bR\aenabled\"-\n" +
+	"\aenabled\x18\t \x01(\bR\aenabled\x12$\n" +
+	"\x0elimit_per_user\x18\n" +
+	" \x01(\x05R\flimitPerUser\"-\n" +
 	"\x11CouponUpdateReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\";\n" +
 	"\x13CouponDeleteRequest\x12$\n" +
@@ -1154,7 +1323,14 @@ const file_api_cin_admin_v1_coupon_proto_rawDesc = "" +
 	"totalCount\x12!\n" +
 	"\factive_count\x18\x02 \x01(\x05R\vactiveCount\x12!\n" +
 	"\fissued_count\x18\x03 \x01(\x03R\vissuedCount\x12#\n" +
-	"\rexpired_count\x18\x04 \x01(\x05R\fexpiredCount2\x97\a\n" +
+	"\rexpired_count\x18\x04 \x01(\x05R\fexpiredCount\"m\n" +
+	"\x14CouponRecordsRequest\x12$\n" +
+	"\tcoupon_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\bcouponId\x12\x12\n" +
+	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"^\n" +
+	"\x12CouponRecordsReply\x122\n" +
+	"\x05items\x18\x01 \x03(\v2\x1c.api.cin.admin.v1.DistRecordR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total2\xaa\b\n" +
 	"\vAdminCoupon\x12o\n" +
 	"\n" +
 	"ListCoupon\x12#.api.cin.admin.v1.CouponListRequest\x1a!.api.cin.admin.v1.CouponListReply\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/admin/v1/coupons\x12x\n" +
@@ -1163,7 +1339,8 @@ const file_api_cin_admin_v1_coupon_proto_rawDesc = "" +
 	"\fCreateCoupon\x12%.api.cin.admin.v1.CouponCreateRequest\x1a#.api.cin.admin.v1.CouponCreateReply\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/admin/v1/coupons\x12\x84\x01\n" +
 	"\fUpdateCoupon\x12%.api.cin.admin.v1.CouponUpdateRequest\x1a#.api.cin.admin.v1.CouponUpdateReply\"(\x82\xd3\xe4\x93\x02\":\x01*\x1a\x1d/admin/v1/coupons/{coupon_id}\x12\x81\x01\n" +
 	"\fDeleteCoupon\x12%.api.cin.admin.v1.CouponDeleteRequest\x1a#.api.cin.admin.v1.CouponDeleteReply\"%\x82\xd3\xe4\x93\x02\x1f*\x1d/admin/v1/coupons/{coupon_id}\x12\x9d\x01\n" +
-	"\x12ToggleCouponStatus\x12+.api.cin.admin.v1.CouponToggleStatusRequest\x1a).api.cin.admin.v1.CouponToggleStatusReply\"/\x82\xd3\xe4\x93\x02):\x01*\"$/admin/v1/coupons/{coupon_id}/toggleB6\n" +
+	"\x12ToggleCouponStatus\x12+.api.cin.admin.v1.CouponToggleStatusRequest\x1a).api.cin.admin.v1.CouponToggleStatusReply\"/\x82\xd3\xe4\x93\x02):\x01*\"$/admin/v1/coupons/{coupon_id}/toggle\x12\x90\x01\n" +
+	"\x11ListCouponRecords\x12&.api.cin.admin.v1.CouponRecordsRequest\x1a$.api.cin.admin.v1.CouponRecordsReply\"-\x82\xd3\xe4\x93\x02'\x12%/admin/v1/coupons/{coupon_id}/recordsB6\n" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (
@@ -1178,7 +1355,7 @@ func file_api_cin_admin_v1_coupon_proto_rawDescGZIP() []byte {
 	return file_api_cin_admin_v1_coupon_proto_rawDescData
 }
 
-var file_api_cin_admin_v1_coupon_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_api_cin_admin_v1_coupon_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_api_cin_admin_v1_coupon_proto_goTypes = []any{
 	(*CouponItem)(nil),                // 0: api.cin.admin.v1.CouponItem
 	(*DistRecord)(nil),                // 1: api.cin.admin.v1.DistRecord
@@ -1196,30 +1373,35 @@ var file_api_cin_admin_v1_coupon_proto_goTypes = []any{
 	(*CouponToggleStatusReply)(nil),   // 13: api.cin.admin.v1.CouponToggleStatusReply
 	(*CouponStatsRequest)(nil),        // 14: api.cin.admin.v1.CouponStatsRequest
 	(*CouponStatsReply)(nil),          // 15: api.cin.admin.v1.CouponStatsReply
+	(*CouponRecordsRequest)(nil),      // 16: api.cin.admin.v1.CouponRecordsRequest
+	(*CouponRecordsReply)(nil),        // 17: api.cin.admin.v1.CouponRecordsReply
 }
 var file_api_cin_admin_v1_coupon_proto_depIdxs = []int32{
 	1,  // 0: api.cin.admin.v1.CouponItem.dist_records:type_name -> api.cin.admin.v1.DistRecord
 	0,  // 1: api.cin.admin.v1.CouponListReply.items:type_name -> api.cin.admin.v1.CouponItem
 	0,  // 2: api.cin.admin.v1.CouponGetReply.coupon:type_name -> api.cin.admin.v1.CouponItem
-	2,  // 3: api.cin.admin.v1.AdminCoupon.ListCoupon:input_type -> api.cin.admin.v1.CouponListRequest
-	14, // 4: api.cin.admin.v1.AdminCoupon.CouponStats:input_type -> api.cin.admin.v1.CouponStatsRequest
-	4,  // 5: api.cin.admin.v1.AdminCoupon.GetCoupon:input_type -> api.cin.admin.v1.CouponGetRequest
-	6,  // 6: api.cin.admin.v1.AdminCoupon.CreateCoupon:input_type -> api.cin.admin.v1.CouponCreateRequest
-	8,  // 7: api.cin.admin.v1.AdminCoupon.UpdateCoupon:input_type -> api.cin.admin.v1.CouponUpdateRequest
-	10, // 8: api.cin.admin.v1.AdminCoupon.DeleteCoupon:input_type -> api.cin.admin.v1.CouponDeleteRequest
-	12, // 9: api.cin.admin.v1.AdminCoupon.ToggleCouponStatus:input_type -> api.cin.admin.v1.CouponToggleStatusRequest
-	3,  // 10: api.cin.admin.v1.AdminCoupon.ListCoupon:output_type -> api.cin.admin.v1.CouponListReply
-	15, // 11: api.cin.admin.v1.AdminCoupon.CouponStats:output_type -> api.cin.admin.v1.CouponStatsReply
-	5,  // 12: api.cin.admin.v1.AdminCoupon.GetCoupon:output_type -> api.cin.admin.v1.CouponGetReply
-	7,  // 13: api.cin.admin.v1.AdminCoupon.CreateCoupon:output_type -> api.cin.admin.v1.CouponCreateReply
-	9,  // 14: api.cin.admin.v1.AdminCoupon.UpdateCoupon:output_type -> api.cin.admin.v1.CouponUpdateReply
-	11, // 15: api.cin.admin.v1.AdminCoupon.DeleteCoupon:output_type -> api.cin.admin.v1.CouponDeleteReply
-	13, // 16: api.cin.admin.v1.AdminCoupon.ToggleCouponStatus:output_type -> api.cin.admin.v1.CouponToggleStatusReply
-	10, // [10:17] is the sub-list for method output_type
-	3,  // [3:10] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	1,  // 3: api.cin.admin.v1.CouponRecordsReply.items:type_name -> api.cin.admin.v1.DistRecord
+	2,  // 4: api.cin.admin.v1.AdminCoupon.ListCoupon:input_type -> api.cin.admin.v1.CouponListRequest
+	14, // 5: api.cin.admin.v1.AdminCoupon.CouponStats:input_type -> api.cin.admin.v1.CouponStatsRequest
+	4,  // 6: api.cin.admin.v1.AdminCoupon.GetCoupon:input_type -> api.cin.admin.v1.CouponGetRequest
+	6,  // 7: api.cin.admin.v1.AdminCoupon.CreateCoupon:input_type -> api.cin.admin.v1.CouponCreateRequest
+	8,  // 8: api.cin.admin.v1.AdminCoupon.UpdateCoupon:input_type -> api.cin.admin.v1.CouponUpdateRequest
+	10, // 9: api.cin.admin.v1.AdminCoupon.DeleteCoupon:input_type -> api.cin.admin.v1.CouponDeleteRequest
+	12, // 10: api.cin.admin.v1.AdminCoupon.ToggleCouponStatus:input_type -> api.cin.admin.v1.CouponToggleStatusRequest
+	16, // 11: api.cin.admin.v1.AdminCoupon.ListCouponRecords:input_type -> api.cin.admin.v1.CouponRecordsRequest
+	3,  // 12: api.cin.admin.v1.AdminCoupon.ListCoupon:output_type -> api.cin.admin.v1.CouponListReply
+	15, // 13: api.cin.admin.v1.AdminCoupon.CouponStats:output_type -> api.cin.admin.v1.CouponStatsReply
+	5,  // 14: api.cin.admin.v1.AdminCoupon.GetCoupon:output_type -> api.cin.admin.v1.CouponGetReply
+	7,  // 15: api.cin.admin.v1.AdminCoupon.CreateCoupon:output_type -> api.cin.admin.v1.CouponCreateReply
+	9,  // 16: api.cin.admin.v1.AdminCoupon.UpdateCoupon:output_type -> api.cin.admin.v1.CouponUpdateReply
+	11, // 17: api.cin.admin.v1.AdminCoupon.DeleteCoupon:output_type -> api.cin.admin.v1.CouponDeleteReply
+	13, // 18: api.cin.admin.v1.AdminCoupon.ToggleCouponStatus:output_type -> api.cin.admin.v1.CouponToggleStatusReply
+	17, // 19: api.cin.admin.v1.AdminCoupon.ListCouponRecords:output_type -> api.cin.admin.v1.CouponRecordsReply
+	12, // [12:20] is the sub-list for method output_type
+	4,  // [4:12] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_api_cin_admin_v1_coupon_proto_init() }
@@ -1233,7 +1415,7 @@ func file_api_cin_admin_v1_coupon_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_coupon_proto_rawDesc), len(file_api_cin_admin_v1_coupon_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   16,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

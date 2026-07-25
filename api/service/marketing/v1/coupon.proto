@@ -16,6 +16,16 @@ service CouponService {
   rpc ListCoupon (ListCouponRequest) returns (ListCouponReply);
   rpc ToggleCouponStatus (ToggleCouponStatusRequest) returns (ToggleCouponStatusReply);
   rpc CouponStats (CouponStatsRequest) returns (CouponStatsReply);
+  // 用户领券
+  rpc ClaimCoupon (ClaimCouponRequest) returns (ClaimCouponReply);
+  // 用户优惠券列表
+  rpc ListUserCoupons (ListUserCouponsRequest) returns (ListUserCouponsReply);
+  // 使用/核销优惠券
+  rpc UseCoupon (UseCouponRequest) returns (UseCouponReply);
+  // 批量过期优惠券发放记录（给 job 服务调）
+  rpc BatchExpireCoupons (BatchExpireCouponsRequest) returns (BatchExpireCouponsReply);
+  // 查询优惠券发放记录列表
+  rpc ListDistRecords (ListDistRecordsRequest) returns (ListDistRecordsReply);
 }
 
 message Coupon {
@@ -33,6 +43,7 @@ message Coupon {
   bool enabled = 12;
   int64 create_time = 13;
   int64 update_time = 14;
+  int32 limit_per_user = 15; // 每人限领数量，0=不限制
 }
 
 message CreateCouponRequest {
@@ -43,6 +54,7 @@ message CreateCouponRequest {
   int32 quantity = 5 [(validate.rules).int32 = {gt: 0}];
   int64 valid_start = 6 [(validate.rules).int64 = {gt: 0}];
   int64 valid_end = 7 [(validate.rules).int64 = {gt: 0}];
+  int32 limit_per_user = 8;
 }
 
 message CreateCouponReply {
@@ -59,6 +71,7 @@ message UpdateCouponRequest {
   int64 valid_start = 7 [(validate.rules).int64 = {gt: 0}];
   int64 valid_end = 8 [(validate.rules).int64 = {gt: 0}];
   bool enabled = 9;
+  int32 limit_per_user = 10;
 }
 
 message UpdateCouponReply {
@@ -111,4 +124,89 @@ message CouponStatsReply {
   int32 active_count = 2;
   int64 issued_count = 3;
   int32 expired_count = 4;
+}
+
+// 用户领券请求
+message ClaimCouponRequest {
+  int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int64 user_id = 2 [(validate.rules).int64 = {gt: 0}];
+  string source = 3; // 领取来源
+}
+
+message ClaimCouponReply {
+  int64 record_id = 1; // 发放记录 ID
+}
+
+// 用户优惠券列表请求
+message ListUserCouponsRequest {
+  int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 status = 2; // 0=全部 1=未使用 2=已使用 3=已过期
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message UserCouponItem {
+  int64 record_id = 1;     // 发放记录 ID
+  int64 coupon_id = 2;     // 优惠券 ID
+  string name = 3;         // 优惠券名称
+  int32 type = 4;          // 类型
+  int64 value = 5;         // 面值
+  int64 min_amount = 6;    // 使用门槛
+  int64 valid_start = 7;   // 有效期开始
+  int64 valid_end = 8;     // 有效期结束
+  int32 record_status = 9; // 发放记录状态：0=未使用 1=已使用 2=已过期
+  int64 used_time = 10;    // 使用时间
+  int64 order_id = 11;     // 核销订单 ID
+  string source = 12;      // 领取来源
+  int64 create_time = 13;  // 领取时间
+}
+
+message ListUserCouponsReply {
+  repeated UserCouponItem items = 1;
+  int32 total = 2;
+}
+
+// 使用优惠券请求
+message UseCouponRequest {
+  int64 record_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int64 user_id = 2 [(validate.rules).int64 = {gt: 0}];
+  int64 order_id = 3 [(validate.rules).int64 = {gt: 0}];
+  int64 order_amount = 4; // 订单总金额（分），用于校验使用门槛
+}
+
+message UseCouponReply {
+  bool success = 1;
+  int64 discount_amount = 2; // 实际优惠金额（分）
+}
+
+// 批量过期请求
+message BatchExpireCouponsRequest {
+  int64 batch_size = 1; // 每次处理的记录数，默认 100
+}
+
+message BatchExpireCouponsReply {
+  int32 affected_count = 1; // 已过期的记录数
+}
+
+// 发放记录查询请求
+message ListDistRecordsRequest {
+  int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+// 发放记录
+message DistRecord {
+  int64 id = 1;            // 记录 ID
+  int64 user_id = 2;       // 领取用户 ID
+  string source = 3;       // 领取来源
+  int32 status = 4;        // 状态：0-未使用 1-已使用 2-已过期
+  int64 used_time = 5;     // 使用时间
+  int64 order_id = 6;      // 核销订单 ID
+  int64 create_time = 7;   // 领取时间
+}
+
+message ListDistRecordsReply {
+  repeated DistRecord items = 1;
+  int32 total = 2;
 }

@@ -48,6 +48,12 @@ service AdminCoupon {
       body: "*"
     };
   }
+  // 获取优惠券发放记录（按需加载，展开行时调用）
+  rpc ListCouponRecords (CouponRecordsRequest) returns (CouponRecordsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/coupons/{coupon_id}/records"
+    };
+  }
 }
 
 message CouponItem {
@@ -66,6 +72,7 @@ message CouponItem {
   int64 create_time = 13;
   int64 update_time = 14;
   repeated DistRecord dist_records = 15;
+  int32 limit_per_user = 16;
 }
 
 message DistRecord {
@@ -75,6 +82,9 @@ message DistRecord {
   string status = 4;
   int64 used_time = 5;
   int64 order_id = 6;
+  string time = 7;      // 发放时间（格式化显示）
+  string user = 8;      // 领取用户（显示用）
+  int64 create_time = 9;
 }
 
 message CouponListRequest {
@@ -107,6 +117,7 @@ message CouponCreateRequest {
   int32 quantity = 5 [(validate.rules).int32 = {gt: 0}];
   string valid_start = 6 [(validate.rules).string.min_len = 1];
   string valid_end = 7 [(validate.rules).string.min_len = 1];
+  int32 limit_per_user = 11;
 }
 
 message CouponCreateReply {
@@ -123,6 +134,7 @@ message CouponUpdateRequest {
   string valid_start = 7;
   string valid_end = 8;
   bool enabled = 9;
+  int32 limit_per_user = 10;
 }
 
 message CouponUpdateReply {
@@ -153,4 +165,16 @@ message CouponStatsReply {
   int32 active_count = 2;
   int64 issued_count = 3;
   int32 expired_count = 4;
+}
+
+// 发放记录查询（按需加载）
+message CouponRecordsRequest {
+  int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message CouponRecordsReply {
+  repeated DistRecord items = 1;
+  int32 total = 2;
 }

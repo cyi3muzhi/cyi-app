@@ -27,6 +27,7 @@ message CreateOrderRequest {
 	int64 price = 4; // 立即购买：单价（单位：分）
 	repeated OrderItemProto items = 5; // 购物车结算：多个商品（与 product_id 二选一）
 	int64 sku_id = 6; // 立即购买：SKU ID
+	int64 coupon_record_id = 7; // 优惠券发放记录ID（可选）
 }
 
 message CreateOrderReply {

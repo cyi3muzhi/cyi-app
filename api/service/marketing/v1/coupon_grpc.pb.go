@@ -26,6 +26,11 @@ const (
 	CouponService_ListCoupon_FullMethodName         = "/api.service.marketing.v1.CouponService/ListCoupon"
 	CouponService_ToggleCouponStatus_FullMethodName = "/api.service.marketing.v1.CouponService/ToggleCouponStatus"
 	CouponService_CouponStats_FullMethodName        = "/api.service.marketing.v1.CouponService/CouponStats"
+	CouponService_ClaimCoupon_FullMethodName        = "/api.service.marketing.v1.CouponService/ClaimCoupon"
+	CouponService_ListUserCoupons_FullMethodName    = "/api.service.marketing.v1.CouponService/ListUserCoupons"
+	CouponService_UseCoupon_FullMethodName          = "/api.service.marketing.v1.CouponService/UseCoupon"
+	CouponService_BatchExpireCoupons_FullMethodName = "/api.service.marketing.v1.CouponService/BatchExpireCoupons"
+	CouponService_ListDistRecords_FullMethodName    = "/api.service.marketing.v1.CouponService/ListDistRecords"
 )
 
 // CouponServiceClient is the client API for CouponService service.
@@ -39,6 +44,16 @@ type CouponServiceClient interface {
 	ListCoupon(ctx context.Context, in *ListCouponRequest, opts ...grpc.CallOption) (*ListCouponReply, error)
 	ToggleCouponStatus(ctx context.Context, in *ToggleCouponStatusRequest, opts ...grpc.CallOption) (*ToggleCouponStatusReply, error)
 	CouponStats(ctx context.Context, in *CouponStatsRequest, opts ...grpc.CallOption) (*CouponStatsReply, error)
+	// 用户领券
+	ClaimCoupon(ctx context.Context, in *ClaimCouponRequest, opts ...grpc.CallOption) (*ClaimCouponReply, error)
+	// 用户优惠券列表
+	ListUserCoupons(ctx context.Context, in *ListUserCouponsRequest, opts ...grpc.CallOption) (*ListUserCouponsReply, error)
+	// 使用/核销优惠券
+	UseCoupon(ctx context.Context, in *UseCouponRequest, opts ...grpc.CallOption) (*UseCouponReply, error)
+	// 批量过期优惠券发放记录（给 job 服务调）
+	BatchExpireCoupons(ctx context.Context, in *BatchExpireCouponsRequest, opts ...grpc.CallOption) (*BatchExpireCouponsReply, error)
+	// 查询优惠券发放记录列表
+	ListDistRecords(ctx context.Context, in *ListDistRecordsRequest, opts ...grpc.CallOption) (*ListDistRecordsReply, error)
 }
 
 type couponServiceClient struct {
@@ -119,6 +134,56 @@ func (c *couponServiceClient) CouponStats(ctx context.Context, in *CouponStatsRe
 	return out, nil
 }
 
+func (c *couponServiceClient) ClaimCoupon(ctx context.Context, in *ClaimCouponRequest, opts ...grpc.CallOption) (*ClaimCouponReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ClaimCouponReply)
+	err := c.cc.Invoke(ctx, CouponService_ClaimCoupon_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *couponServiceClient) ListUserCoupons(ctx context.Context, in *ListUserCouponsRequest, opts ...grpc.CallOption) (*ListUserCouponsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListUserCouponsReply)
+	err := c.cc.Invoke(ctx, CouponService_ListUserCoupons_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *couponServiceClient) UseCoupon(ctx context.Context, in *UseCouponRequest, opts ...grpc.CallOption) (*UseCouponReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UseCouponReply)
+	err := c.cc.Invoke(ctx, CouponService_UseCoupon_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *couponServiceClient) BatchExpireCoupons(ctx context.Context, in *BatchExpireCouponsRequest, opts ...grpc.CallOption) (*BatchExpireCouponsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BatchExpireCouponsReply)
+	err := c.cc.Invoke(ctx, CouponService_BatchExpireCoupons_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *couponServiceClient) ListDistRecords(ctx context.Context, in *ListDistRecordsRequest, opts ...grpc.CallOption) (*ListDistRecordsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListDistRecordsReply)
+	err := c.cc.Invoke(ctx, CouponService_ListDistRecords_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CouponServiceServer is the server API for CouponService service.
 // All implementations must embed UnimplementedCouponServiceServer
 // for forward compatibility.
@@ -130,6 +195,16 @@ type CouponServiceServer interface {
 	ListCoupon(context.Context, *ListCouponRequest) (*ListCouponReply, error)
 	ToggleCouponStatus(context.Context, *ToggleCouponStatusRequest) (*ToggleCouponStatusReply, error)
 	CouponStats(context.Context, *CouponStatsRequest) (*CouponStatsReply, error)
+	// 用户领券
+	ClaimCoupon(context.Context, *ClaimCouponRequest) (*ClaimCouponReply, error)
+	// 用户优惠券列表
+	ListUserCoupons(context.Context, *ListUserCouponsRequest) (*ListUserCouponsReply, error)
+	// 使用/核销优惠券
+	UseCoupon(context.Context, *UseCouponRequest) (*UseCouponReply, error)
+	// 批量过期优惠券发放记录（给 job 服务调）
+	BatchExpireCoupons(context.Context, *BatchExpireCouponsRequest) (*BatchExpireCouponsReply, error)
+	// 查询优惠券发放记录列表
+	ListDistRecords(context.Context, *ListDistRecordsRequest) (*ListDistRecordsReply, error)
 	mustEmbedUnimplementedCouponServiceServer()
 }
 
@@ -160,6 +235,21 @@ func (UnimplementedCouponServiceServer) ToggleCouponStatus(context.Context, *Tog
 }
 func (UnimplementedCouponServiceServer) CouponStats(context.Context, *CouponStatsRequest) (*CouponStatsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CouponStats not implemented")
+}
+func (UnimplementedCouponServiceServer) ClaimCoupon(context.Context, *ClaimCouponRequest) (*ClaimCouponReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClaimCoupon not implemented")
+}
+func (UnimplementedCouponServiceServer) ListUserCoupons(context.Context, *ListUserCouponsRequest) (*ListUserCouponsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListUserCoupons not implemented")
+}
+func (UnimplementedCouponServiceServer) UseCoupon(context.Context, *UseCouponRequest) (*UseCouponReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UseCoupon not implemented")
+}
+func (UnimplementedCouponServiceServer) BatchExpireCoupons(context.Context, *BatchExpireCouponsRequest) (*BatchExpireCouponsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchExpireCoupons not implemented")
+}
+func (UnimplementedCouponServiceServer) ListDistRecords(context.Context, *ListDistRecordsRequest) (*ListDistRecordsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDistRecords not implemented")
 }
 func (UnimplementedCouponServiceServer) mustEmbedUnimplementedCouponServiceServer() {}
 func (UnimplementedCouponServiceServer) testEmbeddedByValue()                       {}
@@ -308,6 +398,96 @@ func _CouponService_CouponStats_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CouponService_ClaimCoupon_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClaimCouponRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CouponServiceServer).ClaimCoupon(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CouponService_ClaimCoupon_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CouponServiceServer).ClaimCoupon(ctx, req.(*ClaimCouponRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CouponService_ListUserCoupons_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListUserCouponsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CouponServiceServer).ListUserCoupons(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CouponService_ListUserCoupons_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CouponServiceServer).ListUserCoupons(ctx, req.(*ListUserCouponsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CouponService_UseCoupon_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UseCouponRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CouponServiceServer).UseCoupon(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CouponService_UseCoupon_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CouponServiceServer).UseCoupon(ctx, req.(*UseCouponRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CouponService_BatchExpireCoupons_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchExpireCouponsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CouponServiceServer).BatchExpireCoupons(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CouponService_BatchExpireCoupons_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CouponServiceServer).BatchExpireCoupons(ctx, req.(*BatchExpireCouponsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CouponService_ListDistRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDistRecordsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CouponServiceServer).ListDistRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CouponService_ListDistRecords_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CouponServiceServer).ListDistRecords(ctx, req.(*ListDistRecordsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CouponService_ServiceDesc is the grpc.ServiceDesc for CouponService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -342,6 +522,26 @@ var CouponService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CouponStats",
 			Handler:    _CouponService_CouponStats_Handler,
+		},
+		{
+			MethodName: "ClaimCoupon",
+			Handler:    _CouponService_ClaimCoupon_Handler,
+		},
+		{
+			MethodName: "ListUserCoupons",
+			Handler:    _CouponService_ListUserCoupons_Handler,
+		},
+		{
+			MethodName: "UseCoupon",
+			Handler:    _CouponService_UseCoupon_Handler,
+		},
+		{
+			MethodName: "BatchExpireCoupons",
+			Handler:    _CouponService_BatchExpireCoupons_Handler,
+		},
+		{
+			MethodName: "ListDistRecords",
+			Handler:    _CouponService_ListDistRecords_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

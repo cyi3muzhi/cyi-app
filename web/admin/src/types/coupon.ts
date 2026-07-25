@@ -17,6 +17,7 @@ export interface CouponItem {
   enabled: boolean
   createTime: number
   updateTime: number
+  limitPerUser: number
   distRecords?: DistRecord[]
 }
 
@@ -27,6 +28,9 @@ export interface DistRecord {
   status: string
   usedTime: number
   orderId: number
+  time: string
+  user: string
+  createTime: number
 }
 
 export interface CouponListParams {
@@ -49,6 +53,7 @@ export interface CouponCreateData {
   value: number
   minAmount: number
   quantity: number
+  limitPerUser: number
   validStart: string
   validEnd: string
 }
@@ -59,6 +64,7 @@ export interface CouponUpdateData {
   value?: number
   minAmount?: number
   quantity?: number
+  limitPerUser?: number
   validStart?: string
   validEnd?: string
   enabled?: boolean

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	userRpc "cyi-app/api/service/user/v1"
+	marketingV1 "cyi-app/api/service/marketing/v1"
 	"cyi-app/app/job/internal/conf"
 	grpc "cyi-app/pkg/kratos/client"
 
@@ -32,4 +33,23 @@ func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Au
 		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.USER_SERVICE, err))
 	}
 	return userRpc.NewUserClient(conn)
+}
+
+func NewMarketingCouponServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, meteric *mid.Meter) marketingV1.CouponServiceClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.MARKETING_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			ServiceKey:     auth.ServiceKey[grpc.MARKETING_SERVICE],
+			Meter:          meteric,
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.MARKETING_SERVICE, err))
+	}
+	return marketingV1.NewCouponServiceClient(conn)
 }

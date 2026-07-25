@@ -21,6 +21,12 @@ var couponStatusMap = map[int32]string{
 	4: "已作废",
 }
 
+var distRecordStatusMap = map[int32]string{
+	0: "未使用",
+	1: "已使用",
+	2: "已过期",
+}
+
 func couponTypeText(t int32) string {
 	if text, ok := couponTypeMap[t]; ok {
 		return text
@@ -30,6 +36,13 @@ func couponTypeText(t int32) string {
 
 func couponStatusText(s int32) string {
 	if text, ok := couponStatusMap[s]; ok {
+		return text
+	}
+	return "未知"
+}
+
+func distRecordStatusText(s int32) string {
+	if text, ok := distRecordStatusMap[s]; ok {
 		return text
 	}
 	return "未知"
@@ -66,6 +79,7 @@ func (s *AdminService) ListCoupon(ctx context.Context, req *adminv1.CouponListRe
 		return nil, err
 	}
 
+	// 列表不查发放记录，展开行时按需加载
 	replyItems := make([]*adminv1.CouponItem, 0, len(items))
 	for _, item := range items {
 		replyItems = append(replyItems, bizToAdminProtoCoupon(item))
@@ -97,21 +111,29 @@ func (s *AdminService) GetCoupon(ctx context.Context, req *adminv1.CouponGetRequ
 		return nil, err
 	}
 
+	proto := bizToAdminProtoCoupon(coupon)
+	if records, _, err := s.couponUC.ListDistRecords(ctx, req.CouponId, 1, 100); err == nil {
+		proto.DistRecords = bizDistRecordsToProto(records)
+	} else {
+		s.log.Warnf("query dist records for coupon %d failed: %v", req.CouponId, err)
+	}
+
 	return &adminv1.CouponGetReply{
-		Coupon: bizToAdminProtoCoupon(coupon),
+		Coupon: proto,
 	}, nil
 }
 
 func (s *AdminService) CreateCoupon(ctx context.Context, req *adminv1.CouponCreateRequest) (*adminv1.CouponCreateReply, error) {
 	coupon := &biz.Coupon{
-		Name:        req.Name,
-		Type:        parseCouponType(req.Type),
-		Value:       req.Value,
-		MinAmount:   req.MinAmount,
-		Quantity:    req.Quantity,
-		ValidStart:  parseTime(req.ValidStart),
-		ValidEnd:    parseTime(req.ValidEnd),
-		Enabled:     true,
+		Name:         req.Name,
+		Type:         parseCouponType(req.Type),
+		Value:        req.Value,
+		MinAmount:    req.MinAmount,
+		Quantity:     req.Quantity,
+		LimitPerUser: req.LimitPerUser,
+		ValidStart:   parseTime(req.ValidStart),
+		ValidEnd:     parseTime(req.ValidEnd),
+		Enabled:      true,
 	}
 
 	result, err := s.couponUC.Create(ctx, coupon)
@@ -126,14 +148,15 @@ func (s *AdminService) CreateCoupon(ctx context.Context, req *adminv1.CouponCrea
 
 func (s *AdminService) UpdateCoupon(ctx context.Context, req *adminv1.CouponUpdateRequest) (*adminv1.CouponUpdateReply, error) {
 	coupon := &biz.Coupon{
-		Name:        req.Name,
-		Type:        parseCouponType(req.Type),
-		Value:       req.Value,
-		MinAmount:   req.MinAmount,
-		Quantity:    req.Quantity,
-		ValidStart:  parseTime(req.ValidStart),
-		ValidEnd:    parseTime(req.ValidEnd),
-		Enabled:     req.Enabled,
+		Name:         req.Name,
+		Type:         parseCouponType(req.Type),
+		Value:        req.Value,
+		MinAmount:    req.MinAmount,
+		Quantity:     req.Quantity,
+		LimitPerUser: req.LimitPerUser,
+		ValidStart:   parseTime(req.ValidStart),
+		ValidEnd:     parseTime(req.ValidEnd),
+		Enabled:      req.Enabled,
 	}
 
 	_, err := s.couponUC.Update(ctx, req.CouponId, coupon)
@@ -157,8 +180,19 @@ func (s *AdminService) DeleteCoupon(ctx context.Context, req *adminv1.CouponDele
 	}, nil
 }
 
+func (s *AdminService) ListCouponRecords(ctx context.Context, req *adminv1.CouponRecordsRequest) (*adminv1.CouponRecordsReply, error) {
+	records, total, err := s.couponUC.ListDistRecords(ctx, req.CouponId, req.Page, req.PageSize)
+	if err != nil {
+		return nil, err
+	}
+	return &adminv1.CouponRecordsReply{
+		Items: bizDistRecordsToProto(records),
+		Total: total,
+	}, nil
+}
+
 func (s *AdminService) ToggleCouponStatus(ctx context.Context, req *adminv1.CouponToggleStatusRequest) (*adminv1.CouponToggleStatusReply, error) {
-	err := s.couponUC.ToggleStatus(ctx, req.CouponId)
+	err := s.couponUC.ToggleStatus(ctx, req.CouponId, req.Action)
 	if err != nil {
 		return nil, err
 	}
@@ -170,19 +204,43 @@ func (s *AdminService) ToggleCouponStatus(ctx context.Context, req *adminv1.Coup
 
 func bizToAdminProtoCoupon(c *biz.Coupon) *adminv1.CouponItem {
 	return &adminv1.CouponItem{
-		Id:          c.ID,
-		Name:        c.Name,
-		Type:        couponTypeText(c.Type),
-		Value:       c.Value,
-		MinAmount:   c.MinAmount,
-		Quantity:    c.Quantity,
-		IssuedCount: c.IssuedCount,
-		UsedCount:   c.UsedCount,
-		ValidStart:  time.Unix(c.ValidStart, 0).Format("2006-01-02"),
-		ValidEnd:    time.Unix(c.ValidEnd, 0).Format("2006-01-02"),
-		Status:      couponStatusText(c.Status),
-		Enabled:     c.Enabled,
-		CreateTime:  c.CreateTime,
-		UpdateTime:  c.UpdateTime,
+		Id:           c.ID,
+		Name:         c.Name,
+		Type:         couponTypeText(c.Type),
+		Value:        c.Value,
+		MinAmount:    c.MinAmount,
+		Quantity:     c.Quantity,
+		IssuedCount:  c.IssuedCount,
+		UsedCount:    c.UsedCount,
+		LimitPerUser: c.LimitPerUser,
+		ValidStart:   time.Unix(c.ValidStart, 0).Format("2006-01-02"),
+		ValidEnd:     time.Unix(c.ValidEnd, 0).Format("2006-01-02"),
+		Status:       couponStatusText(c.Status),
+		Enabled:      c.Enabled,
+		CreateTime:   c.CreateTime,
+		UpdateTime:   c.UpdateTime,
 	}
+}
+
+func bizDistRecordsToProto(records []*biz.DistRecord) []*adminv1.DistRecord {
+	items := make([]*adminv1.DistRecord, 0, len(records))
+	for _, r := range records {
+		// 格式化发放时间
+		timeStr := ""
+		if r.CreatedAt > 0 {
+			timeStr = time.Unix(r.CreatedAt, 0).Format("2006-01-02 15:04:05")
+		}
+		items = append(items, &adminv1.DistRecord{
+			Id:         r.ID,
+			UserId:     r.UserID,
+			Source:     r.Source,
+			Status:     distRecordStatusText(r.Status),
+			UsedTime:   r.UsedTime,
+			OrderId:    r.OrderID,
+			Time:       timeStr,
+			User:       "", // 暂不查询用户名，后续补充
+			CreateTime: r.CreatedAt,
+		})
+	}
+	return items
 }

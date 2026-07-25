@@ -450,6 +450,35 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.CouponDeleteReply'
+    /admin/v1/coupons/{couponId}/records:
+        get:
+            tags:
+                - AdminCoupon
+            description: 获取优惠券发放记录（按需加载，展开行时调用）
+            operationId: AdminCoupon_ListCouponRecords
+            parameters:
+                - name: couponId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CouponRecordsReply'
     /admin/v1/coupons/{couponId}/toggle:
         post:
             tags:
@@ -1298,6 +1327,60 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.AiChatReply'
+    /api/v1/coupons/my:
+        get:
+            tags:
+                - UserCoupon
+            description: 我的优惠券列表
+            operationId: UserCoupon_ListMyCoupons
+            parameters:
+                - name: status
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ListMyCouponsReply'
+    /api/v1/coupons/{couponId}/claim:
+        post:
+            tags:
+                - UserCoupon
+            description: 用户领取优惠券
+            operationId: UserCoupon_ClaimCoupon
+            parameters:
+                - name: couponId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.ClaimCouponRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ClaimCouponReply'
     /blades/v1/chat:
         post:
             tags:
@@ -1815,6 +1898,9 @@ components:
                     type: string
                 validEnd:
                     type: string
+                limitPerUser:
+                    type: integer
+                    format: int32
         api.cin.admin.v1.CouponDeleteReply:
             type: object
             properties:
@@ -1863,6 +1949,9 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.DistRecord'
+                limitPerUser:
+                    type: integer
+                    format: int32
         api.cin.admin.v1.CouponListReply:
             type: object
             properties:
@@ -1870,6 +1959,16 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.CouponItem'
+                total:
+                    type: integer
+                    format: int32
+        api.cin.admin.v1.CouponRecordsReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.DistRecord'
                 total:
                     type: integer
                     format: int32
@@ -1927,6 +2026,9 @@ components:
                     type: string
                 enabled:
                     type: boolean
+                limitPerUser:
+                    type: integer
+                    format: int32
         api.cin.admin.v1.CreateCategoryReply:
             type: object
             properties:
@@ -2081,6 +2183,12 @@ components:
                 usedTime:
                     type: string
                 orderId:
+                    type: string
+                time:
+                    type: string
+                user:
+                    type: string
+                createTime:
                     type: string
         api.cin.admin.v1.ExportOrderReply:
             type: object
@@ -3009,6 +3117,18 @@ components:
                     format: int32
                 image:
                     type: string
+        api.cin.interface.v1.ClaimCouponReply:
+            type: object
+            properties:
+                recordId:
+                    type: string
+        api.cin.interface.v1.ClaimCouponRequest:
+            type: object
+            properties:
+                couponId:
+                    type: string
+                source:
+                    type: string
         api.cin.interface.v1.CreateProductReply:
             type: object
             properties:
@@ -3054,6 +3174,16 @@ components:
                     type: string
                 name:
                     type: string
+        api.cin.interface.v1.ListMyCouponsReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.MyCouponItem'
+                total:
+                    type: integer
+                    format: int32
         api.cin.interface.v1.ListOrderReply:
             type: object
             properties:
@@ -3088,6 +3218,37 @@ components:
                 password:
                     type: string
                     description: 密码
+        api.cin.interface.v1.MyCouponItem:
+            type: object
+            properties:
+                recordId:
+                    type: string
+                couponId:
+                    type: string
+                name:
+                    type: string
+                type:
+                    type: integer
+                    format: int32
+                value:
+                    type: string
+                minAmount:
+                    type: string
+                validStart:
+                    type: string
+                validEnd:
+                    type: string
+                recordStatus:
+                    type: integer
+                    format: int32
+                usedTime:
+                    type: string
+                orderId:
+                    type: string
+                source:
+                    type: string
+                createTime:
+                    type: string
         api.cin.interface.v1.OrderItem:
             type: object
             properties:
@@ -3262,3 +3423,4 @@ tags:
       description: 管理后台 - 文件上传服务
     - name: User
       description: 用户信息服务
+    - name: UserCoupon

@@ -10,16 +10,18 @@ import (
 )
 
 type JobService struct {
-	uc     *biz.JobUseCase
-	userUc biz.UserRepo
-	log    *log.Helper
+	uc       *biz.JobUseCase
+	userUc   biz.UserRepo
+	couponUc biz.CouponRepo
+	log      *log.Helper
 }
 
-func NewJobService(uc *biz.JobUseCase, userUc biz.UserRepo, logger log.Logger) *JobService {
+func NewJobService(uc *biz.JobUseCase, userUc biz.UserRepo, couponUc biz.CouponRepo, logger log.Logger) *JobService {
 	return &JobService{
-		uc:     uc,
-		userUc: userUc,
-		log:    log.NewHelper(logger),
+		uc:       uc,
+		userUc:   userUc,
+		couponUc: couponUc,
+		log:      log.NewHelper(logger),
 	}
 }
 
@@ -31,5 +33,16 @@ func (s *JobService) UserCount(ctx context.Context, _ *asynq.Task) error {
 		return err
 	}
 	s.log.Infof("UserCount: %d", count)
+	return nil
+}
+
+// CouponExpire 批量过期优惠券发放记录
+func (s *JobService) CouponExpire(ctx context.Context, _ *asynq.Task) error {
+	affected, err := s.couponUc.BatchExpireCoupons(ctx, 100)
+	if err != nil {
+		s.log.Errorf("优惠券过期失败: %v", err)
+		return err
+	}
+	s.log.Infof("CouponExpire: 已过期 %d 条优惠券记录", affected)
 	return nil
 }

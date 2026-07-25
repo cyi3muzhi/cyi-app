@@ -9,6 +9,7 @@ import (
 
 	ts "cyi-app/pkg/kratos/server/transporter"
 
+	marketingRpc "cyi-app/api/service/marketing/v1"
 	productRpc "cyi-app/api/service/product/v1"
 	mid "cyi-app/pkg/kratos/server/middleware"
 
@@ -33,6 +34,26 @@ func NewProductServiceClient(r registry.Discovery, auth *conf.Auth, conf *conf.S
 		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.PRODUCT_SERVICE, err))
 	}
 	return productRpc.NewProductClient(conn)
+}
+
+// NewMarketingCouponServiceClient 创建 Marketing 服务的 CouponService gRPC 客户端
+func NewMarketingCouponServiceClient(r registry.Discovery, auth *conf.Auth, conf *conf.Server, tp trace.TracerProvider, metric *mid.Meter) marketingRpc.CouponServiceClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.MARKETING_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			Meter:          metric,
+			ServiceKey:     auth.ServiceKey[grpc.MARKETING_SERVICE],
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.MARKETING_SERVICE, err))
+	}
+	return marketingRpc.NewCouponServiceClient(conn)
 }
 
 

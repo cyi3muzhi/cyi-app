@@ -10,5 +10,6 @@ import (
 
 func ProcessTask(m *ts.TaskServer, job *service.JobService) *asynq.ServeMux {
 	m.CronHandleFunc(v1.JobName_user_count.String(), job.UserCount)
+	m.CronHandleFunc("coupon_expire", job.CouponExpire)
 	return m.TaskServer
 }

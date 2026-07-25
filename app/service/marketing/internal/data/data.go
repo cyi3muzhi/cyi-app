@@ -60,7 +60,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 
 func generateCode(db *gorm.DB) {
 	g := gen.NewGenerator(gen.Config{
-		OutPath: "./curd",
+		OutPath: "../../internal/data/curd",
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery,
 	})
 	g.UseDB(db)

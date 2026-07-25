@@ -14,20 +14,21 @@ const (
 )
 
 type Coupon struct {
-	ID          int64
-	Name        string
-	Type        int32
-	Value       int64
-	MinAmount   int64
-	Quantity    int32
-	IssuedCount int32
-	UsedCount   int32
-	ValidStart  int64
-	ValidEnd    int64
-	Status      int32
-	Enabled     bool
-	CreateTime  int64
-	UpdateTime  int64
+	ID           int64
+	Name         string
+	Type         int32
+	Value        int64
+	MinAmount    int64
+	Quantity     int32
+	IssuedCount  int32
+	UsedCount    int32
+	ValidStart   int64
+	ValidEnd     int64
+	Status       int32
+	Enabled      bool
+	LimitPerUser int32
+	CreateTime   int64
+	UpdateTime   int64
 }
 
 type CouponStats struct {
@@ -35,6 +36,34 @@ type CouponStats struct {
 	ActiveCount  int32
 	IssuedCount  int64
 	ExpiredCount int32
+}
+
+// DistRecord 发放记录
+type DistRecord struct {
+	ID         int64
+	UserID     int64
+	Source     string
+	Status     int32
+	UsedTime   int64
+	OrderID    int64
+	CreateTime int64
+}
+
+// UserCouponItem 用户领取的优惠券记录（含优惠券基本信息）
+type UserCouponItem struct {
+	RecordID     int64
+	CouponID     int64
+	Name         string
+	Type         int32
+	Value        int64
+	MinAmount    int64
+	ValidStart   int64
+	ValidEnd     int64
+	RecordStatus int32
+	UsedTime     int64
+	OrderID      int64
+	Source       string
+	CreateTime   int64
 }
 
 func (c *Coupon) ComputeStatus(now int64) int32 {

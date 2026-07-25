@@ -31,3 +31,7 @@ export function toggleCouponStatus(id: number, action: number): Promise<{ succes
 export function getCouponStats(): Promise<CouponStatsResponse> {
   return request.get('/admin/v1/coupons/stats')
 }
+
+export function listCouponRecords(couponId: number, params?: { page?: number; page_size?: number }): Promise<{ items: import('../types/coupon').DistRecord[]; total: number }> {
+  return request.get(`/admin/v1/coupons/${couponId}/records`, { params })
+}

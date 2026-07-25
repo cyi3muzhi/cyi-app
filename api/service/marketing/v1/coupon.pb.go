@@ -38,6 +38,7 @@ type Coupon struct {
 	Enabled       bool                   `protobuf:"varint,12,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	CreateTime    int64                  `protobuf:"varint,13,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
 	UpdateTime    int64                  `protobuf:"varint,14,opt,name=update_time,json=updateTime,proto3" json:"update_time,omitempty"`
+	LimitPerUser  int32                  `protobuf:"varint,15,opt,name=limit_per_user,json=limitPerUser,proto3" json:"limit_per_user,omitempty"` // 每人限领数量，0=不限制
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -170,6 +171,13 @@ func (x *Coupon) GetUpdateTime() int64 {
 	return 0
 }
 
+func (x *Coupon) GetLimitPerUser() int32 {
+	if x != nil {
+		return x.LimitPerUser
+	}
+	return 0
+}
+
 type CreateCouponRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -179,6 +187,7 @@ type CreateCouponRequest struct {
 	Quantity      int32                  `protobuf:"varint,5,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	ValidStart    int64                  `protobuf:"varint,6,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"`
 	ValidEnd      int64                  `protobuf:"varint,7,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`
+	LimitPerUser  int32                  `protobuf:"varint,8,opt,name=limit_per_user,json=limitPerUser,proto3" json:"limit_per_user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -262,6 +271,13 @@ func (x *CreateCouponRequest) GetValidEnd() int64 {
 	return 0
 }
 
+func (x *CreateCouponRequest) GetLimitPerUser() int32 {
+	if x != nil {
+		return x.LimitPerUser
+	}
+	return 0
+}
+
 type CreateCouponReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CouponId      int64                  `protobuf:"varint,1,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`
@@ -317,6 +333,7 @@ type UpdateCouponRequest struct {
 	ValidStart    int64                  `protobuf:"varint,7,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"`
 	ValidEnd      int64                  `protobuf:"varint,8,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`
 	Enabled       bool                   `protobuf:"varint,9,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	LimitPerUser  int32                  `protobuf:"varint,10,opt,name=limit_per_user,json=limitPerUser,proto3" json:"limit_per_user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -412,6 +429,13 @@ func (x *UpdateCouponRequest) GetEnabled() bool {
 		return x.Enabled
 	}
 	return false
+}
+
+func (x *UpdateCouponRequest) GetLimitPerUser() int32 {
+	if x != nil {
+		return x.LimitPerUser
+	}
+	return 0
 }
 
 type UpdateCouponReply struct {
@@ -970,11 +994,793 @@ func (x *CouponStatsReply) GetExpiredCount() int32 {
 	return 0
 }
 
+// 用户领券请求
+type ClaimCouponRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CouponId      int64                  `protobuf:"varint,1,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Source        string                 `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"` // 领取来源
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ClaimCouponRequest) Reset() {
+	*x = ClaimCouponRequest{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClaimCouponRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClaimCouponRequest) ProtoMessage() {}
+
+func (x *ClaimCouponRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClaimCouponRequest.ProtoReflect.Descriptor instead.
+func (*ClaimCouponRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ClaimCouponRequest) GetCouponId() int64 {
+	if x != nil {
+		return x.CouponId
+	}
+	return 0
+}
+
+func (x *ClaimCouponRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *ClaimCouponRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+type ClaimCouponReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RecordId      int64                  `protobuf:"varint,1,opt,name=record_id,json=recordId,proto3" json:"record_id,omitempty"` // 发放记录 ID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ClaimCouponReply) Reset() {
+	*x = ClaimCouponReply{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClaimCouponReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClaimCouponReply) ProtoMessage() {}
+
+func (x *ClaimCouponReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClaimCouponReply.ProtoReflect.Descriptor instead.
+func (*ClaimCouponReply) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ClaimCouponReply) GetRecordId() int64 {
+	if x != nil {
+		return x.RecordId
+	}
+	return 0
+}
+
+// 用户优惠券列表请求
+type ListUserCouponsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Status        int32                  `protobuf:"varint,2,opt,name=status,proto3" json:"status,omitempty"` // 0=全部 1=未使用 2=已使用 3=已过期
+	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUserCouponsRequest) Reset() {
+	*x = ListUserCouponsRequest{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUserCouponsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUserCouponsRequest) ProtoMessage() {}
+
+func (x *ListUserCouponsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUserCouponsRequest.ProtoReflect.Descriptor instead.
+func (*ListUserCouponsRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ListUserCouponsRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *ListUserCouponsRequest) GetStatus() int32 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *ListUserCouponsRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListUserCouponsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type UserCouponItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RecordId      int64                  `protobuf:"varint,1,opt,name=record_id,json=recordId,proto3" json:"record_id,omitempty"`             // 发放记录 ID
+	CouponId      int64                  `protobuf:"varint,2,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`             // 优惠券 ID
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`                                      // 优惠券名称
+	Type          int32                  `protobuf:"varint,4,opt,name=type,proto3" json:"type,omitempty"`                                     // 类型
+	Value         int64                  `protobuf:"varint,5,opt,name=value,proto3" json:"value,omitempty"`                                   // 面值
+	MinAmount     int64                  `protobuf:"varint,6,opt,name=min_amount,json=minAmount,proto3" json:"min_amount,omitempty"`          // 使用门槛
+	ValidStart    int64                  `protobuf:"varint,7,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"`       // 有效期开始
+	ValidEnd      int64                  `protobuf:"varint,8,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`             // 有效期结束
+	RecordStatus  int32                  `protobuf:"varint,9,opt,name=record_status,json=recordStatus,proto3" json:"record_status,omitempty"` // 发放记录状态：0=未使用 1=已使用 2=已过期
+	UsedTime      int64                  `protobuf:"varint,10,opt,name=used_time,json=usedTime,proto3" json:"used_time,omitempty"`            // 使用时间
+	OrderId       int64                  `protobuf:"varint,11,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`               // 核销订单 ID
+	Source        string                 `protobuf:"bytes,12,opt,name=source,proto3" json:"source,omitempty"`                                 // 领取来源
+	CreateTime    int64                  `protobuf:"varint,13,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`      // 领取时间
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserCouponItem) Reset() {
+	*x = UserCouponItem{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserCouponItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserCouponItem) ProtoMessage() {}
+
+func (x *UserCouponItem) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserCouponItem.ProtoReflect.Descriptor instead.
+func (*UserCouponItem) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *UserCouponItem) GetRecordId() int64 {
+	if x != nil {
+		return x.RecordId
+	}
+	return 0
+}
+
+func (x *UserCouponItem) GetCouponId() int64 {
+	if x != nil {
+		return x.CouponId
+	}
+	return 0
+}
+
+func (x *UserCouponItem) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UserCouponItem) GetType() int32 {
+	if x != nil {
+		return x.Type
+	}
+	return 0
+}
+
+func (x *UserCouponItem) GetValue() int64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *UserCouponItem) GetMinAmount() int64 {
+	if x != nil {
+		return x.MinAmount
+	}
+	return 0
+}
+
+func (x *UserCouponItem) GetValidStart() int64 {
+	if x != nil {
+		return x.ValidStart
+	}
+	return 0
+}
+
+func (x *UserCouponItem) GetValidEnd() int64 {
+	if x != nil {
+		return x.ValidEnd
+	}
+	return 0
+}
+
+func (x *UserCouponItem) GetRecordStatus() int32 {
+	if x != nil {
+		return x.RecordStatus
+	}
+	return 0
+}
+
+func (x *UserCouponItem) GetUsedTime() int64 {
+	if x != nil {
+		return x.UsedTime
+	}
+	return 0
+}
+
+func (x *UserCouponItem) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+func (x *UserCouponItem) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *UserCouponItem) GetCreateTime() int64 {
+	if x != nil {
+		return x.CreateTime
+	}
+	return 0
+}
+
+type ListUserCouponsReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*UserCouponItem      `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUserCouponsReply) Reset() {
+	*x = ListUserCouponsReply{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUserCouponsReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUserCouponsReply) ProtoMessage() {}
+
+func (x *ListUserCouponsReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUserCouponsReply.ProtoReflect.Descriptor instead.
+func (*ListUserCouponsReply) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ListUserCouponsReply) GetItems() []*UserCouponItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *ListUserCouponsReply) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+// 使用优惠券请求
+type UseCouponRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RecordId      int64                  `protobuf:"varint,1,opt,name=record_id,json=recordId,proto3" json:"record_id,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	OrderId       int64                  `protobuf:"varint,3,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	OrderAmount   int64                  `protobuf:"varint,4,opt,name=order_amount,json=orderAmount,proto3" json:"order_amount,omitempty"` // 订单总金额（分），用于校验使用门槛
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UseCouponRequest) Reset() {
+	*x = UseCouponRequest{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UseCouponRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UseCouponRequest) ProtoMessage() {}
+
+func (x *UseCouponRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UseCouponRequest.ProtoReflect.Descriptor instead.
+func (*UseCouponRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *UseCouponRequest) GetRecordId() int64 {
+	if x != nil {
+		return x.RecordId
+	}
+	return 0
+}
+
+func (x *UseCouponRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *UseCouponRequest) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+func (x *UseCouponRequest) GetOrderAmount() int64 {
+	if x != nil {
+		return x.OrderAmount
+	}
+	return 0
+}
+
+type UseCouponReply struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Success        bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	DiscountAmount int64                  `protobuf:"varint,2,opt,name=discount_amount,json=discountAmount,proto3" json:"discount_amount,omitempty"` // 实际优惠金额（分）
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *UseCouponReply) Reset() {
+	*x = UseCouponReply{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UseCouponReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UseCouponReply) ProtoMessage() {}
+
+func (x *UseCouponReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UseCouponReply.ProtoReflect.Descriptor instead.
+func (*UseCouponReply) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *UseCouponReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *UseCouponReply) GetDiscountAmount() int64 {
+	if x != nil {
+		return x.DiscountAmount
+	}
+	return 0
+}
+
+// 批量过期请求
+type BatchExpireCouponsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	BatchSize     int64                  `protobuf:"varint,1,opt,name=batch_size,json=batchSize,proto3" json:"batch_size,omitempty"` // 每次处理的记录数，默认 100
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BatchExpireCouponsRequest) Reset() {
+	*x = BatchExpireCouponsRequest{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BatchExpireCouponsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BatchExpireCouponsRequest) ProtoMessage() {}
+
+func (x *BatchExpireCouponsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BatchExpireCouponsRequest.ProtoReflect.Descriptor instead.
+func (*BatchExpireCouponsRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *BatchExpireCouponsRequest) GetBatchSize() int64 {
+	if x != nil {
+		return x.BatchSize
+	}
+	return 0
+}
+
+type BatchExpireCouponsReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AffectedCount int32                  `protobuf:"varint,1,opt,name=affected_count,json=affectedCount,proto3" json:"affected_count,omitempty"` // 已过期的记录数
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BatchExpireCouponsReply) Reset() {
+	*x = BatchExpireCouponsReply{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BatchExpireCouponsReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BatchExpireCouponsReply) ProtoMessage() {}
+
+func (x *BatchExpireCouponsReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BatchExpireCouponsReply.ProtoReflect.Descriptor instead.
+func (*BatchExpireCouponsReply) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *BatchExpireCouponsReply) GetAffectedCount() int32 {
+	if x != nil {
+		return x.AffectedCount
+	}
+	return 0
+}
+
+// 发放记录查询请求
+type ListDistRecordsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CouponId      int64                  `protobuf:"varint,1,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`
+	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListDistRecordsRequest) Reset() {
+	*x = ListDistRecordsRequest{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListDistRecordsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListDistRecordsRequest) ProtoMessage() {}
+
+func (x *ListDistRecordsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListDistRecordsRequest.ProtoReflect.Descriptor instead.
+func (*ListDistRecordsRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *ListDistRecordsRequest) GetCouponId() int64 {
+	if x != nil {
+		return x.CouponId
+	}
+	return 0
+}
+
+func (x *ListDistRecordsRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListDistRecordsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+// 发放记录
+type DistRecord struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                                   // 记录 ID
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`             // 领取用户 ID
+	Source        string                 `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"`                            // 领取来源
+	Status        int32                  `protobuf:"varint,4,opt,name=status,proto3" json:"status,omitempty"`                           // 状态：0-未使用 1-已使用 2-已过期
+	UsedTime      int64                  `protobuf:"varint,5,opt,name=used_time,json=usedTime,proto3" json:"used_time,omitempty"`       // 使用时间
+	OrderId       int64                  `protobuf:"varint,6,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`          // 核销订单 ID
+	CreateTime    int64                  `protobuf:"varint,7,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"` // 领取时间
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DistRecord) Reset() {
+	*x = DistRecord{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DistRecord) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DistRecord) ProtoMessage() {}
+
+func (x *DistRecord) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DistRecord.ProtoReflect.Descriptor instead.
+func (*DistRecord) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *DistRecord) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *DistRecord) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *DistRecord) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *DistRecord) GetStatus() int32 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *DistRecord) GetUsedTime() int64 {
+	if x != nil {
+		return x.UsedTime
+	}
+	return 0
+}
+
+func (x *DistRecord) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+func (x *DistRecord) GetCreateTime() int64 {
+	if x != nil {
+		return x.CreateTime
+	}
+	return 0
+}
+
+type ListDistRecordsReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*DistRecord          `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListDistRecordsReply) Reset() {
+	*x = ListDistRecordsReply{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListDistRecordsReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListDistRecordsReply) ProtoMessage() {}
+
+func (x *ListDistRecordsReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListDistRecordsReply.ProtoReflect.Descriptor instead.
+func (*ListDistRecordsReply) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *ListDistRecordsReply) GetItems() []*DistRecord {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *ListDistRecordsReply) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
 var File_api_service_marketing_v1_coupon_proto protoreflect.FileDescriptor
 
 const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\n" +
-	"%api/service/marketing/v1/coupon.proto\x12\x18api.service.marketing.v1\x1a\x17validate/validate.proto\"\x85\x03\n" +
+	"%api/service/marketing/v1/coupon.proto\x12\x18api.service.marketing.v1\x1a\x17validate/validate.proto\"\xab\x03\n" +
 	"\x06Coupon\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
@@ -995,7 +1801,8 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\vcreate_time\x18\r \x01(\x03R\n" +
 	"createTime\x12\x1f\n" +
 	"\vupdate_time\x18\x0e \x01(\x03R\n" +
-	"updateTime\"\x86\x02\n" +
+	"updateTime\x12$\n" +
+	"\x0elimit_per_user\x18\x0f \x01(\x05R\flimitPerUser\"\xac\x02\n" +
 	"\x13CreateCouponRequest\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04name\x12\x1f\n" +
 	"\x04type\x18\x02 \x01(\x05B\v\xfaB\b\x1a\x060\x010\x020\x03R\x04type\x12\x1d\n" +
@@ -1005,9 +1812,10 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\bquantity\x18\x05 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\bquantity\x12(\n" +
 	"\vvalid_start\x18\x06 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\n" +
 	"validStart\x12$\n" +
-	"\tvalid_end\x18\a \x01(\x03B\a\xfaB\x04\"\x02 \x00R\bvalidEnd\"0\n" +
+	"\tvalid_end\x18\a \x01(\x03B\a\xfaB\x04\"\x02 \x00R\bvalidEnd\x12$\n" +
+	"\x0elimit_per_user\x18\b \x01(\x05R\flimitPerUser\"0\n" +
 	"\x11CreateCouponReply\x12\x1b\n" +
-	"\tcoupon_id\x18\x01 \x01(\x03R\bcouponId\"\xb9\x02\n" +
+	"\tcoupon_id\x18\x01 \x01(\x03R\bcouponId\"\xdf\x02\n" +
 	"\x13UpdateCouponRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\x12\x1b\n" +
 	"\x04name\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04name\x12\x1f\n" +
@@ -1019,7 +1827,9 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\vvalid_start\x18\a \x01(\x03B\a\xfaB\x04\"\x02 \x00R\n" +
 	"validStart\x12$\n" +
 	"\tvalid_end\x18\b \x01(\x03B\a\xfaB\x04\"\x02 \x00R\bvalidEnd\x12\x18\n" +
-	"\aenabled\x18\t \x01(\bR\aenabled\"-\n" +
+	"\aenabled\x18\t \x01(\bR\aenabled\x12$\n" +
+	"\x0elimit_per_user\x18\n" +
+	" \x01(\x05R\flimitPerUser\"-\n" +
 	"\x11UpdateCouponReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\".\n" +
 	"\x13DeleteCouponRequest\x12\x17\n" +
@@ -1051,7 +1861,70 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"totalCount\x12!\n" +
 	"\factive_count\x18\x02 \x01(\x05R\vactiveCount\x12!\n" +
 	"\fissued_count\x18\x03 \x01(\x03R\vissuedCount\x12#\n" +
-	"\rexpired_count\x18\x04 \x01(\x05R\fexpiredCount2\x83\x06\n" +
+	"\rexpired_count\x18\x04 \x01(\x05R\fexpiredCount\"t\n" +
+	"\x12ClaimCouponRequest\x12$\n" +
+	"\tcoupon_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\bcouponId\x12 \n" +
+	"\auser_id\x18\x02 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x12\x16\n" +
+	"\x06source\x18\x03 \x01(\tR\x06source\"/\n" +
+	"\x10ClaimCouponReply\x12\x1b\n" +
+	"\trecord_id\x18\x01 \x01(\x03R\brecordId\"\x83\x01\n" +
+	"\x16ListUserCouponsRequest\x12 \n" +
+	"\auser_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\x05R\x06status\x12\x12\n" +
+	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"\xfb\x02\n" +
+	"\x0eUserCouponItem\x12\x1b\n" +
+	"\trecord_id\x18\x01 \x01(\x03R\brecordId\x12\x1b\n" +
+	"\tcoupon_id\x18\x02 \x01(\x03R\bcouponId\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
+	"\x04type\x18\x04 \x01(\x05R\x04type\x12\x14\n" +
+	"\x05value\x18\x05 \x01(\x03R\x05value\x12\x1d\n" +
+	"\n" +
+	"min_amount\x18\x06 \x01(\x03R\tminAmount\x12\x1f\n" +
+	"\vvalid_start\x18\a \x01(\x03R\n" +
+	"validStart\x12\x1b\n" +
+	"\tvalid_end\x18\b \x01(\x03R\bvalidEnd\x12#\n" +
+	"\rrecord_status\x18\t \x01(\x05R\frecordStatus\x12\x1b\n" +
+	"\tused_time\x18\n" +
+	" \x01(\x03R\busedTime\x12\x19\n" +
+	"\border_id\x18\v \x01(\x03R\aorderId\x12\x16\n" +
+	"\x06source\x18\f \x01(\tR\x06source\x12\x1f\n" +
+	"\vcreate_time\x18\r \x01(\x03R\n" +
+	"createTime\"l\n" +
+	"\x14ListUserCouponsReply\x12>\n" +
+	"\x05items\x18\x01 \x03(\v2(.api.service.marketing.v1.UserCouponItemR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\xa1\x01\n" +
+	"\x10UseCouponRequest\x12$\n" +
+	"\trecord_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\brecordId\x12 \n" +
+	"\auser_id\x18\x02 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x12\"\n" +
+	"\border_id\x18\x03 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aorderId\x12!\n" +
+	"\forder_amount\x18\x04 \x01(\x03R\vorderAmount\"S\n" +
+	"\x0eUseCouponReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12'\n" +
+	"\x0fdiscount_amount\x18\x02 \x01(\x03R\x0ediscountAmount\":\n" +
+	"\x19BatchExpireCouponsRequest\x12\x1d\n" +
+	"\n" +
+	"batch_size\x18\x01 \x01(\x03R\tbatchSize\"@\n" +
+	"\x17BatchExpireCouponsReply\x12%\n" +
+	"\x0eaffected_count\x18\x01 \x01(\x05R\raffectedCount\"o\n" +
+	"\x16ListDistRecordsRequest\x12$\n" +
+	"\tcoupon_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\bcouponId\x12\x12\n" +
+	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"\xbe\x01\n" +
+	"\n" +
+	"DistRecord\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x16\n" +
+	"\x06source\x18\x03 \x01(\tR\x06source\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\x05R\x06status\x12\x1b\n" +
+	"\tused_time\x18\x05 \x01(\x03R\busedTime\x12\x19\n" +
+	"\border_id\x18\x06 \x01(\x03R\aorderId\x12\x1f\n" +
+	"\vcreate_time\x18\a \x01(\x03R\n" +
+	"createTime\"h\n" +
+	"\x14ListDistRecordsReply\x12:\n" +
+	"\x05items\x18\x01 \x03(\v2$.api.service.marketing.v1.DistRecordR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total2\xb7\n" +
+	"\n" +
 	"\rCouponService\x12j\n" +
 	"\fCreateCoupon\x12-.api.service.marketing.v1.CreateCouponRequest\x1a+.api.service.marketing.v1.CreateCouponReply\x12j\n" +
 	"\fUpdateCoupon\x12-.api.service.marketing.v1.UpdateCouponRequest\x1a+.api.service.marketing.v1.UpdateCouponReply\x12j\n" +
@@ -1060,7 +1933,12 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\n" +
 	"ListCoupon\x12+.api.service.marketing.v1.ListCouponRequest\x1a).api.service.marketing.v1.ListCouponReply\x12|\n" +
 	"\x12ToggleCouponStatus\x123.api.service.marketing.v1.ToggleCouponStatusRequest\x1a1.api.service.marketing.v1.ToggleCouponStatusReply\x12g\n" +
-	"\vCouponStats\x12,.api.service.marketing.v1.CouponStatsRequest\x1a*.api.service.marketing.v1.CouponStatsReplyBA\n" +
+	"\vCouponStats\x12,.api.service.marketing.v1.CouponStatsRequest\x1a*.api.service.marketing.v1.CouponStatsReply\x12g\n" +
+	"\vClaimCoupon\x12,.api.service.marketing.v1.ClaimCouponRequest\x1a*.api.service.marketing.v1.ClaimCouponReply\x12s\n" +
+	"\x0fListUserCoupons\x120.api.service.marketing.v1.ListUserCouponsRequest\x1a..api.service.marketing.v1.ListUserCouponsReply\x12a\n" +
+	"\tUseCoupon\x12*.api.service.marketing.v1.UseCouponRequest\x1a(.api.service.marketing.v1.UseCouponReply\x12|\n" +
+	"\x12BatchExpireCoupons\x123.api.service.marketing.v1.BatchExpireCouponsRequest\x1a1.api.service.marketing.v1.BatchExpireCouponsReply\x12s\n" +
+	"\x0fListDistRecords\x120.api.service.marketing.v1.ListDistRecordsRequest\x1a..api.service.marketing.v1.ListDistRecordsReplyBA\n" +
 	"\x18api.service.marketing.v1P\x01Z#cyi-app/api/service/marketing/v1;v1b\x06proto3"
 
 var (
@@ -1075,7 +1953,7 @@ func file_api_service_marketing_v1_coupon_proto_rawDescGZIP() []byte {
 	return file_api_service_marketing_v1_coupon_proto_rawDescData
 }
 
-var file_api_service_marketing_v1_coupon_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_api_service_marketing_v1_coupon_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
 var file_api_service_marketing_v1_coupon_proto_goTypes = []any{
 	(*Coupon)(nil),                    // 0: api.service.marketing.v1.Coupon
 	(*CreateCouponRequest)(nil),       // 1: api.service.marketing.v1.CreateCouponRequest
@@ -1092,29 +1970,53 @@ var file_api_service_marketing_v1_coupon_proto_goTypes = []any{
 	(*ToggleCouponStatusReply)(nil),   // 12: api.service.marketing.v1.ToggleCouponStatusReply
 	(*CouponStatsRequest)(nil),        // 13: api.service.marketing.v1.CouponStatsRequest
 	(*CouponStatsReply)(nil),          // 14: api.service.marketing.v1.CouponStatsReply
+	(*ClaimCouponRequest)(nil),        // 15: api.service.marketing.v1.ClaimCouponRequest
+	(*ClaimCouponReply)(nil),          // 16: api.service.marketing.v1.ClaimCouponReply
+	(*ListUserCouponsRequest)(nil),    // 17: api.service.marketing.v1.ListUserCouponsRequest
+	(*UserCouponItem)(nil),            // 18: api.service.marketing.v1.UserCouponItem
+	(*ListUserCouponsReply)(nil),      // 19: api.service.marketing.v1.ListUserCouponsReply
+	(*UseCouponRequest)(nil),          // 20: api.service.marketing.v1.UseCouponRequest
+	(*UseCouponReply)(nil),            // 21: api.service.marketing.v1.UseCouponReply
+	(*BatchExpireCouponsRequest)(nil), // 22: api.service.marketing.v1.BatchExpireCouponsRequest
+	(*BatchExpireCouponsReply)(nil),   // 23: api.service.marketing.v1.BatchExpireCouponsReply
+	(*ListDistRecordsRequest)(nil),    // 24: api.service.marketing.v1.ListDistRecordsRequest
+	(*DistRecord)(nil),                // 25: api.service.marketing.v1.DistRecord
+	(*ListDistRecordsReply)(nil),      // 26: api.service.marketing.v1.ListDistRecordsReply
 }
 var file_api_service_marketing_v1_coupon_proto_depIdxs = []int32{
 	0,  // 0: api.service.marketing.v1.GetCouponReply.coupon:type_name -> api.service.marketing.v1.Coupon
 	0,  // 1: api.service.marketing.v1.ListCouponReply.items:type_name -> api.service.marketing.v1.Coupon
-	1,  // 2: api.service.marketing.v1.CouponService.CreateCoupon:input_type -> api.service.marketing.v1.CreateCouponRequest
-	3,  // 3: api.service.marketing.v1.CouponService.UpdateCoupon:input_type -> api.service.marketing.v1.UpdateCouponRequest
-	5,  // 4: api.service.marketing.v1.CouponService.DeleteCoupon:input_type -> api.service.marketing.v1.DeleteCouponRequest
-	7,  // 5: api.service.marketing.v1.CouponService.GetCoupon:input_type -> api.service.marketing.v1.GetCouponRequest
-	9,  // 6: api.service.marketing.v1.CouponService.ListCoupon:input_type -> api.service.marketing.v1.ListCouponRequest
-	11, // 7: api.service.marketing.v1.CouponService.ToggleCouponStatus:input_type -> api.service.marketing.v1.ToggleCouponStatusRequest
-	13, // 8: api.service.marketing.v1.CouponService.CouponStats:input_type -> api.service.marketing.v1.CouponStatsRequest
-	2,  // 9: api.service.marketing.v1.CouponService.CreateCoupon:output_type -> api.service.marketing.v1.CreateCouponReply
-	4,  // 10: api.service.marketing.v1.CouponService.UpdateCoupon:output_type -> api.service.marketing.v1.UpdateCouponReply
-	6,  // 11: api.service.marketing.v1.CouponService.DeleteCoupon:output_type -> api.service.marketing.v1.DeleteCouponReply
-	8,  // 12: api.service.marketing.v1.CouponService.GetCoupon:output_type -> api.service.marketing.v1.GetCouponReply
-	10, // 13: api.service.marketing.v1.CouponService.ListCoupon:output_type -> api.service.marketing.v1.ListCouponReply
-	12, // 14: api.service.marketing.v1.CouponService.ToggleCouponStatus:output_type -> api.service.marketing.v1.ToggleCouponStatusReply
-	14, // 15: api.service.marketing.v1.CouponService.CouponStats:output_type -> api.service.marketing.v1.CouponStatsReply
-	9,  // [9:16] is the sub-list for method output_type
-	2,  // [2:9] is the sub-list for method input_type
-	2,  // [2:2] is the sub-list for extension type_name
-	2,  // [2:2] is the sub-list for extension extendee
-	0,  // [0:2] is the sub-list for field type_name
+	18, // 2: api.service.marketing.v1.ListUserCouponsReply.items:type_name -> api.service.marketing.v1.UserCouponItem
+	25, // 3: api.service.marketing.v1.ListDistRecordsReply.items:type_name -> api.service.marketing.v1.DistRecord
+	1,  // 4: api.service.marketing.v1.CouponService.CreateCoupon:input_type -> api.service.marketing.v1.CreateCouponRequest
+	3,  // 5: api.service.marketing.v1.CouponService.UpdateCoupon:input_type -> api.service.marketing.v1.UpdateCouponRequest
+	5,  // 6: api.service.marketing.v1.CouponService.DeleteCoupon:input_type -> api.service.marketing.v1.DeleteCouponRequest
+	7,  // 7: api.service.marketing.v1.CouponService.GetCoupon:input_type -> api.service.marketing.v1.GetCouponRequest
+	9,  // 8: api.service.marketing.v1.CouponService.ListCoupon:input_type -> api.service.marketing.v1.ListCouponRequest
+	11, // 9: api.service.marketing.v1.CouponService.ToggleCouponStatus:input_type -> api.service.marketing.v1.ToggleCouponStatusRequest
+	13, // 10: api.service.marketing.v1.CouponService.CouponStats:input_type -> api.service.marketing.v1.CouponStatsRequest
+	15, // 11: api.service.marketing.v1.CouponService.ClaimCoupon:input_type -> api.service.marketing.v1.ClaimCouponRequest
+	17, // 12: api.service.marketing.v1.CouponService.ListUserCoupons:input_type -> api.service.marketing.v1.ListUserCouponsRequest
+	20, // 13: api.service.marketing.v1.CouponService.UseCoupon:input_type -> api.service.marketing.v1.UseCouponRequest
+	22, // 14: api.service.marketing.v1.CouponService.BatchExpireCoupons:input_type -> api.service.marketing.v1.BatchExpireCouponsRequest
+	24, // 15: api.service.marketing.v1.CouponService.ListDistRecords:input_type -> api.service.marketing.v1.ListDistRecordsRequest
+	2,  // 16: api.service.marketing.v1.CouponService.CreateCoupon:output_type -> api.service.marketing.v1.CreateCouponReply
+	4,  // 17: api.service.marketing.v1.CouponService.UpdateCoupon:output_type -> api.service.marketing.v1.UpdateCouponReply
+	6,  // 18: api.service.marketing.v1.CouponService.DeleteCoupon:output_type -> api.service.marketing.v1.DeleteCouponReply
+	8,  // 19: api.service.marketing.v1.CouponService.GetCoupon:output_type -> api.service.marketing.v1.GetCouponReply
+	10, // 20: api.service.marketing.v1.CouponService.ListCoupon:output_type -> api.service.marketing.v1.ListCouponReply
+	12, // 21: api.service.marketing.v1.CouponService.ToggleCouponStatus:output_type -> api.service.marketing.v1.ToggleCouponStatusReply
+	14, // 22: api.service.marketing.v1.CouponService.CouponStats:output_type -> api.service.marketing.v1.CouponStatsReply
+	16, // 23: api.service.marketing.v1.CouponService.ClaimCoupon:output_type -> api.service.marketing.v1.ClaimCouponReply
+	19, // 24: api.service.marketing.v1.CouponService.ListUserCoupons:output_type -> api.service.marketing.v1.ListUserCouponsReply
+	21, // 25: api.service.marketing.v1.CouponService.UseCoupon:output_type -> api.service.marketing.v1.UseCouponReply
+	23, // 26: api.service.marketing.v1.CouponService.BatchExpireCoupons:output_type -> api.service.marketing.v1.BatchExpireCouponsReply
+	26, // 27: api.service.marketing.v1.CouponService.ListDistRecords:output_type -> api.service.marketing.v1.ListDistRecordsReply
+	16, // [16:28] is the sub-list for method output_type
+	4,  // [4:16] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_api_service_marketing_v1_coupon_proto_init() }
@@ -1128,7 +2030,7 @@ func file_api_service_marketing_v1_coupon_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_service_marketing_v1_coupon_proto_rawDesc), len(file_api_service_marketing_v1_coupon_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   27,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

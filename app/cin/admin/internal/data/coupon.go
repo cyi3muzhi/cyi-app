@@ -55,13 +55,14 @@ func (r *couponRepo) GetCoupon(ctx context.Context, couponID int64) (*biz.Coupon
 
 func (r *couponRepo) CreateCoupon(ctx context.Context, coupon *biz.Coupon) (*biz.Coupon, error) {
 	reply, err := r.data.mc.CreateCoupon(ctx, &marketingRpc.CreateCouponRequest{
-		Name:        coupon.Name,
-		Type:        coupon.Type,
-		Value:       coupon.Value,
-		MinAmount:   coupon.MinAmount,
-		Quantity:    coupon.Quantity,
-		ValidStart:  coupon.ValidStart,
-		ValidEnd:    coupon.ValidEnd,
+		Name:         coupon.Name,
+		Type:         coupon.Type,
+		Value:        coupon.Value,
+		MinAmount:    coupon.MinAmount,
+		Quantity:     coupon.Quantity,
+		LimitPerUser: coupon.LimitPerUser,
+		ValidStart:   coupon.ValidStart,
+		ValidEnd:     coupon.ValidEnd,
 	})
 	if err != nil {
 		return nil, err
@@ -72,15 +73,16 @@ func (r *couponRepo) CreateCoupon(ctx context.Context, coupon *biz.Coupon) (*biz
 
 func (r *couponRepo) UpdateCoupon(ctx context.Context, couponID int64, coupon *biz.Coupon) (*biz.Coupon, error) {
 	_, err := r.data.mc.UpdateCoupon(ctx, &marketingRpc.UpdateCouponRequest{
-		Id:          couponID,
-		Name:        coupon.Name,
-		Type:        coupon.Type,
-		Value:       coupon.Value,
-		MinAmount:   coupon.MinAmount,
-		Quantity:    coupon.Quantity,
-		ValidStart:  coupon.ValidStart,
-		ValidEnd:    coupon.ValidEnd,
-		Enabled:     coupon.Enabled,
+		Id:           couponID,
+		Name:         coupon.Name,
+		Type:         coupon.Type,
+		Value:        coupon.Value,
+		MinAmount:    coupon.MinAmount,
+		Quantity:     coupon.Quantity,
+		LimitPerUser: coupon.LimitPerUser,
+		ValidStart:   coupon.ValidStart,
+		ValidEnd:     coupon.ValidEnd,
+		Enabled:      coupon.Enabled,
 	})
 	if err != nil {
 		return nil, err
@@ -96,9 +98,10 @@ func (r *couponRepo) DeleteCoupon(ctx context.Context, couponID int64) error {
 	return err
 }
 
-func (r *couponRepo) ToggleCouponStatus(ctx context.Context, couponID int64) error {
+func (r *couponRepo) ToggleCouponStatus(ctx context.Context, couponID int64, action int32) error {
 	_, err := r.data.mc.ToggleCouponStatus(ctx, &marketingRpc.ToggleCouponStatusRequest{
-		Id: couponID,
+		Id:     couponID,
+		Action: action,
 	})
 	return err
 }
@@ -110,11 +113,35 @@ func (r *couponRepo) CouponStats(ctx context.Context) (*biz.CouponStats, error) 
 	}
 
 	return &biz.CouponStats{
-		Total:   reply.TotalCount,
-		Active:  reply.ActiveCount,
-		Issued:  reply.IssuedCount,
-		Ended:   reply.ExpiredCount,
+		Total:  reply.TotalCount,
+		Active: reply.ActiveCount,
+		Issued: reply.IssuedCount,
+		Ended:  reply.ExpiredCount,
 	}, nil
+}
+
+func (r *couponRepo) ListDistRecords(ctx context.Context, couponID int64, page, pageSize int32) ([]*biz.DistRecord, int32, error) {
+	reply, err := r.data.mc.ListDistRecords(ctx, &marketingRpc.ListDistRecordsRequest{
+		CouponId: couponID,
+		Page:     page,
+		PageSize: pageSize,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	items := make([]*biz.DistRecord, 0, len(reply.Items))
+	for _, item := range reply.Items {
+		items = append(items, &biz.DistRecord{
+			ID:        item.Id,
+			UserID:    item.UserId,
+			Source:    item.Source,
+			Status:    item.Status,
+			UsedTime:  item.UsedTime,
+			OrderID:   item.OrderId,
+			CreatedAt: item.CreateTime,
+		})
+	}
+	return items, reply.Total, nil
 }
 
 func rpcToBizCoupon(c *marketingRpc.Coupon) *biz.Coupon {
@@ -127,6 +154,7 @@ func rpcToBizCoupon(c *marketingRpc.Coupon) *biz.Coupon {
 		Quantity:     c.Quantity,
 		IssuedCount:  c.IssuedCount,
 		UsedCount:    c.UsedCount,
+		LimitPerUser: c.LimitPerUser,
 		ValidStart:   c.ValidStart,
 		ValidEnd:     c.ValidEnd,
 		Status:       c.Status,

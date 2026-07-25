@@ -28,6 +28,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *v1.CreateOrderReque
 	in := &biz.Order{}
 	convert.Convert(req, in)
 	in.UserID = req.UserId
+	in.CouponRecordID = req.CouponRecordId // 优惠券发放记录ID，0=未使用优惠券
 	in.Items = nil // 清空 convert.Convert 错误填充的 Items（类型不匹配导致重复）
 
 	// 支持两种模式：立即购买（单商品）和购物车结算（多商品）
