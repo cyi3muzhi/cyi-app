@@ -75,29 +75,15 @@
           </div>
           <div class="message-content">
             <div class="message-bubble">
-              <div v-if="msg.role === 'assistant' && msg.content" class="message-text" v-html="formatMessage(msg.content)"></div>
+              <div v-if="msg.role === 'assistant' && !msg.content && isLoading" class="typing-indicator">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+              </div>
+              <div v-else-if="msg.role === 'assistant' && msg.content" class="message-text" v-html="formatMessage(msg.content)"></div>
               <span v-else class="message-text">{{ msg.content }}</span>
             </div>
             <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
-          </div>
-        </div>
-
-        <div v-if="isLoading" class="loading-indicator">
-          <div class="loading-avatar">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <circle cx="12" cy="12" r="4"/>
-              <line x1="21.17" y1="8" x2="12" y2="8"/>
-              <line x1="3.95" y1="6.06" x2="8.54" y2="14"/>
-              <line x1="10.88" y1="21.94" x2="15.46" y2="14"/>
-            </svg>
-          </div>
-          <div class="loading-bubble">
-            <div class="typing-indicator">
-              <span class="typing-dot"></span>
-              <span class="typing-dot"></span>
-              <span class="typing-dot"></span>
-            </div>
           </div>
         </div>
       </div>
@@ -817,40 +803,11 @@ function handleScroll() {
   color: rgba(255, 255, 255, 0.5);
 }
 
-.loading-indicator {
-  display: flex;
-  gap: 14px;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.loading-avatar {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.loading-bubble {
-  padding: 14px 24px;
-  background: #fff;
-  border-radius: 20px 20px 20px 6px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-}
-
 .typing-indicator {
   display: flex;
   gap: 6px;
   align-items: center;
+  padding: 4px 0;
 }
 
 .typing-dot {

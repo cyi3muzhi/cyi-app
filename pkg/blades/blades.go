@@ -19,20 +19,25 @@ import (
 type DeepSeekModel struct {
 	apiKey      string
 	apiEndpoint string
+	model       string
 }
 
-func NewDeepSeekModel(apiKey string, apiEndpoint string) *DeepSeekModel {
+func NewDeepSeekModel(apiKey string, apiEndpoint string, model string) *DeepSeekModel {
 	if apiEndpoint == "" {
 		apiEndpoint = "https://api.deepseek.com/v1"
+	}
+	if model == "" {
+		model = "deepseek-v4-flash"
 	}
 	return &DeepSeekModel{
 		apiKey:      apiKey,
 		apiEndpoint: apiEndpoint,
+		model:       model,
 	}
 }
 
 func (m *DeepSeekModel) Name() string {
-	return "deepseek-chat"
+	return m.model
 }
 
 func (m *DeepSeekModel) Generate(ctx context.Context, req *blades.ModelRequest) (*blades.ModelResponse, error) {
@@ -47,7 +52,7 @@ func (m *DeepSeekModel) Generate(ctx context.Context, req *blades.ModelRequest) 
 		})
 	}
 	requestBody := map[string]interface{}{
-		"model":       "deepseek-chat",
+		"model":       m.model,
 		"messages":    messages,
 		"temperature": 0.7,
 		"max_tokens":  1000,
@@ -69,7 +74,6 @@ func (m *DeepSeekModel) Generate(ctx context.Context, req *blades.ModelRequest) 
 	}
 	defer resp.Body.Close()
 
-	// 检查 HTTP 状态码
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("deepseek api error: status=%d, body=%s", resp.StatusCode, string(bodyBytes))
@@ -109,7 +113,7 @@ func (m *DeepSeekModel) NewStreaming(ctx context.Context, req *blades.ModelReque
 			})
 		}
 		requestBody := map[string]interface{}{
-			"model":       "deepseek-chat",
+			"model":       m.model,
 			"messages":    messages,
 			"temperature": 0.7,
 			"max_tokens":  4096,
@@ -136,7 +140,6 @@ func (m *DeepSeekModel) NewStreaming(ctx context.Context, req *blades.ModelReque
 		}
 		defer resp.Body.Close()
 
-		// 检查 HTTP 状态码
 		if resp.StatusCode != http.StatusOK {
 			bodyBytes, _ := io.ReadAll(resp.Body)
 			errMsg := fmt.Sprintf("deepseek api error: status=%d, body=%s", resp.StatusCode, string(bodyBytes))
@@ -275,7 +278,7 @@ func CreateAgent(cfg *AgentConfig) (blades.Agent, error) {
 		cfg.APIEndpoint = "https://api.deepseek.com/v1"
 	}
 	if cfg.Model == "" {
-		cfg.Model = "deepseek-chat"
+		cfg.Model = "deepseek-v4-flash"
 	}
 	if cfg.SystemPrompt == "" {
 		cfg.SystemPrompt = "You are a helpful assistant. Use the calculator tool for math questions."
@@ -286,7 +289,7 @@ func CreateAgent(cfg *AgentConfig) (blades.Agent, error) {
 	if cfg.Temperature <= 0 {
 		cfg.Temperature = 0.7
 	}
-	model := NewDeepSeekModel(cfg.APIKey, cfg.APIEndpoint)
+	model := NewDeepSeekModel(cfg.APIKey, cfg.APIEndpoint, cfg.Model)
 	calculatorTool, err := tools.NewFunc(
 		"calculator",
 		"A calculator tool that evaluates mathematical expressions",

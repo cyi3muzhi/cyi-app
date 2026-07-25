@@ -48,7 +48,7 @@ func NewAgentUseCase(c *conf.Blades, rdb redis.UniversalClient, dc *DashboardUse
 	}
 
 	// 创建 blades agent（仅文本生成，不注入任何工具）
-	model := pkgblades.NewDeepSeekModel(cfg.APIKey, cfg.APIEndpoint)
+	model := pkgblades.NewDeepSeekModel(cfg.APIKey, cfg.APIEndpoint, cfg.Model)
 	agent, err := blades.NewAgent(
 		cfg.Model,
 		blades.WithModel(model),
