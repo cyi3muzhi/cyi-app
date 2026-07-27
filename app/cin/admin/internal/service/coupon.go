@@ -91,7 +91,7 @@ func (s *AdminService) ListCoupon(ctx context.Context, req *adminv1.CouponListRe
 	}, nil
 }
 
-func (s *AdminService) CouponStats(ctx context.Context, req *adminv1.CouponStatsRequest) (*adminv1.CouponStatsReply, error) {
+func (s *AdminService) GetCouponStats(ctx context.Context, req *adminv1.CouponStatsRequest) (*adminv1.CouponStatsReply, error) {
 	stats, err := s.couponUC.Stats(ctx)
 	if err != nil {
 		return nil, err

@@ -10,4 +10,5 @@ var ProviderSet = wire.NewSet(
 	NewAdminUserService,
 	NewAdminRoleService,
 	NewAdminSettingsService,
+	NewAdminBannerService,
 )

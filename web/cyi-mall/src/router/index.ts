@@ -13,8 +13,8 @@ const routes: RouteRecordRaw[] = [
       { path: 'products', name: 'ProductList', component: () => import('../views/products/ProductListView.vue'), meta: { title: '全部商品' } },
       { path: 'product/:id', name: 'ProductDetail', component: () => import('../views/product/ProductDetailView.vue'), meta: { title: '商品详情' } },
       { path: 'cart', name: 'Cart', component: () => import('../views/cart/CartView.vue'), meta: { title: '购物车' } },
-      { path: 'user', name: 'User', component: () => import('../views/user/UserCenterView.vue'), meta: { title: '个人中心' } },
-      { path: 'user/orders', name: 'OrderList', component: () => import('../views/user/OrderListView.vue'), meta: { title: '我的订单' } }
+      { path: 'user', name: 'User', component: () => import('../views/user/UserCenterView.vue'), meta: { title: '个人中心', requiresAuth: true } },
+      { path: 'user/orders', name: 'OrderList', component: () => import('../views/user/OrderListView.vue'), meta: { title: '我的订单', requiresAuth: true } }
     ]
   },
   { path: '/login', name: 'Login', component: () => import('../views/login/LoginView.vue'), meta: { title: '登录' } },
@@ -26,9 +26,20 @@ const router = createRouter({
   routes
 })
 
-// 路由守卫 - 设置标题
+// 路由守卫 - 未登录访问需登录页面时跳转登录页
 router.beforeEach((to, _from, next) => {
+  console.log('[route]', to.fullPath, 'requiresAuth:', !!to.meta.requiresAuth, 'token:', !!localStorage.getItem('token'))
+
   document.title = to.meta.title ? `${to.meta.title} - 悦选商城` : '悦选商城'
+
+  if (to.meta.requiresAuth) {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      next({ name: 'Login', query: { redirect: to.fullPath } })
+      return
+    }
+  }
+
   next()
 })
 

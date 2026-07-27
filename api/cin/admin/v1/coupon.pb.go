@@ -1428,8 +1428,9 @@ const file_api_cin_admin_v1_coupon_proto_rawDesc = "" +
 	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"^\n" +
 	"\x12CouponRecordsReply\x122\n" +
 	"\x05items\x18\x01 \x03(\v2\x1c.api.cin.admin.v1.DistRecordR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total2\xb0\a\n" +
-	"\vAdminCoupon\x12o\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total2\xad\b\n" +
+	"\vAdminCoupon\x12{\n" +
+	"\x0eGetCouponStats\x12$.api.cin.admin.v1.CouponStatsRequest\x1a\".api.cin.admin.v1.CouponStatsReply\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/admin/v1/coupons/stats\x12o\n" +
 	"\n" +
 	"ListCoupon\x12#.api.cin.admin.v1.CouponListRequest\x1a!.api.cin.admin.v1.CouponListReply\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/admin/v1/coupons\x12x\n" +
 	"\tGetCoupon\x12\".api.cin.admin.v1.CouponGetRequest\x1a .api.cin.admin.v1.CouponGetReply\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/admin/v1/coupons/{coupon_id}\x12x\n" +
@@ -1478,22 +1479,24 @@ var file_api_cin_admin_v1_coupon_proto_depIdxs = []int32{
 	0,  // 1: api.cin.admin.v1.CouponListReply.items:type_name -> api.cin.admin.v1.CouponItem
 	0,  // 2: api.cin.admin.v1.CouponGetReply.coupon:type_name -> api.cin.admin.v1.CouponItem
 	1,  // 3: api.cin.admin.v1.CouponRecordsReply.items:type_name -> api.cin.admin.v1.DistRecord
-	2,  // 4: api.cin.admin.v1.AdminCoupon.ListCoupon:input_type -> api.cin.admin.v1.CouponListRequest
-	4,  // 5: api.cin.admin.v1.AdminCoupon.GetCoupon:input_type -> api.cin.admin.v1.CouponGetRequest
-	6,  // 6: api.cin.admin.v1.AdminCoupon.CreateCoupon:input_type -> api.cin.admin.v1.CouponCreateRequest
-	8,  // 7: api.cin.admin.v1.AdminCoupon.UpdateCoupon:input_type -> api.cin.admin.v1.CouponUpdateRequest
-	10, // 8: api.cin.admin.v1.AdminCoupon.DeleteCoupon:input_type -> api.cin.admin.v1.CouponDeleteRequest
-	12, // 9: api.cin.admin.v1.AdminCoupon.ToggleCouponStatus:input_type -> api.cin.admin.v1.CouponToggleStatusRequest
-	16, // 10: api.cin.admin.v1.AdminCoupon.ListCouponRecords:input_type -> api.cin.admin.v1.CouponRecordsRequest
-	3,  // 11: api.cin.admin.v1.AdminCoupon.ListCoupon:output_type -> api.cin.admin.v1.CouponListReply
-	5,  // 12: api.cin.admin.v1.AdminCoupon.GetCoupon:output_type -> api.cin.admin.v1.CouponGetReply
-	7,  // 13: api.cin.admin.v1.AdminCoupon.CreateCoupon:output_type -> api.cin.admin.v1.CouponCreateReply
-	9,  // 14: api.cin.admin.v1.AdminCoupon.UpdateCoupon:output_type -> api.cin.admin.v1.CouponUpdateReply
-	11, // 15: api.cin.admin.v1.AdminCoupon.DeleteCoupon:output_type -> api.cin.admin.v1.CouponDeleteReply
-	13, // 16: api.cin.admin.v1.AdminCoupon.ToggleCouponStatus:output_type -> api.cin.admin.v1.CouponToggleStatusReply
-	17, // 17: api.cin.admin.v1.AdminCoupon.ListCouponRecords:output_type -> api.cin.admin.v1.CouponRecordsReply
-	11, // [11:18] is the sub-list for method output_type
-	4,  // [4:11] is the sub-list for method input_type
+	14, // 4: api.cin.admin.v1.AdminCoupon.GetCouponStats:input_type -> api.cin.admin.v1.CouponStatsRequest
+	2,  // 5: api.cin.admin.v1.AdminCoupon.ListCoupon:input_type -> api.cin.admin.v1.CouponListRequest
+	4,  // 6: api.cin.admin.v1.AdminCoupon.GetCoupon:input_type -> api.cin.admin.v1.CouponGetRequest
+	6,  // 7: api.cin.admin.v1.AdminCoupon.CreateCoupon:input_type -> api.cin.admin.v1.CouponCreateRequest
+	8,  // 8: api.cin.admin.v1.AdminCoupon.UpdateCoupon:input_type -> api.cin.admin.v1.CouponUpdateRequest
+	10, // 9: api.cin.admin.v1.AdminCoupon.DeleteCoupon:input_type -> api.cin.admin.v1.CouponDeleteRequest
+	12, // 10: api.cin.admin.v1.AdminCoupon.ToggleCouponStatus:input_type -> api.cin.admin.v1.CouponToggleStatusRequest
+	16, // 11: api.cin.admin.v1.AdminCoupon.ListCouponRecords:input_type -> api.cin.admin.v1.CouponRecordsRequest
+	15, // 12: api.cin.admin.v1.AdminCoupon.GetCouponStats:output_type -> api.cin.admin.v1.CouponStatsReply
+	3,  // 13: api.cin.admin.v1.AdminCoupon.ListCoupon:output_type -> api.cin.admin.v1.CouponListReply
+	5,  // 14: api.cin.admin.v1.AdminCoupon.GetCoupon:output_type -> api.cin.admin.v1.CouponGetReply
+	7,  // 15: api.cin.admin.v1.AdminCoupon.CreateCoupon:output_type -> api.cin.admin.v1.CouponCreateReply
+	9,  // 16: api.cin.admin.v1.AdminCoupon.UpdateCoupon:output_type -> api.cin.admin.v1.CouponUpdateReply
+	11, // 17: api.cin.admin.v1.AdminCoupon.DeleteCoupon:output_type -> api.cin.admin.v1.CouponDeleteReply
+	13, // 18: api.cin.admin.v1.AdminCoupon.ToggleCouponStatus:output_type -> api.cin.admin.v1.CouponToggleStatusReply
+	17, // 19: api.cin.admin.v1.AdminCoupon.ListCouponRecords:output_type -> api.cin.admin.v1.CouponRecordsReply
+	12, // [12:20] is the sub-list for method output_type
+	4,  // [4:12] is the sub-list for method input_type
 	4,  // [4:4] is the sub-list for extension type_name
 	4,  // [4:4] is the sub-list for extension extendee
 	0,  // [0:4] is the sub-list for field type_name

@@ -120,6 +120,37 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.GetOnlineAdminIdsReply'
+    /admin/v1/banners:
+        get:
+            tags:
+                - Banner
+            description: 获取 Banner 列表
+            operationId: Banner_ListBanners
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ListBannersReply'
+        put:
+            tags:
+                - Banner
+            description: 保存 Banner（全量替换）
+            operationId: Banner_SaveBanners
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.SaveBannersRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.SaveBannersReply'
     /admin/v1/categories:
         get:
             tags:
@@ -382,6 +413,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.CouponCreateReply'
+    /admin/v1/coupons/stats:
+        get:
+            tags:
+                - AdminCoupon
+            description: 获取优惠券统计信息
+            operationId: AdminCoupon_GetCouponStats
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CouponStatsReply'
     /admin/v1/coupons/{couponId}:
         get:
             tags:
@@ -1426,6 +1470,43 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.GetCartReply'
+    /category/v1/tree:
+        get:
+            tags:
+                - Category
+            description: 获取分类树
+            operationId: Category_ListCategoryTree
+            parameters:
+                - name: parentId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ListCategoryTreeReply'
+    /category/v1/{id}:
+        get:
+            tags:
+                - Category
+            description: 获取分类详情
+            operationId: Category_GetCategory
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.GetCategoryReply'
     /order/v1/cart_checkout:
         post:
             tags:
@@ -1642,6 +1723,32 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.GetProductReply'
+    /settings/v1/banners:
+        get:
+            tags:
+                - Banner
+            description: 获取公开 Banner 列表
+            operationId: Banner_ListBanners
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ListBannersReply'
+    /settings/v1/public:
+        get:
+            tags:
+                - Settings
+            description: 获取公开配置（商城名称、联系方式等）
+            operationId: Settings_GetPublicSettings
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.PublicSettingsReply'
     /user/v1/login:
         post:
             tags:
@@ -1985,6 +2092,21 @@ components:
                     type: integer
                     format: int32
             description: 发放记录查询响应
+        api.cin.admin.v1.CouponStatsReply:
+            type: object
+            properties:
+                totalCount:
+                    type: integer
+                    format: int32
+                activeCount:
+                    type: integer
+                    format: int32
+                issuedCount:
+                    type: string
+                expiredCount:
+                    type: integer
+                    format: int32
+            description: 优惠券统计响应
         api.cin.admin.v1.CouponToggleStatusReply:
             type: object
             properties:
@@ -2422,6 +2544,13 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.PermModule'
+        api.cin.admin.v1.ListBannersReply:
+            type: object
+            properties:
+                banners:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.service.user.v1.BannerItem'
         api.cin.admin.v1.ListCategoryTreeReply:
             type: object
             properties:
@@ -2670,6 +2799,18 @@ components:
                 color:
                     type: string
             description: 角色项
+        api.cin.admin.v1.SaveBannersReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.SaveBannersRequest:
+            type: object
+            properties:
+                banners:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.service.user.v1.BannerItem'
         api.cin.admin.v1.ShipOrderReply:
             type: object
             properties:
@@ -3131,6 +3272,35 @@ components:
                     format: int32
                 image:
                     type: string
+        api.cin.interface.v1.CategoryNode:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                slug:
+                    type: string
+                icon:
+                    type: string
+                sort:
+                    type: integer
+                    format: int32
+                status:
+                    type: boolean
+                showcase:
+                    type: boolean
+                count:
+                    type: integer
+                    format: int32
+                image:
+                    type: string
+                parentId:
+                    type: string
+                children:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.CategoryNode'
         api.cin.interface.v1.ClaimCouponReply:
             type: object
             properties:
@@ -3164,6 +3334,11 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.CartProductItem'
+        api.cin.interface.v1.GetCategoryReply:
+            type: object
+            properties:
+                item:
+                    $ref: '#/components/schemas/api.cin.interface.v1.CategoryNode'
         api.cin.interface.v1.GetMyInfoReply:
             type: object
             properties:
@@ -3188,6 +3363,23 @@ components:
                     type: string
                 name:
                     type: string
+        api.cin.interface.v1.ListBannersReply:
+            type: object
+            properties:
+                banners:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.service.user.v1.BannerItem'
+        api.cin.interface.v1.ListCategoryTreeReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.CategoryNode'
+                total:
+                    type: integer
+                    format: int32
         api.cin.interface.v1.ListMyCouponsReply:
             type: object
             properties:
@@ -3343,6 +3535,36 @@ components:
                     type: string
                 image:
                     type: string
+                sales:
+                    type: integer
+                    format: int32
+                categoryId:
+                    type: string
+                images:
+                    type: array
+                    items:
+                        type: string
+                specs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.SpecGroupInfo'
+                skus:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.SkuInfo'
+        api.cin.interface.v1.PublicSettingsReply:
+            type: object
+            properties:
+                shopName:
+                    type: string
+                shopDescription:
+                    type: string
+                contactPhone:
+                    type: string
+                contactEmail:
+                    type: string
+                icpRecord:
+                    type: string
         api.cin.interface.v1.RegisterReply:
             type: object
             properties:
@@ -3357,6 +3579,38 @@ components:
                 password:
                     type: string
                     description: 密码
+        api.cin.interface.v1.SkuInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                skuCode:
+                    type: string
+                price:
+                    type: string
+                stock:
+                    type: integer
+                    format: int32
+                sales:
+                    type: integer
+                    format: int32
+                spec:
+                    type: object
+                    additionalProperties:
+                        type: string
+                image:
+                    type: string
+        api.cin.interface.v1.SpecGroupInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                values:
+                    type: array
+                    items:
+                        type: string
         api.cin.interface.v1.UpdateProductReply:
             type: object
             properties:
@@ -3400,6 +3654,33 @@ components:
                     type: string
                 avatar:
                     type: string
+        api.service.user.v1.BannerItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                title:
+                    type: string
+                subtitle:
+                    type: string
+                image:
+                    type: string
+                link:
+                    type: string
+                sortOrder:
+                    type: integer
+                    format: int32
+                enabled:
+                    type: boolean
+                bgColor:
+                    type: string
+                btnText:
+                    type: string
+                template:
+                    type: string
+                textColor:
+                    type: string
+            description: Banner 项
 tags:
     - name: AdminAuth
       description: 管理后台 - 认证服务
@@ -3417,11 +3698,17 @@ tags:
       description: 管理后台 - 用户管理服务
     - name: Auth
       description: 用户认证服务
+    - name: Banner
+      description: 管理后台 - Banner 管理服务
+    - name: Banner
+      description: 公开 Banner 服务
     - name: Blades
     - name: Blades
       description: AI 智能助手服务
     - name: Cart
       description: 购物车服务
+    - name: Category
+      description: 商品分类服务
     - name: Dashboard
       description: 仪表盘服务
     - name: Order
@@ -3430,6 +3717,8 @@ tags:
       description: 商品服务
     - name: Settings
       description: 管理后台 - 系统设置服务
+    - name: Settings
+      description: 公开配置服务
     - name: Staff
       description: 管理后台 - 员工管理服务
     - name: Stock

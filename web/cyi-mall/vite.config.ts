@@ -15,8 +15,25 @@ export default defineConfig({
   server: {
     port: 3001,
     proxy: {
-      '/api/v1': {
-        target: 'http://localhost:28000',
+      // 用户端接口 -> interface 服务（端口 18000）
+      '/user/v1': {
+        target: 'http://localhost:18000',
+        changeOrigin: true
+      },
+      '/product/v1': {
+        target: 'http://localhost:18000',
+        changeOrigin: true
+      },
+      '/cart/v1': {
+        target: 'http://localhost:18000',
+        changeOrigin: true
+      },
+      '/order/v1': {
+        target: 'http://localhost:18000',
+        changeOrigin: true
+      },
+      '/settings/v1': {
+        target: 'http://localhost:18000',
         changeOrigin: true
       }
     }

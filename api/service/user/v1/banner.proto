@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package api.service.user.v1;
+
+option go_package = "cyi-app/api/service/user/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.service.user.v1";
+
+// 用户服务 - Banner 管理
+service AdminBanner {
+  // 获取 Banner 列表
+  rpc GetBanners (GetBannersRequest) returns (GetBannersReply);
+  // 保存 Banner（全量替换）
+  rpc SaveBanners (SaveBannersRequest) returns (SaveBannersReply);
+}
+
+// Banner 项
+message BannerItem {
+  int64 id = 1;
+  string title = 2;
+  string subtitle = 3;
+  string image = 4;
+  string link = 5;
+  int32 sort_order = 6;
+  bool enabled = 7;
+  string bg_color = 8;       // 背景色（如 "linear-gradient(...)"）
+  string btn_text = 9;       // 按钮文字
+  string template = 10;      // 模板类型：classic | full-image | centered | dark | minimal
+  string text_color = 11;    // 文字颜色，十六进制，如 "#ffffff"
+}
+
+message GetBannersRequest {}
+
+message GetBannersReply {
+  repeated BannerItem banners = 1;
+}
+
+message SaveBannersRequest {
+  repeated BannerItem banners = 1;
+}
+
+message SaveBannersReply {
+  bool success = 1;
+}

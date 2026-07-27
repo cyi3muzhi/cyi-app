@@ -4,36 +4,25 @@
 import request from './index'
 
 interface LoginParams {
-  account: string
+  username: string
   password: string
 }
 
 interface LoginResult {
   token: string
-  user: {
-    id: number
-    nickname: string
-    avatar: string
-  }
 }
 
 interface RegisterParams {
-  nickname: string
-  phone: string
+  username: string
   password: string
 }
 
 /** 登录 */
 export function login(data: LoginParams) {
-  return request.post<any, LoginResult>('/auth/login', data)
+  return request.post<any, LoginResult>('/user/v1/login', data)
 }
 
 /** 注册 */
 export function register(data: RegisterParams) {
-  return request.post<any, void>('/auth/register', data)
-}
-
-/** 退出登录 */
-export function logout() {
-  return request.post<any, void>('/auth/logout')
+  return request.post<any, { success: boolean }>('/user/v1/register', data)
 }

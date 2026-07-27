@@ -6,7 +6,7 @@
     <div class="header-inner">
       <!-- Logo -->
       <router-link to="/" class="logo-link">
-        <span class="logo-text">悦选商城</span>
+        <span class="logo-text">{{ shopStore.shopName }}</span>
       </router-link>
       <!-- 登录入口 -->
       <div class="header-right">
@@ -27,7 +27,7 @@
         <!-- 标题 -->
         <div class="card-header">
           <h1 class="card-title">创建账户</h1>
-          <p class="card-subtitle">加入悦选商城，享受品质生活</p>
+          <p class="card-subtitle">加入{{ shopStore.shopName }}，享受品质生活</p>
         </div>
 
         <!-- 步骤指示器 -->
@@ -257,7 +257,7 @@
             </svg>
           </div>
           <h2 class="success-title">注册成功！</h2>
-          <p class="success-subtitle">欢迎加入悦选商城</p>
+          <p class="success-subtitle">欢迎加入{{ shopStore.shopName }}</p>
           <router-link to="/" class="go-home-btn">去首页逛逛</router-link>
         </div>
 
@@ -274,7 +274,7 @@
   <!-- 3. 页脚（最小化）                                              -->
   <!-- ============================================================ -->
   <footer class="reg-footer">
-    <p>&copy; 2026 悦选商城 版权所有 | 京ICP备2026XXXXXXXX号-1</p>
+    <p>&copy; 2026 {{ shopStore.shopName }} 版权所有 | 京ICP备2026XXXXXXXX号-1</p>
   </footer>
 
   <!-- ============================================================ -->
@@ -293,6 +293,9 @@
  * 独立页面（无 DefaultLayout），三步骤注册流程
  */
 import { ref, computed, reactive, onUnmounted } from 'vue'
+import { useShopStore } from '@/store/shop'
+
+const shopStore = useShopStore()
 
 // ---- 步骤定义 ----
 const steps = [

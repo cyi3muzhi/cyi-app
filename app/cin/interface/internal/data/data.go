@@ -27,10 +27,16 @@ var ProviderSet = wire.NewSet(
 	NewOrderServiceClient,
 	NewProductRepo,
 	NewProductServiceClient,
+	NewCategoryRepo,
+	NewCategoryServiceClient,
 	NewStockRepo,
 	NewStockServiceClient,
 	NewCouponRepo,
 	NewMarketingCouponServiceClient,
+	NewSettingsRepo,
+	NewAdminSettingsServiceClient,
+	NewBannerRepo,
+	NewAdminBannerServiceClient,
 	NewRedisClient,
 	NewAsynqClient,
 )
@@ -40,18 +46,21 @@ type Data struct {
 	uc  userRpc.UserClient
 	oc  orderRpc.OrderClient
 	pc  productRpc.ProductClient
+	cc  productRpc.CategoryClient
 	sc  productRpc.StockClient
 	mcc marketingV1.CouponServiceClient
+	asc userRpc.AdminSettingsClient
+	abc userRpc.AdminBannerClient
 	rc  redis.UniversalClient
 	mq  *asynq.Client
 }
 
 // NewData .
-func NewData(c *conf.Data, uc userRpc.UserClient, oc orderRpc.OrderClient, pc productRpc.ProductClient, sc productRpc.StockClient, mcc marketingV1.CouponServiceClient, rc redis.UniversalClient, logger log.Logger, mq *asynq.Client) (*Data, func(), error) {
+func NewData(c *conf.Data, uc userRpc.UserClient, oc orderRpc.OrderClient, pc productRpc.ProductClient, cc productRpc.CategoryClient, sc productRpc.StockClient, mcc marketingV1.CouponServiceClient, asc userRpc.AdminSettingsClient, abc userRpc.AdminBannerClient, rc redis.UniversalClient, logger log.Logger, mq *asynq.Client) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{uc: uc, oc: oc, pc: pc, sc: sc, mcc: mcc, rc: rc, mq: mq}, cleanup, nil
+	return &Data{uc: uc, oc: oc, pc: pc, cc: cc, sc: sc, mcc: mcc, asc: asc, abc: abc, rc: rc, mq: mq}, cleanup, nil
 }
 
 // NewRedisClient .

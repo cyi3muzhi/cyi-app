@@ -2,26 +2,73 @@
   <!-- 首页视图：Hero Banner + 商品分类 + 精选推荐 + 新品上市 -->
   <div class="home-page">
     <!-- ============================================================ -->
-    <!-- Hero Banner -->
+    <!-- Hero 轮播 Banner -->
     <!-- ============================================================ -->
-    <section class="hero-banner">
-      <div class="container-shop hero-content">
-        <div class="hero-text">
-          <h1 class="hero-title">夏日焕新 品质生活</h1>
-          <p class="hero-subtitle">精选好物 限时特惠</p>
-          <router-link to="/products" class="hero-btn">立即抢购</router-link>
-        </div>
-        <div class="hero-image">
-          <div class="hero-placeholder">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary-light)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
-            </svg>
-            <span>Hero Image</span>
+    <section class="hero-carousel">
+      <div class="carousel-track" :style="{ transform: `translateX(-${safeSlideIndex(currentSlide) * 100}%)` }">
+        <div
+          v-for="(slide, i) in slides"
+          :key="i"
+          class="carousel-slide"
+          :class="'tpl--' + (slide.template || 'classic')"
+          :style="{ background: slide.bg, cursor: slide.link ? 'pointer' : 'default' }"
+          @click="goLink(slide.link)"
+        >
+          <!-- 居中版遮罩 -->
+          <div class="slide-overlay" v-if="(slide.template || 'classic') === 'centered'" />
+
+          <!-- 全图版背景 -->
+          <div class="slide-bg-img" v-if="slide.image && (slide.template || 'classic') === 'full-image'">
+            <img :src="slide.image" alt="" @error="(e: any) => e.target.style.display='none'" />
           </div>
+
+          <!-- 通用内容区 -->
+          <div class="container-shop slide-body">
+            <div class="slide-text">
+              <h1 class="slide-title" :style="{ color: slide.textColor || '#ffffff' }">{{ slide.title }}</h1>
+              <p class="slide-subtitle" v-if="slide.subtitle" :style="{ color: slide.textColor || '#ffffff' }">{{ slide.subtitle }}</p>
+              <span v-if="slide.btnText && (slide.template || 'classic') !== 'minimal'" class="slide-btn" @click.stop="goLink(slide.link)">{{ slide.btnText }}</span>
+            </div>
+            <div class="slide-image" v-if="slide.image && (slide.template || 'classic') !== 'full-image' && (slide.template || 'classic') !== 'minimal'">
+              <img :src="slide.image" :alt="slide.title" class="slide-img" />
+            </div>
+            <div class="slide-img-placeholder" v-else-if="(slide.template || 'classic') !== 'full-image' && (slide.template || 'classic') !== 'minimal' && !slide.image">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- 极简版装饰线 -->
+          <div class="minimal-accent" v-if="(slide.template || 'classic') === 'minimal'" />
         </div>
       </div>
-      <!-- 底部波浪装饰 -->
-      <div class="hero-wave"></div>
+
+      <!-- 左右箭头 -->
+      <button class="carousel-arrow carousel-arrow--left" @click="prevSlide" aria-label="上一张">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <button class="carousel-arrow carousel-arrow--right" @click="nextSlide" aria-label="下一张">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+
+      <!-- 指示器圆点 -->
+      <div class="carousel-dots">
+        <button
+          v-for="(_, i) in slides"
+          :key="i"
+          class="carousel-dot"
+          :class="{ 'carousel-dot--active': currentSlide === i }"
+          @click="currentSlide = safeSlideIndex(i)"
+          :aria-label="`第 ${i + 1} 张`"
+        ></button>
+      </div>
+      <!-- 幻灯片计数 -->
+      <div class="slide-counter" v-if="slides.length > 1">{{ safeSlideIndex(currentSlide) + 1 }} / {{ slides.length }}</div>
     </section>
 
     <!-- ============================================================ -->
@@ -100,7 +147,130 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import ProductCard from '@/components/ProductCard.vue'
+import { listBanners } from '@/api/banner'
+import type { BannerItem } from '@/api/banner'
+
+const router = useRouter()
+
+// ---- 轮播图数据 ----
+interface Slide {
+  title: string
+  subtitle: string
+  btnText: string
+  link: string
+  bg: string
+  image?: string        // Banner 图片
+  template?: string      // 模板类型
+  textColor?: string     // 文字颜色
+}
+
+/** 默认轮播图（接口加载失败或为空时的降级方案） */
+const defaultSlides: Slide[] = [
+  {
+    title: '夏日焕新 品质生活',
+    subtitle: '精选好物 限时特惠',
+    btnText: '立即抢购',
+    link: '/products',
+    bg: 'linear-gradient(135deg, var(--shop-primary), hsl(217, 91%, 72%))'
+  },
+  {
+    title: '新品首发 全场9折',
+    subtitle: '夏日清凉好物，低至5折起',
+    btnText: '查看新品',
+    link: '/products',
+    bg: 'linear-gradient(135deg, hsl(142, 71%, 40%), hsl(142, 71%, 60%))'
+  },
+  {
+    title: '会员专享 积分兑换',
+    subtitle: '千款好物，积分免费兑',
+    btnText: '立即兑换',
+    link: '/products',
+    bg: 'linear-gradient(135deg, hsl(38, 92%, 45%), hsl(38, 92%, 65%))'
+  }
+]
+
+const slides = ref<Slide[]>([...defaultSlides])
+
+/** 从后端加载 Banner 数据 */
+async function loadBanners() {
+  try {
+    const data = await listBanners()
+    if (data.banners?.length) {
+      // 只取启用且有序的 Banner
+      const enabled = data.banners
+        .filter(b => b.enabled)
+        .sort((a, b) => (a.sort_order ?? a.sortOrder ?? 0) - (b.sort_order ?? b.sortOrder ?? 0))
+      if (enabled.length > 0) {
+        slides.value = enabled.map(b => ({
+          title: b.title,
+          subtitle: b.subtitle || '',
+          btnText: b.btn_text || b.btnText || '',
+          link: b.link || '/products',
+          bg: b.bg_color || b.bgColor || 'linear-gradient(135deg, var(--shop-primary), hsl(217, 91%, 72%))',
+          image: b.image || '',
+          template: b.template || 'classic',
+          textColor: b.text_color || b.textColor || '#ffffff'
+        }))
+        currentSlide.value = 0 // 重置到第一张
+      }
+    }
+  } catch {
+    // 加载失败使用默认数据
+  }
+}
+
+const currentSlide = ref(0)
+let slideTimer: ReturnType<typeof setInterval> | null = null
+
+/** 安全获取当前幻灯片索引 */
+function safeSlideIndex(idx: number): number {
+  const len = slides.value.length
+  if (len === 0) return 0
+  return ((idx % len) + len) % len
+}
+
+/** 切换到下一张 */
+function nextSlide() {
+  currentSlide.value = safeSlideIndex(currentSlide.value + 1)
+  resetTimer()
+}
+
+/** 切换到上一张 */
+function prevSlide() {
+  currentSlide.value = safeSlideIndex(currentSlide.value - 1)
+  resetTimer()
+}
+
+/** 重置自动播放计时器 */
+function resetTimer() {
+  if (slideTimer) clearInterval(slideTimer)
+  if (slides.value.length <= 1) return
+  slideTimer = setInterval(() => {
+    currentSlide.value = safeSlideIndex(currentSlide.value + 1)
+  }, 5000)
+}
+
+onMounted(async () => {
+  await loadBanners()
+  resetTimer()
+})
+
+onUnmounted(() => {
+  if (slideTimer) clearInterval(slideTimer)
+})
+
+/** 点击轮播图跳转 */
+function goLink(link: string) {
+  if (!link) return
+  if (link.startsWith('http://') || link.startsWith('https://')) {
+    window.open(link, '_blank')
+  } else {
+    router.push(link)
+  }
+}
 
 /** 商品分类图标（SVG 片段） */
 interface Category {
@@ -267,76 +437,157 @@ const newProducts: Product[] = [
 
 <style scoped>
 /* ============================================
-   Hero Banner
+   Hero 轮播
    ============================================ */
-.hero-banner {
+.hero-carousel {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--shop-primary), hsl(217, 91%, 72%));
 }
 
-.hero-content {
+.carousel-track {
+  display: flex;
+  width: 100%;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.carousel-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 居中版遮罩 */
+.slide-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 1;
+}
+
+/* 全图版背景 */
+.slide-bg-img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.slide-bg-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 极简版装饰线 */
+.minimal-accent {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: 2px;
+  z-index: 2;
+}
+
+.slide-body {
   display: flex;
   flex-direction: column-reverse;
   align-items: center;
   gap: 32px;
   padding-top: 64px;
   padding-bottom: 64px;
+  position: relative;
+  z-index: 2;
 }
-
 @media (min-width: 1024px) {
-  .hero-content {
+  .slide-body {
     flex-direction: row;
     padding-top: 96px;
     padding-bottom: 96px;
   }
 }
 
-.hero-text {
-  flex: 1;
+/* 居中版：文字居中 */
+.tpl--centered .slide-body {
+  justify-content: center;
   text-align: center;
 }
+.tpl--centered .slide-text {
+  align-items: center;
+}
 
+/* 全图版：文字浮在图上 */
+.tpl--full-image .slide-body {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* 深色版文字阴影 */
+.tpl--dark .slide-title {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 极简版：居中简洁 */
+.tpl--minimal .slide-body {
+  justify-content: center;
+  text-align: center;
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+.tpl--minimal .slide-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.slide-text {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
 @media (min-width: 1024px) {
-  .hero-text {
+  .slide-text {
     text-align: left;
   }
 }
 
-.hero-title {
+.slide-title {
   margin-bottom: 16px;
   font-size: 2.25rem;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.02em;
   color: #fff;
+  white-space: pre-line;
+  word-break: break-word;
 }
-
 @media (min-width: 768px) {
-  .hero-title {
+  .slide-title {
     font-size: 3rem;
   }
 }
-
 @media (min-width: 1024px) {
-  .hero-title {
+  .slide-title {
     font-size: 3.75rem;
   }
 }
 
-.hero-subtitle {
+.slide-subtitle {
   margin-bottom: 32px;
   font-size: 1.125rem;
   color: rgba(255, 255, 255, 0.85);
+  white-space: pre-line;
+  word-break: break-word;
 }
-
 @media (min-width: 768px) {
-  .hero-subtitle {
+  .slide-subtitle {
     font-size: 1.25rem;
   }
 }
 
-.hero-btn {
+.slide-btn {
   display: inline-block;
   padding: 14px 40px;
   border-radius: 9999px;
@@ -345,58 +596,139 @@ const newProducts: Product[] = [
   font-size: 1rem;
   font-weight: 600;
   text-decoration: none;
+  cursor: pointer;
   box-shadow: var(--shop-shadow-lg);
   transition: transform 0.2s;
 }
-
-.hero-btn:hover {
+.slide-btn:hover {
   transform: scale(1.05);
 }
 
-.hero-image {
+.slide-image {
   flex: 1;
   display: flex;
   justify-content: center;
 }
-
 @media (min-width: 1024px) {
-  .hero-image {
+  .slide-image {
     justify-content: flex-end;
   }
 }
 
-.hero-placeholder {
+.slide-img {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--shop-radius-xl);
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+@media (min-width: 1024px) {
+  .slide-img {
+    max-width: 380px;
+  }
+}
+
+.slide-img-placeholder {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   width: 100%;
   max-width: 320px;
   aspect-ratio: 4 / 3;
   border-radius: var(--shop-radius-xl);
   background: rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
-  box-shadow: var(--shop-shadow-xl);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
-
 @media (min-width: 1024px) {
-  .hero-placeholder {
+  .slide-img-placeholder {
     max-width: 380px;
   }
 }
 
-/* 底部波浪装饰 */
-.hero-wave {
+/* 左右箭头 */
+.carousel-arrow {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 48px;
-  background: var(--shop-background);
-  mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1440 48' xmlns='http://www.w3.org/2000/svg'><path d='M0 48h1440V0c-240 32-480 48-720 48S240 32 0 0v48z' fill='white'/></svg>") center / cover no-repeat;
-  -webkit-mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1440 48' xmlns='http://www.w3.org/2000/svg'><path d='M0 48h1440V0c-240 32-480 48-720 48S240 32 0 0v48z' fill='white'/></svg>") center / cover no-repeat;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, opacity 0.2s, transform 0.2s;
+  backdrop-filter: blur(4px);
+}
+.carousel-arrow:hover {
+  background: rgba(255, 255, 255, 0.45);
+  transform: translateY(-50%) scale(1.1);
+}
+.carousel-arrow--left {
+  left: 16px;
+}
+.carousel-arrow--right {
+  right: 16px;
+}
+@media (max-width: 767px) {
+  .carousel-arrow {
+    width: 36px;
+    height: 36px;
+  }
+  .carousel-arrow--left {
+    left: 8px;
+  }
+  .carousel-arrow--right {
+    right: 8px;
+  }
+}
+
+/* 指示器圆点 */
+.carousel-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 0;
+}
+.carousel-dot--active {
+  background: #fff;
+  border-color: #fff;
+  transform: scale(1.25);
+}
+
+/* 幻灯片计数 */
+.slide-counter {
+  position: absolute;
+  bottom: 20px;
+  right: 24px;
+  z-index: 10;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.25);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  backdrop-filter: blur(4px);
+  letter-spacing: 0.05em;
 }
 
 /* ============================================

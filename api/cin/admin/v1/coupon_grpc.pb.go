@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	AdminCoupon_GetCouponStats_FullMethodName     = "/api.cin.admin.v1.AdminCoupon/GetCouponStats"
 	AdminCoupon_ListCoupon_FullMethodName         = "/api.cin.admin.v1.AdminCoupon/ListCoupon"
 	AdminCoupon_GetCoupon_FullMethodName          = "/api.cin.admin.v1.AdminCoupon/GetCoupon"
 	AdminCoupon_CreateCoupon_FullMethodName       = "/api.cin.admin.v1.AdminCoupon/CreateCoupon"
@@ -34,6 +35,8 @@ const (
 //
 // 优惠券管理服务
 type AdminCouponClient interface {
+	// 获取优惠券统计信息
+	GetCouponStats(ctx context.Context, in *CouponStatsRequest, opts ...grpc.CallOption) (*CouponStatsReply, error)
 	// 获取优惠券列表，支持分页、状态筛选、关键词搜索和日期范围过滤
 	ListCoupon(ctx context.Context, in *CouponListRequest, opts ...grpc.CallOption) (*CouponListReply, error)
 	// 根据ID获取单张优惠券详情
@@ -56,6 +59,16 @@ type adminCouponClient struct {
 
 func NewAdminCouponClient(cc grpc.ClientConnInterface) AdminCouponClient {
 	return &adminCouponClient{cc}
+}
+
+func (c *adminCouponClient) GetCouponStats(ctx context.Context, in *CouponStatsRequest, opts ...grpc.CallOption) (*CouponStatsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CouponStatsReply)
+	err := c.cc.Invoke(ctx, AdminCoupon_GetCouponStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *adminCouponClient) ListCoupon(ctx context.Context, in *CouponListRequest, opts ...grpc.CallOption) (*CouponListReply, error) {
@@ -134,6 +147,8 @@ func (c *adminCouponClient) ListCouponRecords(ctx context.Context, in *CouponRec
 //
 // 优惠券管理服务
 type AdminCouponServer interface {
+	// 获取优惠券统计信息
+	GetCouponStats(context.Context, *CouponStatsRequest) (*CouponStatsReply, error)
 	// 获取优惠券列表，支持分页、状态筛选、关键词搜索和日期范围过滤
 	ListCoupon(context.Context, *CouponListRequest) (*CouponListReply, error)
 	// 根据ID获取单张优惠券详情
@@ -158,6 +173,9 @@ type AdminCouponServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAdminCouponServer struct{}
 
+func (UnimplementedAdminCouponServer) GetCouponStats(context.Context, *CouponStatsRequest) (*CouponStatsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCouponStats not implemented")
+}
 func (UnimplementedAdminCouponServer) ListCoupon(context.Context, *CouponListRequest) (*CouponListReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListCoupon not implemented")
 }
@@ -198,6 +216,24 @@ func RegisterAdminCouponServer(s grpc.ServiceRegistrar, srv AdminCouponServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&AdminCoupon_ServiceDesc, srv)
+}
+
+func _AdminCoupon_GetCouponStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CouponStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminCouponServer).GetCouponStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminCoupon_GetCouponStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminCouponServer).GetCouponStats(ctx, req.(*CouponStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _AdminCoupon_ListCoupon_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -333,6 +369,10 @@ var AdminCoupon_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "api.cin.admin.v1.AdminCoupon",
 	HandlerType: (*AdminCouponServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetCouponStats",
+			Handler:    _AdminCoupon_GetCouponStats_Handler,
+		},
 		{
 			MethodName: "ListCoupon",
 			Handler:    _AdminCoupon_ListCoupon_Handler,

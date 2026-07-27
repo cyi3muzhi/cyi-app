@@ -35,6 +35,7 @@ func NewHTTPServer(s *ts.HttpServer, adminService *service.AdminService, ac *con
 	adminv1.RegisterAdminCategoryHTTPServer(s.HttpServer, adminService)
 	adminv1.RegisterUploadHTTPServer(s.HttpServer, adminService)
 	adminv1.RegisterAdminCouponHTTPServer(s.HttpServer, adminService)
+	adminv1.RegisterBannerHTTPServer(s.HttpServer, adminService)
 	// 注册智能体聊天路由
 	registerAgentRoutes(s.HttpServer, adminService, ac)
 	return s.HttpServer

@@ -369,6 +369,11 @@ type ProductItem struct {
 	Category      string                 `protobuf:"bytes,6,opt,name=category,proto3" json:"category,omitempty"`
 	Status        string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
 	Image         string                 `protobuf:"bytes,8,opt,name=image,proto3" json:"image,omitempty"`
+	Sales         int32                  `protobuf:"varint,9,opt,name=sales,proto3" json:"sales,omitempty"`
+	CategoryId    int64                  `protobuf:"varint,10,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	Images        []string               `protobuf:"bytes,11,rep,name=images,proto3" json:"images,omitempty"`
+	Specs         []*SpecGroupInfo       `protobuf:"bytes,12,rep,name=specs,proto3" json:"specs,omitempty"`
+	Skus          []*SkuInfo             `protobuf:"bytes,13,rep,name=skus,proto3" json:"skus,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -459,6 +464,193 @@ func (x *ProductItem) GetImage() string {
 	return ""
 }
 
+func (x *ProductItem) GetSales() int32 {
+	if x != nil {
+		return x.Sales
+	}
+	return 0
+}
+
+func (x *ProductItem) GetCategoryId() int64 {
+	if x != nil {
+		return x.CategoryId
+	}
+	return 0
+}
+
+func (x *ProductItem) GetImages() []string {
+	if x != nil {
+		return x.Images
+	}
+	return nil
+}
+
+func (x *ProductItem) GetSpecs() []*SpecGroupInfo {
+	if x != nil {
+		return x.Specs
+	}
+	return nil
+}
+
+func (x *ProductItem) GetSkus() []*SkuInfo {
+	if x != nil {
+		return x.Skus
+	}
+	return nil
+}
+
+type SpecGroupInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Values        []string               `protobuf:"bytes,3,rep,name=values,proto3" json:"values,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SpecGroupInfo) Reset() {
+	*x = SpecGroupInfo{}
+	mi := &file_api_cin_interface_v1_product_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SpecGroupInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SpecGroupInfo) ProtoMessage() {}
+
+func (x *SpecGroupInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_product_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SpecGroupInfo.ProtoReflect.Descriptor instead.
+func (*SpecGroupInfo) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_product_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *SpecGroupInfo) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *SpecGroupInfo) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *SpecGroupInfo) GetValues() []string {
+	if x != nil {
+		return x.Values
+	}
+	return nil
+}
+
+type SkuInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	SkuCode       string                 `protobuf:"bytes,2,opt,name=sku_code,json=skuCode,proto3" json:"sku_code,omitempty"`
+	Price         int64                  `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
+	Stock         int32                  `protobuf:"varint,4,opt,name=stock,proto3" json:"stock,omitempty"`
+	Sales         int32                  `protobuf:"varint,5,opt,name=sales,proto3" json:"sales,omitempty"`
+	Spec          map[string]string      `protobuf:"bytes,6,rep,name=spec,proto3" json:"spec,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Image         string                 `protobuf:"bytes,7,opt,name=image,proto3" json:"image,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SkuInfo) Reset() {
+	*x = SkuInfo{}
+	mi := &file_api_cin_interface_v1_product_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SkuInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SkuInfo) ProtoMessage() {}
+
+func (x *SkuInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_product_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SkuInfo.ProtoReflect.Descriptor instead.
+func (*SkuInfo) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_product_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *SkuInfo) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *SkuInfo) GetSkuCode() string {
+	if x != nil {
+		return x.SkuCode
+	}
+	return ""
+}
+
+func (x *SkuInfo) GetPrice() int64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *SkuInfo) GetStock() int32 {
+	if x != nil {
+		return x.Stock
+	}
+	return 0
+}
+
+func (x *SkuInfo) GetSales() int32 {
+	if x != nil {
+		return x.Sales
+	}
+	return 0
+}
+
+func (x *SkuInfo) GetSpec() map[string]string {
+	if x != nil {
+		return x.Spec
+	}
+	return nil
+}
+
+func (x *SkuInfo) GetImage() string {
+	if x != nil {
+		return x.Image
+	}
+	return ""
+}
+
 type GetProductRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -468,7 +660,7 @@ type GetProductRequest struct {
 
 func (x *GetProductRequest) Reset() {
 	*x = GetProductRequest{}
-	mi := &file_api_cin_interface_v1_product_proto_msgTypes[7]
+	mi := &file_api_cin_interface_v1_product_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -480,7 +672,7 @@ func (x *GetProductRequest) String() string {
 func (*GetProductRequest) ProtoMessage() {}
 
 func (x *GetProductRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_product_proto_msgTypes[7]
+	mi := &file_api_cin_interface_v1_product_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -493,7 +685,7 @@ func (x *GetProductRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProductRequest.ProtoReflect.Descriptor instead.
 func (*GetProductRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_product_proto_rawDescGZIP(), []int{7}
+	return file_api_cin_interface_v1_product_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetProductRequest) GetId() int64 {
@@ -512,7 +704,7 @@ type GetProductReply struct {
 
 func (x *GetProductReply) Reset() {
 	*x = GetProductReply{}
-	mi := &file_api_cin_interface_v1_product_proto_msgTypes[8]
+	mi := &file_api_cin_interface_v1_product_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -524,7 +716,7 @@ func (x *GetProductReply) String() string {
 func (*GetProductReply) ProtoMessage() {}
 
 func (x *GetProductReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_product_proto_msgTypes[8]
+	mi := &file_api_cin_interface_v1_product_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -537,7 +729,7 @@ func (x *GetProductReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProductReply.ProtoReflect.Descriptor instead.
 func (*GetProductReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_product_proto_rawDescGZIP(), []int{8}
+	return file_api_cin_interface_v1_product_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetProductReply) GetProduct() *ProductItem {
@@ -574,7 +766,7 @@ const file_api_cin_interface_v1_product_proto_rawDesc = "" +
 	"\bcategory\x18\x04 \x01(\tR\bcategory\"a\n" +
 	"\x10ListProductReply\x127\n" +
 	"\x05items\x18\x01 \x03(\v2!.api.cin.interface.v1.ProductItemR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\"\xc9\x01\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\x86\x03\n" +
 	"\vProductItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -583,7 +775,29 @@ const file_api_cin_interface_v1_product_proto_rawDesc = "" +
 	"\x05stock\x18\x05 \x01(\x05R\x05stock\x12\x1a\n" +
 	"\bcategory\x18\x06 \x01(\tR\bcategory\x12\x16\n" +
 	"\x06status\x18\a \x01(\tR\x06status\x12\x14\n" +
-	"\x05image\x18\b \x01(\tR\x05image\"#\n" +
+	"\x05image\x18\b \x01(\tR\x05image\x12\x14\n" +
+	"\x05sales\x18\t \x01(\x05R\x05sales\x12\x1f\n" +
+	"\vcategory_id\x18\n" +
+	" \x01(\x03R\n" +
+	"categoryId\x12\x16\n" +
+	"\x06images\x18\v \x03(\tR\x06images\x129\n" +
+	"\x05specs\x18\f \x03(\v2#.api.cin.interface.v1.SpecGroupInfoR\x05specs\x121\n" +
+	"\x04skus\x18\r \x03(\v2\x1d.api.cin.interface.v1.SkuInfoR\x04skus\"K\n" +
+	"\rSpecGroupInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
+	"\x06values\x18\x03 \x03(\tR\x06values\"\x82\x02\n" +
+	"\aSkuInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x19\n" +
+	"\bsku_code\x18\x02 \x01(\tR\askuCode\x12\x14\n" +
+	"\x05price\x18\x03 \x01(\x03R\x05price\x12\x14\n" +
+	"\x05stock\x18\x04 \x01(\x05R\x05stock\x12\x14\n" +
+	"\x05sales\x18\x05 \x01(\x05R\x05sales\x12;\n" +
+	"\x04spec\x18\x06 \x03(\v2'.api.cin.interface.v1.SkuInfo.SpecEntryR\x04spec\x12\x14\n" +
+	"\x05image\x18\a \x01(\tR\x05image\x1a7\n" +
+	"\tSpecEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"#\n" +
 	"\x11GetProductRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"N\n" +
 	"\x0fGetProductReply\x12;\n" +
@@ -608,7 +822,7 @@ func file_api_cin_interface_v1_product_proto_rawDescGZIP() []byte {
 	return file_api_cin_interface_v1_product_proto_rawDescData
 }
 
-var file_api_cin_interface_v1_product_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_api_cin_interface_v1_product_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_api_cin_interface_v1_product_proto_goTypes = []any{
 	(*CreateProductRequest)(nil), // 0: api.cin.interface.v1.CreateProductRequest
 	(*CreateProductReply)(nil),   // 1: api.cin.interface.v1.CreateProductReply
@@ -617,25 +831,31 @@ var file_api_cin_interface_v1_product_proto_goTypes = []any{
 	(*ListProductRequest)(nil),   // 4: api.cin.interface.v1.ListProductRequest
 	(*ListProductReply)(nil),     // 5: api.cin.interface.v1.ListProductReply
 	(*ProductItem)(nil),          // 6: api.cin.interface.v1.ProductItem
-	(*GetProductRequest)(nil),    // 7: api.cin.interface.v1.GetProductRequest
-	(*GetProductReply)(nil),      // 8: api.cin.interface.v1.GetProductReply
+	(*SpecGroupInfo)(nil),        // 7: api.cin.interface.v1.SpecGroupInfo
+	(*SkuInfo)(nil),              // 8: api.cin.interface.v1.SkuInfo
+	(*GetProductRequest)(nil),    // 9: api.cin.interface.v1.GetProductRequest
+	(*GetProductReply)(nil),      // 10: api.cin.interface.v1.GetProductReply
+	nil,                          // 11: api.cin.interface.v1.SkuInfo.SpecEntry
 }
 var file_api_cin_interface_v1_product_proto_depIdxs = []int32{
-	6, // 0: api.cin.interface.v1.ListProductReply.items:type_name -> api.cin.interface.v1.ProductItem
-	6, // 1: api.cin.interface.v1.GetProductReply.product:type_name -> api.cin.interface.v1.ProductItem
-	0, // 2: api.cin.interface.v1.Product.CreateProduct:input_type -> api.cin.interface.v1.CreateProductRequest
-	2, // 3: api.cin.interface.v1.Product.UpdateProduct:input_type -> api.cin.interface.v1.UpdateProductRequest
-	4, // 4: api.cin.interface.v1.Product.ListProduct:input_type -> api.cin.interface.v1.ListProductRequest
-	7, // 5: api.cin.interface.v1.Product.GetProduct:input_type -> api.cin.interface.v1.GetProductRequest
-	1, // 6: api.cin.interface.v1.Product.CreateProduct:output_type -> api.cin.interface.v1.CreateProductReply
-	3, // 7: api.cin.interface.v1.Product.UpdateProduct:output_type -> api.cin.interface.v1.UpdateProductReply
-	5, // 8: api.cin.interface.v1.Product.ListProduct:output_type -> api.cin.interface.v1.ListProductReply
-	8, // 9: api.cin.interface.v1.Product.GetProduct:output_type -> api.cin.interface.v1.GetProductReply
-	6, // [6:10] is the sub-list for method output_type
-	2, // [2:6] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	6,  // 0: api.cin.interface.v1.ListProductReply.items:type_name -> api.cin.interface.v1.ProductItem
+	7,  // 1: api.cin.interface.v1.ProductItem.specs:type_name -> api.cin.interface.v1.SpecGroupInfo
+	8,  // 2: api.cin.interface.v1.ProductItem.skus:type_name -> api.cin.interface.v1.SkuInfo
+	11, // 3: api.cin.interface.v1.SkuInfo.spec:type_name -> api.cin.interface.v1.SkuInfo.SpecEntry
+	6,  // 4: api.cin.interface.v1.GetProductReply.product:type_name -> api.cin.interface.v1.ProductItem
+	0,  // 5: api.cin.interface.v1.Product.CreateProduct:input_type -> api.cin.interface.v1.CreateProductRequest
+	2,  // 6: api.cin.interface.v1.Product.UpdateProduct:input_type -> api.cin.interface.v1.UpdateProductRequest
+	4,  // 7: api.cin.interface.v1.Product.ListProduct:input_type -> api.cin.interface.v1.ListProductRequest
+	9,  // 8: api.cin.interface.v1.Product.GetProduct:input_type -> api.cin.interface.v1.GetProductRequest
+	1,  // 9: api.cin.interface.v1.Product.CreateProduct:output_type -> api.cin.interface.v1.CreateProductReply
+	3,  // 10: api.cin.interface.v1.Product.UpdateProduct:output_type -> api.cin.interface.v1.UpdateProductReply
+	5,  // 11: api.cin.interface.v1.Product.ListProduct:output_type -> api.cin.interface.v1.ListProductReply
+	10, // 12: api.cin.interface.v1.Product.GetProduct:output_type -> api.cin.interface.v1.GetProductReply
+	9,  // [9:13] is the sub-list for method output_type
+	5,  // [5:9] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_api_cin_interface_v1_product_proto_init() }
@@ -649,7 +869,7 @@ func file_api_cin_interface_v1_product_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_interface_v1_product_proto_rawDesc), len(file_api_cin_interface_v1_product_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

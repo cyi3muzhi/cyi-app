@@ -23,3 +23,18 @@ export interface Category {
   name: string
   icon: string
 }
+
+/** 分类树节点 */
+export interface CategoryNode {
+  id: number
+  name: string
+  slug: string
+  icon: string
+  sort: number
+  status: boolean
+  showcase: boolean
+  count: number
+  image: string
+  parent_id: number
+  children: CategoryNode[]
+}

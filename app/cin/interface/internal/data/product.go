@@ -51,11 +51,91 @@ func (r *productRepo) GetProduct(ctx context.Context, productID int64) (*biz.Pro
 	if err != nil {
 		return nil, err
 	}
+	return convertProductItem(resp.Product), nil
+}
+
+func (r *productRepo) ListProduct(ctx context.Context, req *biz.ListProductRequest) ([]*biz.Product, int32, error) {
+	resp, err := r.data.pc.ListProduct(ctx, &productV1.ListProductRequest{
+		Page:       req.Page,
+		PageSize:   req.PageSize,
+		Keyword:    req.Keyword,
+		CategoryId: req.CategoryID,
+		Status:     req.Status,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	items := make([]*biz.Product, 0, len(resp.Items))
+	for _, item := range resp.Items {
+		items = append(items, convertProductItem(item))
+	}
+	return items, resp.Total, nil
+}
+
+func convertProductItem(item *productV1.ProductItem) *biz.Product {
+	if item == nil {
+		return nil
+	}
+	images := item.Images
+	if len(images) == 0 {
+		images = []string{item.Image}
+	}
 	return &biz.Product{
-		ID:          resp.Product.ProductId,
-		Name:        resp.Product.Name,
-		Description: resp.Product.Description,
-		Price:       resp.Product.Price,
-		Status:      resp.Product.Status,
-	}, nil
+		ID:          item.ProductId,
+		Name:        item.Name,
+		Description: item.Description,
+		Price:       item.Price,
+		Stock:       getDefaultStock(item.Skus),
+		Category:    item.Category,
+		CategoryID:  item.CategoryId,
+		Status:      item.Status,
+		Image:       images[0],
+		Sales:       item.Sales,
+		Images:      images,
+		Specs:       convertSpecGroups(item.Specs),
+		Skus:        convertSkus(item.Skus),
+	}
+}
+
+func convertSpecGroups(specs []*productV1.SpecGroupInfo) []*biz.SpecGroupInfo {
+	result := make([]*biz.SpecGroupInfo, 0, len(specs))
+	for _, s := range specs {
+		result = append(result, &biz.SpecGroupInfo{
+			ID:     s.Id,
+			Name:   s.Name,
+			Values: s.Values,
+		})
+	}
+	return result
+}
+
+func convertSkus(skus []*productV1.SkuInfo) []*biz.SkuInfo {
+	result := make([]*biz.SkuInfo, 0, len(skus))
+	for _, s := range skus {
+		specMap := make(map[string]string)
+		for k, v := range s.Spec {
+			specMap[k] = v
+		}
+		result = append(result, &biz.SkuInfo{
+			ID:      s.Id,
+			SkuCode: s.SkuCode,
+			Price:   s.Price,
+			Stock:   s.Stock,
+			Sales:   s.Sales,
+			Spec:    specMap,
+			Image:   s.Image,
+		})
+	}
+	return result
+}
+
+func getDefaultStock(skus []*productV1.SkuInfo) int32 {
+	if len(skus) == 0 {
+		return 0
+	}
+	var total int32
+	for _, sku := range skus {
+		total += sku.Stock
+	}
+	return total
 }

@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package api.cin.interface.v1;
+
+option go_package = "cyi-app/api/cin/interface/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.cin.interface.v1";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "api/service/user/v1/banner.proto";
+
+// 公开 Banner 服务
+service Banner {
+  // 获取公开 Banner 列表
+  rpc ListBanners (google.protobuf.Empty) returns (ListBannersReply) {
+    option (google.api.http) = {
+      get: "/settings/v1/banners"
+    };
+  }
+}
+
+message ListBannersReply {
+  repeated api.service.user.v1.BannerItem banners = 1;
+}

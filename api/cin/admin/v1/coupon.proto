@@ -11,6 +11,12 @@ import "google/api/annotations.proto";
 
 // 优惠券管理服务
 service AdminCoupon {
+  // 获取优惠券统计信息
+  rpc GetCouponStats (CouponStatsRequest) returns (CouponStatsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/coupons/stats"
+    };
+  }
   // 获取优惠券列表，支持分页、状态筛选、关键词搜索和日期范围过滤
   rpc ListCoupon (CouponListRequest) returns (CouponListReply) {
     option (google.api.http) = {

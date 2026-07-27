@@ -48,13 +48,14 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   /** 添加商品 */
-  function addItem(product: { productId: number; name: string; image: string; price: number; sku?: string }) {
+  function addItem(product: { productId: number; name: string; image: string; price: number; sku?: string; quantity?: number }) {
     const exist = items.value.find(i => i.productId === product.productId)
+    const qty = product.quantity || 1
     if (exist) {
-      exist.quantity++
+      exist.quantity += qty
     } else {
       const id = Date.now()
-      items.value.push({ ...product, id, quantity: 1, selected: true, stock: 99, sku: product.sku || '' })
+      items.value.push({ ...product, id, quantity: qty, selected: true, stock: 99, sku: product.sku || '' })
     }
   }
 

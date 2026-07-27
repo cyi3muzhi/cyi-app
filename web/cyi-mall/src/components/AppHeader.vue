@@ -6,7 +6,7 @@
     <div class="container-shop header-inner">
       <!-- Logo -->
       <router-link to="/" class="logo no-underline">
-        <span class="logo-text">悦选商城</span>
+        <span class="logo-text">{{ shopStore.shopName }}</span>
       </router-link>
 
       <!-- 搜索栏（桌面） -->
@@ -78,10 +78,12 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/store/cart'
 import { useUserStore } from '@/store/user'
+import { useShopStore } from '@/store/shop'
 
 const router = useRouter()
 const cartStore = useCartStore()
 const userStore = useUserStore()
+const shopStore = useShopStore()
 
 const keyword = ref('')
 const showMobileSearch = ref(false)

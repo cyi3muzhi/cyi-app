@@ -10,13 +10,13 @@
       </div>
       <div class="info">
         <h3 class="name desc-line-clamp">{{ product.name }}</h3>
-        <p v-if="product.description" class="desc desc-line-clamp">{{ product.description }}</p>
+        <p v-if="product.description" class="desc desc-line-clamp">{{ plainTextDescription }}</p>
         <div class="price-row">
-          <span class="price">¥{{ product.price.toFixed(2) }}</span>
-          <span v-if="product.originalPrice > product.price" class="original-price">¥{{ product.originalPrice.toFixed(2) }}</span>
+          <span class="price">¥{{ formatPrice(product.price) }}</span>
+          <span v-if="product.originalPrice && Number(product.originalPrice) > Number(product.price)" class="original-price">¥{{ formatPrice(product.originalPrice) }}</span>
         </div>
         <div class="meta">
-          <span>已售 {{ formatSales(product.sales) }} 件</span>
+          <span>已售 {{ formatSales(product.sales || 0) }} 件</span>
           <span class="stars">{{ ratingStars }}</span>
         </div>
       </div>
@@ -29,14 +29,14 @@ import { computed } from 'vue'
 
 const props = defineProps<{
   product: {
-    id: number
+    id: number | string
     name: string
     description?: string
-    price: number
-    originalPrice?: number
+    price: number | string
+    originalPrice?: number | string
     image: string
-    sales: number
-    rating: number
+    sales?: number
+    rating?: number
     tags?: string[]
   }
 }>()
@@ -58,15 +58,27 @@ const badgeClass = computed(() => {
   return ''
 })
 
+const plainTextDescription = computed(() => {
+  if (!props.product.description) return ''
+  const div = document.createElement('div')
+  div.innerHTML = props.product.description
+  return div.textContent || div.innerText || ''
+})
+
 const cardStyle = {
   background: 'var(--shop-card)',
   boxShadow: 'var(--shop-shadow-md)'
 }
 
 const ratingStars = computed(() => {
-  const r = Math.round(props.product.rating)
+  const r = Math.round(props.product.rating || 0)
   return '★'.repeat(r) + '☆'.repeat(5 - r)
 })
+
+function formatPrice(price: number | string): string {
+  const p = Number(price) / 100
+  return p.toFixed(2)
+}
 
 function formatSales(n: number) {
   if (n >= 10000) return (n / 10000).toFixed(1) + '万'

@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package api.cin.interface.v1;
+
+option go_package = "cyi-app/api/cin/interface/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.cin.interface.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+// 商品分类服务
+service Category {
+  // 获取分类树
+  rpc ListCategoryTree (ListCategoryTreeRequest) returns (ListCategoryTreeReply) {
+    option (google.api.http) = {
+      get: "/category/v1/tree"
+    };
+  }
+  // 获取分类详情
+  rpc GetCategory (GetCategoryRequest) returns (GetCategoryReply) {
+    option (google.api.http) = {
+      get: "/category/v1/{id}"
+    };
+  }
+}
+
+message ListCategoryTreeRequest {
+  int64 parent_id = 1;
+}
+
+message ListCategoryTreeReply {
+  repeated CategoryNode items = 1;
+  int32 total = 2;
+}
+
+message GetCategoryRequest {
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message GetCategoryReply {
+  CategoryNode item = 1;
+}
+
+message CategoryNode {
+  int64 id = 1;
+  string name = 2;
+  string slug = 3;
+  string icon = 4;
+  int32 sort = 5;
+  bool status = 6;
+  bool showcase = 7;
+  int32 count = 8;
+  string image = 9;
+  int64 parent_id = 10;
+  repeated CategoryNode children = 11;
+}

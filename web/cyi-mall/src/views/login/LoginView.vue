@@ -6,7 +6,7 @@
     <div class="header-inner">
       <!-- Logo -->
       <router-link to="/" class="logo-link">
-        <span class="logo-text">悦选商城</span>
+        <span class="logo-text">{{ shopStore.shopName }}</span>
       </router-link>
       <!-- 右侧导航 -->
       <nav class="header-nav">
@@ -161,7 +161,7 @@
   <!-- 3. 页脚（最小化）                                              -->
   <!-- ============================================================ -->
   <footer class="login-footer">
-    <p>&copy; 2026 悦选商城 版权所有 | 京ICP备2026XXXXXXXX号-1</p>
+    <p>&copy; 2026 {{ shopStore.shopName }} 版权所有 | 京ICP备2026XXXXXXXX号-1</p>
   </footer>
 </template>
 
@@ -172,8 +172,10 @@
  */
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useShopStore } from '@/store/shop'
 
 const router = useRouter()
+const shopStore = useShopStore()
 
 // ---- 表单数据 ----
 const account = ref('')
@@ -233,9 +235,12 @@ async function handleSubmit() {
   try {
     // 模拟 API 请求延迟
     await new Promise(resolve => setTimeout(resolve, 1500))
-    // 模拟登录成功（实际项目应调用真实 API）
-    // 登录成功后跳转到首页
-    router.push('/')
+    // 模拟登录成功 - 设置 mock token（实际项目应调用真实 API）
+    const mockToken = 'mock_token_' + Date.now()
+    localStorage.setItem('token', mockToken)
+    // 登录成功后跳转回原页面，没有 redirect 则去首页
+    const redirect = (router.currentRoute.value.query.redirect as string) || '/'
+    router.push(redirect)
   } catch {
     formError.value = '登录失败，请检查账号和密码'
   } finally {

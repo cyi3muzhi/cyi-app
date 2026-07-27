@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+option java_multiple_files = true;
+option java_package = "api.cin.admin.v1";
+
+import "google/api/annotations.proto";
+import "api/service/user/v1/banner.proto";
+
+// 管理后台 - Banner 管理服务
+service Banner {
+  // 获取 Banner 列表
+  rpc ListBanners (ListBannersRequest) returns (ListBannersReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/banners"
+    };
+  }
+  // 保存 Banner（全量替换）
+  rpc SaveBanners (SaveBannersRequest) returns (SaveBannersReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/banners"
+      body: "*"
+    };
+  }
+}
+
+message ListBannersRequest {}
+
+message ListBannersReply {
+  repeated api.service.user.v1.BannerItem banners = 1;
+}
+
+message SaveBannersRequest {
+  repeated api.service.user.v1.BannerItem banners = 1;
+}
+
+message SaveBannersReply {
+  bool success = 1;
+}

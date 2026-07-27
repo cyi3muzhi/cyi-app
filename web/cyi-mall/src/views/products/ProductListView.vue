@@ -19,7 +19,7 @@
       <div class="toolbar">
         <h1 class="toolbar-title">
           全部商品
-          <span class="toolbar-count">（共 {{ filteredProducts.length }} 件）</span>
+          <span class="toolbar-count">（共 {{ totalCount }} 件）</span>
         </h1>
         <div class="toolbar-actions">
           <!-- 移动端筛选按钮 -->
@@ -154,29 +154,37 @@
             </div>
           </div>
 
+          <!-- 加载状态 -->
+          <div v-if="loading" class="loading-state">
+            <svg class="loading-spinner" width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <circle class="spinner-path" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <p>加载中...</p>
+          </div>
+
           <!-- 商品网格 -->
-          <div :class="['product-grid', { 'product-list-layout': viewMode === 'list' }]">
+          <div v-else :class="['product-grid', { 'product-list-layout': viewMode === 'list' }]">
             <template v-for="item in pagedProducts" :key="item.id">
               <ProductCard :product="item" v-if="viewMode === 'grid'" />
               <!-- 列表视图 -->
               <article v-else class="product-card-list" :style="cardListStyle">
                 <router-link :to="`/product/${item.id}`" class="product-list-link">
                   <div class="list-img-wrap">
-                    <span v-if="item.tags?.length" class="list-badge" :class="getBadgeClass(item.tags[0])">
-                      {{ getBadgeText(item.tags[0]) }}
+                    <span v-if="(item as any).tags?.length" class="list-badge" :class="getBadgeClass((item as any).tags[0])">
+                      {{ getBadgeText((item as any).tags[0]) }}
                     </span>
                     <img :src="item.image" :alt="item.name" loading="lazy" />
                   </div>
                   <div class="list-info">
                     <h3 class="list-name">{{ item.name }}</h3>
-                    <p class="list-desc">{{ item.description }}</p>
+                    <p class="list-desc">{{ stripHtml(item.description) }}</p>
                     <div class="list-price-row">
-                      <span class="list-price">¥{{ item.price.toFixed(2) }}</span>
-                      <span v-if="item.originalPrice > item.price" class="list-original-price">¥{{ item.originalPrice.toFixed(2) }}</span>
+                      <span class="list-price">¥{{ formatPrice(item.price) }}</span>
+                      <span v-if="(item as any).originalPrice && Number((item as any).originalPrice) > Number(item.price)" class="list-original-price">¥{{ formatPrice((item as any).originalPrice) }}</span>
                     </div>
                     <div class="list-meta">
-                      <span>已售 {{ formatSales(item.sales) }} 件</span>
-                      <span class="stars">{{ getRatingStars(item.rating) }}</span>
+                      <span>库存 {{ item.stock }} 件</span>
+                      <span class="stars">{{ getRatingStars((item as any).rating || 0) }}</span>
                     </div>
                   </div>
                 </router-link>
@@ -185,7 +193,7 @@
           </div>
 
           <!-- 空状态 -->
-          <div v-if="pagedProducts.length === 0" class="empty-state">
+          <div v-if="!loading && pagedProducts.length === 0" class="empty-state">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--shop-muted-foreground)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
             </svg>
@@ -233,220 +241,99 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import ProductCard from '@/components/ProductCard.vue'
+import { getProducts, getCategoryTree, type ProductItem } from '@/api/product'
+import type { CategoryNode } from '@/types/product'
 
 const route = useRoute()
 
-/** 商品 Mock 数据类型 */
-interface MockProduct {
-  id: number
+interface FilterCategory {
+  key: string
   name: string
-  description: string
-  price: number
-  originalPrice: number
-  image: string
-  sales: number
-  rating: number
-  tags: string[]
-  category: string
 }
 
-/** 所有 Mock 商品数据（8个） */
-const allProducts: MockProduct[] = [
-  {
-    id: 1,
-    name: '智能降噪蓝牙耳机 Pro Max',
-    description: '旗舰级主动降噪，40小时续航，舒适佩戴',
-    price: 299.00,
-    originalPrice: 499.00,
-    image: 'https://picsum.photos/seed/prod1/400/400',
-    sales: 2586,
-    rating: 5.0,
-    tags: ['new'],
-    category: 'electronics'
-  },
-  {
-    id: 2,
-    name: '北欧简约护眼台灯 LED',
-    description: '三档色温调节，无频闪，智能记忆亮度',
-    price: 159.00,
-    originalPrice: 229.00,
-    image: 'https://picsum.photos/seed/prod2/400/400',
-    sales: 4213,
-    rating: 4.0,
-    tags: ['hot'],
-    category: 'home'
-  },
-  {
-    id: 3,
-    name: '都市休闲双肩背包 大容量',
-    description: '防水面料，多隔层收纳，电脑独立仓',
-    price: 189.00,
-    originalPrice: 269.00,
-    image: 'https://picsum.photos/seed/prod3/400/400',
-    sales: 1847,
-    rating: 5.0,
-    tags: ['sale'],
-    category: 'fashion'
-  },
-  {
-    id: 4,
-    name: '轻量缓震运动跑步鞋',
-    description: '透气飞织鞋面，缓震大底，轻盈回弹',
-    price: 259.00,
-    originalPrice: 359.00,
-    image: 'https://picsum.photos/seed/prod4/400/400',
-    sales: 3621,
-    rating: 5.0,
-    tags: ['new'],
-    category: 'sports'
-  },
-  {
-    id: 5,
-    name: '氨基酸温和洁面乳 120g',
-    description: '弱酸配方，温和不紧绷，适合所有肤质',
-    price: 79.00,
-    originalPrice: 129.00,
-    image: 'https://picsum.photos/seed/prod5/400/400',
-    sales: 8942,
-    rating: 4.0,
-    tags: ['hot'],
-    category: 'beauty'
-  },
-  {
-    id: 6,
-    name: '智能运动手表 S3 全天监测',
-    description: '心率血氧监测，100+运动模式，14天续航',
-    price: 459.00,
-    originalPrice: 599.00,
-    image: 'https://picsum.photos/seed/prod6/400/400',
-    sales: 5108,
-    rating: 5.0,
-    tags: ['new'],
-    category: 'electronics'
-  },
-  {
-    id: 7,
-    name: '便携无线榨汁杯 随身榨',
-    description: 'USB充电，304不锈钢刀头，一键清洗',
-    price: 119.00,
-    originalPrice: 169.00,
-    image: 'https://picsum.photos/seed/prod7/400/400',
-    sales: 6374,
-    rating: 4.0,
-    tags: ['hot'],
-    category: 'home'
-  },
-  {
-    id: 8,
-    name: '纯棉圆领短袖T恤 三色可选',
-    description: '100%新疆长绒棉，亲肤透气，经典百搭',
-    price: 89.00,
-    originalPrice: 139.00,
-    image: 'https://picsum.photos/seed/prod8/400/400',
-    sales: 12756,
-    rating: 5.0,
-    tags: ['hot'],
-    category: 'fashion'
-  }
-]
+const allProducts = ref<ProductItem[]>([])
+const categories = ref<CategoryNode[]>([])
+const filterCategories = ref<FilterCategory[]>([{ key: 'all', name: '全部' }])
 
-/** 分类筛选选项 */
-const filterCategories = [
-  { key: 'all', name: '全部' },
-  { key: 'electronics', name: '电子产品' },
-  { key: 'home', name: '家居生活' },
-  { key: 'fashion', name: '时尚服饰' },
-  { key: 'sports', name: '运动户外' },
-  { key: 'beauty', name: '美妆护肤' }
-]
-
-/** 品牌列表（Mock） */
 const brands = ['悦选', '品致', '优家', '灵动']
 
-/** 当前选中的分类 */
 const activeCategory = ref<string>((route.query.category as string) || 'all')
-
-/** 排序方式 */
 const sortBy = ref<string>('default')
-
-/** 视图模式：grid | list */
 const viewMode = ref<'grid' | 'list'>('grid')
-
-/** 移动端筛选面板 */
 const mobileFilterOpen = ref(false)
 
-/** 价格筛选 */
 const priceMin = ref<number | undefined>(undefined)
 const priceMax = ref<number | undefined>(undefined)
-
-/** 品牌筛选 */
 const selectedBrands = ref<string[]>([])
 
-/** 分页 */
 const currentPage = ref(1)
 const pageSize = 8
+const totalCount = ref(0)
+const loading = ref(false)
 
-/** 列表视图卡片样式 */
 const cardListStyle = {
   background: 'var(--shop-card)',
   boxShadow: 'var(--shop-shadow-md)'
 }
 
-/**
- * 根据排序和分类筛选后的商品列表
- */
-const filteredProducts = computed(() => {
-  let list = [...allProducts]
-
-  // 分类筛选
-  if (activeCategory.value !== 'all') {
-    list = list.filter(p => p.category === activeCategory.value)
+function flattenCategories(nodes: CategoryNode[]): FilterCategory[] {
+  const result: FilterCategory[] = []
+  for (const node of nodes) {
+    if (node.status) {
+      result.push({ key: String(node.id), name: node.name })
+      if (node.children && node.children.length > 0) {
+        result.push(...flattenCategories(node.children))
+      }
+    }
   }
+  return result
+}
 
-  // 价格筛选
-  if (priceMin.value !== undefined && priceMin.value > 0) {
-    list = list.filter(p => p.price >= priceMin.value!)
+async function loadCategories() {
+  try {
+    const res = await getCategoryTree()
+    categories.value = res.items || []
+    const flatCats = flattenCategories(categories.value)
+    filterCategories.value = [{ key: 'all', name: '全部' }, ...flatCats]
+  } catch (error) {
+    console.error('加载分类失败:', error)
   }
-  if (priceMax.value !== undefined && priceMax.value > 0) {
-    list = list.filter(p => p.price <= priceMax.value!)
+}
+
+async function loadProducts() {
+  loading.value = true
+  try {
+    const params: Record<string, any> = {
+      page: currentPage.value,
+      pageSize: pageSize
+    }
+    if (activeCategory.value !== 'all') {
+      params.category = activeCategory.value
+    }
+    if (sortBy.value !== 'default') {
+      params.sort = sortBy.value
+    }
+    const res = await getProducts(params)
+    allProducts.value = res.items || []
+    totalCount.value = res.total || 0
+  } catch (error) {
+    console.error('加载商品列表失败:', error)
+    allProducts.value = []
+    totalCount.value = 0
+  } finally {
+    loading.value = false
   }
+}
 
-  // 品牌筛选（这里用标签模拟品牌，实际项目中按品牌字段过滤）
-  if (selectedBrands.value.length > 0) {
-    list = list.filter(p => selectedBrands.value.some(b => p.name.includes(b.charAt(0))))
-  }
+const totalPages = computed(() => Math.max(1, Math.ceil(totalCount.value / pageSize)))
 
-  // 排序
-  switch (sortBy.value) {
-    case 'sales':
-      list.sort((a, b) => b.sales - a.sales)
-      break
-    case 'price-asc':
-      list.sort((a, b) => a.price - b.price)
-      break
-    case 'price-desc':
-      list.sort((a, b) => b.price - a.price)
-      break
-    default:
-      break
-  }
-
-  return list
-})
-
-/** 总页数 */
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredProducts.value.length / pageSize)))
-
-/** 当前页显示的商品 */
 const pagedProducts = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredProducts.value.slice(start, start + pageSize)
+  return allProducts.value
 })
 
-/** 可见的分页按钮列表 */
 const visiblePages = computed(() => {
   const pages: number[] = []
   const total = totalPages.value
@@ -457,47 +344,46 @@ const visiblePages = computed(() => {
   }
 
   pages.push(1)
-  if (currentPage.value > 3) pages.push(-1) // 省略号
+  if (currentPage.value > 3) pages.push(-1)
 
   const start = Math.max(2, currentPage.value - 1)
   const end = Math.min(total - 1, currentPage.value + 1)
   for (let i = start; i <= end; i++) pages.push(i)
 
-  if (currentPage.value < total - 2) pages.push(-1) // 省略号
+  if (currentPage.value < total - 2) pages.push(-1)
   pages.push(total)
 
   return pages
 })
 
-/** 分类切换 */
 function onCategoryChange(key: string) {
   activeCategory.value = key
   currentPage.value = 1
+  loadProducts()
 }
 
-/** 排序变更 */
 function onSortChange() {
   currentPage.value = 1
+  loadProducts()
 }
 
-/** 价格筛选确认 */
 function onApplyPriceFilter() {
   currentPage.value = 1
+  loadProducts()
 }
 
-/** 品牌筛选变更 */
 function onBrandFilterChange() {
   currentPage.value = 1
+  loadProducts()
 }
 
-/** 分页跳转 */
 function onPageChange(page: number) {
   if (page < 1 || page > totalPages.value) return
   currentPage.value = page
+  loadProducts()
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-/** 获取角标文字 */
 function getBadgeText(tag: string): string {
   if (tag === 'new') return '新品'
   if (tag === 'hot') return '热卖'
@@ -505,7 +391,6 @@ function getBadgeText(tag: string): string {
   return ''
 }
 
-/** 获取角标样式类 */
 function getBadgeClass(tag: string): string {
   if (tag === 'new') return 'badge-new'
   if (tag === 'hot') return 'badge-hot'
@@ -513,17 +398,32 @@ function getBadgeClass(tag: string): string {
   return ''
 }
 
-/** 获取星星评分 */
 function getRatingStars(rating: number): string {
   const r = Math.round(rating)
   return '★'.repeat(r) + '☆'.repeat(5 - r)
 }
 
-/** 格式化销量 */
 function formatSales(n: number): string {
   if (n >= 10000) return (n / 10000).toFixed(1) + '万'
   return n.toLocaleString()
 }
+
+function formatPrice(price: number | string): string {
+  const p = Number(price) / 100
+  return p.toFixed(2)
+}
+
+function stripHtml(html: string): string {
+  if (!html) return ''
+  const div = document.createElement('div')
+  div.innerHTML = html
+  return div.textContent || div.innerText || ''
+}
+
+onMounted(() => {
+  loadCategories()
+  loadProducts()
+})
 </script>
 
 <style scoped>
@@ -1013,6 +913,41 @@ function formatSales(n: number): string {
   justify-content: space-between;
   font-size: 0.8125rem;
   color: var(--shop-muted-foreground);
+}
+
+/* ============================================
+   加载状态
+   ============================================ */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 0;
+  color: var(--shop-muted-foreground);
+  font-size: 0.875rem;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+.spinner-path {
+  stroke: var(--shop-primary);
+  stroke-dasharray: 60;
+  stroke-dashoffset: 30;
+  animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dash {
+  0% { stroke-dashoffset: 60; }
+  50% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -60; }
 }
 
 /* ============================================

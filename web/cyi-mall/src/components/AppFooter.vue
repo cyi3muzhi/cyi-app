@@ -7,8 +7,8 @@
       <div class="footer-grid">
         <!-- 品牌 -->
         <div class="footer-col">
-          <h4 class="footer-title">悦选商城</h4>
-          <p class="footer-desc">精选好物，悦享生活。我们致力于为每一位用户提供品质优良、价格实惠的购物体验。</p>
+          <h4 class="footer-title">{{ shopStore.shopName }}</h4>
+          <p class="footer-desc">{{ shopStore.shopDescription || '精选好物，悦享生活。我们致力于为每一位用户提供品质优良、价格实惠的购物体验。' }}</p>
         </div>
         <!-- 购物指南 -->
         <div class="footer-col">
@@ -40,11 +40,11 @@
             </li>
             <li>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              <span>400-888-9999</span>
+              <span>{{ shopStore.contactPhone || '400-888-9999' }}</span>
             </li>
             <li>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              <span>service@yuexuan.com</span>
+              <span>{{ shopStore.contactEmail || 'service@yuexuan.com' }}</span>
             </li>
           </ul>
         </div>
@@ -52,7 +52,7 @@
     </div>
     <div class="footer-bottom">
       <div class="container-shop footer-bottom-inner">
-        <span>&copy; 2026 悦选商城 YueXuan. All rights reserved.</span>
+        <span>&copy; 2026 {{ shopStore.shopName }}. All rights reserved.</span>
         <div class="footer-bottom-links">
           <a href="#">隐私政策</a>
           <a href="#">服务条款</a>
@@ -61,6 +61,12 @@
     </div>
   </footer>
 </template>
+
+<script setup lang="ts">
+import { useShopStore } from '@/store/shop'
+
+const shopStore = useShopStore()
+</script>
 
 <style scoped>
 .site-footer {

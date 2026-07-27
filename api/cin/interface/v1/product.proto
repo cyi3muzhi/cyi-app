@@ -81,6 +81,27 @@ message ProductItem {
   string category = 6;
   string status = 7;
   string image = 8;
+  int32 sales = 9;
+  int64 category_id = 10;
+  repeated string images = 11;
+  repeated SpecGroupInfo specs = 12;
+  repeated SkuInfo skus = 13;
+}
+
+message SpecGroupInfo {
+  int64 id = 1;
+  string name = 2;
+  repeated string values = 3;
+}
+
+message SkuInfo {
+  int64 id = 1;
+  string sku_code = 2;
+  int64 price = 3;
+  int32 stock = 4;
+  int32 sales = 5;
+  map<string, string> spec = 6;
+  string image = 7;
 }
 
 message GetProductRequest {

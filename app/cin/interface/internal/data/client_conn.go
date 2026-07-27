@@ -83,6 +83,25 @@ func NewProductServiceClient(r registry.Discovery, conf *conf.Server, auth *conf
 	return productRpc.NewProductClient(conn)
 }
 
+func NewCategoryServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) productRpc.CategoryClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.PRODUCT_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			ServiceKey:     auth.ServiceKey[grpc.PRODUCT_SERVICE],
+			Meter:          metric,
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.PRODUCT_SERVICE, err))
+	}
+	return productRpc.NewCategoryClient(conn)
+}
+
 func NewMarketingCouponServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) marketingV1.CouponServiceClient {
 	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
 		&ts.TransporterOpt{
@@ -119,4 +138,44 @@ func NewStockServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.A
 		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.PRODUCT_SERVICE, err))
 	}
 	return productRpc.NewStockClient(conn)
+}
+
+// NewAdminSettingsServiceClient 创建系统设置服务 gRPC 客户端
+func NewAdminSettingsServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) userRpc.AdminSettingsClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.USER_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			ServiceKey:     auth.ServiceKey[grpc.USER_SERVICE],
+			Meter:          metric,
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.USER_SERVICE, err))
+	}
+	return userRpc.NewAdminSettingsClient(conn)
+}
+
+// NewAdminBannerServiceClient 创建 Banner 管理服务 gRPC 客户端
+func NewAdminBannerServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) userRpc.AdminBannerClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.USER_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			ServiceKey:     auth.ServiceKey[grpc.USER_SERVICE],
+			Meter:          metric,
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.USER_SERVICE, err))
+	}
+	return userRpc.NewAdminBannerClient(conn)
 }
