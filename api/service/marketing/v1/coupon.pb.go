@@ -32,13 +32,15 @@ type Coupon struct {
 	Quantity      int32                  `protobuf:"varint,6,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	IssuedCount   int32                  `protobuf:"varint,7,opt,name=issued_count,json=issuedCount,proto3" json:"issued_count,omitempty"`
 	UsedCount     int32                  `protobuf:"varint,8,opt,name=used_count,json=usedCount,proto3" json:"used_count,omitempty"`
-	ValidStart    int64                  `protobuf:"varint,9,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"`
-	ValidEnd      int64                  `protobuf:"varint,10,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`
-	Status        int32                  `protobuf:"varint,11,opt,name=status,proto3" json:"status,omitempty"`
-	Enabled       bool                   `protobuf:"varint,12,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	CreateTime    int64                  `protobuf:"varint,13,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
-	UpdateTime    int64                  `protobuf:"varint,14,opt,name=update_time,json=updateTime,proto3" json:"update_time,omitempty"`
-	LimitPerUser  int32                  `protobuf:"varint,15,opt,name=limit_per_user,json=limitPerUser,proto3" json:"limit_per_user,omitempty"` // 每人限领数量，0=不限制
+	ValidType     int32                  `protobuf:"varint,9,opt,name=valid_type,json=validType,proto3" json:"valid_type,omitempty"`     // 有效期类型: 1-固定日期 2-领取后N天 3-永久有效
+	ValidDays     int32                  `protobuf:"varint,10,opt,name=valid_days,json=validDays,proto3" json:"valid_days,omitempty"`    // 领取后有效期天数，valid_type=2时有效
+	ValidStart    int64                  `protobuf:"varint,11,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"` // 有效期开始（Unix秒），valid_type=1时有效
+	ValidEnd      int64                  `protobuf:"varint,12,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`       // 有效期结束（Unix秒），valid_type=1时有效
+	Status        int32                  `protobuf:"varint,13,opt,name=status,proto3" json:"status,omitempty"`
+	Enabled       bool                   `protobuf:"varint,14,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	CreateTime    int64                  `protobuf:"varint,15,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
+	UpdateTime    int64                  `protobuf:"varint,16,opt,name=update_time,json=updateTime,proto3" json:"update_time,omitempty"`
+	LimitPerUser  int32                  `protobuf:"varint,17,opt,name=limit_per_user,json=limitPerUser,proto3" json:"limit_per_user,omitempty"` // 每人限领数量，0=不限制
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -129,6 +131,20 @@ func (x *Coupon) GetUsedCount() int32 {
 	return 0
 }
 
+func (x *Coupon) GetValidType() int32 {
+	if x != nil {
+		return x.ValidType
+	}
+	return 0
+}
+
+func (x *Coupon) GetValidDays() int32 {
+	if x != nil {
+		return x.ValidDays
+	}
+	return 0
+}
+
 func (x *Coupon) GetValidStart() int64 {
 	if x != nil {
 		return x.ValidStart
@@ -185,9 +201,11 @@ type CreateCouponRequest struct {
 	Value         int64                  `protobuf:"varint,3,opt,name=value,proto3" json:"value,omitempty"`
 	MinAmount     int64                  `protobuf:"varint,4,opt,name=min_amount,json=minAmount,proto3" json:"min_amount,omitempty"`
 	Quantity      int32                  `protobuf:"varint,5,opt,name=quantity,proto3" json:"quantity,omitempty"`
-	ValidStart    int64                  `protobuf:"varint,6,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"`
-	ValidEnd      int64                  `protobuf:"varint,7,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`
-	LimitPerUser  int32                  `protobuf:"varint,8,opt,name=limit_per_user,json=limitPerUser,proto3" json:"limit_per_user,omitempty"`
+	ValidType     int32                  `protobuf:"varint,6,opt,name=valid_type,json=validType,proto3" json:"valid_type,omitempty"`    // 有效期类型
+	ValidDays     int32                  `protobuf:"varint,7,opt,name=valid_days,json=validDays,proto3" json:"valid_days,omitempty"`    // 领取后有效期天数，valid_type=2时必填
+	ValidStart    int64                  `protobuf:"varint,8,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"` // 固定日期开始，valid_type=1时必填
+	ValidEnd      int64                  `protobuf:"varint,9,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`       // 固定日期结束，valid_type=1时必填
+	LimitPerUser  int32                  `protobuf:"varint,10,opt,name=limit_per_user,json=limitPerUser,proto3" json:"limit_per_user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -253,6 +271,20 @@ func (x *CreateCouponRequest) GetMinAmount() int64 {
 func (x *CreateCouponRequest) GetQuantity() int32 {
 	if x != nil {
 		return x.Quantity
+	}
+	return 0
+}
+
+func (x *CreateCouponRequest) GetValidType() int32 {
+	if x != nil {
+		return x.ValidType
+	}
+	return 0
+}
+
+func (x *CreateCouponRequest) GetValidDays() int32 {
+	if x != nil {
+		return x.ValidDays
 	}
 	return 0
 }
@@ -330,10 +362,12 @@ type UpdateCouponRequest struct {
 	Value         int64                  `protobuf:"varint,4,opt,name=value,proto3" json:"value,omitempty"`
 	MinAmount     int64                  `protobuf:"varint,5,opt,name=min_amount,json=minAmount,proto3" json:"min_amount,omitempty"`
 	Quantity      int32                  `protobuf:"varint,6,opt,name=quantity,proto3" json:"quantity,omitempty"`
-	ValidStart    int64                  `protobuf:"varint,7,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"`
-	ValidEnd      int64                  `protobuf:"varint,8,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`
-	Enabled       bool                   `protobuf:"varint,9,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	LimitPerUser  int32                  `protobuf:"varint,10,opt,name=limit_per_user,json=limitPerUser,proto3" json:"limit_per_user,omitempty"`
+	ValidType     int32                  `protobuf:"varint,7,opt,name=valid_type,json=validType,proto3" json:"valid_type,omitempty"`    // 有效期类型
+	ValidDays     int32                  `protobuf:"varint,8,opt,name=valid_days,json=validDays,proto3" json:"valid_days,omitempty"`    // 领取后有效期天数，valid_type=2时必填
+	ValidStart    int64                  `protobuf:"varint,9,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"` // 固定日期开始，valid_type=1时必填
+	ValidEnd      int64                  `protobuf:"varint,10,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`      // 固定日期结束，valid_type=1时必填
+	Enabled       bool                   `protobuf:"varint,11,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	LimitPerUser  int32                  `protobuf:"varint,12,opt,name=limit_per_user,json=limitPerUser,proto3" json:"limit_per_user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -406,6 +440,20 @@ func (x *UpdateCouponRequest) GetMinAmount() int64 {
 func (x *UpdateCouponRequest) GetQuantity() int32 {
 	if x != nil {
 		return x.Quantity
+	}
+	return 0
+}
+
+func (x *UpdateCouponRequest) GetValidType() int32 {
+	if x != nil {
+		return x.ValidType
+	}
+	return 0
+}
+
+func (x *UpdateCouponRequest) GetValidDays() int32 {
+	if x != nil {
+		return x.ValidDays
 	}
 	return 0
 }
@@ -1641,6 +1689,8 @@ type DistRecord struct {
 	UsedTime      int64                  `protobuf:"varint,5,opt,name=used_time,json=usedTime,proto3" json:"used_time,omitempty"`       // 使用时间
 	OrderId       int64                  `protobuf:"varint,6,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`          // 核销订单 ID
 	CreateTime    int64                  `protobuf:"varint,7,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"` // 领取时间
+	ValidStart    int64                  `protobuf:"varint,8,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"` // 实际有效期开始（Unix秒）
+	ValidEnd      int64                  `protobuf:"varint,9,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`       // 实际有效期结束（Unix秒），0=永久有效
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1724,6 +1774,20 @@ func (x *DistRecord) GetCreateTime() int64 {
 	return 0
 }
 
+func (x *DistRecord) GetValidStart() int64 {
+	if x != nil {
+		return x.ValidStart
+	}
+	return 0
+}
+
+func (x *DistRecord) GetValidEnd() int64 {
+	if x != nil {
+		return x.ValidEnd
+	}
+	return 0
+}
+
 type ListDistRecordsReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*DistRecord          `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
@@ -1780,7 +1844,7 @@ var File_api_service_marketing_v1_coupon_proto protoreflect.FileDescriptor
 
 const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\n" +
-	"%api/service/marketing/v1/coupon.proto\x12\x18api.service.marketing.v1\x1a\x17validate/validate.proto\"\xab\x03\n" +
+	"%api/service/marketing/v1/coupon.proto\x12\x18api.service.marketing.v1\x1a\x17validate/validate.proto\"\xe9\x03\n" +
 	"\x06Coupon\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
@@ -1791,31 +1855,40 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\bquantity\x18\x06 \x01(\x05R\bquantity\x12!\n" +
 	"\fissued_count\x18\a \x01(\x05R\vissuedCount\x12\x1d\n" +
 	"\n" +
-	"used_count\x18\b \x01(\x05R\tusedCount\x12\x1f\n" +
-	"\vvalid_start\x18\t \x01(\x03R\n" +
+	"used_count\x18\b \x01(\x05R\tusedCount\x12\x1d\n" +
+	"\n" +
+	"valid_type\x18\t \x01(\x05R\tvalidType\x12\x1d\n" +
+	"\n" +
+	"valid_days\x18\n" +
+	" \x01(\x05R\tvalidDays\x12\x1f\n" +
+	"\vvalid_start\x18\v \x01(\x03R\n" +
 	"validStart\x12\x1b\n" +
-	"\tvalid_end\x18\n" +
-	" \x01(\x03R\bvalidEnd\x12\x16\n" +
-	"\x06status\x18\v \x01(\x05R\x06status\x12\x18\n" +
-	"\aenabled\x18\f \x01(\bR\aenabled\x12\x1f\n" +
-	"\vcreate_time\x18\r \x01(\x03R\n" +
+	"\tvalid_end\x18\f \x01(\x03R\bvalidEnd\x12\x16\n" +
+	"\x06status\x18\r \x01(\x05R\x06status\x12\x18\n" +
+	"\aenabled\x18\x0e \x01(\bR\aenabled\x12\x1f\n" +
+	"\vcreate_time\x18\x0f \x01(\x03R\n" +
 	"createTime\x12\x1f\n" +
-	"\vupdate_time\x18\x0e \x01(\x03R\n" +
+	"\vupdate_time\x18\x10 \x01(\x03R\n" +
 	"updateTime\x12$\n" +
-	"\x0elimit_per_user\x18\x0f \x01(\x05R\flimitPerUser\"\xac\x02\n" +
+	"\x0elimit_per_user\x18\x11 \x01(\x05R\flimitPerUser\"\xe5\x02\n" +
 	"\x13CreateCouponRequest\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04name\x12\x1f\n" +
 	"\x04type\x18\x02 \x01(\x05B\v\xfaB\b\x1a\x060\x010\x020\x03R\x04type\x12\x1d\n" +
 	"\x05value\x18\x03 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x05value\x12\x1d\n" +
 	"\n" +
 	"min_amount\x18\x04 \x01(\x03R\tminAmount\x12#\n" +
-	"\bquantity\x18\x05 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\bquantity\x12(\n" +
-	"\vvalid_start\x18\x06 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\n" +
-	"validStart\x12$\n" +
-	"\tvalid_end\x18\a \x01(\x03B\a\xfaB\x04\"\x02 \x00R\bvalidEnd\x12$\n" +
-	"\x0elimit_per_user\x18\b \x01(\x05R\flimitPerUser\"0\n" +
+	"\bquantity\x18\x05 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\bquantity\x12*\n" +
+	"\n" +
+	"valid_type\x18\x06 \x01(\x05B\v\xfaB\b\x1a\x060\x010\x020\x03R\tvalidType\x12\x1d\n" +
+	"\n" +
+	"valid_days\x18\a \x01(\x05R\tvalidDays\x12\x1f\n" +
+	"\vvalid_start\x18\b \x01(\x03R\n" +
+	"validStart\x12\x1b\n" +
+	"\tvalid_end\x18\t \x01(\x03R\bvalidEnd\x12$\n" +
+	"\x0elimit_per_user\x18\n" +
+	" \x01(\x05R\flimitPerUser\"0\n" +
 	"\x11CreateCouponReply\x12\x1b\n" +
-	"\tcoupon_id\x18\x01 \x01(\x03R\bcouponId\"\xdf\x02\n" +
+	"\tcoupon_id\x18\x01 \x01(\x03R\bcouponId\"\x98\x03\n" +
 	"\x13UpdateCouponRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\x12\x1b\n" +
 	"\x04name\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04name\x12\x1f\n" +
@@ -1823,13 +1896,17 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\x05value\x18\x04 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x05value\x12\x1d\n" +
 	"\n" +
 	"min_amount\x18\x05 \x01(\x03R\tminAmount\x12#\n" +
-	"\bquantity\x18\x06 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\bquantity\x12(\n" +
-	"\vvalid_start\x18\a \x01(\x03B\a\xfaB\x04\"\x02 \x00R\n" +
-	"validStart\x12$\n" +
-	"\tvalid_end\x18\b \x01(\x03B\a\xfaB\x04\"\x02 \x00R\bvalidEnd\x12\x18\n" +
-	"\aenabled\x18\t \x01(\bR\aenabled\x12$\n" +
-	"\x0elimit_per_user\x18\n" +
-	" \x01(\x05R\flimitPerUser\"-\n" +
+	"\bquantity\x18\x06 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\bquantity\x12*\n" +
+	"\n" +
+	"valid_type\x18\a \x01(\x05B\v\xfaB\b\x1a\x060\x010\x020\x03R\tvalidType\x12\x1d\n" +
+	"\n" +
+	"valid_days\x18\b \x01(\x05R\tvalidDays\x12\x1f\n" +
+	"\vvalid_start\x18\t \x01(\x03R\n" +
+	"validStart\x12\x1b\n" +
+	"\tvalid_end\x18\n" +
+	" \x01(\x03R\bvalidEnd\x12\x18\n" +
+	"\aenabled\x18\v \x01(\bR\aenabled\x12$\n" +
+	"\x0elimit_per_user\x18\f \x01(\x05R\flimitPerUser\"-\n" +
 	"\x11UpdateCouponReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\".\n" +
 	"\x13DeleteCouponRequest\x12\x17\n" +
@@ -1910,7 +1987,7 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\x16ListDistRecordsRequest\x12$\n" +
 	"\tcoupon_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\bcouponId\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"\xbe\x01\n" +
+	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"\xfc\x01\n" +
 	"\n" +
 	"DistRecord\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x17\n" +
@@ -1920,7 +1997,10 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\tused_time\x18\x05 \x01(\x03R\busedTime\x12\x19\n" +
 	"\border_id\x18\x06 \x01(\x03R\aorderId\x12\x1f\n" +
 	"\vcreate_time\x18\a \x01(\x03R\n" +
-	"createTime\"h\n" +
+	"createTime\x12\x1f\n" +
+	"\vvalid_start\x18\b \x01(\x03R\n" +
+	"validStart\x12\x1b\n" +
+	"\tvalid_end\x18\t \x01(\x03R\bvalidEnd\"h\n" +
 	"\x14ListDistRecordsReply\x12:\n" +
 	"\x05items\x18\x01 \x03(\v2$.api.service.marketing.v1.DistRecordR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total2\xb7\n" +

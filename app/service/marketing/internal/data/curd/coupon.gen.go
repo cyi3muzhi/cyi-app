@@ -35,6 +35,8 @@ func newCoupon(db *gorm.DB) coupon {
 	_coupon.Quantity = field.NewInt32(tableName, "quantity")
 	_coupon.IssuedCount = field.NewInt32(tableName, "issued_count")
 	_coupon.UsedCount = field.NewInt32(tableName, "used_count")
+	_coupon.ValidType = field.NewInt32(tableName, "valid_type")
+	_coupon.ValidDays = field.NewInt32(tableName, "valid_days")
 	_coupon.ValidStart = field.NewInt64(tableName, "valid_start")
 	_coupon.ValidEnd = field.NewInt64(tableName, "valid_end")
 	_coupon.Status = field.NewInt32(tableName, "status")
@@ -61,6 +63,8 @@ type coupon struct {
 	Quantity     field.Int32
 	IssuedCount  field.Int32
 	UsedCount    field.Int32
+	ValidType    field.Int32
+	ValidDays    field.Int32
 	ValidStart   field.Int64
 	ValidEnd     field.Int64
 	Status       field.Int32
@@ -93,6 +97,8 @@ func (c *coupon) updateTableName(table string) *coupon {
 	c.Quantity = field.NewInt32(table, "quantity")
 	c.IssuedCount = field.NewInt32(table, "issued_count")
 	c.UsedCount = field.NewInt32(table, "used_count")
+	c.ValidType = field.NewInt32(table, "valid_type")
+	c.ValidDays = field.NewInt32(table, "valid_days")
 	c.ValidStart = field.NewInt64(table, "valid_start")
 	c.ValidEnd = field.NewInt64(table, "valid_end")
 	c.Status = field.NewInt32(table, "status")
@@ -114,7 +120,7 @@ func (c *coupon) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (c *coupon) fillFieldMap() {
-	c.fieldMap = make(map[string]field.Expr, 16)
+	c.fieldMap = make(map[string]field.Expr, 18)
 	c.fieldMap["id"] = c.ID
 	c.fieldMap["create_time"] = c.CreateTime
 	c.fieldMap["update_time"] = c.UpdateTime
@@ -126,6 +132,8 @@ func (c *coupon) fillFieldMap() {
 	c.fieldMap["quantity"] = c.Quantity
 	c.fieldMap["issued_count"] = c.IssuedCount
 	c.fieldMap["used_count"] = c.UsedCount
+	c.fieldMap["valid_type"] = c.ValidType
+	c.fieldMap["valid_days"] = c.ValidDays
 	c.fieldMap["valid_start"] = c.ValidStart
 	c.fieldMap["valid_end"] = c.ValidEnd
 	c.fieldMap["status"] = c.Status

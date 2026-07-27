@@ -18,6 +18,8 @@ type Coupon struct {
 	LimitPerUser int32
 	ValidStart   int64
 	ValidEnd     int64
+	ValidType    int32
+	ValidDays    int32
 	Status       int32
 	Enabled      bool
 	CreateTime   int64
@@ -35,13 +37,15 @@ type CouponStats struct {
 
 // DistRecord 发放记录（admin 展示用）
 type DistRecord struct {
-	ID        int64
-	UserID    int64
-	Source    string
-	Status    int32
-	UsedTime  int64
-	OrderID   int64
-	CreatedAt int64
+	ID         int64
+	UserID     int64
+	Source     string
+	Status     int32
+	UsedTime   int64
+	OrderID    int64
+	CreatedAt  int64
+	ValidStart int64
+	ValidEnd   int64
 }
 
 type CouponRepo interface {

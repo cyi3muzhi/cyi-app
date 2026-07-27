@@ -37,13 +37,15 @@ message Coupon {
   int32 quantity = 6;
   int32 issued_count = 7;
   int32 used_count = 8;
-  int64 valid_start = 9;
-  int64 valid_end = 10;
-  int32 status = 11;
-  bool enabled = 12;
-  int64 create_time = 13;
-  int64 update_time = 14;
-  int32 limit_per_user = 15; // 每人限领数量，0=不限制
+  int32 valid_type = 9;  // 有效期类型: 1-固定日期 2-领取后N天 3-永久有效
+  int32 valid_days = 10; // 领取后有效期天数，valid_type=2时有效
+  int64 valid_start = 11; // 有效期开始（Unix秒），valid_type=1时有效
+  int64 valid_end = 12;   // 有效期结束（Unix秒），valid_type=1时有效
+  int32 status = 13;
+  bool enabled = 14;
+  int64 create_time = 15;
+  int64 update_time = 16;
+  int32 limit_per_user = 17; // 每人限领数量，0=不限制
 }
 
 message CreateCouponRequest {
@@ -52,9 +54,11 @@ message CreateCouponRequest {
   int64 value = 3 [(validate.rules).int64 = {gt: 0}];
   int64 min_amount = 4;
   int32 quantity = 5 [(validate.rules).int32 = {gt: 0}];
-  int64 valid_start = 6 [(validate.rules).int64 = {gt: 0}];
-  int64 valid_end = 7 [(validate.rules).int64 = {gt: 0}];
-  int32 limit_per_user = 8;
+  int32 valid_type = 6 [(validate.rules).int32 = {in: [1, 2, 3]}]; // 有效期类型
+  int32 valid_days = 7; // 领取后有效期天数，valid_type=2时必填
+  int64 valid_start = 8; // 固定日期开始，valid_type=1时必填
+  int64 valid_end = 9;   // 固定日期结束，valid_type=1时必填
+  int32 limit_per_user = 10;
 }
 
 message CreateCouponReply {
@@ -68,10 +72,12 @@ message UpdateCouponRequest {
   int64 value = 4 [(validate.rules).int64 = {gt: 0}];
   int64 min_amount = 5;
   int32 quantity = 6 [(validate.rules).int32 = {gt: 0}];
-  int64 valid_start = 7 [(validate.rules).int64 = {gt: 0}];
-  int64 valid_end = 8 [(validate.rules).int64 = {gt: 0}];
-  bool enabled = 9;
-  int32 limit_per_user = 10;
+  int32 valid_type = 7 [(validate.rules).int32 = {in: [1, 2, 3]}]; // 有效期类型
+  int32 valid_days = 8; // 领取后有效期天数，valid_type=2时必填
+  int64 valid_start = 9; // 固定日期开始，valid_type=1时必填
+  int64 valid_end = 10;   // 固定日期结束，valid_type=1时必填
+  bool enabled = 11;
+  int32 limit_per_user = 12;
 }
 
 message UpdateCouponReply {
@@ -204,6 +210,8 @@ message DistRecord {
   int64 used_time = 5;     // 使用时间
   int64 order_id = 6;      // 核销订单 ID
   int64 create_time = 7;   // 领取时间
+  int64 valid_start = 8;   // 实际有效期开始（Unix秒）
+  int64 valid_end = 9;     // 实际有效期结束（Unix秒），0=永久有效
 }
 
 message ListDistRecordsReply {

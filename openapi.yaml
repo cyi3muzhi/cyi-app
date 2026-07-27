@@ -328,6 +328,7 @@ paths:
         get:
             tags:
                 - AdminCoupon
+            description: 获取优惠券列表，支持分页、状态筛选、关键词搜索和日期范围过滤
             operationId: AdminCoupon_ListCoupon
             parameters:
                 - name: page
@@ -366,6 +367,7 @@ paths:
         post:
             tags:
                 - AdminCoupon
+            description: 创建新优惠券，支持固定日期/领取后N天/永久有效三种有效期类型
             operationId: AdminCoupon_CreateCoupon
             requestBody:
                 content:
@@ -380,22 +382,11 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.CouponCreateReply'
-    /admin/v1/coupons/stats:
-        get:
-            tags:
-                - AdminCoupon
-            operationId: AdminCoupon_CouponStats
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/api.cin.admin.v1.CouponStatsReply'
     /admin/v1/coupons/{couponId}:
         get:
             tags:
                 - AdminCoupon
+            description: 根据ID获取单张优惠券详情
             operationId: AdminCoupon_GetCoupon
             parameters:
                 - name: couponId
@@ -413,6 +404,7 @@ paths:
         put:
             tags:
                 - AdminCoupon
+            description: 更新优惠券信息（名称、类型、面值、数量、有效期、启用状态等）
             operationId: AdminCoupon_UpdateCoupon
             parameters:
                 - name: couponId
@@ -436,6 +428,7 @@ paths:
         delete:
             tags:
                 - AdminCoupon
+            description: 删除优惠券（软删除）
             operationId: AdminCoupon_DeleteCoupon
             parameters:
                 - name: couponId
@@ -483,6 +476,7 @@ paths:
         post:
             tags:
                 - AdminCoupon
+            description: 切换优惠券状态（启用/停用）
             operationId: AdminCoupon_ToggleCouponStatus
             parameters:
                 - name: couponId
@@ -1880,6 +1874,7 @@ components:
             properties:
                 couponId:
                     type: string
+            description: 创建优惠券响应
         api.cin.admin.v1.CouponCreateRequest:
             type: object
             properties:
@@ -1894,23 +1889,32 @@ components:
                 quantity:
                     type: integer
                     format: int32
+                validType:
+                    type: integer
+                    format: int32
                 validStart:
                     type: string
                 validEnd:
                     type: string
+                validDays:
+                    type: integer
+                    format: int32
                 limitPerUser:
                     type: integer
                     format: int32
+            description: 创建优惠券请求
         api.cin.admin.v1.CouponDeleteReply:
             type: object
             properties:
                 success:
                     type: boolean
+            description: 删除优惠券响应
         api.cin.admin.v1.CouponGetReply:
             type: object
             properties:
                 coupon:
                     $ref: '#/components/schemas/api.cin.admin.v1.CouponItem'
+            description: 获取单个优惠券响应
         api.cin.admin.v1.CouponItem:
             type: object
             properties:
@@ -1952,6 +1956,13 @@ components:
                 limitPerUser:
                     type: integer
                     format: int32
+                validType:
+                    type: integer
+                    format: int32
+                validDays:
+                    type: integer
+                    format: int32
+            description: 优惠券信息
         api.cin.admin.v1.CouponListReply:
             type: object
             properties:
@@ -1962,6 +1973,7 @@ components:
                 total:
                     type: integer
                     format: int32
+            description: 优惠券列表响应
         api.cin.admin.v1.CouponRecordsReply:
             type: object
             properties:
@@ -1972,25 +1984,13 @@ components:
                 total:
                     type: integer
                     format: int32
-        api.cin.admin.v1.CouponStatsReply:
-            type: object
-            properties:
-                totalCount:
-                    type: integer
-                    format: int32
-                activeCount:
-                    type: integer
-                    format: int32
-                issuedCount:
-                    type: string
-                expiredCount:
-                    type: integer
-                    format: int32
+            description: 发放记录查询响应
         api.cin.admin.v1.CouponToggleStatusReply:
             type: object
             properties:
                 success:
                     type: boolean
+            description: 切换优惠券状态响应
         api.cin.admin.v1.CouponToggleStatusRequest:
             type: object
             properties:
@@ -1999,11 +1999,13 @@ components:
                 action:
                     type: integer
                     format: int32
+            description: 切换优惠券状态请求
         api.cin.admin.v1.CouponUpdateReply:
             type: object
             properties:
                 success:
                     type: boolean
+            description: 更新优惠券响应
         api.cin.admin.v1.CouponUpdateRequest:
             type: object
             properties:
@@ -2020,15 +2022,22 @@ components:
                 quantity:
                     type: integer
                     format: int32
+                validType:
+                    type: integer
+                    format: int32
                 validStart:
                     type: string
                 validEnd:
                     type: string
+                validDays:
+                    type: integer
+                    format: int32
                 enabled:
                     type: boolean
                 limitPerUser:
                     type: integer
                     format: int32
+            description: 更新优惠券请求
         api.cin.admin.v1.CreateCategoryReply:
             type: object
             properties:
@@ -2190,6 +2199,11 @@ components:
                     type: string
                 createTime:
                     type: string
+                validStart:
+                    type: string
+                validEnd:
+                    type: string
+            description: 优惠券发放记录
         api.cin.admin.v1.ExportOrderReply:
             type: object
             properties:
@@ -3392,6 +3406,7 @@ tags:
     - name: AdminCategory
       description: 管理后台 - 商品分类管理服务
     - name: AdminCoupon
+      description: 优惠券管理服务
     - name: AdminOrder
       description: 管理后台 - 订单管理服务
     - name: AdminProduct

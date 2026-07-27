@@ -109,7 +109,7 @@
             <div class="info-row">
               <div class="info-item">
                 <span class="info-label">有效期</span>
-                <span class="info-value date-value">{{ coupon.validStart }} ~ {{ coupon.validEnd }}</span>
+                <span class="info-value date-value">{{ formatValidity(coupon) }}</span>
               </div>
               <div class="info-item flex-1">
                 <span class="info-label">发放/使用</span>
@@ -332,7 +332,12 @@
             <span>有效期设置</span>
           </div>
           <div class="form-card-body">
-            <el-form-item prop="validDate">
+            <div class="valid-type-group">
+              <el-radio v-model="formData.validType" :label="1">固定日期</el-radio>
+              <el-radio v-model="formData.validType" :label="2">领取后N天</el-radio>
+              <el-radio v-model="formData.validType" :label="3">永久有效</el-radio>
+            </div>
+            <el-form-item prop="validDate" v-if="formData.validType === 1">
               <el-date-picker
                 v-model="formData.validDate"
                 type="daterange"
@@ -344,6 +349,23 @@
                 :popper-class="'date-popper-custom'"
               />
             </el-form-item>
+            <el-form-item prop="validDays" v-if="formData.validType === 2" class="valid-days-item">
+              <div class="valid-days-input">
+                <el-input-number
+                  v-model="formData.validDays"
+                  :min="1"
+                  :max="365"
+                  :precision="0"
+                  controls-position="right"
+                  class="valid-days-number"
+                />
+                <span class="valid-days-label">天</span>
+              </div>
+            </el-form-item>
+            <div v-if="formData.validType === 3" class="valid-forever">
+              <el-icon :color="typeColor.primary"><CircleCheck /></el-icon>
+              <span>该优惠券永久有效，无使用期限限制</span>
+            </div>
           </div>
         </div>
 
@@ -397,7 +419,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus, Search, ArrowDown, Ticket, Money, Discount, Coin,
-  InfoFilled, SetUp, Calendar, Switch, Check, EditPen
+  InfoFilled, SetUp, Calendar, Switch, Check, EditPen, CircleCheck
 } from '@element-plus/icons-vue'
 import {
   listCoupons, createCoupon, updateCoupon, deleteCoupon,
@@ -473,7 +495,9 @@ const formData = reactive({
   minAmount: 0,
   quantity: 100,
   limitPerUser: 0,
+  validType: 1,
   validDate: null as string[] | null,
+  validDays: 7,
   enabled: true
 })
 
@@ -483,6 +507,20 @@ const validateValue = (_rule: any, value: number, callback: Function) => {
     if (value < 1 || value > 99) return callback(new Error('折扣券面值范围为 1~99'))
   } else {
     if (value < 1) return callback(new Error('面值必须大于 0'))
+  }
+  callback()
+}
+
+const validateValidDate = (_rule: any, value: string[] | null, callback: Function) => {
+  if (formData.validType === 1 && (!value || value.length < 2)) {
+    return callback(new Error('请选择有效期日期'))
+  }
+  callback()
+}
+
+const validateValidDays = (_rule: any, value: number, callback: Function) => {
+  if (formData.validType === 2 && (value == null || value <= 0)) {
+    return callback(new Error('请输入有效天数'))
   }
   callback()
 }
@@ -498,7 +536,8 @@ const formRules = {
     { required: true, message: '请输入发放数量', trigger: 'blur' },
     { type: 'number', min: 1, message: '发放数量必须大于 0', trigger: 'blur' }
   ],
-  validDate: [{ required: true, message: '请选择有效期', trigger: 'change' }]
+  validDate: [{ validator: validateValidDate, trigger: 'change' }],
+  validDays: [{ validator: validateValidDays, trigger: 'blur' }]
 }
 
 /* ==================== 对话框辅助 ==================== */
@@ -545,7 +584,13 @@ const typeLabel = computed(() => {
 
 const conditionText = computed(() => {
   const parts: string[] = []
-  parts.push(formData.validDate && formData.validDate[0] ? `有效期 ${formData.validDate[0]} ~ ${formData.validDate[1] || ''}` : '')
+  if (formData.validType === 1) {
+    parts.push(formData.validDate && formData.validDate[0] ? `有效期 ${formData.validDate[0]} ~ ${formData.validDate[1] || ''}` : '')
+  } else if (formData.validType === 2) {
+    parts.push(`领取后 ${formData.validDays} 天有效`)
+  } else {
+    parts.push('永久有效')
+  }
   parts.push(formData.minAmount > 0 ? `满 ¥${formData.minAmount} 可用` : '无门槛')
   parts.push(formData.limitPerUser > 0 ? `每人限领 ${formData.limitPerUser} 张` : '不限领')
   return parts.filter(Boolean).join(' · ')
@@ -673,6 +718,17 @@ function statusLabel(status: string) {
   return map[status] || status
 }
 
+function formatValidity(coupon: CouponItem) {
+  const validType = coupon.validType || 1
+  if (validType === 2) {
+    return `领取后 ${coupon.validDays || 7} 天`
+  }
+  if (validType === 3) {
+    return '永久有效'
+  }
+  return `${coupon.validStart} ~ ${coupon.validEnd}`
+}
+
 function handleAdd() {
   isEditing.value = false
   editingId.value = null
@@ -682,7 +738,9 @@ function handleAdd() {
   formData.minAmount = 0
   formData.quantity = 100
   formData.limitPerUser = 0
+  formData.validType = 1
   formData.validDate = null
+  formData.validDays = 7
   formData.enabled = true
   dialogVisible.value = true
 }
@@ -697,7 +755,9 @@ function handleEdit(row: CouponItem) {
   formData.minAmount = row.minAmount
   formData.quantity = row.quantity
   formData.limitPerUser = row.limitPerUser
-  formData.validDate = [row.validStart, row.validEnd]
+  formData.validType = row.validType || 1
+  formData.validDate = row.validType === 1 ? [row.validStart, row.validEnd] : null
+  formData.validDays = row.validDays || 7
   formData.enabled = row.enabled ?? true
   dialogVisible.value = true
 }
@@ -721,19 +781,22 @@ async function handleSubmit() {
     submitting.value = true
     const [start, end] = formData.validDate || []
 
+    const submitData = {
+      name: formData.name,
+      type: formData.type,
+      value: formData.value,
+      minAmount: formData.minAmount,
+      quantity: formData.quantity,
+      limitPerUser: formData.limitPerUser,
+      validType: formData.validType,
+      validDays: formData.validDays,
+      validStart: formData.validType === 1 ? start : '',
+      validEnd: formData.validType === 1 ? end : '',
+      enabled: formData.enabled
+    }
+
     if (isEditing.value) {
-      const data = {
-        name: formData.name,
-        type: formData.type,
-        value: formData.value,
-        minAmount: formData.minAmount,
-        quantity: formData.quantity,
-        limitPerUser: formData.limitPerUser,
-        validStart: start,
-        validEnd: end,
-        enabled: formData.enabled
-      }
-      updateCoupon(editingId.value!, data).then(() => {
+      updateCoupon(editingId.value!, submitData).then(() => {
         ElMessage.success('优惠券已更新')
         dialogVisible.value = false
         loadCoupons()
@@ -744,17 +807,7 @@ async function handleSubmit() {
         submitting.value = false
       })
     } else {
-      const data = {
-        name: formData.name,
-        type: formData.type,
-        value: formData.value,
-        minAmount: formData.minAmount,
-        quantity: formData.quantity,
-        limitPerUser: formData.limitPerUser,
-        validStart: start,
-        validEnd: end
-      }
-      createCoupon(data).then(() => {
+      createCoupon(submitData).then(() => {
         ElMessage.success('优惠券已创建')
         dialogVisible.value = false
         loadCoupons()
@@ -1722,6 +1775,57 @@ onMounted(() => {
   border-radius: 50%;
   flex-shrink: 0;
   transition: background 0.4s ease;
+}
+
+/* 有效期类型选择器 */
+.valid-type-group {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.valid-type-group :deep(.el-radio__label) {
+  font-size: 0.8125rem;
+  color: var(--shop-foreground);
+}
+
+.valid-type-group :deep(.el-radio__input.is-checked .el-radio__inner) {
+  border-color: var(--shop-primary);
+  background: var(--shop-primary);
+}
+
+.valid-days-item {
+  margin-bottom: 0;
+}
+
+.valid-days-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 200px;
+}
+
+.valid-days-number {
+  width: 120px !important;
+}
+
+.valid-days-label {
+  font-size: 0.875rem;
+  color: var(--shop-muted-foreground);
+  font-weight: 500;
+}
+
+.valid-forever {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--shop-muted-foreground);
+  padding: 8px 0;
+}
+
+.valid-forever :deep(.el-icon) {
+  font-size: 18px;
 }
 
 /* 启用开关卡片 */

@@ -11,6 +11,10 @@ const (
 	CouponStatusPending = int32(2)
 	CouponStatusEnded   = int32(3)
 	CouponStatusVoided  = int32(4)
+
+	CouponValidTypeFixed   = int32(1) // 固定日期
+	CouponValidTypeDays    = int32(2) // 领取后N天
+	CouponValidTypeForever = int32(3) // 永久有效
 )
 
 type Coupon struct {
@@ -22,6 +26,8 @@ type Coupon struct {
 	Quantity     int32
 	IssuedCount  int32
 	UsedCount    int32
+	ValidType    int32 // 有效期类型
+	ValidDays    int32 // 领取后有效期天数
 	ValidStart   int64
 	ValidEnd     int64
 	Status       int32
@@ -47,6 +53,8 @@ type DistRecord struct {
 	UsedTime   int64
 	OrderID    int64
 	CreateTime int64
+	ValidStart int64
+	ValidEnd   int64
 }
 
 // UserCouponItem 用户领取的优惠券记录（含优惠券基本信息）
@@ -70,11 +78,18 @@ func (c *Coupon) ComputeStatus(now int64) int32 {
 	if c.Status == CouponStatusVoided {
 		return CouponStatusVoided
 	}
-	if now < c.ValidStart {
-		return CouponStatusPending
-	}
-	if now > c.ValidEnd {
-		return CouponStatusEnded
+	switch c.ValidType {
+	case CouponValidTypeFixed:
+		if now < c.ValidStart {
+			return CouponStatusPending
+		}
+		if now > c.ValidEnd {
+			return CouponStatusEnded
+		}
+	case CouponValidTypeForever:
+		return CouponStatusActive
+	case CouponValidTypeDays:
+		return CouponStatusActive
 	}
 	return CouponStatusActive
 }
@@ -95,8 +110,19 @@ func (c *Coupon) Validate() error {
 	if c.Quantity <= 0 {
 		return fmt.Errorf("coupon quantity must be positive")
 	}
-	if c.ValidStart > c.ValidEnd {
-		return fmt.Errorf("valid_start must be before valid_end")
+	if c.ValidType != CouponValidTypeFixed && c.ValidType != CouponValidTypeDays && c.ValidType != CouponValidTypeForever {
+		return fmt.Errorf("invalid valid_type: %d", c.ValidType)
+	}
+	if c.ValidType == CouponValidTypeFixed {
+		if c.ValidStart <= 0 || c.ValidEnd <= 0 {
+			return fmt.Errorf("valid_start and valid_end are required for fixed date type")
+		}
+		if c.ValidStart > c.ValidEnd {
+			return fmt.Errorf("valid_start must be before valid_end")
+		}
+	}
+	if c.ValidType == CouponValidTypeDays && c.ValidDays <= 0 {
+		return fmt.Errorf("valid_days must be positive for days type")
 	}
 	return nil
 }

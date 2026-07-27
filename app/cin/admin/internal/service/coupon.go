@@ -131,6 +131,8 @@ func (s *AdminService) CreateCoupon(ctx context.Context, req *adminv1.CouponCrea
 		MinAmount:    req.MinAmount,
 		Quantity:     req.Quantity,
 		LimitPerUser: req.LimitPerUser,
+		ValidType:    req.ValidType,
+		ValidDays:    req.ValidDays,
 		ValidStart:   parseTime(req.ValidStart),
 		ValidEnd:     parseTime(req.ValidEnd),
 		Enabled:      true,
@@ -154,6 +156,8 @@ func (s *AdminService) UpdateCoupon(ctx context.Context, req *adminv1.CouponUpda
 		MinAmount:    req.MinAmount,
 		Quantity:     req.Quantity,
 		LimitPerUser: req.LimitPerUser,
+		ValidType:    req.ValidType,
+		ValidDays:    req.ValidDays,
 		ValidStart:   parseTime(req.ValidStart),
 		ValidEnd:     parseTime(req.ValidEnd),
 		Enabled:      req.Enabled,
@@ -203,6 +207,23 @@ func (s *AdminService) ToggleCouponStatus(ctx context.Context, req *adminv1.Coup
 }
 
 func bizToAdminProtoCoupon(c *biz.Coupon) *adminv1.CouponItem {
+	var validStartStr, validEndStr string
+	switch c.ValidType {
+	case 2:
+		validStartStr = ""
+		validEndStr = ""
+	case 3:
+		validStartStr = ""
+		validEndStr = ""
+	default:
+		if c.ValidStart > 0 {
+			validStartStr = time.Unix(c.ValidStart, 0).Format("2006-01-02")
+		}
+		if c.ValidEnd > 0 {
+			validEndStr = time.Unix(c.ValidEnd, 0).Format("2006-01-02")
+		}
+	}
+
 	return &adminv1.CouponItem{
 		Id:           c.ID,
 		Name:         c.Name,
@@ -213,23 +234,35 @@ func bizToAdminProtoCoupon(c *biz.Coupon) *adminv1.CouponItem {
 		IssuedCount:  c.IssuedCount,
 		UsedCount:    c.UsedCount,
 		LimitPerUser: c.LimitPerUser,
-		ValidStart:   time.Unix(c.ValidStart, 0).Format("2006-01-02"),
-		ValidEnd:     time.Unix(c.ValidEnd, 0).Format("2006-01-02"),
+		ValidStart:   validStartStr,
+		ValidEnd:     validEndStr,
 		Status:       couponStatusText(c.Status),
 		Enabled:      c.Enabled,
 		CreateTime:   c.CreateTime,
 		UpdateTime:   c.UpdateTime,
+		ValidType:    c.ValidType,
+		ValidDays:    c.ValidDays,
 	}
 }
 
 func bizDistRecordsToProto(records []*biz.DistRecord) []*adminv1.DistRecord {
 	items := make([]*adminv1.DistRecord, 0, len(records))
 	for _, r := range records {
-		// 格式化发放时间
 		timeStr := ""
 		if r.CreatedAt > 0 {
 			timeStr = time.Unix(r.CreatedAt, 0).Format("2006-01-02 15:04:05")
 		}
+
+		validStartStr := ""
+		if r.ValidStart > 0 {
+			validStartStr = time.Unix(r.ValidStart, 0).Format("2006-01-02")
+		}
+
+		validEndStr := ""
+		if r.ValidEnd > 0 {
+			validEndStr = time.Unix(r.ValidEnd, 0).Format("2006-01-02")
+		}
+
 		items = append(items, &adminv1.DistRecord{
 			Id:         r.ID,
 			UserId:     r.UserID,
@@ -238,8 +271,10 @@ func bizDistRecordsToProto(records []*biz.DistRecord) []*adminv1.DistRecord {
 			UsedTime:   r.UsedTime,
 			OrderId:    r.OrderID,
 			Time:       timeStr,
-			User:       "", // 暂不查询用户名，后续补充
+			User:       "",
 			CreateTime: r.CreatedAt,
+			ValidStart: validStartStr,
+			ValidEnd:   validEndStr,
 		})
 	}
 	return items

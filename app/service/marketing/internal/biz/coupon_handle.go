@@ -55,6 +55,8 @@ func (uc *CouponUseCase) CreateCoupon(ctx context.Context, req *v1.CreateCouponR
 		Quantity:     req.Quantity,
 		IssuedCount:  0,
 		UsedCount:    0,
+		ValidType:    req.ValidType,
+		ValidDays:    req.ValidDays,
 		ValidStart:   req.ValidStart,
 		ValidEnd:     req.ValidEnd,
 		Enabled:      true,
@@ -90,6 +92,8 @@ func (uc *CouponUseCase) UpdateCoupon(ctx context.Context, req *v1.UpdateCouponR
 	coupon.Value = req.Value
 	coupon.MinAmount = req.MinAmount
 	coupon.Quantity = req.Quantity
+	coupon.ValidType = req.ValidType
+	coupon.ValidDays = req.ValidDays
 	coupon.ValidStart = req.ValidStart
 	coupon.ValidEnd = req.ValidEnd
 	coupon.Enabled = req.Enabled
@@ -181,6 +185,8 @@ func couponToProto(coupon *Coupon) *v1.Coupon {
 		Quantity:     coupon.Quantity,
 		IssuedCount:  coupon.IssuedCount,
 		UsedCount:    coupon.UsedCount,
+		ValidType:    coupon.ValidType,
+		ValidDays:    coupon.ValidDays,
 		ValidStart:   coupon.ValidStart,
 		ValidEnd:     coupon.ValidEnd,
 		Status:       coupon.Status,
@@ -225,13 +231,20 @@ func (uc *CouponUseCase) ClaimCoupon(ctx context.Context, req *v1.ClaimCouponReq
 		return nil, v1.ErrorCouponInvalidValue("coupon is disabled")
 	}
 
-	// 3. 检查有效期
+	// 3. 检查有效期（仅对固定日期类型）
 	now := time.Now().Unix()
-	if now < coupon.ValidStart {
-		return nil, v1.ErrorCouponInvalidValue("coupon not yet available")
-	}
-	if now > coupon.ValidEnd {
-		return nil, v1.ErrorCouponInvalidValue("coupon has expired")
+	switch coupon.ValidType {
+	case CouponValidTypeFixed:
+		if now < coupon.ValidStart {
+			return nil, v1.ErrorCouponInvalidValue("coupon not yet available")
+		}
+		if now > coupon.ValidEnd {
+			return nil, v1.ErrorCouponInvalidValue("coupon has expired")
+		}
+	case CouponValidTypeDays:
+		if coupon.ValidDays <= 0 {
+			return nil, v1.ErrorCouponInvalidValue("invalid valid_days")
+		}
 	}
 
 	// 4. 检查库存
@@ -300,25 +313,30 @@ func (uc *CouponUseCase) UseCoupon(ctx context.Context, req *v1.UseCouponRequest
 		return nil, v1.ErrorCouponInvalidValue("coupon already used or expired")
 	}
 
-	// 3. 检查有效期
+	// 3. 检查有效期（使用发放记录的有效期）
+	now := time.Now().Unix()
+	if record.ValidEnd > 0 && now > record.ValidEnd {
+		return nil, v1.ErrorCouponInvalidValue("coupon has expired")
+	}
+	if now < record.ValidStart {
+		return nil, v1.ErrorCouponInvalidValue("coupon not yet available")
+	}
+
+	// 4. 获取优惠券信息
 	coupon, err := uc.repo.GetCouponByID(ctx, record.CouponID)
 	if err != nil {
 		return nil, err
 	}
-	now := time.Now().Unix()
-	if now < coupon.ValidStart || now > coupon.ValidEnd {
-		return nil, v1.ErrorCouponInvalidValue("coupon is not valid")
-	}
 
-	// 4. 检查使用门槛
+	// 5. 检查使用门槛
 	if coupon.MinAmount > 0 && req.OrderAmount < coupon.MinAmount {
 		return nil, v1.ErrorCouponInvalidValue("order amount does not meet minimum")
 	}
 
-	// 5. 计算优惠金额
+	// 6. 计算优惠金额
 	discount := calculateDiscount(coupon.Type, coupon.Value, req.OrderAmount)
 
-	// 6. 核销
+	// 7. 核销
 	if err := uc.repo.UseCoupon(ctx, req.RecordId, req.UserId, req.OrderId); err != nil {
 		return nil, err
 	}
@@ -342,6 +360,8 @@ func (uc *CouponUseCase) ListDistRecords(ctx context.Context, req *v1.ListDistRe
 			UsedTime:   r.UsedTime,
 			OrderId:    r.OrderID,
 			CreateTime: r.CreateTime,
+			ValidStart: r.ValidStart,
+			ValidEnd:   r.ValidEnd,
 		})
 	}
 	return &v1.ListDistRecordsReply{Items: items, Total: total}, nil

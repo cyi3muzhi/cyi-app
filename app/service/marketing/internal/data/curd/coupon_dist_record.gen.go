@@ -34,6 +34,8 @@ func newCouponDistRecord(db *gorm.DB) couponDistRecord {
 	_couponDistRecord.Status = field.NewInt32(tableName, "status")
 	_couponDistRecord.UsedTime = field.NewInt64(tableName, "used_time")
 	_couponDistRecord.OrderID = field.NewInt64(tableName, "order_id")
+	_couponDistRecord.ValidStart = field.NewInt64(tableName, "valid_start")
+	_couponDistRecord.ValidEnd = field.NewInt64(tableName, "valid_end")
 
 	_couponDistRecord.fillFieldMap()
 
@@ -54,6 +56,8 @@ type couponDistRecord struct {
 	Status     field.Int32
 	UsedTime   field.Int64
 	OrderID    field.Int64
+	ValidStart field.Int64
+	ValidEnd   field.Int64
 
 	fieldMap map[string]field.Expr
 }
@@ -80,6 +84,8 @@ func (c *couponDistRecord) updateTableName(table string) *couponDistRecord {
 	c.Status = field.NewInt32(table, "status")
 	c.UsedTime = field.NewInt64(table, "used_time")
 	c.OrderID = field.NewInt64(table, "order_id")
+	c.ValidStart = field.NewInt64(table, "valid_start")
+	c.ValidEnd = field.NewInt64(table, "valid_end")
 
 	c.fillFieldMap()
 
@@ -96,7 +102,7 @@ func (c *couponDistRecord) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (c *couponDistRecord) fillFieldMap() {
-	c.fieldMap = make(map[string]field.Expr, 10)
+	c.fieldMap = make(map[string]field.Expr, 12)
 	c.fieldMap["id"] = c.ID
 	c.fieldMap["create_time"] = c.CreateTime
 	c.fieldMap["update_time"] = c.UpdateTime
@@ -107,6 +113,8 @@ func (c *couponDistRecord) fillFieldMap() {
 	c.fieldMap["status"] = c.Status
 	c.fieldMap["used_time"] = c.UsedTime
 	c.fieldMap["order_id"] = c.OrderID
+	c.fieldMap["valid_start"] = c.ValidStart
+	c.fieldMap["valid_end"] = c.ValidEnd
 }
 
 func (c couponDistRecord) clone(db *gorm.DB) couponDistRecord {

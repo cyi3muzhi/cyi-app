@@ -51,17 +51,21 @@ func (m *Coupon) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.LimitPerUser != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.LimitPerUser))
 		i--
-		dAtA[i] = 0x78
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x88
 	}
 	if m.UpdateTime != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.UpdateTime))
 		i--
-		dAtA[i] = 0x70
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x80
 	}
 	if m.CreateTime != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.CreateTime))
 		i--
-		dAtA[i] = 0x68
+		dAtA[i] = 0x78
 	}
 	if m.Enabled {
 		i--
@@ -71,20 +75,30 @@ func (m *Coupon) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 			dAtA[i] = 0
 		}
 		i--
-		dAtA[i] = 0x60
+		dAtA[i] = 0x70
 	}
 	if m.Status != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Status))
 		i--
-		dAtA[i] = 0x58
+		dAtA[i] = 0x68
 	}
 	if m.ValidEnd != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidEnd))
 		i--
-		dAtA[i] = 0x50
+		dAtA[i] = 0x60
 	}
 	if m.ValidStart != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidStart))
+		i--
+		dAtA[i] = 0x58
+	}
+	if m.ValidDays != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidDays))
+		i--
+		dAtA[i] = 0x50
+	}
+	if m.ValidType != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidType))
 		i--
 		dAtA[i] = 0x48
 	}
@@ -166,15 +180,25 @@ func (m *CreateCouponRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.LimitPerUser != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.LimitPerUser))
 		i--
-		dAtA[i] = 0x40
+		dAtA[i] = 0x50
 	}
 	if m.ValidEnd != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidEnd))
 		i--
-		dAtA[i] = 0x38
+		dAtA[i] = 0x48
 	}
 	if m.ValidStart != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidStart))
+		i--
+		dAtA[i] = 0x40
+	}
+	if m.ValidDays != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidDays))
+		i--
+		dAtA[i] = 0x38
+	}
+	if m.ValidType != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidType))
 		i--
 		dAtA[i] = 0x30
 	}
@@ -279,7 +303,7 @@ func (m *UpdateCouponRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.LimitPerUser != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.LimitPerUser))
 		i--
-		dAtA[i] = 0x50
+		dAtA[i] = 0x60
 	}
 	if m.Enabled {
 		i--
@@ -289,15 +313,25 @@ func (m *UpdateCouponRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 			dAtA[i] = 0
 		}
 		i--
-		dAtA[i] = 0x48
+		dAtA[i] = 0x58
 	}
 	if m.ValidEnd != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidEnd))
 		i--
-		dAtA[i] = 0x40
+		dAtA[i] = 0x50
 	}
 	if m.ValidStart != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidStart))
+		i--
+		dAtA[i] = 0x48
+	}
+	if m.ValidDays != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidDays))
+		i--
+		dAtA[i] = 0x40
+	}
+	if m.ValidType != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidType))
 		i--
 		dAtA[i] = 0x38
 	}
@@ -1382,6 +1416,16 @@ func (m *DistRecord) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.ValidEnd != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidEnd))
+		i--
+		dAtA[i] = 0x48
+	}
+	if m.ValidStart != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ValidStart))
+		i--
+		dAtA[i] = 0x40
+	}
 	if m.CreateTime != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.CreateTime))
 		i--
@@ -1503,6 +1547,12 @@ func (m *Coupon) SizeVT() (n int) {
 	if m.UsedCount != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.UsedCount))
 	}
+	if m.ValidType != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ValidType))
+	}
+	if m.ValidDays != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ValidDays))
+	}
 	if m.ValidStart != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.ValidStart))
 	}
@@ -1519,10 +1569,10 @@ func (m *Coupon) SizeVT() (n int) {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.CreateTime))
 	}
 	if m.UpdateTime != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(m.UpdateTime))
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.UpdateTime))
 	}
 	if m.LimitPerUser != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(m.LimitPerUser))
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.LimitPerUser))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -1549,6 +1599,12 @@ func (m *CreateCouponRequest) SizeVT() (n int) {
 	}
 	if m.Quantity != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.Quantity))
+	}
+	if m.ValidType != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ValidType))
+	}
+	if m.ValidDays != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ValidDays))
 	}
 	if m.ValidStart != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.ValidStart))
@@ -1600,6 +1656,12 @@ func (m *UpdateCouponRequest) SizeVT() (n int) {
 	}
 	if m.Quantity != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.Quantity))
+	}
+	if m.ValidType != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ValidType))
+	}
+	if m.ValidDays != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ValidDays))
 	}
 	if m.ValidStart != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.ValidStart))
@@ -2031,6 +2093,12 @@ func (m *DistRecord) SizeVT() (n int) {
 	if m.CreateTime != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.CreateTime))
 	}
+	if m.ValidStart != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ValidStart))
+	}
+	if m.ValidEnd != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ValidEnd))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -2250,6 +2318,44 @@ func (m *Coupon) UnmarshalVT(dAtA []byte) error {
 			}
 		case 9:
 			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidType", wireType)
+			}
+			m.ValidType = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValidType |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 10:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidDays", wireType)
+			}
+			m.ValidDays = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValidDays |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 11:
+			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ValidStart", wireType)
 			}
 			m.ValidStart = 0
@@ -2267,7 +2373,7 @@ func (m *Coupon) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
-		case 10:
+		case 12:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ValidEnd", wireType)
 			}
@@ -2286,7 +2392,7 @@ func (m *Coupon) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
-		case 11:
+		case 13:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
 			}
@@ -2305,7 +2411,7 @@ func (m *Coupon) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
-		case 12:
+		case 14:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Enabled", wireType)
 			}
@@ -2325,7 +2431,7 @@ func (m *Coupon) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.Enabled = bool(v != 0)
-		case 13:
+		case 15:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field CreateTime", wireType)
 			}
@@ -2344,7 +2450,7 @@ func (m *Coupon) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
-		case 14:
+		case 16:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field UpdateTime", wireType)
 			}
@@ -2363,7 +2469,7 @@ func (m *Coupon) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
-		case 15:
+		case 17:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LimitPerUser", wireType)
 			}
@@ -2543,6 +2649,44 @@ func (m *CreateCouponRequest) UnmarshalVT(dAtA []byte) error {
 			}
 		case 6:
 			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidType", wireType)
+			}
+			m.ValidType = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValidType |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidDays", wireType)
+			}
+			m.ValidDays = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValidDays |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 8:
+			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ValidStart", wireType)
 			}
 			m.ValidStart = 0
@@ -2560,7 +2704,7 @@ func (m *CreateCouponRequest) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
-		case 7:
+		case 9:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ValidEnd", wireType)
 			}
@@ -2579,7 +2723,7 @@ func (m *CreateCouponRequest) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
-		case 8:
+		case 10:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LimitPerUser", wireType)
 			}
@@ -2848,6 +2992,44 @@ func (m *UpdateCouponRequest) UnmarshalVT(dAtA []byte) error {
 			}
 		case 7:
 			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidType", wireType)
+			}
+			m.ValidType = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValidType |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 8:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidDays", wireType)
+			}
+			m.ValidDays = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValidDays |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 9:
+			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ValidStart", wireType)
 			}
 			m.ValidStart = 0
@@ -2865,7 +3047,7 @@ func (m *UpdateCouponRequest) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
-		case 8:
+		case 10:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ValidEnd", wireType)
 			}
@@ -2884,7 +3066,7 @@ func (m *UpdateCouponRequest) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
-		case 9:
+		case 11:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Enabled", wireType)
 			}
@@ -2904,7 +3086,7 @@ func (m *UpdateCouponRequest) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.Enabled = bool(v != 0)
-		case 10:
+		case 12:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LimitPerUser", wireType)
 			}
@@ -5355,6 +5537,44 @@ func (m *DistRecord) UnmarshalVT(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.CreateTime |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 8:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidStart", wireType)
+			}
+			m.ValidStart = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValidStart |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidEnd", wireType)
+			}
+			m.ValidEnd = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ValidEnd |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

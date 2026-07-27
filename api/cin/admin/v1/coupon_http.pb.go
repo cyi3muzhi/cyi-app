@@ -19,7 +19,6 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationAdminCouponCouponStats = "/api.cin.admin.v1.AdminCoupon/CouponStats"
 const OperationAdminCouponCreateCoupon = "/api.cin.admin.v1.AdminCoupon/CreateCoupon"
 const OperationAdminCouponDeleteCoupon = "/api.cin.admin.v1.AdminCoupon/DeleteCoupon"
 const OperationAdminCouponGetCoupon = "/api.cin.admin.v1.AdminCoupon/GetCoupon"
@@ -29,21 +28,25 @@ const OperationAdminCouponToggleCouponStatus = "/api.cin.admin.v1.AdminCoupon/To
 const OperationAdminCouponUpdateCoupon = "/api.cin.admin.v1.AdminCoupon/UpdateCoupon"
 
 type AdminCouponHTTPServer interface {
-	CouponStats(context.Context, *CouponStatsRequest) (*CouponStatsReply, error)
+	// CreateCoupon 创建新优惠券，支持固定日期/领取后N天/永久有效三种有效期类型
 	CreateCoupon(context.Context, *CouponCreateRequest) (*CouponCreateReply, error)
+	// DeleteCoupon 删除优惠券（软删除）
 	DeleteCoupon(context.Context, *CouponDeleteRequest) (*CouponDeleteReply, error)
+	// GetCoupon 根据ID获取单张优惠券详情
 	GetCoupon(context.Context, *CouponGetRequest) (*CouponGetReply, error)
+	// ListCoupon 获取优惠券列表，支持分页、状态筛选、关键词搜索和日期范围过滤
 	ListCoupon(context.Context, *CouponListRequest) (*CouponListReply, error)
 	// ListCouponRecords 获取优惠券发放记录（按需加载，展开行时调用）
 	ListCouponRecords(context.Context, *CouponRecordsRequest) (*CouponRecordsReply, error)
+	// ToggleCouponStatus 切换优惠券状态（启用/停用）
 	ToggleCouponStatus(context.Context, *CouponToggleStatusRequest) (*CouponToggleStatusReply, error)
+	// UpdateCoupon 更新优惠券信息（名称、类型、面值、数量、有效期、启用状态等）
 	UpdateCoupon(context.Context, *CouponUpdateRequest) (*CouponUpdateReply, error)
 }
 
 func RegisterAdminCouponHTTPServer(s *http.Server, srv AdminCouponHTTPServer) {
 	r := s.Route("/")
 	r.GET("/admin/v1/coupons", _AdminCoupon_ListCoupon0_HTTP_Handler(srv))
-	r.GET("/admin/v1/coupons/stats", _AdminCoupon_CouponStats0_HTTP_Handler(srv))
 	r.GET("/admin/v1/coupons/{coupon_id}", _AdminCoupon_GetCoupon0_HTTP_Handler(srv))
 	r.POST("/admin/v1/coupons", _AdminCoupon_CreateCoupon0_HTTP_Handler(srv))
 	r.PUT("/admin/v1/coupons/{coupon_id}", _AdminCoupon_UpdateCoupon0_HTTP_Handler(srv))
@@ -67,25 +70,6 @@ func _AdminCoupon_ListCoupon0_HTTP_Handler(srv AdminCouponHTTPServer) func(ctx h
 			return err
 		}
 		reply := out.(*CouponListReply)
-		return ctx.Result(200, reply)
-	}
-}
-
-func _AdminCoupon_CouponStats0_HTTP_Handler(srv AdminCouponHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in CouponStatsRequest
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationAdminCouponCouponStats)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.CouponStats(ctx, req.(*CouponStatsRequest))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*CouponStatsReply)
 		return ctx.Result(200, reply)
 	}
 }
@@ -229,14 +213,19 @@ func _AdminCoupon_ListCouponRecords0_HTTP_Handler(srv AdminCouponHTTPServer) fun
 }
 
 type AdminCouponHTTPClient interface {
-	CouponStats(ctx context.Context, req *CouponStatsRequest, opts ...http.CallOption) (rsp *CouponStatsReply, err error)
+	// CreateCoupon 创建新优惠券，支持固定日期/领取后N天/永久有效三种有效期类型
 	CreateCoupon(ctx context.Context, req *CouponCreateRequest, opts ...http.CallOption) (rsp *CouponCreateReply, err error)
+	// DeleteCoupon 删除优惠券（软删除）
 	DeleteCoupon(ctx context.Context, req *CouponDeleteRequest, opts ...http.CallOption) (rsp *CouponDeleteReply, err error)
+	// GetCoupon 根据ID获取单张优惠券详情
 	GetCoupon(ctx context.Context, req *CouponGetRequest, opts ...http.CallOption) (rsp *CouponGetReply, err error)
+	// ListCoupon 获取优惠券列表，支持分页、状态筛选、关键词搜索和日期范围过滤
 	ListCoupon(ctx context.Context, req *CouponListRequest, opts ...http.CallOption) (rsp *CouponListReply, err error)
 	// ListCouponRecords 获取优惠券发放记录（按需加载，展开行时调用）
 	ListCouponRecords(ctx context.Context, req *CouponRecordsRequest, opts ...http.CallOption) (rsp *CouponRecordsReply, err error)
+	// ToggleCouponStatus 切换优惠券状态（启用/停用）
 	ToggleCouponStatus(ctx context.Context, req *CouponToggleStatusRequest, opts ...http.CallOption) (rsp *CouponToggleStatusReply, err error)
+	// UpdateCoupon 更新优惠券信息（名称、类型、面值、数量、有效期、启用状态等）
 	UpdateCoupon(ctx context.Context, req *CouponUpdateRequest, opts ...http.CallOption) (rsp *CouponUpdateReply, err error)
 }
 
@@ -248,19 +237,7 @@ func NewAdminCouponHTTPClient(client *http.Client) AdminCouponHTTPClient {
 	return &AdminCouponHTTPClientImpl{client}
 }
 
-func (c *AdminCouponHTTPClientImpl) CouponStats(ctx context.Context, in *CouponStatsRequest, opts ...http.CallOption) (*CouponStatsReply, error) {
-	var out CouponStatsReply
-	pattern := "/admin/v1/coupons/stats"
-	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationAdminCouponCouponStats))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
+// CreateCoupon 创建新优惠券，支持固定日期/领取后N天/永久有效三种有效期类型
 func (c *AdminCouponHTTPClientImpl) CreateCoupon(ctx context.Context, in *CouponCreateRequest, opts ...http.CallOption) (*CouponCreateReply, error) {
 	var out CouponCreateReply
 	pattern := "/admin/v1/coupons"
@@ -274,6 +251,7 @@ func (c *AdminCouponHTTPClientImpl) CreateCoupon(ctx context.Context, in *Coupon
 	return &out, nil
 }
 
+// DeleteCoupon 删除优惠券（软删除）
 func (c *AdminCouponHTTPClientImpl) DeleteCoupon(ctx context.Context, in *CouponDeleteRequest, opts ...http.CallOption) (*CouponDeleteReply, error) {
 	var out CouponDeleteReply
 	pattern := "/admin/v1/coupons/{coupon_id}"
@@ -287,6 +265,7 @@ func (c *AdminCouponHTTPClientImpl) DeleteCoupon(ctx context.Context, in *Coupon
 	return &out, nil
 }
 
+// GetCoupon 根据ID获取单张优惠券详情
 func (c *AdminCouponHTTPClientImpl) GetCoupon(ctx context.Context, in *CouponGetRequest, opts ...http.CallOption) (*CouponGetReply, error) {
 	var out CouponGetReply
 	pattern := "/admin/v1/coupons/{coupon_id}"
@@ -300,6 +279,7 @@ func (c *AdminCouponHTTPClientImpl) GetCoupon(ctx context.Context, in *CouponGet
 	return &out, nil
 }
 
+// ListCoupon 获取优惠券列表，支持分页、状态筛选、关键词搜索和日期范围过滤
 func (c *AdminCouponHTTPClientImpl) ListCoupon(ctx context.Context, in *CouponListRequest, opts ...http.CallOption) (*CouponListReply, error) {
 	var out CouponListReply
 	pattern := "/admin/v1/coupons"
@@ -327,6 +307,7 @@ func (c *AdminCouponHTTPClientImpl) ListCouponRecords(ctx context.Context, in *C
 	return &out, nil
 }
 
+// ToggleCouponStatus 切换优惠券状态（启用/停用）
 func (c *AdminCouponHTTPClientImpl) ToggleCouponStatus(ctx context.Context, in *CouponToggleStatusRequest, opts ...http.CallOption) (*CouponToggleStatusReply, error) {
 	var out CouponToggleStatusReply
 	pattern := "/admin/v1/coupons/{coupon_id}/toggle"
@@ -340,6 +321,7 @@ func (c *AdminCouponHTTPClientImpl) ToggleCouponStatus(ctx context.Context, in *
 	return &out, nil
 }
 
+// UpdateCoupon 更新优惠券信息（名称、类型、面值、数量、有效期、启用状态等）
 func (c *AdminCouponHTTPClientImpl) UpdateCoupon(ctx context.Context, in *CouponUpdateRequest, opts ...http.CallOption) (*CouponUpdateReply, error) {
 	var out CouponUpdateReply
 	pattern := "/admin/v1/coupons/{coupon_id}"

@@ -40,6 +40,8 @@ func (r *couponRepo) CreateCoupon(ctx context.Context, in *biz.Coupon) error {
 		Quantity:     in.Quantity,
 		IssuedCount:  in.IssuedCount,
 		UsedCount:    in.UsedCount,
+		ValidType:    in.ValidType,
+		ValidDays:    in.ValidDays,
 		ValidStart:   in.ValidStart,
 		ValidEnd:     in.ValidEnd,
 		Status:       in.Status,
@@ -63,6 +65,8 @@ func (r *couponRepo) UpdateCoupon(ctx context.Context, in *biz.Coupon) error {
 			curd.Coupon.Value.Value(in.Value),
 			curd.Coupon.MinAmount.Value(in.MinAmount),
 			curd.Coupon.Quantity.Value(in.Quantity),
+			curd.Coupon.ValidType.Value(in.ValidType),
+			curd.Coupon.ValidDays.Value(in.ValidDays),
 			curd.Coupon.ValidStart.Value(in.ValidStart),
 			curd.Coupon.ValidEnd.Value(in.ValidEnd),
 			curd.Coupon.Enabled.Value(in.Enabled),
@@ -214,6 +218,8 @@ func modelToBiz(coupon *mod.Coupon) *biz.Coupon {
 		Quantity:     coupon.Quantity,
 		IssuedCount:  coupon.IssuedCount,
 		UsedCount:    coupon.UsedCount,
+		ValidType:    coupon.ValidType,
+		ValidDays:    coupon.ValidDays,
 		ValidStart:   coupon.ValidStart,
 		ValidEnd:     coupon.ValidEnd,
 		Status:       coupon.Status,
@@ -233,8 +239,8 @@ func modelToUserCouponItem(record *mod.CouponDistRecord, coupon *mod.Coupon) *bi
 		Type:         coupon.Type,
 		Value:        coupon.Value,
 		MinAmount:    coupon.MinAmount,
-		ValidStart:   coupon.ValidStart,
-		ValidEnd:     coupon.ValidEnd,
+		ValidStart:   record.ValidStart,
+		ValidEnd:     record.ValidEnd,
 		RecordStatus: record.Status,
 		UsedTime:     record.UsedTime,
 		OrderID:      record.OrderID,
@@ -285,7 +291,15 @@ func (r *couponRepo) ClaimCoupon(ctx context.Context, couponID, userID int64, so
 	var recordID int64
 
 	err := curd.Q.Transaction(func(tx *curd.Query) error {
-		// 1. 原子更新发放数量（带库存条件）
+		// 1. 查询优惠券信息（获取有效期配置）
+		coupon, err := tx.Coupon.WithContext(ctx).
+			Where(tx.Coupon.ID.Eq(couponID)).
+			First()
+		if err != nil {
+			return v1.ErrorCouponNotFound("coupon not found")
+		}
+
+		// 2. 原子更新发放数量（带库存条件）
 		result, err := tx.Coupon.WithContext(ctx).
 			Where(tx.Coupon.ID.Eq(couponID)).
 			Where(tx.Coupon.IssuedCount.LtCol(tx.Coupon.Quantity)).
@@ -297,12 +311,29 @@ func (r *couponRepo) ClaimCoupon(ctx context.Context, couponID, userID int64, so
 			return v1.ErrorCouponInvalidValue("coupon is sold out")
 		}
 
-		// 2. 创建发放记录
+		// 3. 根据有效期类型计算实际有效期
+		now := time.Now().Unix()
+		var validStart, validEnd int64
+		switch coupon.ValidType {
+		case biz.CouponValidTypeFixed:
+			validStart = coupon.ValidStart
+			validEnd = coupon.ValidEnd
+		case biz.CouponValidTypeDays:
+			validStart = now
+			validEnd = now + int64(coupon.ValidDays)*24*60*60
+		case biz.CouponValidTypeForever:
+			validStart = now
+			validEnd = 0 // 0表示永久有效
+		}
+
+		// 4. 创建发放记录
 		record := &mod.CouponDistRecord{
-			CouponID: couponID,
-			UserID:   userID,
-			Source:   source,
-			Status:   0, // 未使用
+			CouponID:   couponID,
+			UserID:     userID,
+			Source:     source,
+			Status:     0, // 未使用
+			ValidStart: validStart,
+			ValidEnd:   validEnd,
 		}
 		if err := tx.CouponDistRecord.WithContext(ctx).Create(record); err != nil {
 			return err
@@ -410,28 +441,16 @@ func (r *couponRepo) UseCoupon(ctx context.Context, recordID, userID, orderID in
 }
 
 // BatchExpireCoupons 批量过期已过期的优惠券发放记录
-// 找出所有已过期（coupon.valid_end < now）但状态还是"未使用"的发放记录，批量更新状态为"已过期"
+// 找出所有已过期（record.valid_end < now 且 valid_end > 0）但状态还是"未使用"的发放记录，批量更新状态为"已过期"
 func (r *couponRepo) BatchExpireCoupons(ctx context.Context, batchSize int64) (int32, error) {
 	now := time.Now().Unix()
 
-	// 子查询：找出已过期的优惠券ID列表
-	var expiredCouponIDs []int64
-	err := curd.Q.Coupon.WithContext(ctx).
-		Select(curd.Coupon.ID).
-		Where(curd.Coupon.ValidEnd.Lt(now)).
-		Scan(&expiredCouponIDs)
-	if err != nil {
-		return 0, err
-	}
-
-	if len(expiredCouponIDs) == 0 {
-		return 0, nil
-	}
-
 	// 批量更新状态为"已过期"（status=2），限制处理数量
+	// valid_end=0 表示永久有效，不过期
 	result, err := curd.Q.CouponDistRecord.WithContext(ctx).
-		Where(curd.CouponDistRecord.CouponID.In(expiredCouponIDs...)).
-		Where(curd.CouponDistRecord.Status.Eq(0)). // 仅更新未使用的
+		Where(curd.CouponDistRecord.ValidEnd.Gt(0)).       // 排除永久有效
+		Where(curd.CouponDistRecord.ValidEnd.Lt(now)).     // 已过期
+		Where(curd.CouponDistRecord.Status.Eq(0)).         // 仅更新未使用的
 		Where(curd.CouponDistRecord.UsedTime.Eq(0)).
 		Limit(int(batchSize)).
 		UpdateColumn(curd.CouponDistRecord.Status, 2) // 已过期
@@ -459,16 +478,45 @@ func (r *couponRepo) ListDistRecords(ctx context.Context, couponID int64, page, 
 		return nil, 0, err
 	}
 
+	coupon, err := curd.Q.Coupon.WithContext(ctx).Where(curd.Coupon.ID.Eq(couponID)).First()
+	if err != nil {
+		return nil, 0, err
+	}
+
 	items := make([]*biz.DistRecord, 0, len(records))
-	for _, r := range records {
+	for _, rec := range records {
+		validStart := rec.ValidStart
+		validEnd := rec.ValidEnd
+
+		if validStart == 0 {
+			switch coupon.ValidType {
+			case biz.CouponValidTypeFixed:
+				validStart = coupon.ValidStart
+				validEnd = coupon.ValidEnd
+			case biz.CouponValidTypeDays:
+				validStart = rec.CreateTime
+				if coupon.ValidDays > 0 {
+					validEnd = rec.CreateTime + int64(coupon.ValidDays)*24*60*60
+				}
+			case biz.CouponValidTypeForever:
+				validStart = rec.CreateTime
+				validEnd = 0
+			default:
+				validStart = rec.CreateTime
+				validEnd = coupon.ValidEnd
+			}
+		}
+
 		items = append(items, &biz.DistRecord{
-			ID:         r.ID,
-			UserID:     r.UserID,
-			Source:     r.Source,
-			Status:     r.Status,
-			UsedTime:   r.UsedTime,
-			OrderID:    r.OrderID,
-			CreateTime: r.CreateTime,
+			ID:         rec.ID,
+			UserID:     rec.UserID,
+			Source:     rec.Source,
+			Status:     rec.Status,
+			UsedTime:   rec.UsedTime,
+			OrderID:    rec.OrderID,
+			CreateTime: rec.CreateTime,
+			ValidStart: validStart,
+			ValidEnd:   validEnd,
 		})
 	}
 	return items, int32(total), nil

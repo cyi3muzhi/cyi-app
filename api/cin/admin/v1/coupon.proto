@@ -9,39 +9,41 @@ option java_package = "api.cin.admin.v1";
 import "validate/validate.proto";
 import "google/api/annotations.proto";
 
+// 优惠券管理服务
 service AdminCoupon {
+  // 获取优惠券列表，支持分页、状态筛选、关键词搜索和日期范围过滤
   rpc ListCoupon (CouponListRequest) returns (CouponListReply) {
     option (google.api.http) = {
       get: "/admin/v1/coupons"
     };
   }
-  rpc CouponStats (CouponStatsRequest) returns (CouponStatsReply) {
-    option (google.api.http) = {
-      get: "/admin/v1/coupons/stats"
-    };
-  }
+  // 根据ID获取单张优惠券详情
   rpc GetCoupon (CouponGetRequest) returns (CouponGetReply) {
     option (google.api.http) = {
       get: "/admin/v1/coupons/{coupon_id}"
     };
   }
+  // 创建新优惠券，支持固定日期/领取后N天/永久有效三种有效期类型
   rpc CreateCoupon (CouponCreateRequest) returns (CouponCreateReply) {
     option (google.api.http) = {
       post: "/admin/v1/coupons"
       body: "*"
     };
   }
+  // 更新优惠券信息（名称、类型、面值、数量、有效期、启用状态等）
   rpc UpdateCoupon (CouponUpdateRequest) returns (CouponUpdateReply) {
     option (google.api.http) = {
       put: "/admin/v1/coupons/{coupon_id}"
       body: "*"
     };
   }
+  // 删除优惠券（软删除）
   rpc DeleteCoupon (CouponDeleteRequest) returns (CouponDeleteReply) {
     option (google.api.http) = {
       delete: "/admin/v1/coupons/{coupon_id}"
     };
   }
+  // 切换优惠券状态（启用/停用）
   rpc ToggleCouponStatus (CouponToggleStatusRequest) returns (CouponToggleStatusReply) {
     option (google.api.http) = {
       post: "/admin/v1/coupons/{coupon_id}/toggle"
@@ -56,125 +58,150 @@ service AdminCoupon {
   }
 }
 
+// 优惠券信息
 message CouponItem {
   int64 id = 1;
-  string name = 2;
-  string type = 3;
-  int64 value = 4;
-  int64 min_amount = 5;
-  int32 quantity = 6;
-  int32 issued_count = 7;
-  int32 used_count = 8;
-  string valid_start = 9;
-  string valid_end = 10;
-  string status = 11;
-  bool enabled = 12;
-  int64 create_time = 13;
-  int64 update_time = 14;
-  repeated DistRecord dist_records = 15;
-  int32 limit_per_user = 16;
+  string name = 2; // 优惠券名称
+  string type = 3; // 优惠类型：立减/折扣/满减
+  int64 value = 4; // 面值（金额/折扣值）
+  int64 min_amount = 5; // 使用门槛，0=无门槛
+  int32 quantity = 6; // 发放数量
+  int32 issued_count = 7; // 已发放数量
+  int32 used_count = 8; // 已使用数量
+  string valid_start = 9; // 有效期开始（固定日期类型时有效）
+  string valid_end = 10; // 有效期结束（固定日期类型时有效）
+  string status = 11; // 状态：进行中/未开始/已结束/已作废
+  bool enabled = 12; // 启用状态
+  int64 create_time = 13; // 创建时间（Unix秒）
+  int64 update_time = 14; // 更新时间（Unix秒）
+  repeated DistRecord dist_records = 15; // 发放记录（可选，按需加载）
+  int32 limit_per_user = 16; // 每人限领张数，0=不限
+  int32 valid_type = 17; // 有效期类型：1-固定日期 2-领取后N天 3-永久有效
+  int32 valid_days = 18; // 领取后有效期天数（valid_type=2时有效）
 }
 
+// 优惠券发放记录
 message DistRecord {
   int64 id = 1;
-  int64 user_id = 2;
-  string source = 3;
-  string status = 4;
-  int64 used_time = 5;
-  int64 order_id = 6;
-  string time = 7;      // 发放时间（格式化显示）
-  string user = 8;      // 领取用户（显示用）
-  int64 create_time = 9;
+  int64 user_id = 2; // 领取用户 ID
+  string source = 3; // 领取来源
+  string status = 4; // 状态：未使用/已使用/已过期
+  int64 used_time = 5; // 使用时间（Unix秒）
+  int64 order_id = 6; // 核销订单 ID
+  string time = 7; // 发放时间（格式化显示）
+  string user = 8; // 领取用户（显示用）
+  int64 create_time = 9; // 领取时间（Unix秒）
+  string valid_start = 10; // 实际有效期开始
+  string valid_end = 11; // 实际有效期结束，空=永久有效
 }
 
+// 优惠券列表查询参数
 message CouponListRequest {
-  int32 page = 1;
-  int32 page_size = 2;
-  string status = 3;
-  string keyword = 4;
-  string date_from = 5;
-  string date_to = 6;
+  int32 page = 1; // 页码，默认1
+  int32 page_size = 2; // 每页数量，默认20
+  string status = 3; // 状态筛选：进行中/未开始/已结束/已作废
+  string keyword = 4; // 关键词搜索（名称模糊匹配）
+  string date_from = 5; // 创建日期范围-开始
+  string date_to = 6; // 创建日期范围-结束
 }
 
+// 优惠券列表响应
 message CouponListReply {
-  repeated CouponItem items = 1;
-  int32 total = 2;
+  repeated CouponItem items = 1; // 优惠券列表
+  int32 total = 2; // 总记录数
 }
 
+// 获取单个优惠券请求
 message CouponGetRequest {
   int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// 获取单个优惠券响应
 message CouponGetReply {
   CouponItem coupon = 1;
 }
 
+// 创建优惠券请求
 message CouponCreateRequest {
-  string name = 1 [(validate.rules).string.min_len = 1];
-  string type = 2 [(validate.rules).string.min_len = 1];
-  int64 value = 3 [(validate.rules).int64 = {gt: 0}];
-  int64 min_amount = 4;
-  int32 quantity = 5 [(validate.rules).int32 = {gt: 0}];
-  string valid_start = 6 [(validate.rules).string.min_len = 1];
-  string valid_end = 7 [(validate.rules).string.min_len = 1];
-  int32 limit_per_user = 11;
+  string name = 1 [(validate.rules).string.min_len = 1]; // 优惠券名称
+  string type = 2 [(validate.rules).string.min_len = 1]; // 优惠类型：立减/折扣/满减
+  int64 value = 3 [(validate.rules).int64 = {gt: 0}]; // 面值
+  int64 min_amount = 4; // 使用门槛，0=无门槛
+  int32 quantity = 5 [(validate.rules).int32 = {gt: 0}]; // 发放数量
+  int32 valid_type = 6 [(validate.rules).int32 = {in: [1,2,3]}]; // 有效期类型：1-固定日期 2-领取后N天 3-永久有效
+  string valid_start = 7; // 有效期开始（valid_type=1时必填）
+  string valid_end = 8; // 有效期结束（valid_type=1时必填）
+  int32 valid_days = 9; // 领取后有效天数（valid_type=2时必填）
+  int32 limit_per_user = 10; // 每人限领张数，0=不限
 }
 
+// 创建优惠券响应
 message CouponCreateReply {
-  int64 coupon_id = 1;
+  int64 coupon_id = 1; // 新创建的优惠券 ID
 }
 
+// 更新优惠券请求
 message CouponUpdateRequest {
-  int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
-  string name = 2;
-  string type = 3;
-  int64 value = 4;
-  int64 min_amount = 5;
-  int32 quantity = 6;
-  string valid_start = 7;
-  string valid_end = 8;
-  bool enabled = 9;
-  int32 limit_per_user = 10;
+  int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}]; // 优惠券 ID
+  string name = 2; // 优惠券名称
+  string type = 3; // 优惠类型
+  int64 value = 4; // 面值
+  int64 min_amount = 5; // 使用门槛
+  int32 quantity = 6; // 发放数量
+  int32 valid_type = 7; // 有效期类型
+  string valid_start = 8; // 有效期开始
+  string valid_end = 9; // 有效期结束
+  int32 valid_days = 10; // 领取后有效天数
+  bool enabled = 11; // 启用状态
+  int32 limit_per_user = 12; // 每人限领张数
 }
 
+// 更新优惠券响应
 message CouponUpdateReply {
   bool success = 1;
 }
 
+// 删除优惠券请求
 message CouponDeleteRequest {
   int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// 删除优惠券响应
 message CouponDeleteReply {
   bool success = 1;
 }
 
+// 切换优惠券状态请求
 message CouponToggleStatusRequest {
-  int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
-  int32 action = 2 [(validate.rules).int32 = {in: [1, 2]}];
+  int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}]; // 优惠券 ID
+  int32 action = 2 [(validate.rules).int32 = {in: [1, 2]}]; // 操作：1-启用 2-停用
 }
 
+// 切换优惠券状态响应
 message CouponToggleStatusReply {
   bool success = 1;
 }
 
+// 获取优惠券统计请求
 message CouponStatsRequest {}
 
+// 优惠券统计响应
 message CouponStatsReply {
-  int32 total_count = 1;
-  int32 active_count = 2;
-  int64 issued_count = 3;
-  int32 expired_count = 4;
+  int32 total_count = 1; // 优惠券总数
+  int32 active_count = 2; // 进行中的数量
+  int64 issued_count = 3; // 已发放数量
+  int32 expired_count = 4; // 已过期数量
 }
 
-// 发放记录查询（按需加载）
+// 发放记录查询请求
 message CouponRecordsRequest {
-  int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
-  int32 page = 2;
-  int32 page_size = 3;
+  int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}]; // 优惠券 ID
+  int32 page = 2; // 页码
+  int32 page_size = 3; // 每页数量
 }
 
+// 发放记录查询响应
 message CouponRecordsReply {
-  repeated DistRecord items = 1;
-  int32 total = 2;
+  repeated DistRecord items = 1; // 发放记录列表
+  int32 total = 2; // 总记录数
 }

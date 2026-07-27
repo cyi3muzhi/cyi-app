@@ -20,7 +20,6 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	AdminCoupon_ListCoupon_FullMethodName         = "/api.cin.admin.v1.AdminCoupon/ListCoupon"
-	AdminCoupon_CouponStats_FullMethodName        = "/api.cin.admin.v1.AdminCoupon/CouponStats"
 	AdminCoupon_GetCoupon_FullMethodName          = "/api.cin.admin.v1.AdminCoupon/GetCoupon"
 	AdminCoupon_CreateCoupon_FullMethodName       = "/api.cin.admin.v1.AdminCoupon/CreateCoupon"
 	AdminCoupon_UpdateCoupon_FullMethodName       = "/api.cin.admin.v1.AdminCoupon/UpdateCoupon"
@@ -32,13 +31,20 @@ const (
 // AdminCouponClient is the client API for AdminCoupon service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// 优惠券管理服务
 type AdminCouponClient interface {
+	// 获取优惠券列表，支持分页、状态筛选、关键词搜索和日期范围过滤
 	ListCoupon(ctx context.Context, in *CouponListRequest, opts ...grpc.CallOption) (*CouponListReply, error)
-	CouponStats(ctx context.Context, in *CouponStatsRequest, opts ...grpc.CallOption) (*CouponStatsReply, error)
+	// 根据ID获取单张优惠券详情
 	GetCoupon(ctx context.Context, in *CouponGetRequest, opts ...grpc.CallOption) (*CouponGetReply, error)
+	// 创建新优惠券，支持固定日期/领取后N天/永久有效三种有效期类型
 	CreateCoupon(ctx context.Context, in *CouponCreateRequest, opts ...grpc.CallOption) (*CouponCreateReply, error)
+	// 更新优惠券信息（名称、类型、面值、数量、有效期、启用状态等）
 	UpdateCoupon(ctx context.Context, in *CouponUpdateRequest, opts ...grpc.CallOption) (*CouponUpdateReply, error)
+	// 删除优惠券（软删除）
 	DeleteCoupon(ctx context.Context, in *CouponDeleteRequest, opts ...grpc.CallOption) (*CouponDeleteReply, error)
+	// 切换优惠券状态（启用/停用）
 	ToggleCouponStatus(ctx context.Context, in *CouponToggleStatusRequest, opts ...grpc.CallOption) (*CouponToggleStatusReply, error)
 	// 获取优惠券发放记录（按需加载，展开行时调用）
 	ListCouponRecords(ctx context.Context, in *CouponRecordsRequest, opts ...grpc.CallOption) (*CouponRecordsReply, error)
@@ -56,16 +62,6 @@ func (c *adminCouponClient) ListCoupon(ctx context.Context, in *CouponListReques
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CouponListReply)
 	err := c.cc.Invoke(ctx, AdminCoupon_ListCoupon_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *adminCouponClient) CouponStats(ctx context.Context, in *CouponStatsRequest, opts ...grpc.CallOption) (*CouponStatsReply, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CouponStatsReply)
-	err := c.cc.Invoke(ctx, AdminCoupon_CouponStats_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -135,13 +131,20 @@ func (c *adminCouponClient) ListCouponRecords(ctx context.Context, in *CouponRec
 // AdminCouponServer is the server API for AdminCoupon service.
 // All implementations must embed UnimplementedAdminCouponServer
 // for forward compatibility.
+//
+// 优惠券管理服务
 type AdminCouponServer interface {
+	// 获取优惠券列表，支持分页、状态筛选、关键词搜索和日期范围过滤
 	ListCoupon(context.Context, *CouponListRequest) (*CouponListReply, error)
-	CouponStats(context.Context, *CouponStatsRequest) (*CouponStatsReply, error)
+	// 根据ID获取单张优惠券详情
 	GetCoupon(context.Context, *CouponGetRequest) (*CouponGetReply, error)
+	// 创建新优惠券，支持固定日期/领取后N天/永久有效三种有效期类型
 	CreateCoupon(context.Context, *CouponCreateRequest) (*CouponCreateReply, error)
+	// 更新优惠券信息（名称、类型、面值、数量、有效期、启用状态等）
 	UpdateCoupon(context.Context, *CouponUpdateRequest) (*CouponUpdateReply, error)
+	// 删除优惠券（软删除）
 	DeleteCoupon(context.Context, *CouponDeleteRequest) (*CouponDeleteReply, error)
+	// 切换优惠券状态（启用/停用）
 	ToggleCouponStatus(context.Context, *CouponToggleStatusRequest) (*CouponToggleStatusReply, error)
 	// 获取优惠券发放记录（按需加载，展开行时调用）
 	ListCouponRecords(context.Context, *CouponRecordsRequest) (*CouponRecordsReply, error)
@@ -157,9 +160,6 @@ type UnimplementedAdminCouponServer struct{}
 
 func (UnimplementedAdminCouponServer) ListCoupon(context.Context, *CouponListRequest) (*CouponListReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListCoupon not implemented")
-}
-func (UnimplementedAdminCouponServer) CouponStats(context.Context, *CouponStatsRequest) (*CouponStatsReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CouponStats not implemented")
 }
 func (UnimplementedAdminCouponServer) GetCoupon(context.Context, *CouponGetRequest) (*CouponGetReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCoupon not implemented")
@@ -214,24 +214,6 @@ func _AdminCoupon_ListCoupon_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminCouponServer).ListCoupon(ctx, req.(*CouponListRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AdminCoupon_CouponStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CouponStatsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AdminCouponServer).CouponStats(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AdminCoupon_CouponStats_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminCouponServer).CouponStats(ctx, req.(*CouponStatsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -354,10 +336,6 @@ var AdminCoupon_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListCoupon",
 			Handler:    _AdminCoupon_ListCoupon_Handler,
-		},
-		{
-			MethodName: "CouponStats",
-			Handler:    _AdminCoupon_CouponStats_Handler,
 		},
 		{
 			MethodName: "GetCoupon",

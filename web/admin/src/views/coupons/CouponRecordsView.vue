@@ -39,7 +39,7 @@
             </div>
             <div class="info-item">
               <span class="info-label">有效期</span>
-              <span class="info-value date-value">{{ couponInfo.validStart }} ~ {{ couponInfo.validEnd }}</span>
+              <span class="info-value date-value">{{ formatValidity(couponInfo) }}</span>
             </div>
           </div>
         </div>
@@ -95,6 +95,10 @@
             <div class="record-time" v-else>
               <span class="time-label">使用时间</span>
               <span class="time-value empty">暂未使用</span>
+            </div>
+            <div class="record-time">
+              <span class="time-label">有效期</span>
+              <span class="time-value date-value">{{ formatRecordValidity(record) }}</span>
             </div>
             <div class="record-order" v-if="record.orderId && record.orderId > 0">
               <span class="order-label">关联订单</span>
@@ -160,6 +164,23 @@ function formatTimestamp(ts: number) {
   const date = new Date(ts * 1000)
   const pad = (n: number) => n.toString().padStart(2, '0')
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
+
+function formatRecordValidity(record: DistRecord) {
+  if (!record.validStart) return '-'
+  if (!record.validEnd) return `${record.validStart} ~ 永久有效`
+  return `${record.validStart} ~ ${record.validEnd}`
+}
+
+function formatValidity(coupon: CouponItem) {
+  const validType = coupon.validType || 1
+  if (validType === 2) {
+    return `领取后 ${coupon.validDays || 7} 天`
+  }
+  if (validType === 3) {
+    return '永久有效'
+  }
+  return `${coupon.validStart} ~ ${coupon.validEnd}`
 }
 
 /* ==================== 优惠券信息 ==================== */

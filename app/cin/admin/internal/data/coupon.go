@@ -61,6 +61,8 @@ func (r *couponRepo) CreateCoupon(ctx context.Context, coupon *biz.Coupon) (*biz
 		MinAmount:    coupon.MinAmount,
 		Quantity:     coupon.Quantity,
 		LimitPerUser: coupon.LimitPerUser,
+		ValidType:    coupon.ValidType,
+		ValidDays:    coupon.ValidDays,
 		ValidStart:   coupon.ValidStart,
 		ValidEnd:     coupon.ValidEnd,
 	})
@@ -80,6 +82,8 @@ func (r *couponRepo) UpdateCoupon(ctx context.Context, couponID int64, coupon *b
 		MinAmount:    coupon.MinAmount,
 		Quantity:     coupon.Quantity,
 		LimitPerUser: coupon.LimitPerUser,
+		ValidType:    coupon.ValidType,
+		ValidDays:    coupon.ValidDays,
 		ValidStart:   coupon.ValidStart,
 		ValidEnd:     coupon.ValidEnd,
 		Enabled:      coupon.Enabled,
@@ -132,13 +136,15 @@ func (r *couponRepo) ListDistRecords(ctx context.Context, couponID int64, page, 
 	items := make([]*biz.DistRecord, 0, len(reply.Items))
 	for _, item := range reply.Items {
 		items = append(items, &biz.DistRecord{
-			ID:        item.Id,
-			UserID:    item.UserId,
-			Source:    item.Source,
-			Status:    item.Status,
-			UsedTime:  item.UsedTime,
-			OrderID:   item.OrderId,
-			CreatedAt: item.CreateTime,
+			ID:         item.Id,
+			UserID:     item.UserId,
+			Source:     item.Source,
+			Status:     item.Status,
+			UsedTime:   item.UsedTime,
+			OrderID:    item.OrderId,
+			CreatedAt:  item.CreateTime,
+			ValidStart: item.ValidStart,
+			ValidEnd:   item.ValidEnd,
 		})
 	}
 	return items, reply.Total, nil
@@ -157,6 +163,8 @@ func rpcToBizCoupon(c *marketingRpc.Coupon) *biz.Coupon {
 		LimitPerUser: c.LimitPerUser,
 		ValidStart:   c.ValidStart,
 		ValidEnd:     c.ValidEnd,
+		ValidType:    c.ValidType,
+		ValidDays:    c.ValidDays,
 		Status:       c.Status,
 		Enabled:      c.Enabled,
 		CreateTime:   c.CreateTime,
