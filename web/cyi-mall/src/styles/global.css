@@ -1,0 +1,90 @@
+/* ============================================
+   cyi-mall 全局样式
+   ============================================ */
+@import './variables.css';
+
+/* ---- Reset ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: var(--shop-font-sans);
+}
+
+body {
+  font-family: var(--shop-font-sans);
+  background: var(--shop-background);
+  color: var(--shop-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, select, textarea {
+  font-family: inherit;
+}
+
+/* ---- 滚动条美化 ---- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--shop-muted); }
+::-webkit-scrollbar-thumb { background: hsl(217, 13%, 80%); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(217, 13%, 65%); }
+
+/* ---- 工具类 ---- */
+.container-shop {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+@media (min-width: 768px) {
+  .container-shop { padding-left: 24px; padding-right: 24px; }
+}
+@media (min-width: 1024px) {
+  .container-shop { padding-left: 32px; padding-right: 32px; }
+}
+
+/* ---- 星星评分 ---- */
+.stars {
+  display: inline-flex;
+  gap: 1px;
+  color: hsl(38, 92%, 50%);
+  font-size: 0.8125rem;
+  letter-spacing: 1px;
+}
+
+/* ---- 文本截断 ---- */
+.desc-line-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---- 毛玻璃 ---- */
+.nav-blur {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
