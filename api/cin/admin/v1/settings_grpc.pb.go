@@ -21,6 +21,8 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Settings_GetSettings_FullMethodName    = "/api.cin.admin.v1.Settings/GetSettings"
 	Settings_UpdateSettings_FullMethodName = "/api.cin.admin.v1.Settings/UpdateSettings"
+	Settings_GetPreference_FullMethodName  = "/api.cin.admin.v1.Settings/GetPreference"
+	Settings_SavePreference_FullMethodName = "/api.cin.admin.v1.Settings/SavePreference"
 )
 
 // SettingsClient is the client API for Settings service.
@@ -33,6 +35,10 @@ type SettingsClient interface {
 	GetSettings(ctx context.Context, in *GetSettingsRequest, opts ...grpc.CallOption) (*GetSettingsReply, error)
 	// 更新系统设置
 	UpdateSettings(ctx context.Context, in *UpdateSettingsRequest, opts ...grpc.CallOption) (*UpdateSettingsReply, error)
+	// 获取当前用户偏好设置
+	GetPreference(ctx context.Context, in *GetPreferenceRequest, opts ...grpc.CallOption) (*GetPreferenceReply, error)
+	// 保存当前用户偏好设置
+	SavePreference(ctx context.Context, in *SavePreferenceRequest, opts ...grpc.CallOption) (*SavePreferenceReply, error)
 }
 
 type settingsClient struct {
@@ -63,6 +69,26 @@ func (c *settingsClient) UpdateSettings(ctx context.Context, in *UpdateSettingsR
 	return out, nil
 }
 
+func (c *settingsClient) GetPreference(ctx context.Context, in *GetPreferenceRequest, opts ...grpc.CallOption) (*GetPreferenceReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPreferenceReply)
+	err := c.cc.Invoke(ctx, Settings_GetPreference_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *settingsClient) SavePreference(ctx context.Context, in *SavePreferenceRequest, opts ...grpc.CallOption) (*SavePreferenceReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SavePreferenceReply)
+	err := c.cc.Invoke(ctx, Settings_SavePreference_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SettingsServer is the server API for Settings service.
 // All implementations must embed UnimplementedSettingsServer
 // for forward compatibility.
@@ -73,6 +99,10 @@ type SettingsServer interface {
 	GetSettings(context.Context, *GetSettingsRequest) (*GetSettingsReply, error)
 	// 更新系统设置
 	UpdateSettings(context.Context, *UpdateSettingsRequest) (*UpdateSettingsReply, error)
+	// 获取当前用户偏好设置
+	GetPreference(context.Context, *GetPreferenceRequest) (*GetPreferenceReply, error)
+	// 保存当前用户偏好设置
+	SavePreference(context.Context, *SavePreferenceRequest) (*SavePreferenceReply, error)
 	mustEmbedUnimplementedSettingsServer()
 }
 
@@ -88,6 +118,12 @@ func (UnimplementedSettingsServer) GetSettings(context.Context, *GetSettingsRequ
 }
 func (UnimplementedSettingsServer) UpdateSettings(context.Context, *UpdateSettingsRequest) (*UpdateSettingsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateSettings not implemented")
+}
+func (UnimplementedSettingsServer) GetPreference(context.Context, *GetPreferenceRequest) (*GetPreferenceReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreference not implemented")
+}
+func (UnimplementedSettingsServer) SavePreference(context.Context, *SavePreferenceRequest) (*SavePreferenceReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SavePreference not implemented")
 }
 func (UnimplementedSettingsServer) mustEmbedUnimplementedSettingsServer() {}
 func (UnimplementedSettingsServer) testEmbeddedByValue()                  {}
@@ -146,6 +182,42 @@ func _Settings_UpdateSettings_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Settings_GetPreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPreferenceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SettingsServer).GetPreference(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Settings_GetPreference_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SettingsServer).GetPreference(ctx, req.(*GetPreferenceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Settings_SavePreference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SavePreferenceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SettingsServer).SavePreference(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Settings_SavePreference_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SettingsServer).SavePreference(ctx, req.(*SavePreferenceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Settings_ServiceDesc is the grpc.ServiceDesc for Settings service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -160,6 +232,14 @@ var Settings_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateSettings",
 			Handler:    _Settings_UpdateSettings_Handler,
+		},
+		{
+			MethodName: "GetPreference",
+			Handler:    _Settings_GetPreference_Handler,
+		},
+		{
+			MethodName: "SavePreference",
+			Handler:    _Settings_SavePreference_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -1,0 +1,169 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+option java_multiple_files = true;
+option java_package = "api.cin.admin.v1";
+
+import "google/api/annotations.proto";
+
+// 管理后台 - AI 智能助手服务
+service Agent {
+  // 非流式聊天
+  rpc Chat (ChatRequest) returns (ChatReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/agent/chat"
+      body: "*"
+    };
+  }
+  // AI 生成商品描述
+  rpc GenerateDescription (GenerateDescriptionRequest) returns (GenerateDescriptionReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/agent/generate-description"
+      body: "*"
+    };
+  }
+  // AI 扩写商品描述
+  rpc ExpandDescription (ExpandDescriptionRequest) returns (ExpandDescriptionReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/agent/expand-description"
+      body: "*"
+    };
+  }
+  // AI 生成 Banner 文案
+  rpc GenerateBannerCopy (GenerateBannerCopyRequest) returns (GenerateBannerCopyReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/agent/generate-banner"
+      body: "*"
+    };
+  }
+  // AI 生成分类 SEO
+  rpc GenerateCategorySEO (GenerateCategorySEORequest) returns (GenerateCategorySEOReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/agent/generate-seo"
+      body: "*"
+    };
+  }
+  // AI 生成运营摘要
+  rpc GenerateSummary (GenerateSummaryRequest) returns (GenerateSummaryReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/agent/generate-summary"
+      body: "*"
+    };
+  }
+  // AI 推荐快捷提问
+  rpc SuggestQuestions (SuggestQuestionsRequest) returns (SuggestQuestionsReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/agent/suggest-questions"
+      body: "*"
+    };
+  }
+  // 获取聊天历史
+  rpc GetChatHistory (GetChatHistoryRequest) returns (GetChatHistoryReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/agent/chat/history"
+    };
+  }
+  // 清除聊天历史
+  rpc ClearChatHistory (ClearChatHistoryRequest) returns (ClearChatHistoryReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/agent/chat/clear"
+      body: "*"
+    };
+  }
+}
+
+message ChatRequest {
+  string message = 1;
+}
+
+message ChatReply {
+  string response = 1;
+}
+
+message GenerateDescriptionRequest {
+  string product_name = 1;
+  string category = 2;
+  string specs = 3;
+}
+
+message GenerateDescriptionReply {
+  string description = 1;
+}
+
+message ExpandDescriptionRequest {
+  string product_name = 1;
+  string content = 2;
+}
+
+message ExpandDescriptionReply {
+  string description = 1;
+}
+
+message GenerateBannerCopyRequest {
+  string topic = 1;
+  string subtitle = 2;
+}
+
+message BannerCopyOption {
+  string title = 1;
+  string subtitle = 2;
+  string btn_text = 3;
+}
+
+message GenerateBannerCopyReply {
+  repeated BannerCopyOption options = 1;
+}
+
+message GenerateCategorySEORequest {
+  string category_name = 1;
+  string description = 2;
+}
+
+message GenerateCategorySEOReply {
+  string seo_title = 1;
+  string seo_keywords = 2;
+  string seo_description = 3;
+}
+
+message GenerateSummaryRequest {
+  int32 today_orders = 1;
+  double today_revenue = 2;
+  int32 total_users = 3;
+  int32 total_products = 4;
+  string orders_trend = 5;
+}
+
+message GenerateSummaryReply {
+  string summary = 1;
+}
+
+message SuggestQuestionsRequest {}
+
+message SuggestQuestion {
+  string label = 1;
+  string query = 2;
+}
+
+message SuggestQuestionsReply {
+  repeated SuggestQuestion questions = 1;
+}
+
+message GetChatHistoryRequest {}
+
+message HistoryMessage {
+  string role = 1;
+  string content = 2;
+  string created_at = 3;
+}
+
+message GetChatHistoryReply {
+  repeated HistoryMessage history = 1;
+}
+
+message ClearChatHistoryRequest {}
+
+message ClearChatHistoryReply {
+  bool success = 1;
+}

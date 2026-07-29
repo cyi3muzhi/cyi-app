@@ -6,6 +6,171 @@ info:
     title: ""
     version: 0.0.1
 paths:
+    /admin/v1/agent/chat:
+        post:
+            tags:
+                - Agent
+            description: 非流式聊天
+            operationId: Agent_Chat
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.ChatRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ChatReply'
+    /admin/v1/agent/chat/clear:
+        post:
+            tags:
+                - Agent
+            description: 清除聊天历史
+            operationId: Agent_ClearChatHistory
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.ClearChatHistoryRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ClearChatHistoryReply'
+    /admin/v1/agent/chat/history:
+        get:
+            tags:
+                - Agent
+            description: 获取聊天历史
+            operationId: Agent_GetChatHistory
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetChatHistoryReply'
+    /admin/v1/agent/expand-description:
+        post:
+            tags:
+                - Agent
+            description: AI 扩写商品描述
+            operationId: Agent_ExpandDescription
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.ExpandDescriptionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ExpandDescriptionReply'
+    /admin/v1/agent/generate-banner:
+        post:
+            tags:
+                - Agent
+            description: AI 生成 Banner 文案
+            operationId: Agent_GenerateBannerCopy
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.GenerateBannerCopyRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GenerateBannerCopyReply'
+    /admin/v1/agent/generate-description:
+        post:
+            tags:
+                - Agent
+            description: AI 生成商品描述
+            operationId: Agent_GenerateDescription
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.GenerateDescriptionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GenerateDescriptionReply'
+    /admin/v1/agent/generate-seo:
+        post:
+            tags:
+                - Agent
+            description: AI 生成分类 SEO
+            operationId: Agent_GenerateCategorySEO
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.GenerateCategorySEORequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GenerateCategorySEOReply'
+    /admin/v1/agent/generate-summary:
+        post:
+            tags:
+                - Agent
+            description: AI 生成运营摘要
+            operationId: Agent_GenerateSummary
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.GenerateSummaryRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GenerateSummaryReply'
+    /admin/v1/agent/suggest-questions:
+        post:
+            tags:
+                - Agent
+            description: AI 推荐快捷提问
+            operationId: Agent_SuggestQuestions
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.SuggestQuestionsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.SuggestQuestionsReply'
     /admin/v1/auth/avatar:
         post:
             tags:
@@ -766,6 +931,37 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.ListAllPermissionsReply'
+    /admin/v1/preferences:
+        get:
+            tags:
+                - Settings
+            description: 获取当前用户偏好设置
+            operationId: Settings_GetPreference
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetPreferenceReply'
+        put:
+            tags:
+                - Settings
+            description: 保存当前用户偏好设置
+            operationId: Settings_SavePreference
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.SavePreferenceRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.SavePreferenceReply'
     /admin/v1/products:
         get:
             tags:
@@ -2153,6 +2349,15 @@ components:
                 lastLogin:
                     type: string
             description: 管理员信息
+        api.cin.admin.v1.BannerCopyOption:
+            type: object
+            properties:
+                title:
+                    type: string
+                subtitle:
+                    type: string
+                btnText:
+                    type: string
         api.cin.admin.v1.BatchCategoryOperationReply:
             type: object
             properties:
@@ -2251,6 +2456,24 @@ components:
                 avatarBase64:
                     type: string
                     description: 头像图片 Base64 编码
+        api.cin.admin.v1.ChatReply:
+            type: object
+            properties:
+                response:
+                    type: string
+        api.cin.admin.v1.ChatRequest:
+            type: object
+            properties:
+                message:
+                    type: string
+        api.cin.admin.v1.ClearChatHistoryReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.ClearChatHistoryRequest:
+            type: object
+            properties: {}
         api.cin.admin.v1.CouponCreateReply:
             type: object
             properties:
@@ -2601,6 +2824,18 @@ components:
                 validEnd:
                     type: string
             description: 优惠券发放记录
+        api.cin.admin.v1.ExpandDescriptionReply:
+            type: object
+            properties:
+                description:
+                    type: string
+        api.cin.admin.v1.ExpandDescriptionRequest:
+            type: object
+            properties:
+                productName:
+                    type: string
+                content:
+                    type: string
         api.cin.admin.v1.ExportOrderReply:
             type: object
             properties:
@@ -2632,6 +2867,72 @@ components:
                     type: integer
                     format: int32
             description: 导出任务状态查询响应
+        api.cin.admin.v1.GenerateBannerCopyReply:
+            type: object
+            properties:
+                options:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.BannerCopyOption'
+        api.cin.admin.v1.GenerateBannerCopyRequest:
+            type: object
+            properties:
+                topic:
+                    type: string
+                subtitle:
+                    type: string
+        api.cin.admin.v1.GenerateCategorySEOReply:
+            type: object
+            properties:
+                seoTitle:
+                    type: string
+                seoKeywords:
+                    type: string
+                seoDescription:
+                    type: string
+        api.cin.admin.v1.GenerateCategorySEORequest:
+            type: object
+            properties:
+                categoryName:
+                    type: string
+                description:
+                    type: string
+        api.cin.admin.v1.GenerateDescriptionReply:
+            type: object
+            properties:
+                description:
+                    type: string
+        api.cin.admin.v1.GenerateDescriptionRequest:
+            type: object
+            properties:
+                productName:
+                    type: string
+                category:
+                    type: string
+                specs:
+                    type: string
+        api.cin.admin.v1.GenerateSummaryReply:
+            type: object
+            properties:
+                summary:
+                    type: string
+        api.cin.admin.v1.GenerateSummaryRequest:
+            type: object
+            properties:
+                todayOrders:
+                    type: integer
+                    format: int32
+                todayRevenue:
+                    type: number
+                    format: double
+                totalUsers:
+                    type: integer
+                    format: int32
+                totalProducts:
+                    type: integer
+                    format: int32
+                ordersTrend:
+                    type: string
         api.cin.admin.v1.GetAdminInfoReply:
             type: object
             properties:
@@ -2642,6 +2943,13 @@ components:
             properties:
                 item:
                     $ref: '#/components/schemas/api.cin.admin.v1.CategoryTreeItem'
+        api.cin.admin.v1.GetChatHistoryReply:
+            type: object
+            properties:
+                history:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.HistoryMessage'
         api.cin.admin.v1.GetDashboardStatsReply:
             type: object
             properties:
@@ -2691,6 +2999,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.TrendItem'
+        api.cin.admin.v1.GetPreferenceReply:
+            type: object
+            properties:
+                data:
+                    type: string
+                    format: bytes
         api.cin.admin.v1.GetProductReply:
             type: object
             properties:
@@ -2812,6 +3126,15 @@ components:
                 memberRatio:
                     type: number
                     format: double
+        api.cin.admin.v1.HistoryMessage:
+            type: object
+            properties:
+                role:
+                    type: string
+                content:
+                    type: string
+                createdAt:
+                    type: string
         api.cin.admin.v1.ListAllPermissionsReply:
             type: object
             properties:
@@ -3086,6 +3409,17 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.service.user.v1.BannerItem'
+        api.cin.admin.v1.SavePreferenceReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.admin.v1.SavePreferenceRequest:
+            type: object
+            properties:
+                data:
+                    type: string
+                    format: bytes
         api.cin.admin.v1.ShipOrderReply:
             type: object
             properties:
@@ -3164,6 +3498,23 @@ components:
                     type: string
                 createdAt:
                     type: string
+        api.cin.admin.v1.SuggestQuestion:
+            type: object
+            properties:
+                label:
+                    type: string
+                query:
+                    type: string
+        api.cin.admin.v1.SuggestQuestionsReply:
+            type: object
+            properties:
+                questions:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.SuggestQuestion'
+        api.cin.admin.v1.SuggestQuestionsRequest:
+            type: object
+            properties: {}
         api.cin.admin.v1.ToggleCategoryShowcaseReply:
             type: object
             properties:
@@ -3971,6 +4322,8 @@ tags:
       description: 管理后台 - 角色权限管理服务
     - name: AdminUser
       description: 管理后台 - 用户管理服务
+    - name: Agent
+      description: 管理后台 - AI 智能助手服务
     - name: Auth
       description: 用户认证服务
     - name: Banner

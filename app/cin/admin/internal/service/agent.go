@@ -34,8 +34,8 @@ type GenerateDescriptionReply struct {
 	Description string `json:"description"`
 }
 
-// GenerateDescription AI 生成商品描述
-func (s *AdminService) GenerateDescription(ctx context.Context, req *GenerateDescriptionRequest) (*GenerateDescriptionReply, error) {
+// generateDescription AI 生成商品描述（内部方法，proto 接口通过 agent_proto.go 接入）
+func (s *AdminService) generateDescription(ctx context.Context, req *GenerateDescriptionRequest) (*GenerateDescriptionReply, error) {
 	prompt := buildDescriptionPrompt(req.ProductName, req.Category, req.Specs)
 	text, err := s.agentUC.GenerateText(ctx, prompt)
 	if err != nil {
@@ -55,8 +55,8 @@ type ExpandDescriptionReply struct {
 	Description string `json:"description"`
 }
 
-// ExpandDescription AI 扩写商品描述
-func (s *AdminService) ExpandDescription(ctx context.Context, req *ExpandDescriptionRequest) (*ExpandDescriptionReply, error) {
+// expandDescription AI 扩写商品描述（内部方法，proto 接口通过 agent_proto.go 接入）
+func (s *AdminService) expandDescription(ctx context.Context, req *ExpandDescriptionRequest) (*ExpandDescriptionReply, error) {
 	prompt := buildExpandPrompt(req.ProductName, req.Content)
 	text, err := s.agentUC.GenerateText(ctx, prompt)
 	if err != nil {
@@ -123,8 +123,8 @@ type BannerCopyOption struct {
 	BtnText  string `json:"btn_text"`
 }
 
-// GenerateBannerCopy AI 生成 Banner 文案
-func (s *AdminService) GenerateBannerCopy(ctx context.Context, req *GenerateBannerCopyRequest) (*GenerateBannerCopyReply, error) {
+// generateBannerCopy AI 生成 Banner 文案（内部方法，proto 接口通过 agent_proto.go 接入）
+func (s *AdminService) generateBannerCopy(ctx context.Context, req *GenerateBannerCopyRequest) (*GenerateBannerCopyReply, error) {
 	prompt := buildBannerCopyPrompt(req.Topic, req.Subtitle)
 	text, err := s.agentUC.GenerateText(ctx, prompt)
 	if err != nil {
@@ -166,8 +166,8 @@ type GenerateCategorySEOReply struct {
 	SeoDescription string `json:"seo_description"`
 }
 
-// GenerateCategorySEO AI 生成分类 SEO 信息
-func (s *AdminService) GenerateCategorySEO(ctx context.Context, req *GenerateCategorySEORequest) (*GenerateCategorySEOReply, error) {
+// generateCategorySEO AI 生成分类 SEO 信息（内部方法，proto 接口通过 agent_proto.go 接入）
+func (s *AdminService) generateCategorySEO(ctx context.Context, req *GenerateCategorySEORequest) (*GenerateCategorySEOReply, error) {
 	prompt := buildCategorySEOPrompt(req.CategoryName, req.Description)
 	text, err := s.agentUC.GenerateText(ctx, prompt)
 	if err != nil {
@@ -215,8 +215,8 @@ type GenerateSummaryReply struct {
 	Summary string `json:"summary"`
 }
 
-// GenerateSummary AI 生成运营摘要
-func (s *AdminService) GenerateSummary(ctx context.Context, req *GenerateSummaryRequest) (*GenerateSummaryReply, error) {
+// generateSummary AI 生成运营摘要（内部方法，proto 接口通过 agent_proto.go 接入）
+func (s *AdminService) generateSummary(ctx context.Context, req *GenerateSummaryRequest) (*GenerateSummaryReply, error) {
 	prompt := buildSummaryPrompt(req)
 	text, err := s.agentUC.GenerateText(ctx, prompt)
 	if err != nil {
@@ -261,8 +261,8 @@ type SuggestQuestion struct {
 	Query string `json:"query"`
 }
 
-// SuggestQuestions AI 推荐快捷提问（根据角色权限）
-func (s *AdminService) SuggestQuestions(ctx context.Context) (*SuggestQuestionsReply, error) {
+// suggestQuestions AI 推荐快捷提问（根据角色权限）（内部方法，proto 接口通过 agent_proto.go 接入）
+func (s *AdminService) suggestQuestions(ctx context.Context) (*SuggestQuestionsReply, error) {
 	role, _ := mid.GetRoleFromClaims(ctx)
 
 	// 获取角色的模块权限
@@ -316,8 +316,8 @@ func (s *AdminService) SuggestQuestions(ctx context.Context) (*SuggestQuestionsR
 	return &SuggestQuestionsReply{Questions: questions}, nil
 }
 
-// Chat 发送聊天消息（非流式）
-func (s *AdminService) Chat(ctx context.Context, req *ChatRequest) (*ChatReply, error) {
+// chat 发送聊天消息（非流式）（内部方法，proto 接口通过 agent_proto.go 接入）
+func (s *AdminService) chat(ctx context.Context, req *ChatRequest) (*ChatReply, error) {
 	adminID, err := service.GetUserID(ctx)
 	if err != nil {
 		return nil, adminv1.ErrorUnauthorized("未登录")
@@ -343,8 +343,8 @@ func (s *AdminService) ChatSSEHandler(ctx context.Context, message string, admin
 	})
 }
 
-// ClearChatHistory 清除聊天历史
-func (s *AdminService) ClearChatHistory(ctx context.Context) error {
+// clearChatHistory 清除聊天历史（内部方法，proto 接口通过 agent_proto.go 接入）
+func (s *AdminService) clearChatHistory(ctx context.Context) error {
 	adminID, err := service.GetUserID(ctx)
 	if err != nil {
 		return adminv1.ErrorUnauthorized("未登录")
@@ -352,8 +352,8 @@ func (s *AdminService) ClearChatHistory(ctx context.Context) error {
 	return s.agentUC.ClearHistory(ctx, adminID)
 }
 
-// GetChatHistory 获取聊天历史
-func (s *AdminService) GetChatHistory(ctx context.Context) ([]*biz.HistoryMessage, error) {
+// getChatHistory 获取聊天历史（内部方法，proto 接口通过 proto 方法接入）
+func (s *AdminService) getChatHistory(ctx context.Context) ([]*biz.HistoryMessage, error) {
 	adminID, err := service.GetUserID(ctx)
 	if err != nil {
 		return nil, adminv1.ErrorUnauthorized("未登录")
@@ -368,3 +368,141 @@ func (s *AdminService) GetChatHistory(ctx context.Context) ([]*biz.HistoryMessag
 	}
 	return history, nil
 }
+
+// === proto 接口实现（Kratos HTTP 网关调用）===
+
+// Chat 非流式聊天（proto 接口实现）
+func (s *AdminService) Chat(ctx context.Context, req *adminv1.ChatRequest) (*adminv1.ChatReply, error) {
+	internalReq := &ChatRequest{Message: req.Message}
+	internalReply, err := s.chat(ctx, internalReq)
+	if err != nil {
+		return nil, err
+	}
+	return &adminv1.ChatReply{Response: internalReply.Response}, nil
+}
+
+// GenerateDescription AI 生成商品描述（proto 接口实现）
+func (s *AdminService) GenerateDescription(ctx context.Context, req *adminv1.GenerateDescriptionRequest) (*adminv1.GenerateDescriptionReply, error) {
+	internalReq := &GenerateDescriptionRequest{
+		ProductName: req.ProductName,
+		Category:    req.Category,
+		Specs:       req.Specs,
+	}
+	internalReply, err := s.generateDescription(ctx, internalReq)
+	if err != nil {
+		return nil, err
+	}
+	return &adminv1.GenerateDescriptionReply{Description: internalReply.Description}, nil
+}
+
+// ExpandDescription AI 扩写商品描述（proto 接口实现）
+func (s *AdminService) ExpandDescription(ctx context.Context, req *adminv1.ExpandDescriptionRequest) (*adminv1.ExpandDescriptionReply, error) {
+	internalReq := &ExpandDescriptionRequest{
+		ProductName: req.ProductName,
+		Content:     req.Content,
+	}
+	internalReply, err := s.expandDescription(ctx, internalReq)
+	if err != nil {
+		return nil, err
+	}
+	return &adminv1.ExpandDescriptionReply{Description: internalReply.Description}, nil
+}
+
+// GenerateBannerCopy AI 生成 Banner 文案（proto 接口实现）
+func (s *AdminService) GenerateBannerCopy(ctx context.Context, req *adminv1.GenerateBannerCopyRequest) (*adminv1.GenerateBannerCopyReply, error) {
+	internalReq := &GenerateBannerCopyRequest{
+		Topic:    req.Topic,
+		Subtitle: req.Subtitle,
+	}
+	internalReply, err := s.generateBannerCopy(ctx, internalReq)
+	if err != nil {
+		return nil, err
+	}
+	options := make([]*adminv1.BannerCopyOption, len(internalReply.Options))
+	for i, opt := range internalReply.Options {
+		options[i] = &adminv1.BannerCopyOption{
+			Title:    opt.Title,
+			Subtitle: opt.Subtitle,
+			BtnText:  opt.BtnText,
+		}
+	}
+	return &adminv1.GenerateBannerCopyReply{Options: options}, nil
+}
+
+// GenerateCategorySEO AI 生成分类 SEO（proto 接口实现）
+func (s *AdminService) GenerateCategorySEO(ctx context.Context, req *adminv1.GenerateCategorySEORequest) (*adminv1.GenerateCategorySEOReply, error) {
+	internalReq := &GenerateCategorySEORequest{
+		CategoryName: req.CategoryName,
+		Description:  req.Description,
+	}
+	internalReply, err := s.generateCategorySEO(ctx, internalReq)
+	if err != nil {
+		return nil, err
+	}
+	return &adminv1.GenerateCategorySEOReply{
+		SeoTitle:       internalReply.SeoTitle,
+		SeoKeywords:    internalReply.SeoKeywords,
+		SeoDescription: internalReply.SeoDescription,
+	}, nil
+}
+
+// GenerateSummary AI 生成运营摘要（proto 接口实现）
+func (s *AdminService) GenerateSummary(ctx context.Context, req *adminv1.GenerateSummaryRequest) (*adminv1.GenerateSummaryReply, error) {
+	internalReq := &GenerateSummaryRequest{
+		TodayOrders:   req.TodayOrders,
+		TodayRevenue:  req.TodayRevenue,
+		TotalUsers:    req.TotalUsers,
+		TotalProducts: req.TotalProducts,
+		OrdersTrend:   req.OrdersTrend,
+	}
+	internalReply, err := s.generateSummary(ctx, internalReq)
+	if err != nil {
+		return nil, err
+	}
+	return &adminv1.GenerateSummaryReply{Summary: internalReply.Summary}, nil
+}
+
+// SuggestQuestions AI 推荐快捷提问（proto 接口实现）
+func (s *AdminService) SuggestQuestions(ctx context.Context, req *adminv1.SuggestQuestionsRequest) (*adminv1.SuggestQuestionsReply, error) {
+	internalReply, err := s.suggestQuestions(ctx)
+	if err != nil {
+		return nil, err
+	}
+	questions := make([]*adminv1.SuggestQuestion, len(internalReply.Questions))
+	for i, q := range internalReply.Questions {
+		questions[i] = &adminv1.SuggestQuestion{
+			Label: q.Label,
+			Query: q.Query,
+		}
+	}
+	return &adminv1.SuggestQuestionsReply{Questions: questions}, nil
+}
+
+// GetChatHistory 获取聊天历史（proto 接口实现）
+func (s *AdminService) GetChatHistory(ctx context.Context, req *adminv1.GetChatHistoryRequest) (*adminv1.GetChatHistoryReply, error) {
+	history, err := s.getChatHistory(ctx)
+	if err != nil {
+		return nil, err
+	}
+	messages := make([]*adminv1.HistoryMessage, len(history))
+	for i, msg := range history {
+		messages[i] = &adminv1.HistoryMessage{
+			Role:      msg.Role,
+			Content:   msg.Content,
+			CreatedAt: fmt.Sprintf("%d", msg.Timestamp),
+		}
+	}
+	return &adminv1.GetChatHistoryReply{History: messages}, nil
+}
+
+// ClearChatHistory 清除聊天历史（proto 接口实现）
+func (s *AdminService) ClearChatHistory(ctx context.Context, req *adminv1.ClearChatHistoryRequest) (*adminv1.ClearChatHistoryReply, error) {
+	if err := s.clearChatHistory(ctx); err != nil {
+		return nil, err
+	}
+	return &adminv1.ClearChatHistoryReply{Success: true}, nil
+}
+
+// 编译期接口实现检查
+var _ adminv1.AgentHTTPServer = (*AdminService)(nil)
+var _ adminv1.AgentServer = (*AdminService)(nil)

@@ -6,6 +6,7 @@ import (
 
 	adminv1 "cyi-app/api/cin/admin/v1"
 	"cyi-app/app/cin/admin/internal/biz"
+	"cyi-app/pkg/kratos/service"
 )
 
 // GetSettings 获取系统设置
@@ -82,12 +83,37 @@ func (s *AdminService) UpdateSettings(ctx context.Context, req *adminv1.UpdateSe
 	return &adminv1.UpdateSettingsReply{Success: true}, nil
 }
 
-// GetPreference 获取用户偏好设置
-func (s *AdminService) GetPreference(ctx context.Context, userID int64) (json.RawMessage, error) {
+// getPreference 获取用户偏好设置（内部方法，proto 接口通过 proto 方法接入）
+func (s *AdminService) getPreference(ctx context.Context, userID int64) (json.RawMessage, error) {
 	return s.settUC.GetPreference(ctx, userID)
 }
 
-// SavePreference 保存用户偏好设置
-func (s *AdminService) SavePreference(ctx context.Context, userID int64, data json.RawMessage) error {
+// savePreference 保存用户偏好设置（内部方法，proto 接口通过 proto 方法接入）
+func (s *AdminService) savePreference(ctx context.Context, userID int64, data json.RawMessage) error {
 	return s.settUC.SavePreference(ctx, userID, data)
+}
+
+// GetPreference 获取当前用户偏好设置（proto 接口实现）
+func (s *AdminService) GetPreference(ctx context.Context, req *adminv1.GetPreferenceRequest) (*adminv1.GetPreferenceReply, error) {
+	userID, err := service.GetUserID(ctx)
+	if err != nil {
+		return nil, adminv1.ErrorUnauthorized("未登录")
+	}
+	data, err := s.getPreference(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return &adminv1.GetPreferenceReply{Data: data}, nil
+}
+
+// SavePreference 保存当前用户偏好设置（proto 接口实现）
+func (s *AdminService) SavePreference(ctx context.Context, req *adminv1.SavePreferenceRequest) (*adminv1.SavePreferenceReply, error) {
+	userID, err := service.GetUserID(ctx)
+	if err != nil {
+		return nil, adminv1.ErrorUnauthorized("未登录")
+	}
+	if err := s.savePreference(ctx, userID, req.Data); err != nil {
+		return nil, err
+	}
+	return &adminv1.SavePreferenceReply{Success: true}, nil
 }

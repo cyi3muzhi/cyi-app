@@ -29,6 +29,7 @@ type AdminService struct {
 	adminv1.UnimplementedUploadServer
 	adminv1.UnimplementedAdminCouponServer
 	adminv1.UnimplementedBannerServer
+	adminv1.UnimplementedAgentServer
 	log       *log.Helper
 	dc        *biz.DashboardUseCase
 	pc        *biz.ProductUseCase

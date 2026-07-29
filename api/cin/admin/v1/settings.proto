@@ -23,6 +23,19 @@ service Settings {
       body: "*"
     };
   }
+  // 获取当前用户偏好设置
+  rpc GetPreference (GetPreferenceRequest) returns (GetPreferenceReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/preferences"
+    };
+  }
+  // 保存当前用户偏好设置
+  rpc SavePreference (SavePreferenceRequest) returns (SavePreferenceReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/preferences"
+      body: "*"
+    };
+  }
 }
 
 message GetSettingsRequest {}
@@ -80,5 +93,19 @@ message UpdateSettingsRequest {
 }
 
 message UpdateSettingsReply {
+  bool success = 1;
+}
+
+message GetPreferenceRequest {}
+
+message GetPreferenceReply {
+  bytes data = 1;
+}
+
+message SavePreferenceRequest {
+  bytes data = 1;
+}
+
+message SavePreferenceReply {
   bool success = 1;
 }

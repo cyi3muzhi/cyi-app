@@ -542,6 +542,174 @@ func (x *UpdateSettingsReply) GetSuccess() bool {
 	return false
 }
 
+type GetPreferenceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPreferenceRequest) Reset() {
+	*x = GetPreferenceRequest{}
+	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPreferenceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPreferenceRequest) ProtoMessage() {}
+
+func (x *GetPreferenceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPreferenceRequest.ProtoReflect.Descriptor instead.
+func (*GetPreferenceRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_settings_proto_rawDescGZIP(), []int{4}
+}
+
+type GetPreferenceReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []byte                 `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPreferenceReply) Reset() {
+	*x = GetPreferenceReply{}
+	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPreferenceReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPreferenceReply) ProtoMessage() {}
+
+func (x *GetPreferenceReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPreferenceReply.ProtoReflect.Descriptor instead.
+func (*GetPreferenceReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_settings_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetPreferenceReply) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type SavePreferenceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []byte                 `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SavePreferenceRequest) Reset() {
+	*x = SavePreferenceRequest{}
+	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SavePreferenceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SavePreferenceRequest) ProtoMessage() {}
+
+func (x *SavePreferenceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SavePreferenceRequest.ProtoReflect.Descriptor instead.
+func (*SavePreferenceRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_settings_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *SavePreferenceRequest) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type SavePreferenceReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SavePreferenceReply) Reset() {
+	*x = SavePreferenceReply{}
+	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SavePreferenceReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SavePreferenceReply) ProtoMessage() {}
+
+func (x *SavePreferenceReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_settings_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SavePreferenceReply.ProtoReflect.Descriptor instead.
+func (*SavePreferenceReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_settings_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *SavePreferenceReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_api_cin_admin_v1_settings_proto protoreflect.FileDescriptor
 
 const file_api_cin_admin_v1_settings_proto_rawDesc = "" +
@@ -601,10 +769,19 @@ const file_api_cin_admin_v1_settings_proto_rawDesc = "" +
 	"\x17free_shipping_threshold\x18\x16 \x01(\x01R\x15freeShippingThreshold\x128\n" +
 	"\x18default_shipping_company\x18\x17 \x01(\tR\x16defaultShippingCompany\"/\n" +
 	"\x13UpdateSettingsReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\x80\x02\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x16\n" +
+	"\x14GetPreferenceRequest\"(\n" +
+	"\x12GetPreferenceReply\x12\x12\n" +
+	"\x04data\x18\x01 \x01(\fR\x04data\"+\n" +
+	"\x15SavePreferenceRequest\x12\x12\n" +
+	"\x04data\x18\x01 \x01(\fR\x04data\"/\n" +
+	"\x13SavePreferenceReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\x83\x04\n" +
 	"\bSettings\x12s\n" +
 	"\vGetSettings\x12$.api.cin.admin.v1.GetSettingsRequest\x1a\".api.cin.admin.v1.GetSettingsReply\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/admin/v1/settings\x12\x7f\n" +
-	"\x0eUpdateSettings\x12'.api.cin.admin.v1.UpdateSettingsRequest\x1a%.api.cin.admin.v1.UpdateSettingsReply\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\x1a\x12/admin/v1/settingsB6\n" +
+	"\x0eUpdateSettings\x12'.api.cin.admin.v1.UpdateSettingsRequest\x1a%.api.cin.admin.v1.UpdateSettingsReply\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\x1a\x12/admin/v1/settings\x12|\n" +
+	"\rGetPreference\x12&.api.cin.admin.v1.GetPreferenceRequest\x1a$.api.cin.admin.v1.GetPreferenceReply\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/admin/v1/preferences\x12\x82\x01\n" +
+	"\x0eSavePreference\x12'.api.cin.admin.v1.SavePreferenceRequest\x1a%.api.cin.admin.v1.SavePreferenceReply\" \x82\xd3\xe4\x93\x02\x1a:\x01*\x1a\x15/admin/v1/preferencesB6\n" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (
@@ -619,20 +796,28 @@ func file_api_cin_admin_v1_settings_proto_rawDescGZIP() []byte {
 	return file_api_cin_admin_v1_settings_proto_rawDescData
 }
 
-var file_api_cin_admin_v1_settings_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_api_cin_admin_v1_settings_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_api_cin_admin_v1_settings_proto_goTypes = []any{
 	(*GetSettingsRequest)(nil),    // 0: api.cin.admin.v1.GetSettingsRequest
 	(*GetSettingsReply)(nil),      // 1: api.cin.admin.v1.GetSettingsReply
 	(*UpdateSettingsRequest)(nil), // 2: api.cin.admin.v1.UpdateSettingsRequest
 	(*UpdateSettingsReply)(nil),   // 3: api.cin.admin.v1.UpdateSettingsReply
+	(*GetPreferenceRequest)(nil),  // 4: api.cin.admin.v1.GetPreferenceRequest
+	(*GetPreferenceReply)(nil),    // 5: api.cin.admin.v1.GetPreferenceReply
+	(*SavePreferenceRequest)(nil), // 6: api.cin.admin.v1.SavePreferenceRequest
+	(*SavePreferenceReply)(nil),   // 7: api.cin.admin.v1.SavePreferenceReply
 }
 var file_api_cin_admin_v1_settings_proto_depIdxs = []int32{
 	0, // 0: api.cin.admin.v1.Settings.GetSettings:input_type -> api.cin.admin.v1.GetSettingsRequest
 	2, // 1: api.cin.admin.v1.Settings.UpdateSettings:input_type -> api.cin.admin.v1.UpdateSettingsRequest
-	1, // 2: api.cin.admin.v1.Settings.GetSettings:output_type -> api.cin.admin.v1.GetSettingsReply
-	3, // 3: api.cin.admin.v1.Settings.UpdateSettings:output_type -> api.cin.admin.v1.UpdateSettingsReply
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	4, // 2: api.cin.admin.v1.Settings.GetPreference:input_type -> api.cin.admin.v1.GetPreferenceRequest
+	6, // 3: api.cin.admin.v1.Settings.SavePreference:input_type -> api.cin.admin.v1.SavePreferenceRequest
+	1, // 4: api.cin.admin.v1.Settings.GetSettings:output_type -> api.cin.admin.v1.GetSettingsReply
+	3, // 5: api.cin.admin.v1.Settings.UpdateSettings:output_type -> api.cin.admin.v1.UpdateSettingsReply
+	5, // 6: api.cin.admin.v1.Settings.GetPreference:output_type -> api.cin.admin.v1.GetPreferenceReply
+	7, // 7: api.cin.admin.v1.Settings.SavePreference:output_type -> api.cin.admin.v1.SavePreferenceReply
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -649,7 +834,7 @@ func file_api_cin_admin_v1_settings_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_settings_proto_rawDesc), len(file_api_cin_admin_v1_settings_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

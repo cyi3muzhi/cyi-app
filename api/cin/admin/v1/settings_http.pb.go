@@ -19,12 +19,18 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationSettingsGetPreference = "/api.cin.admin.v1.Settings/GetPreference"
 const OperationSettingsGetSettings = "/api.cin.admin.v1.Settings/GetSettings"
+const OperationSettingsSavePreference = "/api.cin.admin.v1.Settings/SavePreference"
 const OperationSettingsUpdateSettings = "/api.cin.admin.v1.Settings/UpdateSettings"
 
 type SettingsHTTPServer interface {
+	// GetPreference 获取当前用户偏好设置
+	GetPreference(context.Context, *GetPreferenceRequest) (*GetPreferenceReply, error)
 	// GetSettings 获取系统设置
 	GetSettings(context.Context, *GetSettingsRequest) (*GetSettingsReply, error)
+	// SavePreference 保存当前用户偏好设置
+	SavePreference(context.Context, *SavePreferenceRequest) (*SavePreferenceReply, error)
 	// UpdateSettings 更新系统设置
 	UpdateSettings(context.Context, *UpdateSettingsRequest) (*UpdateSettingsReply, error)
 }
@@ -33,6 +39,8 @@ func RegisterSettingsHTTPServer(s *http.Server, srv SettingsHTTPServer) {
 	r := s.Route("/")
 	r.GET("/admin/v1/settings", _Settings_GetSettings0_HTTP_Handler(srv))
 	r.PUT("/admin/v1/settings", _Settings_UpdateSettings0_HTTP_Handler(srv))
+	r.GET("/admin/v1/preferences", _Settings_GetPreference0_HTTP_Handler(srv))
+	r.PUT("/admin/v1/preferences", _Settings_SavePreference0_HTTP_Handler(srv))
 }
 
 func _Settings_GetSettings0_HTTP_Handler(srv SettingsHTTPServer) func(ctx http.Context) error {
@@ -76,9 +84,54 @@ func _Settings_UpdateSettings0_HTTP_Handler(srv SettingsHTTPServer) func(ctx htt
 	}
 }
 
+func _Settings_GetPreference0_HTTP_Handler(srv SettingsHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetPreferenceRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSettingsGetPreference)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetPreference(ctx, req.(*GetPreferenceRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetPreferenceReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Settings_SavePreference0_HTTP_Handler(srv SettingsHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SavePreferenceRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSettingsSavePreference)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.SavePreference(ctx, req.(*SavePreferenceRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SavePreferenceReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type SettingsHTTPClient interface {
+	// GetPreference 获取当前用户偏好设置
+	GetPreference(ctx context.Context, req *GetPreferenceRequest, opts ...http.CallOption) (rsp *GetPreferenceReply, err error)
 	// GetSettings 获取系统设置
 	GetSettings(ctx context.Context, req *GetSettingsRequest, opts ...http.CallOption) (rsp *GetSettingsReply, err error)
+	// SavePreference 保存当前用户偏好设置
+	SavePreference(ctx context.Context, req *SavePreferenceRequest, opts ...http.CallOption) (rsp *SavePreferenceReply, err error)
 	// UpdateSettings 更新系统设置
 	UpdateSettings(ctx context.Context, req *UpdateSettingsRequest, opts ...http.CallOption) (rsp *UpdateSettingsReply, err error)
 }
@@ -91,6 +144,20 @@ func NewSettingsHTTPClient(client *http.Client) SettingsHTTPClient {
 	return &SettingsHTTPClientImpl{client}
 }
 
+// GetPreference 获取当前用户偏好设置
+func (c *SettingsHTTPClientImpl) GetPreference(ctx context.Context, in *GetPreferenceRequest, opts ...http.CallOption) (*GetPreferenceReply, error) {
+	var out GetPreferenceReply
+	pattern := "/admin/v1/preferences"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationSettingsGetPreference))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 // GetSettings 获取系统设置
 func (c *SettingsHTTPClientImpl) GetSettings(ctx context.Context, in *GetSettingsRequest, opts ...http.CallOption) (*GetSettingsReply, error) {
 	var out GetSettingsReply
@@ -99,6 +166,20 @@ func (c *SettingsHTTPClientImpl) GetSettings(ctx context.Context, in *GetSetting
 	opts = append(opts, http.Operation(OperationSettingsGetSettings))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// SavePreference 保存当前用户偏好设置
+func (c *SettingsHTTPClientImpl) SavePreference(ctx context.Context, in *SavePreferenceRequest, opts ...http.CallOption) (*SavePreferenceReply, error) {
+	var out SavePreferenceReply
+	pattern := "/admin/v1/preferences"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationSettingsSavePreference))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
