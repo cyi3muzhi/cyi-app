@@ -151,6 +151,100 @@ func registerAgentRoutes(s *kratosHttp.Server, adminService *service.AdminServic
 		w.Write(respBytes)
 	}))
 
+	// POST /admin/v1/agent/generate-banner AI 生成 Banner 文案
+	s.HandleFunc("/admin/v1/agent/generate-banner", withMiddlewares(authMw, func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		if r.Method != nethttp.MethodPost {
+			nethttp.Error(w, "Method not allowed", nethttp.StatusMethodNotAllowed)
+			return
+		}
+		body, _ := io.ReadAll(r.Body)
+		var req service.GenerateBannerCopyRequest
+		if err := json.Unmarshal(body, &req); err != nil {
+			nethttp.Error(w, "无效的 JSON", nethttp.StatusBadRequest)
+			return
+		}
+		if req.Topic == "" {
+			nethttp.Error(w, "主题不能为空", nethttp.StatusBadRequest)
+			return
+		}
+		reply, err := adminService.GenerateBannerCopy(r.Context(), &req)
+		if err != nil {
+			nethttp.Error(w, err.Error(), nethttp.StatusInternalServerError)
+			return
+		}
+		respBytes, _ := json.Marshal(reply)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(nethttp.StatusOK)
+		w.Write(respBytes)
+	}))
+
+	// POST /admin/v1/agent/generate-seo AI 生成分类 SEO
+	s.HandleFunc("/admin/v1/agent/generate-seo", withMiddlewares(authMw, func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		if r.Method != nethttp.MethodPost {
+			nethttp.Error(w, "Method not allowed", nethttp.StatusMethodNotAllowed)
+			return
+		}
+		body, _ := io.ReadAll(r.Body)
+		var req service.GenerateCategorySEORequest
+		if err := json.Unmarshal(body, &req); err != nil {
+			nethttp.Error(w, "无效的 JSON", nethttp.StatusBadRequest)
+			return
+		}
+		if req.CategoryName == "" {
+			nethttp.Error(w, "分类名称不能为空", nethttp.StatusBadRequest)
+			return
+		}
+		reply, err := adminService.GenerateCategorySEO(r.Context(), &req)
+		if err != nil {
+			nethttp.Error(w, err.Error(), nethttp.StatusInternalServerError)
+			return
+		}
+		respBytes, _ := json.Marshal(reply)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(nethttp.StatusOK)
+		w.Write(respBytes)
+	}))
+
+	// POST /admin/v1/agent/generate-summary AI 生成运营摘要
+	s.HandleFunc("/admin/v1/agent/generate-summary", withMiddlewares(authMw, func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		if r.Method != nethttp.MethodPost {
+			nethttp.Error(w, "Method not allowed", nethttp.StatusMethodNotAllowed)
+			return
+		}
+		body, _ := io.ReadAll(r.Body)
+		var req service.GenerateSummaryRequest
+		if err := json.Unmarshal(body, &req); err != nil {
+			nethttp.Error(w, "无效的 JSON", nethttp.StatusBadRequest)
+			return
+		}
+		reply, err := adminService.GenerateSummary(r.Context(), &req)
+		if err != nil {
+			nethttp.Error(w, err.Error(), nethttp.StatusInternalServerError)
+			return
+		}
+		respBytes, _ := json.Marshal(reply)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(nethttp.StatusOK)
+		w.Write(respBytes)
+	}))
+
+	// POST /admin/v1/agent/suggest-questions AI 推荐快捷提问
+	s.HandleFunc("/admin/v1/agent/suggest-questions", withMiddlewares(authMw, func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		if r.Method != nethttp.MethodPost {
+			nethttp.Error(w, "Method not allowed", nethttp.StatusMethodNotAllowed)
+			return
+		}
+		reply, err := adminService.SuggestQuestions(r.Context())
+		if err != nil {
+			nethttp.Error(w, err.Error(), nethttp.StatusInternalServerError)
+			return
+		}
+		respBytes, _ := json.Marshal(reply)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(nethttp.StatusOK)
+		w.Write(respBytes)
+	}))
+
 	// POST /admin/v1/agent/chat/stream SSE 流式聊天
 	s.HandleFunc("/admin/v1/agent/chat/stream", withMiddlewares(authMw, func(w nethttp.ResponseWriter, r *nethttp.Request) {
 		if r.Method != nethttp.MethodPost {

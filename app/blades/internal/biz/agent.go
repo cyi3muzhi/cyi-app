@@ -121,8 +121,9 @@ func sessionKey(source string, userID int64) string {
 }
 
 type sessionMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+	Role      string `json:"role"`
+	Content   string `json:"content"`
+	Timestamp int64  `json:"timestamp,omitempty"`
 }
 
 const sessionTTL = 2 * time.Hour
@@ -195,8 +196,9 @@ func (uc *AgentUseCase) saveHistory(ctx context.Context, source string, userID i
 	}
 
 	// 追加新消息
-	msgs = append(msgs, &sessionMessage{Role: "user", Content: userMsg})
-	msgs = append(msgs, &sessionMessage{Role: "assistant", Content: assistantMsg})
+	now := time.Now().UnixMilli()
+	msgs = append(msgs, &sessionMessage{Role: "user", Content: userMsg, Timestamp: now})
+	msgs = append(msgs, &sessionMessage{Role: "assistant", Content: assistantMsg, Timestamp: now})
 	if len(msgs) > 20 {
 		msgs = msgs[len(msgs)-20:]
 	}
@@ -316,7 +318,7 @@ func (uc *AgentUseCase) LoadChatHistory(ctx context.Context, userID int64, sourc
 		history = append(history, &HistoryMessage{
 			Role:      m.Role,
 			Content:   m.Content,
-			Timestamp: time.Now().UnixMilli(),
+			Timestamp: m.Timestamp,
 		})
 	}
 	// 没有历史返回空数组

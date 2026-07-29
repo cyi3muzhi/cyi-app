@@ -71,6 +71,10 @@ var permModules = []biz.PermModule{
 		{Key: "view", Label: "查看分类"}, {Key: "add", Label: "添加分类"},
 		{Key: "edit", Label: "编辑分类"}, {Key: "delete", Label: "删除分类"},
 	}},
+	{Key: "banners", Title: "Banner 管理", Items: []biz.PermItem{
+		{Key: "view", Label: "查看 Banner"}, {Key: "add", Label: "添加 Banner"},
+		{Key: "edit", Label: "编辑 Banner"}, {Key: "delete", Label: "删除 Banner"},
+	}},
 }
 
 // ListRoles 获取所有角色

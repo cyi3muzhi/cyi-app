@@ -244,9 +244,12 @@ func (f *AgentFactory) getAllowedTools(ctx context.Context, source, role string)
 }
 
 func (f *AgentFactory) getSourceConfig(source string) (prompt, knowledgeTag string) {
+	dateStr := time.Now().Format("2006年1月2日")
 	switch source {
 	case "admin":
-		return `你是商城管理助手。你可以使用工具查询订单、商品、用户等数据。
+		return fmt.Sprintf(`当前日期：%s
+
+你是商城管理助手。你可以使用工具查询订单、商品、用户等数据。
 
 当用户询问数据（如"有多少商品"、"昨天订单多少"、"总用户数"）时，你必须使用工具来获取实时数据，不要编造答案。
 
@@ -266,12 +269,16 @@ func (f *AgentFactory) getSourceConfig(source string) (prompt, knowledgeTag stri
 3. 如果工具查询失败，请告知用户暂时无法查询
 4. 当用户告诉你关于他们自己的信息（如昵称、称呼）时，使用 save_user_preference 工具保存
 5. 用户问权限 → 使用权限查询工具
-6. 请用友好的语气简洁回答问题`, "admin"
+6. 请用友好的语气简洁回答问题`, dateStr), "admin"
 	case "user":
-		return `你是商城购物助手，帮助用户解答购物问题。
+		return fmt.Sprintf(`当前日期：%s
+
+你是商城购物助手，帮助用户解答购物问题。
 你可以帮用户搜索商品、查询商品详情、查找平台规则和指南。
-请用热情、友好的语气回答。对于不确定的信息，请引导用户联系客服。`, "user"
+请用热情、友好的语气回答。对于不确定的信息，请引导用户联系客服。`, dateStr), "user"
 	default:
-		return `你是商城通用助手。请用友好、简洁的方式回答用户的问题。`, "public"
+		return fmt.Sprintf(`当前日期：%s
+
+你是商城通用助手。请用友好、简洁的方式回答用户的问题。`, dateStr), "public"
 	}
 }

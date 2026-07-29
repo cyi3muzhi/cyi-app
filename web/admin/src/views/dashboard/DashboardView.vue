@@ -24,6 +24,25 @@
       </div>
     </div>
 
+    <!-- AI 运营摘要 -->
+    <el-card class="summary-card" shadow="never">
+      <template #header>
+        <div class="summary-header">
+          <span class="summary-title">AI 运营摘要</span>
+          <el-button type="primary" size="small" :loading="summaryLoading" @click="handleGenerateSummary">
+            生成运营简报
+          </el-button>
+        </div>
+      </template>
+      <div class="summary-body">
+        <div v-if="aiSummary" class="summary-text">{{ aiSummary }}</div>
+        <div v-else class="summary-empty">
+          <el-icon :size="32" color="#cbd5e1"><Document /></el-icon>
+          <span class="summary-empty-text">点击「生成运营简报」获取 AI 智能分析</span>
+        </div>
+      </div>
+    </el-card>
+
     <!-- 图表区域 -->
     <div class="charts-grid">
       <!-- 近14日订单趋势 -->
@@ -118,7 +137,7 @@
  * 展示统计卡片、订单趋势图表、营收分类占比、最新订单列表、快捷操作
  * 优先从后端 API 获取真实数据，不可用的字段使用 mock 降级
  */
-import { computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
@@ -129,6 +148,7 @@ import { getDashboardStats, getOrderTrend, getRevenueCategories } from '../../ap
 import { listOrder } from '../../api/order'
 import { quickActions } from '../../api/mock'
 import { useAppStore } from '../../store/app'
+import { generateSummary } from '../../api/agent'
 
 const router = useRouter()
 const store = useAppStore()
@@ -167,6 +187,11 @@ const orderTrend = reactive({ ...MOCK_ORDER_TREND })
 const revenueCategories = reactive([...MOCK_REVENUE_CATEGORIES])
 /** 最新订单 */
 const latestOrders = reactive([...MOCK_LATEST_ORDERS])
+
+/** AI 运营摘要 */
+const aiSummary = ref('')
+/** AI 运营摘要 loading */
+const summaryLoading = ref(false)
 
 // ===================== 数据获取 =====================
 /**
@@ -364,6 +389,32 @@ function handleQuickAction(action: any) {
     ElMessage.info(`点击了 ${action.label}`)
   }
 }
+
+/**
+ * 生成 AI 运营摘要
+ * 从当前统计数据中获取今日订单、营收、用户、商品数，调用 AI 接口生成运营简报
+ */
+async function handleGenerateSummary() {
+  summaryLoading.value = true
+  try {
+    const data = {
+      today_orders: Number(dashboardStats.todayOrders.value) || 0,
+      today_revenue: Number(dashboardStats.todayRevenue.value) || 0,
+      total_users: Number(dashboardStats.totalUsers.value) || 0,
+      total_products: Number(dashboardStats.totalProducts.value) || 0
+    }
+    const summary = await generateSummary(data)
+    if (summary) {
+      aiSummary.value = summary
+    } else {
+      ElMessage.warning('AI 运营摘要生成失败，请重试')
+    }
+  } catch {
+    ElMessage.error('AI 运营摘要生成失败')
+  } finally {
+    summaryLoading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -480,6 +531,57 @@ function handleQuickAction(action: any) {
 
 .stat-change.up { color: var(--shop-success); }
 .stat-change.down { color: var(--shop-destructive); }
+
+/* ---- AI 运营摘要 ---- */
+.summary-card {
+  margin-bottom: 1.5rem;
+  animation: dashSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 0.1s;
+}
+.summary-card :deep(.el-card__header) {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--shop-border);
+}
+.summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.summary-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.summary-title::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  background: linear-gradient(180deg, var(--shop-primary), #60a5fa);
+  border-radius: 2px;
+}
+.summary-body {
+  padding: 0.25rem 0;
+}
+.summary-text {
+  font-size: 0.875rem;
+  line-height: 1.8;
+  color: var(--shop-foreground);
+  white-space: pre-wrap;
+  padding: 0.5rem 0;
+}
+.summary-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 0;
+}
+.summary-empty-text {
+  font-size: 0.8125rem;
+  color: var(--shop-muted-foreground);
+}
 
 /* ---- 图表区域 ---- */
 .charts-grid {

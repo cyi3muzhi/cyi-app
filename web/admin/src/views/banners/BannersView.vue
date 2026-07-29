@@ -313,6 +313,13 @@
               <template #header>
                 <span class="section-title">基本信息</span>
               </template>
+              <!-- AI 生成文案按钮 -->
+              <div class="ai-generate-row">
+                <el-button type="primary" size="small" :loading="aiLoading" @click="handleAIGenerate">
+                  AI 生成文案
+                </el-button>
+                <span class="ai-generate-hint">基于当前标题智能生成文案方案</span>
+              </div>
               <el-form-item label="标题" prop="title">
                 <el-input v-model="editForm.title" placeholder="请输入 Banner 标题" maxlength="50" type="textarea" :rows="2" show-word-limit />
               </el-form-item>
@@ -448,6 +455,7 @@ import {
 import { listBanners, saveBanners } from '../../api/banner'
 import type { BannerItem } from '../../api/banner'
 import { uploadToOSS } from '../../utils/upload'
+import { generateBannerCopy, type BannerCopyOption } from '../../api/agent'
 
 /* ===== 模板定义 ===== */
 
@@ -589,6 +597,8 @@ const formRef = ref<any>(null)
 const previewImage = ref('')
 const uploading = ref(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
+/** AI 生成文案 loading */
+const aiLoading = ref(false)
 
 /* ========== 计算属性 ========== */
 
@@ -710,6 +720,56 @@ function onImgError(event: Event) {
 
 function onPreviewImgError() {
   ElMessage.warning('图片加载失败，请检查 URL 是否正确')
+}
+
+/**
+ * AI 生成文案方案
+ * 调用 AI 接口生成多组文案，用户选择后填入表单
+ */
+async function handleAIGenerate() {
+  const topic = editForm.value.title
+  if (!topic) {
+    ElMessage.warning('请先输入 Banner 标题作为生成主题')
+    return
+  }
+  aiLoading.value = true
+  try {
+    const options = await generateBannerCopy(topic, editForm.value.subtitle)
+    if (options.length === 0) {
+      ElMessage.warning('AI 生成失败，请重试')
+      return
+    }
+    if (options.length === 1) {
+      editForm.value.title = options[0].title
+      editForm.value.subtitle = options[0].subtitle
+      editForm.value.btn_text = options[0].btn_text
+      ElMessage.success('文案已生成')
+      return
+    }
+    // 多组方案时，让用户选择
+    const msg = options.map((opt, i) =>
+      `方案 ${i + 1}：\n标题：${opt.title}\n副标题：${opt.subtitle}\n按钮：${opt.btn_text}\n`
+    ).join('\n')
+    const { value } = await ElMessageBox.prompt(msg + '\n请输入方案编号：', '选择文案方案', {
+      inputValue: '1',
+      inputPlaceholder: '请输入 1~' + options.length,
+      confirmButtonText: '确认',
+      cancelButtonText: '取消'
+    })
+    const idx = parseInt(value) - 1
+    if (idx >= 0 && idx < options.length) {
+      editForm.value.title = options[idx].title
+      editForm.value.subtitle = options[idx].subtitle
+      editForm.value.btn_text = options[idx].btn_text
+      ElMessage.success('文案已应用')
+    } else {
+      ElMessage.warning('无效的方案编号')
+    }
+  } catch {
+    ElMessage.error('AI 生成文案失败')
+  } finally {
+    aiLoading.value = false
+  }
 }
 
 /**
@@ -2183,6 +2243,22 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 .dialog-footer .el-button--primary:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(64, 158, 255, 0.35);
+}
+
+/* ===== AI 生成文案按钮行 ===== */
+.ai-generate-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(64, 158, 255, 0.15);
+}
+.ai-generate-hint {
+  font-size: 0.75rem;
+  color: var(--shop-muted-foreground, #94a3b8);
 }
 
 /* ===== 上传按钮 ===== */

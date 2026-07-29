@@ -239,6 +239,13 @@
                 <svg :class="['d-seo-arrow', { open: seoOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
               </button>
               <div v-show="seoOpen" class="d-seo-body">
+                <!-- AI 生成 SEO 按钮 -->
+                <div class="ai-seo-row">
+                  <el-button type="primary" size="small" :loading="seoLoading" @click="handleAIGenerateSEO">
+                    AI 生成 SEO
+                  </el-button>
+                  <span class="ai-seo-hint">基于分类名称智能生成 SEO 信息</span>
+                </div>
                 <div class="d-field">
                   <label class="d-label">页面标题</label>
                   <input v-model="formData.seoTitle" class="d-input" placeholder="默认为分类名称" />
@@ -291,6 +298,7 @@
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { listCategoryTree, createCategory as createCategoryApi, updateCategory as updateCategoryApi, deleteCategory as deleteCategoryApi, updateCategorySort, updateCategoryStatus, toggleCategoryShowcase, batchCategoryOperation } from '../../api/category'
+import { generateCategorySEO } from '../../api/agent'
 
 interface CategoryNode { id: number; name: string; slug: string; icon: string; sort: number; status: boolean; showcase: boolean; count: number; image?: string; seoTitle?: string; seoKeywords?: string; seoDesc?: string; parentId?: number; children?: CategoryNode[]; _depth?: number }
 
@@ -302,6 +310,8 @@ const expandedState = reactive<Record<number, boolean>>({})
 const dialogVisible = ref(false); const confirmVisible = ref(false)
 const isEditing = ref(false); const editingId = ref<number | null>(null)
 const seoOpen = ref(false); const fileInputRef = ref<HTMLInputElement | null>(null)
+/** AI 生成 SEO loading */
+const seoLoading = ref(false)
 const deletingId = ref<number | null>(null); const confirmTitle = ref(''); const confirmMsg = ref('')
 const formData = reactive({ id: null as number | null, name: '', slug: '', parentId: null as number | null, sort: 0, icon: '📁', status: true, showcase: false, image: '', count: 0, seoTitle: '', seoKeywords: '', seoDesc: '' })
 
@@ -338,6 +348,32 @@ function openAddModal() { resetForm(); isEditing.value = false; editingId.value 
 function openAddSubModal(item: CategoryNode) { resetForm(); isEditing.value = false; editingId.value = null; formData.parentId = item.id; dialogVisible.value = true; nextTick(() => seoOpen.value = false) }
 function openEditModal(item: CategoryNode) { isEditing.value = true; editingId.value = item.id; Object.assign(formData, { id: item.id, name: item.name, slug: item.slug, parentId: item.parentId ?? getParentNode(item.id)?.id ?? null, sort: item.sort, icon: item.icon, status: item.status, showcase: item.showcase, image: item.image || '', count: item.count, seoTitle: item.seoTitle || '', seoKeywords: item.seoKeywords || '', seoDesc: item.seoDesc || '' }); dialogVisible.value = true; nextTick(() => seoOpen.value = false) }
 function resetForm() { Object.assign(formData, { id: null, name: '', slug: '', parentId: null, sort: 0, icon: '📁', status: true, showcase: false, image: '', count: 0, seoTitle: '', seoKeywords: '', seoDesc: '' }) }
+/**
+ * AI 生成 SEO 信息
+ * 基于分类名称调用 AI 接口生成 SEO 标题、关键词和描述
+ */
+async function handleAIGenerateSEO() {
+  if (!formData.name.trim()) {
+    ElMessage.warning('请先输入分类名称')
+    return
+  }
+  seoLoading.value = true
+  try {
+    const result = await generateCategorySEO(formData.name.trim())
+    if (result.seo_title || result.seo_keywords || result.seo_description) {
+      if (result.seo_title) formData.seoTitle = result.seo_title
+      if (result.seo_keywords) formData.seoKeywords = result.seo_keywords
+      if (result.seo_description) formData.seoDesc = result.seo_description
+      ElMessage.success('SEO 信息已生成')
+    } else {
+      ElMessage.warning('AI 生成 SEO 失败，请重试')
+    }
+  } catch {
+    ElMessage.error('AI 生成 SEO 失败')
+  } finally {
+    seoLoading.value = false
+  }
+}
 async function saveCategory() { if (!formData.name.trim()) { ElMessage.warning('请输入分类名称'); return }; const payload = { name: formData.name.trim(), slug: formData.slug.trim() || formData.name.toLowerCase().replace(/\s+/g, '-'), icon: formData.icon || '📁', sort: formData.sort, status: formData.status, showcase: formData.showcase, image: formData.image, seo_title: formData.seoTitle, seo_keywords: formData.seoKeywords, seo_desc: formData.seoDesc, parent_id: formData.parentId || 0 }; try { if (isEditing.value && editingId.value) { await updateCategoryApi(editingId.value, payload); ElMessage.success(`分类「${formData.name}」已更新`) } else { await createCategoryApi(payload); ElMessage.success(`分类「${formData.name}」已创建`) }; dialogVisible.value = false; await loadTree() } catch (e) { console.error(e) } }
 function confirmDelete(item: CategoryNode) { if (item.children && item.children.length > 0) { ElMessage.warning('该分类下有子分类，请先删除子分类'); return }; deletingId.value = item.id; confirmTitle.value = `确认删除「${item.name}」？`; confirmMsg.value = `此操作不可恢复，确定要删除分类「${item.name}」吗？`; confirmVisible.value = true }
 async function doDelete() { if (deletingId.value === null) return; try { await deleteCategoryApi(deletingId.value); ElMessage.success('分类已删除'); confirmVisible.value = false; deletingId.value = null; await loadTree() } catch (e) { console.error(e); confirmVisible.value = false } }
@@ -1211,6 +1247,22 @@ onMounted(() => { loadTree() })
 .d-seo-arrow.open { transform: rotate(180deg); }
 .d-seo-body { padding: 1rem; border-top: 1px solid #e2e8f0; }
 .d-seo-body .d-field:last-child { margin-bottom: 0; }
+
+/* AI 生成 SEO 按钮行 */
+.ai-seo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+.ai-seo-hint {
+  font-size: 0.75rem;
+  color: var(--c-muted);
+}
 
 /* 删除确认 */
 .del-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }

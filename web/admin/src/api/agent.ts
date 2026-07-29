@@ -91,6 +91,87 @@ export async function expandProductDescription(
   }
 }
 
+/** Banner 文案方案 */
+export interface BannerCopyOption {
+  title: string
+  subtitle: string
+  btn_text: string
+}
+
+/**
+ * AI 生成 Banner 文案
+ */
+export async function generateBannerCopy(topic: string, subtitle?: string): Promise<BannerCopyOption[]> {
+  try {
+    const res = await request.post<any, { options: BannerCopyOption[] }>('/admin/v1/agent/generate-banner', {
+      topic,
+      subtitle: subtitle || ''
+    })
+    return res.options || []
+  } catch (error) {
+    console.error('AI 生成 Banner 文案失败:', error)
+    return []
+  }
+}
+
+/**
+ * AI 生成分类 SEO 信息
+ */
+export async function generateCategorySEO(categoryName: string, description?: string): Promise<{
+  seo_title: string
+  seo_keywords: string
+  seo_description: string
+}> {
+  try {
+    const res = await request.post<any, { seo_title: string; seo_keywords: string; seo_description: string }>('/admin/v1/agent/generate-seo', {
+      category_name: categoryName,
+      description: description || ''
+    })
+    return res
+  } catch (error) {
+    console.error('AI 生成 SEO 失败:', error)
+    return { seo_title: '', seo_keywords: '', seo_description: '' }
+  }
+}
+
+/**
+ * AI 生成运营摘要
+ */
+export async function generateSummary(data: {
+  today_orders: number
+  today_revenue: number
+  total_users: number
+  total_products: number
+  orders_trend?: string
+}): Promise<string> {
+  try {
+    const res = await request.post<any, { summary: string }>('/admin/v1/agent/generate-summary', data)
+    return res.summary || ''
+  } catch (error) {
+    console.error('AI 生成运营摘要失败:', error)
+    return ''
+  }
+}
+
+/** 推荐问题 */
+export interface SuggestQuestion {
+  label: string
+  query: string
+}
+
+/**
+ * AI 推荐快捷提问
+ */
+export async function suggestQuestions(): Promise<SuggestQuestion[]> {
+  try {
+    const res = await request.post<any, { questions: SuggestQuestion[] }>('/admin/v1/agent/suggest-questions')
+    return res.questions || []
+  } catch (error) {
+    console.error('获取推荐问题失败:', error)
+    return []
+  }
+}
+
 /**
  * 发送聊天消息（SSE 流式模式）
  * @param message 用户输入消息

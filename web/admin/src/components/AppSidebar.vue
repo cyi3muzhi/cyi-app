@@ -13,18 +13,20 @@
     <!-- 导航菜单 -->
     <nav class="sidebar-nav sidebar-scrollbar">
       <template v-for="group in menuGroups" :key="group.label">
-        <div v-show="!store.sidebarCollapsed" class="nav-label">{{ group.label }}</div>
-        <router-link
-          v-for="item in group.items"
-          :key="item.path"
-          :to="item.path"
-          class="nav-item"
-          :class="{ active: isActive(item.path) }"
-        >
-          <span class="nav-icon" v-html="item.icon"></span>
-          <span v-show="!store.sidebarCollapsed" class="nav-text">{{ item.label }}</span>
-          <span v-show="!store.sidebarCollapsed && item.badge" class="nav-badge">{{ item.badge }}</span>
-        </router-link>
+        <template v-if="group.items.length > 0">
+          <div v-show="!store.sidebarCollapsed" class="nav-label">{{ group.label }}</div>
+          <router-link
+            v-for="item in group.items"
+            :key="item.path"
+            :to="item.path"
+            class="nav-item"
+            :class="{ active: isActive(item.path) }"
+          >
+            <span class="nav-icon" v-html="item.icon"></span>
+            <span v-show="!store.sidebarCollapsed" class="nav-text">{{ item.label }}</span>
+            <span v-show="!store.sidebarCollapsed && item.badge" class="nav-badge">{{ item.badge }}</span>
+          </router-link>
+        </template>
       </template>
     </nav>
 
@@ -163,7 +165,7 @@ const menuGroups = computed<MenuGroup[]>(() => [
         label: 'Banner 管理',
         matchPrefix: true,
         icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="14" rx="2" ry="2"/><line x1="21" y1="9" x2="3" y2="9"/><line x1="21" y1="15" x2="3" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg>',
-        perm: ''
+        perm: 'banners.view'
       },
       {
         path: '/coupons',

@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	adminv1 "cyi-app/api/cin/admin/v1"
 	"cyi-app/app/cin/admin/internal/biz"
@@ -101,6 +103,217 @@ func buildExpandPrompt(name, content string) string {
 5. 不要使用 Markdown 格式
 6. 扩写后控制在 200-300 字之间
 请直接输出 HTML 内容：`
+}
+
+// GenerateBannerCopyRequest Banner 文案生成请求
+type GenerateBannerCopyRequest struct {
+	Topic    string `json:"topic"`    // 活动/商品主题
+	Subtitle string `json:"subtitle"` // 补充信息（可选）
+}
+
+// GenerateBannerCopyReply Banner 文案生成响应
+type GenerateBannerCopyReply struct {
+	Options []BannerCopyOption `json:"options"`
+}
+
+// BannerCopyOption 一组 Banner 文案方案
+type BannerCopyOption struct {
+	Title    string `json:"title"`
+	Subtitle string `json:"subtitle"`
+	BtnText  string `json:"btn_text"`
+}
+
+// GenerateBannerCopy AI 生成 Banner 文案
+func (s *AdminService) GenerateBannerCopy(ctx context.Context, req *GenerateBannerCopyRequest) (*GenerateBannerCopyReply, error) {
+	prompt := buildBannerCopyPrompt(req.Topic, req.Subtitle)
+	text, err := s.agentUC.GenerateText(ctx, prompt)
+	if err != nil {
+		return nil, err
+	}
+	// 尝试解析 JSON，失败时放在一条里
+	var options []BannerCopyOption
+	if err := json.Unmarshal([]byte(text), &options); err != nil || len(options) == 0 {
+		options = []BannerCopyOption{{Title: req.Topic, Subtitle: req.Subtitle, BtnText: "了解详情"}}
+	}
+	return &GenerateBannerCopyReply{Options: options}, nil
+}
+
+func buildBannerCopyPrompt(topic, subtitle string) string {
+	prompt := "请为以下活动/商品生成3组Banner文案：\n主题：" + topic
+	if subtitle != "" {
+		prompt += "\n补充信息：" + subtitle
+	}
+	prompt += `
+要求：
+1. 每组包含 title（标题，10字内）、subtitle（副标题，20字内）、btn_text（按钮文字，6字内）
+2. 标题要吸引眼球，副标题补充卖点，按钮文字有行动号召力
+3. 直接返回 JSON 数组，格式：[{"title":"...","subtitle":"...","btn_text":"..."}]
+4. 不要包含 Markdown 格式或多余文字
+请直接输出 JSON：`
+	return prompt
+}
+
+// GenerateCategorySEORequest 分类 SEO 生成请求
+type GenerateCategorySEORequest struct {
+	CategoryName string `json:"category_name"`
+	Description  string `json:"description,omitempty"` // 分类描述（可选）
+}
+
+// GenerateCategorySEOReply 分类 SEO 生成响应
+type GenerateCategorySEOReply struct {
+	SeoTitle       string `json:"seo_title"`
+	SeoKeywords    string `json:"seo_keywords"`
+	SeoDescription string `json:"seo_description"`
+}
+
+// GenerateCategorySEO AI 生成分类 SEO 信息
+func (s *AdminService) GenerateCategorySEO(ctx context.Context, req *GenerateCategorySEORequest) (*GenerateCategorySEOReply, error) {
+	prompt := buildCategorySEOPrompt(req.CategoryName, req.Description)
+	text, err := s.agentUC.GenerateText(ctx, prompt)
+	if err != nil {
+		return nil, err
+	}
+	// 尝试解析 JSON
+	var result GenerateCategorySEOReply
+	if err := json.Unmarshal([]byte(text), &result); err != nil {
+		result = GenerateCategorySEOReply{
+			SeoTitle:       req.CategoryName,
+			SeoKeywords:    req.CategoryName,
+			SeoDescription: req.CategoryName + " - 精选优质商品",
+		}
+	}
+	return &result, nil
+}
+
+func buildCategorySEOPrompt(name, desc string) string {
+	prompt := "请为商品分类「" + name + "」生成SEO信息。"
+	if desc != "" {
+		prompt += "\n分类描述：" + desc
+	}
+	prompt += `
+要求：
+1. seo_title：SEO标题，30字内，包含分类名称和核心关键词
+2. seo_keywords：SEO关键词，5-10个相关词，逗号分隔
+3. seo_description：SEO描述，80-120字，自然流畅
+4. 直接返回 JSON 格式：{"seo_title":"...","seo_keywords":"...","seo_description":"..."}
+5. 不要包含 Markdown 格式或多余文字
+请直接输出 JSON：`
+	return prompt
+}
+
+// GenerateSummaryRequest 运营摘要生成请求
+type GenerateSummaryRequest struct {
+	TodayOrders   int32   `json:"today_orders"`
+	TodayRevenue  float64 `json:"today_revenue"`
+	TotalUsers    int32   `json:"total_users"`
+	TotalProducts int32   `json:"total_products"`
+	OrdersTrend   string  `json:"orders_trend,omitempty"` // 近14天订单趋势描述（可选）
+}
+
+// GenerateSummaryReply 运营摘要生成响应
+type GenerateSummaryReply struct {
+	Summary string `json:"summary"`
+}
+
+// GenerateSummary AI 生成运营摘要
+func (s *AdminService) GenerateSummary(ctx context.Context, req *GenerateSummaryRequest) (*GenerateSummaryReply, error) {
+	prompt := buildSummaryPrompt(req)
+	text, err := s.agentUC.GenerateText(ctx, prompt)
+	if err != nil {
+		return nil, err
+	}
+	return &GenerateSummaryReply{Summary: text}, nil
+}
+
+func buildSummaryPrompt(req *GenerateSummaryRequest) string {
+	return `请根据以下商城经营数据生成一段简洁的运营日报摘要：
+
+今日订单数：` + formatInt(req.TodayOrders) + `
+今日营收：¥` + formatFloat(req.TodayRevenue) + `
+总用户数：` + formatInt(req.TotalUsers) + `
+总商品数：` + formatInt(req.TotalProducts) + `
+` + optionalTrend(req.OrdersTrend) + `
+要求：
+1. 语言简洁自然，突出关键数据和变化
+2. 如有异常数据（如订单突增/突降），给出提醒
+3. 字数控制在 80-150 字之间
+4. 不要包含 Markdown 格式
+请直接输出摘要文本：`
+}
+
+func formatInt(v int32) string     { return fmt.Sprintf("%d", v) }
+func formatFloat(v float64) string { return fmt.Sprintf("%.2f", v) }
+func optionalTrend(trend string) string {
+	if trend != "" {
+		return "订单趋势：" + trend + "\n"
+	}
+	return ""
+}
+
+// SuggestQuestionsReply 智能推荐问题响应
+type SuggestQuestionsReply struct {
+	Questions []SuggestQuestion `json:"questions"`
+}
+
+// SuggestQuestion 一个推荐问题
+type SuggestQuestion struct {
+	Label string `json:"label"`
+	Query string `json:"query"`
+}
+
+// SuggestQuestions AI 推荐快捷提问（根据角色权限）
+func (s *AdminService) SuggestQuestions(ctx context.Context) (*SuggestQuestionsReply, error) {
+	role, _ := mid.GetRoleFromClaims(ctx)
+
+	// 获取角色的模块权限
+	var allowedModules []string
+	if role != "" && s.rc != nil {
+		perms, err := s.rc.GetRolePermissions(ctx, role)
+		if err == nil {
+			for module, actions := range perms {
+				hasView := false
+				for _, v := range actions {
+					if v {
+						hasView = true
+						break
+					}
+				}
+				if hasView {
+					allowedModules = append(allowedModules, module)
+				}
+			}
+		}
+	}
+
+	prompt := "你是一个电商管理助手的智能推荐系统。"
+	if len(allowedModules) > 0 {
+		prompt += "当前管理员拥有以下模块的访问权限：" + strings.Join(allowedModules, "、") + "。"
+	} else {
+		prompt += "当前管理员尚未配置具体模块权限。"
+	}
+	prompt += `
+请根据可访问的模块，推荐4个管理员最可能想问的问题。
+要求：
+1. 每个问题要简洁明了，适合作为快捷提问按钮
+2. label 是按钮上显示的短文本（6字内），query 是实际发送的问题（30字内）
+3. 只推荐当前管理员有权限访问的模块相关的问题
+4. 直接返回 JSON 数组：[{"label":"...","query":"..."}]
+5. 不要包含 Markdown 格式或多余文字
+请直接输出 JSON：`
+	text, err := s.agentUC.GenerateText(ctx, prompt)
+	if err != nil {
+		return nil, err
+	}
+	var questions []SuggestQuestion
+	if err := json.Unmarshal([]byte(text), &questions); err != nil || len(questions) == 0 {
+		questions = []SuggestQuestion{
+			{Label: "今日订单", Query: "今天有多少订单？"},
+			{Label: "待处理订单", Query: "有哪些订单需要处理？"},
+			{Label: "热销商品", Query: "最近哪些商品卖得最好？"},
+			{Label: "用户增长", Query: "本月用户增长情况如何？"},
+		}
+	}
+	return &SuggestQuestionsReply{Questions: questions}, nil
 }
 
 // Chat 发送聊天消息（非流式）

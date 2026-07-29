@@ -40,13 +40,13 @@
         </div>
       </div>
 
-      <div class="agent-messages" ref="messagesContainer">
-        <div class="animated-bg">
-          <div class="bg-blob blob-1"></div>
-          <div class="bg-blob blob-2"></div>
-          <div class="bg-blob blob-3"></div>
-        </div>
+      <div class="animated-bg">
+        <div class="bg-blob blob-1"></div>
+        <div class="bg-blob blob-2"></div>
+        <div class="bg-blob blob-3"></div>
+      </div>
 
+      <div class="agent-messages" ref="messagesContainer">
         <div
           v-for="(msg, index) in messages"
           :key="msg.timestamp"
@@ -114,17 +114,25 @@
       </div>
 
       <div class="agent-quick-actions">
-        <span class="quick-label">💡 快捷提问</span>
+        <div class="quick-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span>推荐问题</span>
+        </div>
         <div class="quick-tags">
-          <el-tag
-            v-for="action in quickActions"
+          <button
+            v-for="(action, i) in quickActions"
             :key="action.label"
             class="quick-tag"
-            @click="handleQuickAction(action.query)"
             :disabled="isLoading"
+            :style="{ animationDelay: `${i * 0.08}s` }"
+            @click="handleQuickAction(action.query)"
           >
             {{ action.label }}
-          </el-tag>
+          </button>
         </div>
       </div>
     </div>
@@ -134,26 +142,46 @@
 <script setup lang="ts">
 import { ref, nextTick, watch, onMounted } from 'vue'
 import { useAppStore } from '../store/app'
-import { sendChatMessageStream, clearChatHistory, getChatHistory, type ChatMessage } from '../api/agent'
+import { sendChatMessageStream, clearChatHistory, getChatHistory, suggestQuestions, type ChatMessage, type SuggestQuestion } from '../api/agent'
+import { marked } from 'marked'
+
+// 配置 marked
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+})
 
 const store = useAppStore()
 const inputMessage = ref('')
 const isLoading = ref(false)
 const messagesContainer = ref<HTMLElement | null>(null)
 const messageRefs = ref<Map<number, HTMLElement>>(new Map())
-const scrollVelocity = ref(0)
 const isScrolling = ref(false)
 
 const messages = ref<ChatMessage[]>([])
-
-const quickActions = [
+const defaultQuickActions: SuggestQuestion[] = [
   { label: '今日订单统计', query: '今天有多少订单？' },
   { label: '待处理订单', query: '有哪些订单需要处理？' },
   { label: '热销商品', query: '最近哪些商品卖得最好？' },
   { label: '用户增长', query: '本月用户增长情况如何？' }
 ]
 
+const quickActions = ref<SuggestQuestion[]>([])
+
+/** 加载 AI 推荐的快捷提问 */
+let questionCacheTime = 0
+async function loadQuickQuestions() {
+  // 5分钟缓存
+  if (Date.now() - questionCacheTime < 5 * 60 * 1000 && quickActions.value.length > 0) return
+  const list = await suggestQuestions()
+  quickActions.value = list.length > 0 ? list : defaultQuickActions
+  questionCacheTime = Date.now()
+}
+
 onMounted(async () => {
+  // 加载 AI 推荐的快捷提问
+  loadQuickQuestions()
+
   // 尝试从后端加载聊天历史
   const history = await getChatHistory()
   if (history && history.length > 0) {
@@ -168,6 +196,7 @@ onMounted(async () => {
     ]
   }
 
+  // 滚动拉扯动效：监听滚动事件计算速度
   const container = messagesContainer.value
   if (container) {
     container.addEventListener('scroll', handleScroll, { passive: true })
@@ -183,16 +212,20 @@ watch(() => store.agentPanelOpen, (isOpen) => {
 })
 
 function scrollToBottom() {
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-  }
+  const container = messagesContainer.value
+  if (!container) return
+  container.scrollTop = container.scrollHeight
+  // DOM 高度突变时，浏览器布局还没完成，单次 scrollTop 可能不到位
+  // 用 rAF 在浏览器渲染后兜底再滚一次
+  requestAnimationFrame(() => {
+    if (container.scrollTop < container.scrollHeight) {
+      container.scrollTop = container.scrollHeight
+    }
+  })
 }
 
 function formatMessage(content: string): string {
-  return content
-    .replace(/\n/g, '<br/>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+  return marked.parse(content) as string
 }
 
 function formatTime(timestamp?: number): string {
@@ -227,22 +260,25 @@ async function handleSend() {
   // 批量更新：将多个 chunk 合并到同一帧更新，减少重排次数
   let pendingContent = ''
   let rafBatchId = 0
+  let firstChunk = true
 
-  function flushBatch() {
+  async function flushBatch() {
     if (!pendingContent) return
     assistantMsg.content += pendingContent
     pendingContent = ''
     messages.value = [...messages.value]
+    await nextTick()
     scrollToBottom()
+    firstChunk = false
   }
 
   try {
     await sendChatMessageStream(msg, (chunk) => {
       pendingContent += chunk
       if (!rafBatchId) {
-        rafBatchId = requestAnimationFrame(() => {
+        rafBatchId = requestAnimationFrame(async () => {
           rafBatchId = 0
-          flushBatch()
+          await flushBatch()
         })
       }
     })
@@ -251,12 +287,14 @@ async function handleSend() {
       cancelAnimationFrame(rafBatchId)
       rafBatchId = 0
     }
-    flushBatch()
+    await flushBatch()
   } catch (error) {
     // 如果完全没有内容，显示错误提示
     if (!assistantMsg.content) {
       assistantMsg.content = '抱歉，服务暂时不可用，请稍后再试。'
       messages.value = [...messages.value]
+      await nextTick()
+      scrollToBottom()
     }
   } finally {
     isLoading.value = false
@@ -268,6 +306,14 @@ async function handleSend() {
 function handleQuickAction(query: string) {
   inputMessage.value = query
   handleSend()
+}
+
+function setMessageRef(key: number, el: any) {
+  if (el && el instanceof HTMLElement) {
+    messageRefs.value.set(key, el)
+  } else if (!el) {
+    messageRefs.value.delete(key)
+  }
 }
 
 /** 清除聊天历史，开始新对话 */
@@ -286,28 +332,16 @@ async function handleClearHistory() {
   }
 }
 
-/* ────────── 消息元素 ref ────────── */
+// 已移除滚动拉扯动效
 
-function setMessageRef(key: number, el: any) {
-  if (el && el instanceof HTMLElement) {
-    messageRefs.value.set(key, el)
-  } else if (!el) {
-    messageRefs.value.delete(key)
-  }
-}
-
-/* ────────── 滚动拉扯动效 ────────── */
+/* ────────── 滚动拉扯动效（轻量版）────────── */
 
 let lastScrollTop = 0
 let lastScrollTime = 0
-let velocity = 0
+let scrollVelocity_val = 0
 let rafId = 0
-let offsets = new Map<number, number>() // msg.timestamp → current translateY
+let offsets = new Map<number, number>()
 
-/**
- * 估算消息元素到滚动视口中心的距离系数（0~1）
- * 越靠近视口中心系数越大，拉扯越明显
- */
 function getVisibilityFactor(el: HTMLElement, container: HTMLElement): number {
   const containerRect = container.getBoundingClientRect()
   const elRect = el.getBoundingClientRect()
@@ -318,77 +352,51 @@ function getVisibilityFactor(el: HTMLElement, container: HTMLElement): number {
   return Math.max(0, 1 - dist / maxDist)
 }
 
-/** 动画帧：不断衰减并回弹偏移 */
 function tick() {
   const container = messagesContainer.value
-  if (!container) {
-    rafId = requestAnimationFrame(tick)
-    return
-  }
+  if (!container) { rafId = requestAnimationFrame(tick); return }
 
-  // 平滑衰减速度
-  velocity *= 0.92
-  if (Math.abs(velocity) < 0.5) velocity = 0
+  scrollVelocity_val *= 0.88
+  if (Math.abs(scrollVelocity_val) < 0.3) scrollVelocity_val = 0
 
   let hasOffset = false
-
   messageRefs.value.forEach((el, key) => {
     const factor = getVisibilityFactor(el, container)
-    // 目标偏移 = 速度 * 距离系数 * 系数
-    const target = velocity * factor * 8
-
-    // 当前实际偏移
+    const target = scrollVelocity_val * factor * 5
     const current = offsets.get(key) || 0
-    // 向目标缓动（惯性 + 回弹）
-    const next = current + (target - current) * 0.08
+    const next = current + (target - current) * 0.07
 
-    if (Math.abs(next) > 0.3) {
+    if (Math.abs(next) > 0.5) {
       hasOffset = true
       el.style.transform = `translateY(${next.toFixed(1)}px)`
       el.style.transition = 'none'
       offsets.set(key, next)
     } else {
-      if (Math.abs(current) > 0.3) {
-        // 回正
+      if (Math.abs(current) > 0.5) {
         el.style.transform = ''
-        el.style.transition = 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)'
+        el.style.transition = 'transform 0.2s ease-out'
       }
       offsets.set(key, 0)
     }
   })
 
-  // 如果没有偏移且速度为 0，停止动画循环
-  if (!hasOffset && Math.abs(velocity) < 0.5) {
-    isScrolling.value = false
-    return
-  }
-
+  if (!hasOffset && Math.abs(scrollVelocity_val) < 0.3) { isScrolling.value = false; return }
   rafId = requestAnimationFrame(tick)
 }
 
-/** 容器滚动处理 */
 function handleScroll() {
   const container = messagesContainer.value
   if (!container) return
-
   const now = performance.now()
-  const deltaTime = now - lastScrollTime
-  const deltaY = container.scrollTop - lastScrollTop
-
-  // 计算速度（px/ms）
-  if (deltaTime > 0) {
-    velocity = deltaY / deltaTime * 16 // 归一化到约 60fps
-    // 限幅
-    velocity = Math.max(-30, Math.min(30, velocity))
+  const dt = now - lastScrollTime
+  const dy = container.scrollTop - lastScrollTop
+  if (dt > 0) {
+    scrollVelocity_val = dy / dt * 16
+    scrollVelocity_val = Math.max(-20, Math.min(20, scrollVelocity_val))
   }
-
   lastScrollTop = container.scrollTop
   lastScrollTime = now
-
-  if (!isScrolling.value) {
-    isScrolling.value = true
-    rafId = requestAnimationFrame(tick)
-  }
+  if (!isScrolling.value) { isScrolling.value = true; rafId = requestAnimationFrame(tick) }
 }
 </script>
 
@@ -605,7 +613,7 @@ function handleScroll() {
   padding: 20px;
   overflow-y: auto;
   position: relative;
-  background: linear-gradient(180deg, #fafbfc 0%, #f5f7fa 100%);
+  background: transparent;
 }
 
 .animated-bg {
@@ -783,6 +791,78 @@ function handleScroll() {
   word-break: break-word;
 }
 
+/* Markdown 表格样式 */
+.message-text table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  margin: 8px 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.message-text th,
+.message-text td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.message-text th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #334155;
+  font-size: 0.75rem;
+  text-transform: none;
+}
+
+.message-text td {
+  color: #475569;
+}
+
+.message-text tr:last-child td {
+  border-bottom: none;
+}
+
+.message-text tr:hover td {
+  background: #fafbfc;
+}
+
+/* Markdown 列表样式 */
+.message-text ul,
+.message-text ol {
+  padding-left: 20px;
+  margin: 6px 0;
+}
+
+.message-text li {
+  margin: 3px 0;
+}
+
+/* Markdown 代码 */
+.message-text code {
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  color: #e11d48;
+}
+
+.message-text pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 12px 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.message-text pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
 .message-text strong {
   font-weight: 600;
 }
@@ -898,49 +978,72 @@ function handleScroll() {
 }
 
 .agent-quick-actions {
-  padding: 16px 20px;
-  background: rgba(248, 250, 252, 0.6);
+  padding: 14px 20px 16px;
+  background: rgba(248, 250, 252, 0.8);
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(0, 0, 0, 0.03);
 }
 
-.quick-label {
+.quick-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.75rem;
-  color: #64748b;
+  font-weight: 500;
+  color: #94a3b8;
   margin-bottom: 10px;
-  display: block;
 }
 
 .quick-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .quick-tag {
-  font-size: 0.75rem;
-  padding: 8px 14px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(102, 126, 234, 0.2);
-  color: #667eea;
-  border-radius: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #475569;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  font-family: inherit;
+  line-height: 1.4;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  animation: quickTagIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-.quick-tag:hover:not(.is-disabled) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  border-color: transparent;
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 
-    0 8px 24px rgba(102, 126, 234, 0.4),
-    0 0 20px rgba(102, 126, 234, 0.2);
+@keyframes quickTagIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.quick-tag.is-disabled {
-  opacity: 0.5;
+.quick-tag:hover:not(:disabled) {
+  color: #667eea;
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.04);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.12);
+}
+
+.quick-tag:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.quick-tag:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
