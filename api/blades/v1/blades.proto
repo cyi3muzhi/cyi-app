@@ -30,6 +30,18 @@ service Blades {
     rpc DeleteKnowledge (DeleteKnowledgeRequest) returns (DeleteKnowledgeReply) {
         option (google.api.http) = { post: "/blades/v1/knowledge/delete" body: "*" };
     }
+    // GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
+    rpc GenerateText (GenerateTextRequest) returns (GenerateTextReply) {
+        option (google.api.http) = { post: "/blades/v1/generate/text" body: "*" };
+    }
+}
+
+message GenerateTextRequest {
+    string prompt = 1 [(validate.rules).string = {min_len: 1, max_len: 2000}];
+}
+
+message GenerateTextReply {
+    string text = 1;
 }
 
 message ChatRequest {

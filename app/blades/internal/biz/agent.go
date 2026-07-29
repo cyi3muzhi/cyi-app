@@ -284,6 +284,20 @@ func (uc *AgentUseCase) ClearHistory(ctx context.Context, userID int64, source s
 	return uc.rdb.Del(ctx, sessionKey(source, userID)).Err()
 }
 
+// GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
+func (uc *AgentUseCase) GenerateText(ctx context.Context, prompt string) (string, error) {
+	inst, err := uc.factory.GetOrCreate(ctx, "admin", "super_admin")
+	if err != nil {
+		return "", fmt.Errorf("get agent failed: %w", err)
+	}
+	instruction := blades.SystemMessage("你是一个专业的内容创作助手。请根据用户的要求生成文本内容，直接输出结果，不要有多余的解释。")
+	response, err := inst.Chat(ctx, prompt, false, nil, instruction)
+	if err != nil {
+		return "", err
+	}
+	return response, nil
+}
+
 // HistoryMessage 历史消息
 type HistoryMessage struct {
 	Role      string `json:"role"`

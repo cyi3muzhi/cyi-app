@@ -45,6 +45,53 @@ export async function sendChatMessage(message: string): Promise<string> {
 }
 
 /**
+ * AI 生成商品描述 - 调用专用接口
+ * @param productName 商品名称
+ * @param category 商品分类
+ * @param specs 规格信息（可选）
+ * @returns Promise<string> 生成的描述文本
+ */
+export async function generateProductDescription(
+  productName: string,
+  category?: string,
+  specs?: string
+): Promise<string> {
+  try {
+    const res = await request.post<any, { description: string }>('/admin/v1/agent/generate-description', {
+      product_name: productName,
+      category: category || '',
+      specs: specs || ''
+    })
+    return res.description || ''
+  } catch (error) {
+    console.error('AI 生成描述失败:', error)
+    return ''
+  }
+}
+
+/**
+ * AI 扩写商品描述 - 调用专用接口
+ * @param existingDesc 现有描述文本
+ * @param productName 商品名称
+ * @returns Promise<string> 扩写后的文本
+ */
+export async function expandProductDescription(
+  existingDesc: string,
+  productName: string
+): Promise<string> {
+  try {
+    const res = await request.post<any, { description: string }>('/admin/v1/agent/expand-description', {
+      product_name: productName,
+      content: existingDesc
+    })
+    return res.description || ''
+  } catch (error) {
+    console.error('AI 扩写失败:', error)
+    return ''
+  }
+}
+
+/**
  * 发送聊天消息（SSE 流式模式）
  * @param message 用户输入消息
  * @param onChunk 接收流式数据的回调函数

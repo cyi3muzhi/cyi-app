@@ -43,6 +43,19 @@ func (uc *AgentUseCase) Chat(ctx context.Context, adminID int64, role string, me
 	return resp.Message, nil
 }
 
+// GenerateText 生成文本（不保存聊天历史），直接调 blades GenerateText 接口
+func (uc *AgentUseCase) GenerateText(ctx context.Context, prompt string) (string, error) {
+	req := &bladesRpc.GenerateTextRequest{
+		Prompt: prompt,
+	}
+	resp, err := uc.client.GenerateText(ctx, req)
+	if err != nil {
+		uc.log.Error("Agent GenerateText failed: %v", err)
+		return "", err
+	}
+	return resp.Text, nil
+}
+
 // ChatStream 流式聊天
 func (uc *AgentUseCase) ChatStream(ctx context.Context, adminID int64, role string, message string, chunkCb func(chunk string)) (string, error) {
 	req := &bladesRpc.ChatStreamRequest{

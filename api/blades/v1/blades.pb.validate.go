@@ -57,16 +57,42 @@ func (m *ChatRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetMessage()); l < 1 || l > 200 {
+	if m.GetUserId() <= 0 {
 		err := ChatRequestValidationError{
-			field:  "Message",
-			reason: "value length must be between 1 and 200 runes, inclusive",
+			field:  "UserId",
+			reason: "value must be greater than 0",
 		}
 		if !all {
 			return err
 		}
 		errors = append(errors, err)
 	}
+
+	if _, ok := _ChatRequest_Source_InLookup[m.GetSource()]; !ok {
+		err := ChatRequestValidationError{
+			field:  "Source",
+			reason: "value must be in list [admin user other]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Role
+
+	if l := utf8.RuneCountInString(m.GetMessage()); l < 1 || l > 2000 {
+		err := ChatRequestValidationError{
+			field:  "Message",
+			reason: "value length must be between 1 and 2000 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for EnableRag
 
 	if len(errors) > 0 {
 		return ChatRequestMultiError(errors)
@@ -144,6 +170,12 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ChatRequestValidationError{}
+
+var _ChatRequest_Source_InLookup = map[string]struct{}{
+	"admin": {},
+	"user":  {},
+	"other": {},
+}
 
 // Validate checks the field values on ChatReply with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
@@ -245,3 +277,1794 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ChatReplyValidationError{}
+
+// Validate checks the field values on ChatStreamRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *ChatStreamRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ChatStreamRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ChatStreamRequestMultiError, or nil if none found.
+func (m *ChatStreamRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ChatStreamRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetUserId() <= 0 {
+		err := ChatStreamRequestValidationError{
+			field:  "UserId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if _, ok := _ChatStreamRequest_Source_InLookup[m.GetSource()]; !ok {
+		err := ChatStreamRequestValidationError{
+			field:  "Source",
+			reason: "value must be in list [admin user other]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Role
+
+	if l := utf8.RuneCountInString(m.GetMessage()); l < 1 || l > 2000 {
+		err := ChatStreamRequestValidationError{
+			field:  "Message",
+			reason: "value length must be between 1 and 2000 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for EnableRag
+
+	if len(errors) > 0 {
+		return ChatStreamRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ChatStreamRequestMultiError is an error wrapping multiple validation errors
+// returned by ChatStreamRequest.ValidateAll() if the designated constraints
+// aren't met.
+type ChatStreamRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ChatStreamRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ChatStreamRequestMultiError) AllErrors() []error { return m }
+
+// ChatStreamRequestValidationError is the validation error returned by
+// ChatStreamRequest.Validate if the designated constraints aren't met.
+type ChatStreamRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ChatStreamRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ChatStreamRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ChatStreamRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ChatStreamRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ChatStreamRequestValidationError) ErrorName() string {
+	return "ChatStreamRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ChatStreamRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sChatStreamRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ChatStreamRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ChatStreamRequestValidationError{}
+
+var _ChatStreamRequest_Source_InLookup = map[string]struct{}{
+	"admin": {},
+	"user":  {},
+	"other": {},
+}
+
+// Validate checks the field values on ChatChunkReply with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *ChatChunkReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ChatChunkReply with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in ChatChunkReplyMultiError,
+// or nil if none found.
+func (m *ChatChunkReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ChatChunkReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Chunk
+
+	// no validation rules for Done
+
+	if len(errors) > 0 {
+		return ChatChunkReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// ChatChunkReplyMultiError is an error wrapping multiple validation errors
+// returned by ChatChunkReply.ValidateAll() if the designated constraints
+// aren't met.
+type ChatChunkReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ChatChunkReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ChatChunkReplyMultiError) AllErrors() []error { return m }
+
+// ChatChunkReplyValidationError is the validation error returned by
+// ChatChunkReply.Validate if the designated constraints aren't met.
+type ChatChunkReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ChatChunkReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ChatChunkReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ChatChunkReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ChatChunkReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ChatChunkReplyValidationError) ErrorName() string { return "ChatChunkReplyValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ChatChunkReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sChatChunkReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ChatChunkReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ChatChunkReplyValidationError{}
+
+// Validate checks the field values on GetChatHistoryRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetChatHistoryRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetChatHistoryRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetChatHistoryRequestMultiError, or nil if none found.
+func (m *GetChatHistoryRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetChatHistoryRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetUserId() <= 0 {
+		err := GetChatHistoryRequestValidationError{
+			field:  "UserId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Source
+
+	if len(errors) > 0 {
+		return GetChatHistoryRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetChatHistoryRequestMultiError is an error wrapping multiple validation
+// errors returned by GetChatHistoryRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetChatHistoryRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetChatHistoryRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetChatHistoryRequestMultiError) AllErrors() []error { return m }
+
+// GetChatHistoryRequestValidationError is the validation error returned by
+// GetChatHistoryRequest.Validate if the designated constraints aren't met.
+type GetChatHistoryRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetChatHistoryRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetChatHistoryRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetChatHistoryRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetChatHistoryRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetChatHistoryRequestValidationError) ErrorName() string {
+	return "GetChatHistoryRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetChatHistoryRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetChatHistoryRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetChatHistoryRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetChatHistoryRequestValidationError{}
+
+// Validate checks the field values on HistoryMessage with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *HistoryMessage) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on HistoryMessage with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in HistoryMessageMultiError,
+// or nil if none found.
+func (m *HistoryMessage) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *HistoryMessage) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Role
+
+	// no validation rules for Content
+
+	// no validation rules for Timestamp
+
+	if len(errors) > 0 {
+		return HistoryMessageMultiError(errors)
+	}
+
+	return nil
+}
+
+// HistoryMessageMultiError is an error wrapping multiple validation errors
+// returned by HistoryMessage.ValidateAll() if the designated constraints
+// aren't met.
+type HistoryMessageMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m HistoryMessageMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m HistoryMessageMultiError) AllErrors() []error { return m }
+
+// HistoryMessageValidationError is the validation error returned by
+// HistoryMessage.Validate if the designated constraints aren't met.
+type HistoryMessageValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e HistoryMessageValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e HistoryMessageValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e HistoryMessageValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e HistoryMessageValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e HistoryMessageValidationError) ErrorName() string { return "HistoryMessageValidationError" }
+
+// Error satisfies the builtin error interface
+func (e HistoryMessageValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sHistoryMessage.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = HistoryMessageValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = HistoryMessageValidationError{}
+
+// Validate checks the field values on GetChatHistoryReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetChatHistoryReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetChatHistoryReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetChatHistoryReplyMultiError, or nil if none found.
+func (m *GetChatHistoryReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetChatHistoryReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetMessages() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetChatHistoryReplyValidationError{
+						field:  fmt.Sprintf("Messages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetChatHistoryReplyValidationError{
+						field:  fmt.Sprintf("Messages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetChatHistoryReplyValidationError{
+					field:  fmt.Sprintf("Messages[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GetChatHistoryReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetChatHistoryReplyMultiError is an error wrapping multiple validation
+// errors returned by GetChatHistoryReply.ValidateAll() if the designated
+// constraints aren't met.
+type GetChatHistoryReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetChatHistoryReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetChatHistoryReplyMultiError) AllErrors() []error { return m }
+
+// GetChatHistoryReplyValidationError is the validation error returned by
+// GetChatHistoryReply.Validate if the designated constraints aren't met.
+type GetChatHistoryReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetChatHistoryReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetChatHistoryReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetChatHistoryReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetChatHistoryReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetChatHistoryReplyValidationError) ErrorName() string {
+	return "GetChatHistoryReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetChatHistoryReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetChatHistoryReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetChatHistoryReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetChatHistoryReplyValidationError{}
+
+// Validate checks the field values on ClearChatHistoryRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ClearChatHistoryRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ClearChatHistoryRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ClearChatHistoryRequestMultiError, or nil if none found.
+func (m *ClearChatHistoryRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ClearChatHistoryRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetUserId() <= 0 {
+		err := ClearChatHistoryRequestValidationError{
+			field:  "UserId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Source
+
+	if len(errors) > 0 {
+		return ClearChatHistoryRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ClearChatHistoryRequestMultiError is an error wrapping multiple validation
+// errors returned by ClearChatHistoryRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ClearChatHistoryRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ClearChatHistoryRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ClearChatHistoryRequestMultiError) AllErrors() []error { return m }
+
+// ClearChatHistoryRequestValidationError is the validation error returned by
+// ClearChatHistoryRequest.Validate if the designated constraints aren't met.
+type ClearChatHistoryRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ClearChatHistoryRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ClearChatHistoryRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ClearChatHistoryRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ClearChatHistoryRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ClearChatHistoryRequestValidationError) ErrorName() string {
+	return "ClearChatHistoryRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ClearChatHistoryRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sClearChatHistoryRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ClearChatHistoryRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ClearChatHistoryRequestValidationError{}
+
+// Validate checks the field values on ClearChatHistoryReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ClearChatHistoryReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ClearChatHistoryReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ClearChatHistoryReplyMultiError, or nil if none found.
+func (m *ClearChatHistoryReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ClearChatHistoryReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Success
+
+	if len(errors) > 0 {
+		return ClearChatHistoryReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// ClearChatHistoryReplyMultiError is an error wrapping multiple validation
+// errors returned by ClearChatHistoryReply.ValidateAll() if the designated
+// constraints aren't met.
+type ClearChatHistoryReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ClearChatHistoryReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ClearChatHistoryReplyMultiError) AllErrors() []error { return m }
+
+// ClearChatHistoryReplyValidationError is the validation error returned by
+// ClearChatHistoryReply.Validate if the designated constraints aren't met.
+type ClearChatHistoryReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ClearChatHistoryReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ClearChatHistoryReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ClearChatHistoryReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ClearChatHistoryReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ClearChatHistoryReplyValidationError) ErrorName() string {
+	return "ClearChatHistoryReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ClearChatHistoryReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sClearChatHistoryReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ClearChatHistoryReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ClearChatHistoryReplyValidationError{}
+
+// Validate checks the field values on UploadKnowledgeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UploadKnowledgeRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UploadKnowledgeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UploadKnowledgeRequestMultiError, or nil if none found.
+func (m *UploadKnowledgeRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UploadKnowledgeRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	switch v := m.Data.(type) {
+	case *UploadKnowledgeRequest_Meta:
+		if v == nil {
+			err := UploadKnowledgeRequestValidationError{
+				field:  "Data",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetMeta()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, UploadKnowledgeRequestValidationError{
+						field:  "Meta",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, UploadKnowledgeRequestValidationError{
+						field:  "Meta",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetMeta()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return UploadKnowledgeRequestValidationError{
+					field:  "Meta",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *UploadKnowledgeRequest_ContentChunk:
+		if v == nil {
+			err := UploadKnowledgeRequestValidationError{
+				field:  "Data",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+		// no validation rules for ContentChunk
+	default:
+		_ = v // ensures v is used
+	}
+
+	if len(errors) > 0 {
+		return UploadKnowledgeRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UploadKnowledgeRequestMultiError is an error wrapping multiple validation
+// errors returned by UploadKnowledgeRequest.ValidateAll() if the designated
+// constraints aren't met.
+type UploadKnowledgeRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UploadKnowledgeRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UploadKnowledgeRequestMultiError) AllErrors() []error { return m }
+
+// UploadKnowledgeRequestValidationError is the validation error returned by
+// UploadKnowledgeRequest.Validate if the designated constraints aren't met.
+type UploadKnowledgeRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UploadKnowledgeRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UploadKnowledgeRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UploadKnowledgeRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UploadKnowledgeRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UploadKnowledgeRequestValidationError) ErrorName() string {
+	return "UploadKnowledgeRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UploadKnowledgeRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUploadKnowledgeRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UploadKnowledgeRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UploadKnowledgeRequestValidationError{}
+
+// Validate checks the field values on KnowledgeMeta with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *KnowledgeMeta) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on KnowledgeMeta with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in KnowledgeMetaMultiError, or
+// nil if none found.
+func (m *KnowledgeMeta) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *KnowledgeMeta) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DocId
+
+	if _, ok := _KnowledgeMeta_Source_InLookup[m.GetSource()]; !ok {
+		err := KnowledgeMetaValidationError{
+			field:  "Source",
+			reason: "value must be in list [admin user public]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Title
+
+	// no validation rules for ContentType
+
+	// no validation rules for Tags
+
+	if len(errors) > 0 {
+		return KnowledgeMetaMultiError(errors)
+	}
+
+	return nil
+}
+
+// KnowledgeMetaMultiError is an error wrapping multiple validation errors
+// returned by KnowledgeMeta.ValidateAll() if the designated constraints
+// aren't met.
+type KnowledgeMetaMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m KnowledgeMetaMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m KnowledgeMetaMultiError) AllErrors() []error { return m }
+
+// KnowledgeMetaValidationError is the validation error returned by
+// KnowledgeMeta.Validate if the designated constraints aren't met.
+type KnowledgeMetaValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e KnowledgeMetaValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e KnowledgeMetaValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e KnowledgeMetaValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e KnowledgeMetaValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e KnowledgeMetaValidationError) ErrorName() string { return "KnowledgeMetaValidationError" }
+
+// Error satisfies the builtin error interface
+func (e KnowledgeMetaValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sKnowledgeMeta.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = KnowledgeMetaValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = KnowledgeMetaValidationError{}
+
+var _KnowledgeMeta_Source_InLookup = map[string]struct{}{
+	"admin":  {},
+	"user":   {},
+	"public": {},
+}
+
+// Validate checks the field values on UploadKnowledgeReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UploadKnowledgeReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UploadKnowledgeReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UploadKnowledgeReplyMultiError, or nil if none found.
+func (m *UploadKnowledgeReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UploadKnowledgeReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DocId
+
+	// no validation rules for ChunkCount
+
+	// no validation rules for TokenCount
+
+	if len(errors) > 0 {
+		return UploadKnowledgeReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// UploadKnowledgeReplyMultiError is an error wrapping multiple validation
+// errors returned by UploadKnowledgeReply.ValidateAll() if the designated
+// constraints aren't met.
+type UploadKnowledgeReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UploadKnowledgeReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UploadKnowledgeReplyMultiError) AllErrors() []error { return m }
+
+// UploadKnowledgeReplyValidationError is the validation error returned by
+// UploadKnowledgeReply.Validate if the designated constraints aren't met.
+type UploadKnowledgeReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UploadKnowledgeReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UploadKnowledgeReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UploadKnowledgeReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UploadKnowledgeReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UploadKnowledgeReplyValidationError) ErrorName() string {
+	return "UploadKnowledgeReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UploadKnowledgeReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUploadKnowledgeReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UploadKnowledgeReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UploadKnowledgeReplyValidationError{}
+
+// Validate checks the field values on SearchKnowledgeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SearchKnowledgeRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SearchKnowledgeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SearchKnowledgeRequestMultiError, or nil if none found.
+func (m *SearchKnowledgeRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SearchKnowledgeRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Source
+
+	if utf8.RuneCountInString(m.GetQuery()) < 1 {
+		err := SearchKnowledgeRequestValidationError{
+			field:  "Query",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for TopK
+
+	if len(errors) > 0 {
+		return SearchKnowledgeRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SearchKnowledgeRequestMultiError is an error wrapping multiple validation
+// errors returned by SearchKnowledgeRequest.ValidateAll() if the designated
+// constraints aren't met.
+type SearchKnowledgeRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SearchKnowledgeRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SearchKnowledgeRequestMultiError) AllErrors() []error { return m }
+
+// SearchKnowledgeRequestValidationError is the validation error returned by
+// SearchKnowledgeRequest.Validate if the designated constraints aren't met.
+type SearchKnowledgeRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SearchKnowledgeRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SearchKnowledgeRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SearchKnowledgeRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SearchKnowledgeRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SearchKnowledgeRequestValidationError) ErrorName() string {
+	return "SearchKnowledgeRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SearchKnowledgeRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSearchKnowledgeRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SearchKnowledgeRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SearchKnowledgeRequestValidationError{}
+
+// Validate checks the field values on KnowledgeChunk with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *KnowledgeChunk) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on KnowledgeChunk with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in KnowledgeChunkMultiError,
+// or nil if none found.
+func (m *KnowledgeChunk) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *KnowledgeChunk) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DocId
+
+	// no validation rules for Title
+
+	// no validation rules for Content
+
+	// no validation rules for Score
+
+	// no validation rules for Tags
+
+	if len(errors) > 0 {
+		return KnowledgeChunkMultiError(errors)
+	}
+
+	return nil
+}
+
+// KnowledgeChunkMultiError is an error wrapping multiple validation errors
+// returned by KnowledgeChunk.ValidateAll() if the designated constraints
+// aren't met.
+type KnowledgeChunkMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m KnowledgeChunkMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m KnowledgeChunkMultiError) AllErrors() []error { return m }
+
+// KnowledgeChunkValidationError is the validation error returned by
+// KnowledgeChunk.Validate if the designated constraints aren't met.
+type KnowledgeChunkValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e KnowledgeChunkValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e KnowledgeChunkValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e KnowledgeChunkValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e KnowledgeChunkValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e KnowledgeChunkValidationError) ErrorName() string { return "KnowledgeChunkValidationError" }
+
+// Error satisfies the builtin error interface
+func (e KnowledgeChunkValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sKnowledgeChunk.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = KnowledgeChunkValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = KnowledgeChunkValidationError{}
+
+// Validate checks the field values on SearchKnowledgeReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SearchKnowledgeReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SearchKnowledgeReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SearchKnowledgeReplyMultiError, or nil if none found.
+func (m *SearchKnowledgeReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SearchKnowledgeReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetChunks() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, SearchKnowledgeReplyValidationError{
+						field:  fmt.Sprintf("Chunks[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, SearchKnowledgeReplyValidationError{
+						field:  fmt.Sprintf("Chunks[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return SearchKnowledgeReplyValidationError{
+					field:  fmt.Sprintf("Chunks[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return SearchKnowledgeReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// SearchKnowledgeReplyMultiError is an error wrapping multiple validation
+// errors returned by SearchKnowledgeReply.ValidateAll() if the designated
+// constraints aren't met.
+type SearchKnowledgeReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SearchKnowledgeReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SearchKnowledgeReplyMultiError) AllErrors() []error { return m }
+
+// SearchKnowledgeReplyValidationError is the validation error returned by
+// SearchKnowledgeReply.Validate if the designated constraints aren't met.
+type SearchKnowledgeReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SearchKnowledgeReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SearchKnowledgeReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SearchKnowledgeReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SearchKnowledgeReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SearchKnowledgeReplyValidationError) ErrorName() string {
+	return "SearchKnowledgeReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SearchKnowledgeReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSearchKnowledgeReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SearchKnowledgeReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SearchKnowledgeReplyValidationError{}
+
+// Validate checks the field values on DeleteKnowledgeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteKnowledgeRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteKnowledgeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeleteKnowledgeRequestMultiError, or nil if none found.
+func (m *DeleteKnowledgeRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteKnowledgeRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DocId
+
+	// no validation rules for Source
+
+	if len(errors) > 0 {
+		return DeleteKnowledgeRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteKnowledgeRequestMultiError is an error wrapping multiple validation
+// errors returned by DeleteKnowledgeRequest.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteKnowledgeRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteKnowledgeRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteKnowledgeRequestMultiError) AllErrors() []error { return m }
+
+// DeleteKnowledgeRequestValidationError is the validation error returned by
+// DeleteKnowledgeRequest.Validate if the designated constraints aren't met.
+type DeleteKnowledgeRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteKnowledgeRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteKnowledgeRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteKnowledgeRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteKnowledgeRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteKnowledgeRequestValidationError) ErrorName() string {
+	return "DeleteKnowledgeRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteKnowledgeRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteKnowledgeRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteKnowledgeRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteKnowledgeRequestValidationError{}
+
+// Validate checks the field values on DeleteKnowledgeReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteKnowledgeReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteKnowledgeReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeleteKnowledgeReplyMultiError, or nil if none found.
+func (m *DeleteKnowledgeReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteKnowledgeReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Success
+
+	if len(errors) > 0 {
+		return DeleteKnowledgeReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteKnowledgeReplyMultiError is an error wrapping multiple validation
+// errors returned by DeleteKnowledgeReply.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteKnowledgeReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteKnowledgeReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteKnowledgeReplyMultiError) AllErrors() []error { return m }
+
+// DeleteKnowledgeReplyValidationError is the validation error returned by
+// DeleteKnowledgeReply.Validate if the designated constraints aren't met.
+type DeleteKnowledgeReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteKnowledgeReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteKnowledgeReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteKnowledgeReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteKnowledgeReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteKnowledgeReplyValidationError) ErrorName() string {
+	return "DeleteKnowledgeReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteKnowledgeReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteKnowledgeReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteKnowledgeReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteKnowledgeReplyValidationError{}

@@ -1495,6 +1495,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.blades.v1.ChatChunkReply'
+    /blades/v1/generate/text:
+        post:
+            tags:
+                - Blades
+            description: GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
+            operationId: Blades_GenerateText
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.blades.v1.GenerateTextRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.blades.v1.GenerateTextReply'
     /blades/v1/knowledge/delete:
         post:
             tags:
@@ -2012,6 +2031,16 @@ components:
                 docId:
                     type: string
                 source:
+                    type: string
+        api.blades.v1.GenerateTextReply:
+            type: object
+            properties:
+                text:
+                    type: string
+        api.blades.v1.GenerateTextRequest:
+            type: object
+            properties:
+                prompt:
                     type: string
         api.blades.v1.GetChatHistoryReply:
             type: object

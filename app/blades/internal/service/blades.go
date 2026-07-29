@@ -150,3 +150,13 @@ func (s *BladesService) DeleteKnowledge(ctx context.Context, req *pb.DeleteKnowl
 	}
 	return &pb.DeleteKnowledgeReply{Success: true}, nil
 }
+
+// GenerateText 生成文本（不保存聊天历史）
+func (s *BladesService) GenerateText(ctx context.Context, req *pb.GenerateTextRequest) (*pb.GenerateTextReply, error) {
+	text, err := s.agentUC.GenerateText(ctx, req.Prompt)
+	if err != nil {
+		s.log.Error("GenerateText failed: %v", err)
+		return nil, err
+	}
+	return &pb.GenerateTextReply{Text: text}, nil
+}

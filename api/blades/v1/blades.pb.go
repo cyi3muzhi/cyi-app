@@ -23,6 +23,94 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type GenerateTextRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Prompt        string                 `protobuf:"bytes,1,opt,name=prompt,proto3" json:"prompt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GenerateTextRequest) Reset() {
+	*x = GenerateTextRequest{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GenerateTextRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GenerateTextRequest) ProtoMessage() {}
+
+func (x *GenerateTextRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GenerateTextRequest.ProtoReflect.Descriptor instead.
+func (*GenerateTextRequest) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *GenerateTextRequest) GetPrompt() string {
+	if x != nil {
+		return x.Prompt
+	}
+	return ""
+}
+
+type GenerateTextReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GenerateTextReply) Reset() {
+	*x = GenerateTextReply{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GenerateTextReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GenerateTextReply) ProtoMessage() {}
+
+func (x *GenerateTextReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GenerateTextReply.ProtoReflect.Descriptor instead.
+func (*GenerateTextReply) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GenerateTextReply) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
 type ChatRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -36,7 +124,7 @@ type ChatRequest struct {
 
 func (x *ChatRequest) Reset() {
 	*x = ChatRequest{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[0]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48,7 +136,7 @@ func (x *ChatRequest) String() string {
 func (*ChatRequest) ProtoMessage() {}
 
 func (x *ChatRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[0]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61,7 +149,7 @@ func (x *ChatRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatRequest.ProtoReflect.Descriptor instead.
 func (*ChatRequest) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{0}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ChatRequest) GetUserId() int64 {
@@ -108,7 +196,7 @@ type ChatReply struct {
 
 func (x *ChatReply) Reset() {
 	*x = ChatReply{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[1]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -120,7 +208,7 @@ func (x *ChatReply) String() string {
 func (*ChatReply) ProtoMessage() {}
 
 func (x *ChatReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[1]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -133,7 +221,7 @@ func (x *ChatReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatReply.ProtoReflect.Descriptor instead.
 func (*ChatReply) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{1}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ChatReply) GetMessage() string {
@@ -156,7 +244,7 @@ type ChatStreamRequest struct {
 
 func (x *ChatStreamRequest) Reset() {
 	*x = ChatStreamRequest{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[2]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -168,7 +256,7 @@ func (x *ChatStreamRequest) String() string {
 func (*ChatStreamRequest) ProtoMessage() {}
 
 func (x *ChatStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[2]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -181,7 +269,7 @@ func (x *ChatStreamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatStreamRequest.ProtoReflect.Descriptor instead.
 func (*ChatStreamRequest) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{2}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ChatStreamRequest) GetUserId() int64 {
@@ -229,7 +317,7 @@ type ChatChunkReply struct {
 
 func (x *ChatChunkReply) Reset() {
 	*x = ChatChunkReply{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[3]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -241,7 +329,7 @@ func (x *ChatChunkReply) String() string {
 func (*ChatChunkReply) ProtoMessage() {}
 
 func (x *ChatChunkReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[3]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -254,7 +342,7 @@ func (x *ChatChunkReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatChunkReply.ProtoReflect.Descriptor instead.
 func (*ChatChunkReply) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{3}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ChatChunkReply) GetChunk() string {
@@ -281,7 +369,7 @@ type GetChatHistoryRequest struct {
 
 func (x *GetChatHistoryRequest) Reset() {
 	*x = GetChatHistoryRequest{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[4]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -293,7 +381,7 @@ func (x *GetChatHistoryRequest) String() string {
 func (*GetChatHistoryRequest) ProtoMessage() {}
 
 func (x *GetChatHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[4]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -306,7 +394,7 @@ func (x *GetChatHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetChatHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetChatHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{4}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetChatHistoryRequest) GetUserId() int64 {
@@ -334,7 +422,7 @@ type HistoryMessage struct {
 
 func (x *HistoryMessage) Reset() {
 	*x = HistoryMessage{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[5]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -346,7 +434,7 @@ func (x *HistoryMessage) String() string {
 func (*HistoryMessage) ProtoMessage() {}
 
 func (x *HistoryMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[5]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -359,7 +447,7 @@ func (x *HistoryMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HistoryMessage.ProtoReflect.Descriptor instead.
 func (*HistoryMessage) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{5}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *HistoryMessage) GetRole() string {
@@ -392,7 +480,7 @@ type GetChatHistoryReply struct {
 
 func (x *GetChatHistoryReply) Reset() {
 	*x = GetChatHistoryReply{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[6]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -404,7 +492,7 @@ func (x *GetChatHistoryReply) String() string {
 func (*GetChatHistoryReply) ProtoMessage() {}
 
 func (x *GetChatHistoryReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[6]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -417,7 +505,7 @@ func (x *GetChatHistoryReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetChatHistoryReply.ProtoReflect.Descriptor instead.
 func (*GetChatHistoryReply) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{6}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetChatHistoryReply) GetMessages() []*HistoryMessage {
@@ -437,7 +525,7 @@ type ClearChatHistoryRequest struct {
 
 func (x *ClearChatHistoryRequest) Reset() {
 	*x = ClearChatHistoryRequest{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[7]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -449,7 +537,7 @@ func (x *ClearChatHistoryRequest) String() string {
 func (*ClearChatHistoryRequest) ProtoMessage() {}
 
 func (x *ClearChatHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[7]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -462,7 +550,7 @@ func (x *ClearChatHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClearChatHistoryRequest.ProtoReflect.Descriptor instead.
 func (*ClearChatHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{7}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ClearChatHistoryRequest) GetUserId() int64 {
@@ -488,7 +576,7 @@ type ClearChatHistoryReply struct {
 
 func (x *ClearChatHistoryReply) Reset() {
 	*x = ClearChatHistoryReply{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[8]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -500,7 +588,7 @@ func (x *ClearChatHistoryReply) String() string {
 func (*ClearChatHistoryReply) ProtoMessage() {}
 
 func (x *ClearChatHistoryReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[8]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -513,7 +601,7 @@ func (x *ClearChatHistoryReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClearChatHistoryReply.ProtoReflect.Descriptor instead.
 func (*ClearChatHistoryReply) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{8}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ClearChatHistoryReply) GetSuccess() bool {
@@ -536,7 +624,7 @@ type UploadKnowledgeRequest struct {
 
 func (x *UploadKnowledgeRequest) Reset() {
 	*x = UploadKnowledgeRequest{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[9]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -548,7 +636,7 @@ func (x *UploadKnowledgeRequest) String() string {
 func (*UploadKnowledgeRequest) ProtoMessage() {}
 
 func (x *UploadKnowledgeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[9]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -561,7 +649,7 @@ func (x *UploadKnowledgeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadKnowledgeRequest.ProtoReflect.Descriptor instead.
 func (*UploadKnowledgeRequest) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{9}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *UploadKnowledgeRequest) GetData() isUploadKnowledgeRequest_Data {
@@ -618,7 +706,7 @@ type KnowledgeMeta struct {
 
 func (x *KnowledgeMeta) Reset() {
 	*x = KnowledgeMeta{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[10]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -630,7 +718,7 @@ func (x *KnowledgeMeta) String() string {
 func (*KnowledgeMeta) ProtoMessage() {}
 
 func (x *KnowledgeMeta) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[10]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -643,7 +731,7 @@ func (x *KnowledgeMeta) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KnowledgeMeta.ProtoReflect.Descriptor instead.
 func (*KnowledgeMeta) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{10}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *KnowledgeMeta) GetDocId() string {
@@ -692,7 +780,7 @@ type UploadKnowledgeReply struct {
 
 func (x *UploadKnowledgeReply) Reset() {
 	*x = UploadKnowledgeReply{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[11]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -704,7 +792,7 @@ func (x *UploadKnowledgeReply) String() string {
 func (*UploadKnowledgeReply) ProtoMessage() {}
 
 func (x *UploadKnowledgeReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[11]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -717,7 +805,7 @@ func (x *UploadKnowledgeReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadKnowledgeReply.ProtoReflect.Descriptor instead.
 func (*UploadKnowledgeReply) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{11}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *UploadKnowledgeReply) GetDocId() string {
@@ -752,7 +840,7 @@ type SearchKnowledgeRequest struct {
 
 func (x *SearchKnowledgeRequest) Reset() {
 	*x = SearchKnowledgeRequest{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[12]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -764,7 +852,7 @@ func (x *SearchKnowledgeRequest) String() string {
 func (*SearchKnowledgeRequest) ProtoMessage() {}
 
 func (x *SearchKnowledgeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[12]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -777,7 +865,7 @@ func (x *SearchKnowledgeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchKnowledgeRequest.ProtoReflect.Descriptor instead.
 func (*SearchKnowledgeRequest) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{12}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *SearchKnowledgeRequest) GetSource() string {
@@ -814,7 +902,7 @@ type KnowledgeChunk struct {
 
 func (x *KnowledgeChunk) Reset() {
 	*x = KnowledgeChunk{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[13]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -826,7 +914,7 @@ func (x *KnowledgeChunk) String() string {
 func (*KnowledgeChunk) ProtoMessage() {}
 
 func (x *KnowledgeChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[13]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -839,7 +927,7 @@ func (x *KnowledgeChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KnowledgeChunk.ProtoReflect.Descriptor instead.
 func (*KnowledgeChunk) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{13}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *KnowledgeChunk) GetDocId() string {
@@ -886,7 +974,7 @@ type SearchKnowledgeReply struct {
 
 func (x *SearchKnowledgeReply) Reset() {
 	*x = SearchKnowledgeReply{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[14]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -898,7 +986,7 @@ func (x *SearchKnowledgeReply) String() string {
 func (*SearchKnowledgeReply) ProtoMessage() {}
 
 func (x *SearchKnowledgeReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[14]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -911,7 +999,7 @@ func (x *SearchKnowledgeReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchKnowledgeReply.ProtoReflect.Descriptor instead.
 func (*SearchKnowledgeReply) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{14}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *SearchKnowledgeReply) GetChunks() []*KnowledgeChunk {
@@ -931,7 +1019,7 @@ type DeleteKnowledgeRequest struct {
 
 func (x *DeleteKnowledgeRequest) Reset() {
 	*x = DeleteKnowledgeRequest{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[15]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -943,7 +1031,7 @@ func (x *DeleteKnowledgeRequest) String() string {
 func (*DeleteKnowledgeRequest) ProtoMessage() {}
 
 func (x *DeleteKnowledgeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[15]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -956,7 +1044,7 @@ func (x *DeleteKnowledgeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteKnowledgeRequest.ProtoReflect.Descriptor instead.
 func (*DeleteKnowledgeRequest) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{15}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *DeleteKnowledgeRequest) GetDocId() string {
@@ -982,7 +1070,7 @@ type DeleteKnowledgeReply struct {
 
 func (x *DeleteKnowledgeReply) Reset() {
 	*x = DeleteKnowledgeReply{}
-	mi := &file_api_blades_v1_blades_proto_msgTypes[16]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -994,7 +1082,7 @@ func (x *DeleteKnowledgeReply) String() string {
 func (*DeleteKnowledgeReply) ProtoMessage() {}
 
 func (x *DeleteKnowledgeReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_blades_v1_blades_proto_msgTypes[16]
+	mi := &file_api_blades_v1_blades_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1007,7 +1095,7 @@ func (x *DeleteKnowledgeReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteKnowledgeReply.ProtoReflect.Descriptor instead.
 func (*DeleteKnowledgeReply) Descriptor() ([]byte, []int) {
-	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{16}
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *DeleteKnowledgeReply) GetSuccess() bool {
@@ -1021,7 +1109,12 @@ var File_api_blades_v1_blades_proto protoreflect.FileDescriptor
 
 const file_api_blades_v1_blades_proto_rawDesc = "" +
 	"\n" +
-	"\x1aapi/blades/v1/blades.proto\x12\rapi.blades.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\xbb\x01\n" +
+	"\x1aapi/blades/v1/blades.proto\x12\rapi.blades.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"9\n" +
+	"\x13GenerateTextRequest\x12\"\n" +
+	"\x06prompt\x18\x01 \x01(\tB\n" +
+	"\xfaB\ar\x05\x10\x01\x18\xd0\x0fR\x06prompt\"'\n" +
+	"\x11GenerateTextReply\x12\x12\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\"\xbb\x01\n" +
 	"\vChatRequest\x12 \n" +
 	"\auser_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x121\n" +
 	"\x06source\x18\x02 \x01(\tB\x19\xfaB\x16r\x14R\x05adminR\x04userR\x05otherR\x06source\x12\x12\n" +
@@ -1095,7 +1188,7 @@ const file_api_blades_v1_blades_proto_rawDesc = "" +
 	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12\x16\n" +
 	"\x06source\x18\x02 \x01(\tR\x06source\"0\n" +
 	"\x14DeleteKnowledgeReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xfd\x06\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xf8\a\n" +
 	"\x06Blades\x12X\n" +
 	"\x04Chat\x12\x1a.api.blades.v1.ChatRequest\x1a\x18.api.blades.v1.ChatReply\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/blades/v1/chat\x12r\n" +
 	"\n" +
@@ -1104,7 +1197,8 @@ const file_api_blades_v1_blades_proto_rawDesc = "" +
 	"\x10ClearChatHistory\x12&.api.blades.v1.ClearChatHistoryRequest\x1a$.api.blades.v1.ClearChatHistoryReply\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/blades/v1/chat/clear\x12\x87\x01\n" +
 	"\x0fUploadKnowledge\x12%.api.blades.v1.UploadKnowledgeRequest\x1a#.api.blades.v1.UploadKnowledgeReply\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/blades/v1/knowledge/upload(\x01\x12\x85\x01\n" +
 	"\x0fSearchKnowledge\x12%.api.blades.v1.SearchKnowledgeRequest\x1a#.api.blades.v1.SearchKnowledgeReply\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/blades/v1/knowledge/search\x12\x85\x01\n" +
-	"\x0fDeleteKnowledge\x12%.api.blades.v1.DeleteKnowledgeRequest\x1a#.api.blades.v1.DeleteKnowledgeReply\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/blades/v1/knowledge/deleteB+\n" +
+	"\x0fDeleteKnowledge\x12%.api.blades.v1.DeleteKnowledgeRequest\x1a#.api.blades.v1.DeleteKnowledgeReply\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/blades/v1/knowledge/delete\x12y\n" +
+	"\fGenerateText\x12\".api.blades.v1.GenerateTextRequest\x1a .api.blades.v1.GenerateTextReply\"#\x82\xd3\xe4\x93\x02\x1d:\x01*\"\x18/blades/v1/generate/textB+\n" +
 	"\rapi.blades.v1P\x01Z\x18cyi-app/api/blades/v1;v1b\x06proto3"
 
 var (
@@ -1119,50 +1213,54 @@ func file_api_blades_v1_blades_proto_rawDescGZIP() []byte {
 	return file_api_blades_v1_blades_proto_rawDescData
 }
 
-var file_api_blades_v1_blades_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_api_blades_v1_blades_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_api_blades_v1_blades_proto_goTypes = []any{
-	(*ChatRequest)(nil),             // 0: api.blades.v1.ChatRequest
-	(*ChatReply)(nil),               // 1: api.blades.v1.ChatReply
-	(*ChatStreamRequest)(nil),       // 2: api.blades.v1.ChatStreamRequest
-	(*ChatChunkReply)(nil),          // 3: api.blades.v1.ChatChunkReply
-	(*GetChatHistoryRequest)(nil),   // 4: api.blades.v1.GetChatHistoryRequest
-	(*HistoryMessage)(nil),          // 5: api.blades.v1.HistoryMessage
-	(*GetChatHistoryReply)(nil),     // 6: api.blades.v1.GetChatHistoryReply
-	(*ClearChatHistoryRequest)(nil), // 7: api.blades.v1.ClearChatHistoryRequest
-	(*ClearChatHistoryReply)(nil),   // 8: api.blades.v1.ClearChatHistoryReply
-	(*UploadKnowledgeRequest)(nil),  // 9: api.blades.v1.UploadKnowledgeRequest
-	(*KnowledgeMeta)(nil),           // 10: api.blades.v1.KnowledgeMeta
-	(*UploadKnowledgeReply)(nil),    // 11: api.blades.v1.UploadKnowledgeReply
-	(*SearchKnowledgeRequest)(nil),  // 12: api.blades.v1.SearchKnowledgeRequest
-	(*KnowledgeChunk)(nil),          // 13: api.blades.v1.KnowledgeChunk
-	(*SearchKnowledgeReply)(nil),    // 14: api.blades.v1.SearchKnowledgeReply
-	(*DeleteKnowledgeRequest)(nil),  // 15: api.blades.v1.DeleteKnowledgeRequest
-	(*DeleteKnowledgeReply)(nil),    // 16: api.blades.v1.DeleteKnowledgeReply
-	nil,                             // 17: api.blades.v1.KnowledgeMeta.TagsEntry
-	nil,                             // 18: api.blades.v1.KnowledgeChunk.TagsEntry
+	(*GenerateTextRequest)(nil),     // 0: api.blades.v1.GenerateTextRequest
+	(*GenerateTextReply)(nil),       // 1: api.blades.v1.GenerateTextReply
+	(*ChatRequest)(nil),             // 2: api.blades.v1.ChatRequest
+	(*ChatReply)(nil),               // 3: api.blades.v1.ChatReply
+	(*ChatStreamRequest)(nil),       // 4: api.blades.v1.ChatStreamRequest
+	(*ChatChunkReply)(nil),          // 5: api.blades.v1.ChatChunkReply
+	(*GetChatHistoryRequest)(nil),   // 6: api.blades.v1.GetChatHistoryRequest
+	(*HistoryMessage)(nil),          // 7: api.blades.v1.HistoryMessage
+	(*GetChatHistoryReply)(nil),     // 8: api.blades.v1.GetChatHistoryReply
+	(*ClearChatHistoryRequest)(nil), // 9: api.blades.v1.ClearChatHistoryRequest
+	(*ClearChatHistoryReply)(nil),   // 10: api.blades.v1.ClearChatHistoryReply
+	(*UploadKnowledgeRequest)(nil),  // 11: api.blades.v1.UploadKnowledgeRequest
+	(*KnowledgeMeta)(nil),           // 12: api.blades.v1.KnowledgeMeta
+	(*UploadKnowledgeReply)(nil),    // 13: api.blades.v1.UploadKnowledgeReply
+	(*SearchKnowledgeRequest)(nil),  // 14: api.blades.v1.SearchKnowledgeRequest
+	(*KnowledgeChunk)(nil),          // 15: api.blades.v1.KnowledgeChunk
+	(*SearchKnowledgeReply)(nil),    // 16: api.blades.v1.SearchKnowledgeReply
+	(*DeleteKnowledgeRequest)(nil),  // 17: api.blades.v1.DeleteKnowledgeRequest
+	(*DeleteKnowledgeReply)(nil),    // 18: api.blades.v1.DeleteKnowledgeReply
+	nil,                             // 19: api.blades.v1.KnowledgeMeta.TagsEntry
+	nil,                             // 20: api.blades.v1.KnowledgeChunk.TagsEntry
 }
 var file_api_blades_v1_blades_proto_depIdxs = []int32{
-	5,  // 0: api.blades.v1.GetChatHistoryReply.messages:type_name -> api.blades.v1.HistoryMessage
-	10, // 1: api.blades.v1.UploadKnowledgeRequest.meta:type_name -> api.blades.v1.KnowledgeMeta
-	17, // 2: api.blades.v1.KnowledgeMeta.tags:type_name -> api.blades.v1.KnowledgeMeta.TagsEntry
-	18, // 3: api.blades.v1.KnowledgeChunk.tags:type_name -> api.blades.v1.KnowledgeChunk.TagsEntry
-	13, // 4: api.blades.v1.SearchKnowledgeReply.chunks:type_name -> api.blades.v1.KnowledgeChunk
-	0,  // 5: api.blades.v1.Blades.Chat:input_type -> api.blades.v1.ChatRequest
-	2,  // 6: api.blades.v1.Blades.ChatStream:input_type -> api.blades.v1.ChatStreamRequest
-	4,  // 7: api.blades.v1.Blades.GetChatHistory:input_type -> api.blades.v1.GetChatHistoryRequest
-	7,  // 8: api.blades.v1.Blades.ClearChatHistory:input_type -> api.blades.v1.ClearChatHistoryRequest
-	9,  // 9: api.blades.v1.Blades.UploadKnowledge:input_type -> api.blades.v1.UploadKnowledgeRequest
-	12, // 10: api.blades.v1.Blades.SearchKnowledge:input_type -> api.blades.v1.SearchKnowledgeRequest
-	15, // 11: api.blades.v1.Blades.DeleteKnowledge:input_type -> api.blades.v1.DeleteKnowledgeRequest
-	1,  // 12: api.blades.v1.Blades.Chat:output_type -> api.blades.v1.ChatReply
-	3,  // 13: api.blades.v1.Blades.ChatStream:output_type -> api.blades.v1.ChatChunkReply
-	6,  // 14: api.blades.v1.Blades.GetChatHistory:output_type -> api.blades.v1.GetChatHistoryReply
-	8,  // 15: api.blades.v1.Blades.ClearChatHistory:output_type -> api.blades.v1.ClearChatHistoryReply
-	11, // 16: api.blades.v1.Blades.UploadKnowledge:output_type -> api.blades.v1.UploadKnowledgeReply
-	14, // 17: api.blades.v1.Blades.SearchKnowledge:output_type -> api.blades.v1.SearchKnowledgeReply
-	16, // 18: api.blades.v1.Blades.DeleteKnowledge:output_type -> api.blades.v1.DeleteKnowledgeReply
-	12, // [12:19] is the sub-list for method output_type
-	5,  // [5:12] is the sub-list for method input_type
+	7,  // 0: api.blades.v1.GetChatHistoryReply.messages:type_name -> api.blades.v1.HistoryMessage
+	12, // 1: api.blades.v1.UploadKnowledgeRequest.meta:type_name -> api.blades.v1.KnowledgeMeta
+	19, // 2: api.blades.v1.KnowledgeMeta.tags:type_name -> api.blades.v1.KnowledgeMeta.TagsEntry
+	20, // 3: api.blades.v1.KnowledgeChunk.tags:type_name -> api.blades.v1.KnowledgeChunk.TagsEntry
+	15, // 4: api.blades.v1.SearchKnowledgeReply.chunks:type_name -> api.blades.v1.KnowledgeChunk
+	2,  // 5: api.blades.v1.Blades.Chat:input_type -> api.blades.v1.ChatRequest
+	4,  // 6: api.blades.v1.Blades.ChatStream:input_type -> api.blades.v1.ChatStreamRequest
+	6,  // 7: api.blades.v1.Blades.GetChatHistory:input_type -> api.blades.v1.GetChatHistoryRequest
+	9,  // 8: api.blades.v1.Blades.ClearChatHistory:input_type -> api.blades.v1.ClearChatHistoryRequest
+	11, // 9: api.blades.v1.Blades.UploadKnowledge:input_type -> api.blades.v1.UploadKnowledgeRequest
+	14, // 10: api.blades.v1.Blades.SearchKnowledge:input_type -> api.blades.v1.SearchKnowledgeRequest
+	17, // 11: api.blades.v1.Blades.DeleteKnowledge:input_type -> api.blades.v1.DeleteKnowledgeRequest
+	0,  // 12: api.blades.v1.Blades.GenerateText:input_type -> api.blades.v1.GenerateTextRequest
+	3,  // 13: api.blades.v1.Blades.Chat:output_type -> api.blades.v1.ChatReply
+	5,  // 14: api.blades.v1.Blades.ChatStream:output_type -> api.blades.v1.ChatChunkReply
+	8,  // 15: api.blades.v1.Blades.GetChatHistory:output_type -> api.blades.v1.GetChatHistoryReply
+	10, // 16: api.blades.v1.Blades.ClearChatHistory:output_type -> api.blades.v1.ClearChatHistoryReply
+	13, // 17: api.blades.v1.Blades.UploadKnowledge:output_type -> api.blades.v1.UploadKnowledgeReply
+	16, // 18: api.blades.v1.Blades.SearchKnowledge:output_type -> api.blades.v1.SearchKnowledgeReply
+	18, // 19: api.blades.v1.Blades.DeleteKnowledge:output_type -> api.blades.v1.DeleteKnowledgeReply
+	1,  // 20: api.blades.v1.Blades.GenerateText:output_type -> api.blades.v1.GenerateTextReply
+	13, // [13:21] is the sub-list for method output_type
+	5,  // [5:13] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
 	5,  // [5:5] is the sub-list for extension extendee
 	0,  // [0:5] is the sub-list for field type_name
@@ -1173,7 +1271,7 @@ func file_api_blades_v1_blades_proto_init() {
 	if File_api_blades_v1_blades_proto != nil {
 		return
 	}
-	file_api_blades_v1_blades_proto_msgTypes[9].OneofWrappers = []any{
+	file_api_blades_v1_blades_proto_msgTypes[11].OneofWrappers = []any{
 		(*UploadKnowledgeRequest_Meta)(nil),
 		(*UploadKnowledgeRequest_ContentChunk)(nil),
 	}
@@ -1183,7 +1281,7 @@ func file_api_blades_v1_blades_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_blades_v1_blades_proto_rawDesc), len(file_api_blades_v1_blades_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

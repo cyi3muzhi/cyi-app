@@ -26,6 +26,7 @@ const (
 	Blades_UploadKnowledge_FullMethodName  = "/api.blades.v1.Blades/UploadKnowledge"
 	Blades_SearchKnowledge_FullMethodName  = "/api.blades.v1.Blades/SearchKnowledge"
 	Blades_DeleteKnowledge_FullMethodName  = "/api.blades.v1.Blades/DeleteKnowledge"
+	Blades_GenerateText_FullMethodName     = "/api.blades.v1.Blades/GenerateText"
 )
 
 // BladesClient is the client API for Blades service.
@@ -39,6 +40,8 @@ type BladesClient interface {
 	UploadKnowledge(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[UploadKnowledgeRequest, UploadKnowledgeReply], error)
 	SearchKnowledge(ctx context.Context, in *SearchKnowledgeRequest, opts ...grpc.CallOption) (*SearchKnowledgeReply, error)
 	DeleteKnowledge(ctx context.Context, in *DeleteKnowledgeRequest, opts ...grpc.CallOption) (*DeleteKnowledgeReply, error)
+	// GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
+	GenerateText(ctx context.Context, in *GenerateTextRequest, opts ...grpc.CallOption) (*GenerateTextReply, error)
 }
 
 type bladesClient struct {
@@ -131,6 +134,16 @@ func (c *bladesClient) DeleteKnowledge(ctx context.Context, in *DeleteKnowledgeR
 	return out, nil
 }
 
+func (c *bladesClient) GenerateText(ctx context.Context, in *GenerateTextRequest, opts ...grpc.CallOption) (*GenerateTextReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GenerateTextReply)
+	err := c.cc.Invoke(ctx, Blades_GenerateText_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BladesServer is the server API for Blades service.
 // All implementations must embed UnimplementedBladesServer
 // for forward compatibility.
@@ -142,6 +155,8 @@ type BladesServer interface {
 	UploadKnowledge(grpc.ClientStreamingServer[UploadKnowledgeRequest, UploadKnowledgeReply]) error
 	SearchKnowledge(context.Context, *SearchKnowledgeRequest) (*SearchKnowledgeReply, error)
 	DeleteKnowledge(context.Context, *DeleteKnowledgeRequest) (*DeleteKnowledgeReply, error)
+	// GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
+	GenerateText(context.Context, *GenerateTextRequest) (*GenerateTextReply, error)
 	mustEmbedUnimplementedBladesServer()
 }
 
@@ -172,6 +187,9 @@ func (UnimplementedBladesServer) SearchKnowledge(context.Context, *SearchKnowled
 }
 func (UnimplementedBladesServer) DeleteKnowledge(context.Context, *DeleteKnowledgeRequest) (*DeleteKnowledgeReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteKnowledge not implemented")
+}
+func (UnimplementedBladesServer) GenerateText(context.Context, *GenerateTextRequest) (*GenerateTextReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateText not implemented")
 }
 func (UnimplementedBladesServer) mustEmbedUnimplementedBladesServer() {}
 func (UnimplementedBladesServer) testEmbeddedByValue()                {}
@@ -302,6 +320,24 @@ func _Blades_DeleteKnowledge_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Blades_GenerateText_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateTextRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BladesServer).GenerateText(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Blades_GenerateText_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BladesServer).GenerateText(ctx, req.(*GenerateTextRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Blades_ServiceDesc is the grpc.ServiceDesc for Blades service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -328,6 +364,10 @@ var Blades_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteKnowledge",
 			Handler:    _Blades_DeleteKnowledge_Handler,
+		},
+		{
+			MethodName: "GenerateText",
+			Handler:    _Blades_GenerateText_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

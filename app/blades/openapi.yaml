@@ -10,7 +10,6 @@ paths:
         post:
             tags:
                 - Blades
-            description: chat 聊天
             operationId: Blades_Chat
             requestBody:
                 content:
@@ -25,8 +24,127 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.blades.v1.ChatReply'
+    /blades/v1/chat/clear:
+        post:
+            tags:
+                - Blades
+            operationId: Blades_ClearChatHistory
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.blades.v1.ClearChatHistoryRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.blades.v1.ClearChatHistoryReply'
+    /blades/v1/chat/history/{userId}:
+        get:
+            tags:
+                - Blades
+            operationId: Blades_GetChatHistory
+            parameters:
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: source
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.blades.v1.GetChatHistoryReply'
+    /blades/v1/chat/stream:
+        post:
+            tags:
+                - Blades
+            operationId: Blades_ChatStream
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.blades.v1.ChatStreamRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.blades.v1.ChatChunkReply'
+    /blades/v1/knowledge/delete:
+        post:
+            tags:
+                - Blades
+            operationId: Blades_DeleteKnowledge
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.blades.v1.DeleteKnowledgeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.blades.v1.DeleteKnowledgeReply'
+    /blades/v1/knowledge/search:
+        post:
+            tags:
+                - Blades
+            operationId: Blades_SearchKnowledge
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.blades.v1.SearchKnowledgeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.blades.v1.SearchKnowledgeReply'
+    /blades/v1/knowledge/upload:
+        post:
+            tags:
+                - Blades
+            operationId: Blades_UploadKnowledge
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.blades.v1.UploadKnowledgeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.blades.v1.UploadKnowledgeReply'
 components:
     schemas:
+        api.blades.v1.ChatChunkReply:
+            type: object
+            properties:
+                chunk:
+                    type: string
+                done:
+                    type: boolean
         api.blades.v1.ChatReply:
             type: object
             properties:
@@ -35,7 +153,135 @@ components:
         api.blades.v1.ChatRequest:
             type: object
             properties:
+                userId:
+                    type: string
+                source:
+                    type: string
+                role:
+                    type: string
                 message:
                     type: string
+                enableRag:
+                    type: boolean
+        api.blades.v1.ChatStreamRequest:
+            type: object
+            properties:
+                userId:
+                    type: string
+                source:
+                    type: string
+                role:
+                    type: string
+                message:
+                    type: string
+                enableRag:
+                    type: boolean
+        api.blades.v1.ClearChatHistoryReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.blades.v1.ClearChatHistoryRequest:
+            type: object
+            properties:
+                userId:
+                    type: string
+                source:
+                    type: string
+        api.blades.v1.DeleteKnowledgeReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.blades.v1.DeleteKnowledgeRequest:
+            type: object
+            properties:
+                docId:
+                    type: string
+                source:
+                    type: string
+        api.blades.v1.GetChatHistoryReply:
+            type: object
+            properties:
+                messages:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.blades.v1.HistoryMessage'
+        api.blades.v1.HistoryMessage:
+            type: object
+            properties:
+                role:
+                    type: string
+                content:
+                    type: string
+                timestamp:
+                    type: string
+        api.blades.v1.KnowledgeChunk:
+            type: object
+            properties:
+                docId:
+                    type: string
+                title:
+                    type: string
+                content:
+                    type: string
+                score:
+                    type: number
+                    format: float
+                tags:
+                    type: object
+                    additionalProperties:
+                        type: string
+        api.blades.v1.KnowledgeMeta:
+            type: object
+            properties:
+                docId:
+                    type: string
+                source:
+                    type: string
+                title:
+                    type: string
+                contentType:
+                    type: string
+                tags:
+                    type: object
+                    additionalProperties:
+                        type: string
+        api.blades.v1.SearchKnowledgeReply:
+            type: object
+            properties:
+                chunks:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.blades.v1.KnowledgeChunk'
+        api.blades.v1.SearchKnowledgeRequest:
+            type: object
+            properties:
+                source:
+                    type: string
+                query:
+                    type: string
+                topK:
+                    type: integer
+                    format: int32
+        api.blades.v1.UploadKnowledgeReply:
+            type: object
+            properties:
+                docId:
+                    type: string
+                chunkCount:
+                    type: integer
+                    format: int32
+                tokenCount:
+                    type: integer
+                    format: int32
+        api.blades.v1.UploadKnowledgeRequest:
+            type: object
+            properties:
+                meta:
+                    $ref: '#/components/schemas/api.blades.v1.KnowledgeMeta'
+                contentChunk:
+                    type: string
+                    format: bytes
 tags:
     - name: Blades

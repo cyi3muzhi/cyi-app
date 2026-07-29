@@ -22,6 +22,7 @@ const _ = http.SupportPackageIsVersion1
 const OperationBladesChat = "/api.blades.v1.Blades/Chat"
 const OperationBladesClearChatHistory = "/api.blades.v1.Blades/ClearChatHistory"
 const OperationBladesDeleteKnowledge = "/api.blades.v1.Blades/DeleteKnowledge"
+const OperationBladesGenerateText = "/api.blades.v1.Blades/GenerateText"
 const OperationBladesGetChatHistory = "/api.blades.v1.Blades/GetChatHistory"
 const OperationBladesSearchKnowledge = "/api.blades.v1.Blades/SearchKnowledge"
 
@@ -29,6 +30,8 @@ type BladesHTTPServer interface {
 	Chat(context.Context, *ChatRequest) (*ChatReply, error)
 	ClearChatHistory(context.Context, *ClearChatHistoryRequest) (*ClearChatHistoryReply, error)
 	DeleteKnowledge(context.Context, *DeleteKnowledgeRequest) (*DeleteKnowledgeReply, error)
+	// GenerateText GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
+	GenerateText(context.Context, *GenerateTextRequest) (*GenerateTextReply, error)
 	GetChatHistory(context.Context, *GetChatHistoryRequest) (*GetChatHistoryReply, error)
 	SearchKnowledge(context.Context, *SearchKnowledgeRequest) (*SearchKnowledgeReply, error)
 }
@@ -40,6 +43,7 @@ func RegisterBladesHTTPServer(s *http.Server, srv BladesHTTPServer) {
 	r.POST("/blades/v1/chat/clear", _Blades_ClearChatHistory0_HTTP_Handler(srv))
 	r.POST("/blades/v1/knowledge/search", _Blades_SearchKnowledge0_HTTP_Handler(srv))
 	r.POST("/blades/v1/knowledge/delete", _Blades_DeleteKnowledge0_HTTP_Handler(srv))
+	r.POST("/blades/v1/generate/text", _Blades_GenerateText0_HTTP_Handler(srv))
 }
 
 func _Blades_Chat0_HTTP_Handler(srv BladesHTTPServer) func(ctx http.Context) error {
@@ -152,10 +156,34 @@ func _Blades_DeleteKnowledge0_HTTP_Handler(srv BladesHTTPServer) func(ctx http.C
 	}
 }
 
+func _Blades_GenerateText0_HTTP_Handler(srv BladesHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GenerateTextRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationBladesGenerateText)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GenerateText(ctx, req.(*GenerateTextRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GenerateTextReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type BladesHTTPClient interface {
 	Chat(ctx context.Context, req *ChatRequest, opts ...http.CallOption) (rsp *ChatReply, err error)
 	ClearChatHistory(ctx context.Context, req *ClearChatHistoryRequest, opts ...http.CallOption) (rsp *ClearChatHistoryReply, err error)
 	DeleteKnowledge(ctx context.Context, req *DeleteKnowledgeRequest, opts ...http.CallOption) (rsp *DeleteKnowledgeReply, err error)
+	// GenerateText GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
+	GenerateText(ctx context.Context, req *GenerateTextRequest, opts ...http.CallOption) (rsp *GenerateTextReply, err error)
 	GetChatHistory(ctx context.Context, req *GetChatHistoryRequest, opts ...http.CallOption) (rsp *GetChatHistoryReply, err error)
 	SearchKnowledge(ctx context.Context, req *SearchKnowledgeRequest, opts ...http.CallOption) (rsp *SearchKnowledgeReply, err error)
 }
@@ -199,6 +227,20 @@ func (c *BladesHTTPClientImpl) DeleteKnowledge(ctx context.Context, in *DeleteKn
 	pattern := "/blades/v1/knowledge/delete"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationBladesDeleteKnowledge))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// GenerateText GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
+func (c *BladesHTTPClientImpl) GenerateText(ctx context.Context, in *GenerateTextRequest, opts ...http.CallOption) (*GenerateTextReply, error) {
+	var out GenerateTextReply
+	pattern := "/blades/v1/generate/text"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationBladesGenerateText))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

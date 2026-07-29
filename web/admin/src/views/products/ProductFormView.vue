@@ -215,6 +215,23 @@
               <div class="pf-card-desc">详细描述商品信息与卖点</div>
             </div>
           </div>
+
+          <!-- AI 辅助工具栏 -->
+          <div class="pf-ai-bar">
+            <span class="pf-ai-bar-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>
+              AI 辅助
+            </span>
+            <el-button size="small" :loading="aiGenerating" :disabled="!form.name" @click="handleAiGenerate">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>
+              AI 生成描述
+            </el-button>
+            <el-button size="small" :loading="aiExpanding" :disabled="!form.description" @click="handleAiExpand">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              AI 扩写
+            </el-button>
+          </div>
+
           <Toolbar v-if="editorReady" class="pf-editor-tb" :editor="editorRef" :defaultConfig="toolbarConfig" />
           <Editor v-if="editorReady" class="pf-editor-body" v-model="form.description" :defaultConfig="editorConfig" @onCreated="handleCreated" />
         </section>
@@ -242,6 +259,7 @@ import { Plus, Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { listCategoryTree } from '../../api/category'
 import { useProductForm } from '../../composables/useProductForm'
+import { generateProductDescription, expandProductDescription } from '../../api/agent'
 import '@wangeditor/editor/dist/css/style.css'
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 import type { IDomEditor } from '@wangeditor/editor'
@@ -465,6 +483,102 @@ const {
   addSpecGroup, removeSpecGroup, setSpecValues,
   loadProduct, save,
 } = useProductForm()
+
+/** AI 生成状态 */
+const aiGenerating = ref(false)
+const aiExpanding = ref(false)
+
+/** 获取分类名称（根据 category_id 从级联选项树中查找） */
+function getCategoryName(id: string | number): string {
+  if (!id || !cascaderOptions.value.length) return ''
+  const lookup = (nodes: any[]): string => {
+    for (const n of nodes) {
+      if (String(n.id) === String(id)) return n.name
+      if (n.children) {
+        const found = lookup(n.children)
+        if (found) return found
+      }
+    }
+    return ''
+  }
+  return lookup(cascaderOptions.value)
+}
+
+/** AI 生成商品描述 */
+async function handleAiGenerate() {
+  if (!form.name) {
+    ElMessage.warning('请先填写商品名称')
+    return
+  }
+  try {
+    await ElMessageBox.confirm(
+      'AI 将根据商品名称和分类生成一段描述，确认继续？',
+      'AI 生成描述',
+      { confirmButtonText: '生成', cancelButtonText: '取消', type: 'info' }
+    )
+  } catch { return }
+
+  aiGenerating.value = true
+  try {
+    // 拼接规格信息作为上下文
+    const specsText = specGroups.value
+      .filter(g => g.name && g.values.length)
+      .map(g => `${g.name}：${g.values.join('、')}`)
+      .join('；')
+
+    const result = await generateProductDescription(
+      form.name,
+      getCategoryName(form.category_id),
+      specsText || undefined
+    )
+    // 直接设置 HTML 内容（AI 返回 HTML 格式）
+    if (editorRef.value) {
+      editorRef.value.setHtml(result)
+    } else {
+      form.description = result
+    }
+    ElMessage.success('描述已生成')
+  } catch (e) {
+    console.error('AI 生成失败', e)
+    ElMessage.error('生成失败，请稍后重试')
+  } finally {
+    aiGenerating.value = false
+  }
+}
+
+/** AI 扩写商品描述 */
+async function handleAiExpand() {
+  if (!form.description) {
+    ElMessage.warning('请先输入商品描述')
+    return
+  }
+  try {
+    await ElMessageBox.confirm(
+      'AI 将在原有基础上扩写商品描述，使其更加丰富详细，确认继续？',
+      'AI 扩写',
+      { confirmButtonText: '扩写', cancelButtonText: '取消', type: 'info' }
+    )
+  } catch { return }
+
+  aiExpanding.value = true
+  try {
+    // 提取纯文本（去除 HTML 标签）
+    const plainText = form.description.replace(/<[^>]*>/g, '').trim()
+    const result = await expandProductDescription(plainText, form.name)
+    // 直接设置 HTML 内容（AI 返回 HTML 格式）
+    if (editorRef.value) {
+      editorRef.value.setHtml(result)
+    } else {
+      form.description = result
+    }
+    ElMessage.success('描述已扩写')
+  } catch (e) {
+    console.error('AI 扩写失败', e)
+    ElMessage.error('扩写失败，请稍后重试')
+  } finally {
+    aiExpanding.value = false
+  }
+}
 
 async function handleSave() {
   const ok = await save(isEdit.value ? Number(route.params.id) : undefined)
@@ -1088,10 +1202,31 @@ onMounted(async () => {
 }
 
 /* ---------- 编辑器 ---------- */
-.pf-editor-tb {
+.pf-ai-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 0;
+  background: linear-gradient(135deg, rgba(139,92,246,0.06), rgba(64,158,255,0.04));
   border: 1px solid var(--pf-border);
   border-bottom: none;
   border-radius: 10px 10px 0 0;
+}
+.pf-ai-bar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8b5cf6;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+.pf-editor-tb {
+  border: 1px solid var(--pf-border);
+  border-bottom: none;
+  border-radius: 0;
   padding-left: 4px;
 }
 .pf-editor-body {

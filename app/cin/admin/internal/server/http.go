@@ -46,7 +46,7 @@ func NewHTTPServer(s *ts.HttpServer, adminService *service.AdminService, ac *con
 	return s.HttpServer
 }
 
-// registerAgentRoutes 注册智能体聊天路由（非流式 + SSE 流式）
+// registerAgentRoutes 注册智能体聊天路由（非流式 + SSE 流式 + 描述生成）
 func registerAgentRoutes(s *kratosHttp.Server, adminService *service.AdminService, ac *conf.Auth) {
 	authMw := []middleware.Middleware{newJWTAuthMiddleware(ac)}
 
@@ -74,6 +74,72 @@ func registerAgentRoutes(s *kratosHttp.Server, adminService *service.AdminServic
 		}
 
 		reply, err := adminService.Chat(r.Context(), &service.ChatRequest{Message: req.Message})
+		if err != nil {
+			nethttp.Error(w, err.Error(), nethttp.StatusInternalServerError)
+			return
+		}
+
+		respBytes, _ := json.Marshal(reply)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(nethttp.StatusOK)
+		w.Write(respBytes)
+	}))
+
+	// POST /admin/v1/agent/generate-description AI 生成商品描述
+	s.HandleFunc("/admin/v1/agent/generate-description", withMiddlewares(authMw, func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		if r.Method != nethttp.MethodPost {
+			nethttp.Error(w, "Method not allowed", nethttp.StatusMethodNotAllowed)
+			return
+		}
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			nethttp.Error(w, "读取请求体失败", nethttp.StatusBadRequest)
+			return
+		}
+		var req service.GenerateDescriptionRequest
+		if err := json.Unmarshal(body, &req); err != nil {
+			nethttp.Error(w, "无效的 JSON 格式", nethttp.StatusBadRequest)
+			return
+		}
+		if req.ProductName == "" {
+			nethttp.Error(w, "商品名称不能为空", nethttp.StatusBadRequest)
+			return
+		}
+
+		reply, err := adminService.GenerateDescription(r.Context(), &req)
+		if err != nil {
+			nethttp.Error(w, err.Error(), nethttp.StatusInternalServerError)
+			return
+		}
+
+		respBytes, _ := json.Marshal(reply)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(nethttp.StatusOK)
+		w.Write(respBytes)
+	}))
+
+	// POST /admin/v1/agent/expand-description AI 扩写商品描述
+	s.HandleFunc("/admin/v1/agent/expand-description", withMiddlewares(authMw, func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		if r.Method != nethttp.MethodPost {
+			nethttp.Error(w, "Method not allowed", nethttp.StatusMethodNotAllowed)
+			return
+		}
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			nethttp.Error(w, "读取请求体失败", nethttp.StatusBadRequest)
+			return
+		}
+		var req service.ExpandDescriptionRequest
+		if err := json.Unmarshal(body, &req); err != nil {
+			nethttp.Error(w, "无效的 JSON 格式", nethttp.StatusBadRequest)
+			return
+		}
+		if req.ProductName == "" || req.Content == "" {
+			nethttp.Error(w, "商品名称和内容不能为空", nethttp.StatusBadRequest)
+			return
+		}
+
+		reply, err := adminService.ExpandDescription(r.Context(), &req)
 		if err != nil {
 			nethttp.Error(w, err.Error(), nethttp.StatusInternalServerError)
 			return
