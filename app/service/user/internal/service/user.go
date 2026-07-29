@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	pb "cyi-app/api/service/user/v1"
@@ -55,6 +56,8 @@ func (s *UserService) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 		Success: true,
 	}, nil
 }
+// DeleteUser 删除用户
+// TODO: 待业务需求明确后实现
 func (s *UserService) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb.DeleteUserReply, error) {
 	return &pb.DeleteUserReply{}, nil
 }
@@ -71,6 +74,8 @@ func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 	}
 	return reply, nil
 }
+// ListUser 获取用户列表
+// TODO: 待业务需求明确后实现
 func (s *UserService) ListUser(ctx context.Context, req *pb.ListUserRequest) (*pb.ListUserReply, error) {
 	return &pb.ListUserReply{}, nil
 }
@@ -154,11 +159,31 @@ func (s *UserService) Register(ctx context.Context, req *pb.RegisterRequest) (*p
 		return nil, err
 	}
 	if err := s.uc.Register(ctx, u); err != nil {
-		return nil, err
+		return nil, convertBizError(err)
 	}
 	return &pb.RegisterReply{
 		Success: true,
 	}, nil
+}
+
+// convertBizError 将 biz 层错误转换为 proto 错误
+func convertBizError(err error) error {
+	if err == nil {
+		return nil
+	}
+	if errors.Is(err, biz.ErrUserNotFound) {
+		return pb.ErrorUserNotFound("%s", err.Error())
+	}
+	if errors.Is(err, biz.ErrPasswordError) {
+		return pb.ErrorPasswordError("%s", err.Error())
+	}
+	if errors.Is(err, biz.ErrUserAlreadyRegistered) {
+		return pb.ErrorUserAlreadyRegistered("%s", err.Error())
+	}
+	if errors.Is(err, biz.ErrUserRegisterFailed) {
+		return pb.ErrorUserRegisterFailed("%s", err.Error())
+	}
+	return err
 }
 
 func (s *UserService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginReply, error) {
@@ -168,7 +193,9 @@ func (s *UserService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 	}
 	reply, err := s.uc.Login(ctx, u, req.ApiKey)
 	if err != nil {
-		return nil, err
+		return nil, convertBizError(err)
 	}
-	return reply, nil
+	return &pb.LoginReply{
+		Token: reply.Token,
+	}, nil
 }

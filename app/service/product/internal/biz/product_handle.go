@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	v1 "cyi-app/api/service/product/v1"
-
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -37,7 +35,7 @@ func NewProductUseCase(repo ProductRepo, stockRepo StockRepo, specGroupRepo Spec
 // TODO: 后续应改为数据库事务（curd.Q.Transaction），当前使用补偿回滚机制
 func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error {
 	if err := uc.repo.CreateProduct(ctx, in); err != nil {
-		return v1.ErrorCreateProductFailed("create product failed")
+		return fmt.Errorf("%w: create product failed", ErrCreateProductFailed)
 	}
 
 	// 标记是否需要回滚商品
@@ -90,7 +88,7 @@ func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error 
 			Available: sku.Stock,
 		}
 		if err := uc.stockRepo.CreateStock(ctx, stock); err != nil {
-			return v1.ErrorCreateStockFailed("create stock failed")
+			return fmt.Errorf("%w: create stock failed", ErrCreateStockFailed)
 		}
 	}
 

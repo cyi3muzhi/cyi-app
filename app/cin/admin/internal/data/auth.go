@@ -5,8 +5,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"net/url"
-	"strings"
 	"time"
 
 	userRpc "cyi-app/api/service/user/v1"
@@ -54,27 +52,7 @@ func (r *authRepo) VerifyLogin(ctx context.Context, username, password string) (
 	}
 
 	if resp.Avatar != "" {
-		var bucketName, objectKey string
-		if strings.HasPrefix(resp.Avatar, "http") {
-			parsedURL, err := url.Parse(resp.Avatar)
-			if err == nil && parsedURL.Path != "" {
-				pathParts := strings.SplitN(strings.TrimPrefix(parsedURL.Path, "/"), "/", 2)
-				if len(pathParts) == 2 {
-					bucketName, objectKey = pathParts[0], pathParts[1]
-				}
-			}
-		} else {
-			parts := strings.SplitN(resp.Avatar, "/", 2)
-			if len(parts) == 2 {
-				bucketName, objectKey = parts[0], parts[1]
-			}
-		}
-		if bucketName != "" && objectKey != "" {
-			presignedURL, err := r.data.oss.GetPresignedURL(ctx, bucketName, objectKey, 3600*24*30)
-			if err == nil {
-				admin.Avatar = presignedURL
-			}
-		}
+		admin.Avatar = r.data.resolvePresignedURL(ctx, resp.Avatar, 3600*24*30)
 	}
 
 	return admin, nil
@@ -106,30 +84,7 @@ func (r *authRepo) GetAdminInfo(ctx context.Context, adminID int64) (*biz.AdminA
 		return nil, fmt.Errorf("管理员不存在")
 	}
 
-	avatar := resp.Admin.Avatar
-	if avatar != "" {
-		var bucketName, objectKey string
-		if strings.HasPrefix(avatar, "http") {
-			parsedURL, err := url.Parse(avatar)
-			if err == nil && parsedURL.Path != "" {
-				pathParts := strings.SplitN(strings.TrimPrefix(parsedURL.Path, "/"), "/", 2)
-				if len(pathParts) == 2 {
-					bucketName, objectKey = pathParts[0], pathParts[1]
-				}
-			}
-		} else {
-			parts := strings.SplitN(avatar, "/", 2)
-			if len(parts) == 2 {
-				bucketName, objectKey = parts[0], parts[1]
-			}
-		}
-		if bucketName != "" && objectKey != "" {
-			presignedURL, err := r.data.oss.GetPresignedURL(ctx, bucketName, objectKey, 3600*24*30)
-			if err == nil {
-				avatar = presignedURL
-			}
-		}
-	}
+	avatar := r.data.resolvePresignedURL(ctx, resp.Admin.Avatar, 3600*24*30)
 
 	return &biz.AdminAuth{
 		ID:         resp.Admin.Id,
@@ -150,16 +105,10 @@ func (r *authRepo) GetAdminInfo(ctx context.Context, adminID int64) (*biz.AdminA
 // UpdateAvatar 更新管理员头像（接收 Base64 图片，上传到 OSS 后保存路径）
 func (r *authRepo) UpdateAvatar(ctx context.Context, adminID int64, avatarBase64 string) (string, error) {
 	objectKey := fmt.Sprintf("admin/avatar/%d/%s.jpg", adminID, uuid.New().String())
-
 	bucketName := string(rustfs.AdminServiceBucket)
-	exists, err := r.data.oss.BucketExists(ctx, bucketName)
-	if err != nil {
-		return "", fmt.Errorf("检查存储桶失败: %w", err)
-	}
-	if !exists {
-		if err := r.data.oss.CreateBucket(ctx, bucketName); err != nil {
-			return "", fmt.Errorf("创建存储桶失败: %w", err)
-		}
+
+	if err := r.data.ensureAdminBucket(ctx); err != nil {
+		return "", err
 	}
 
 	data, err := base64.StdEncoding.DecodeString(avatarBase64)

@@ -57,14 +57,8 @@ func (r *productRepo) uploadBase64ToOSS(ctx context.Context, base64Data string) 
 	objectKey := fmt.Sprintf("admin/product/%s.jpg", uuid.New().String())
 	bucketName := string(rustfs.AdminServiceBucket)
 
-	exists, err := r.data.oss.BucketExists(ctx, bucketName)
-	if err != nil {
-		return "", fmt.Errorf("检查存储桶失败: %w", err)
-	}
-	if !exists {
-		if err := r.data.oss.CreateBucket(ctx, bucketName); err != nil {
-			return "", fmt.Errorf("创建存储桶失败: %w", err)
-		}
+	if err := r.data.ensureAdminBucket(ctx); err != nil {
+		return "", err
 	}
 
 	data, err := base64.StdEncoding.DecodeString(parts[1])
@@ -83,18 +77,7 @@ func (r *productRepo) uploadBase64ToOSS(ctx context.Context, base64Data string) 
 
 // resolveImageURL 解析图片路径，如果是 OSS 路径则生成 presigned URL
 func (r *productRepo) resolveImageURL(ctx context.Context, image string) string {
-	if image == "" || strings.HasPrefix(image, "http") {
-		return image
-	}
-	// 格式: bucketName/objectKey
-	parts := strings.SplitN(image, "/", 2)
-	if len(parts) == 2 {
-		presigned, err := r.data.oss.GetPresignedURL(ctx, parts[0], parts[1], 3600*24*30)
-		if err == nil {
-			return presigned
-		}
-	}
-	return image
+	return r.data.resolvePresignedURL(ctx, image, 3600*24*30)
 }
 
 // ListProduct 通过 gRPC 调用商品服务获取商品列表

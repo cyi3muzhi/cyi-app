@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 
 	adminv1 "cyi-app/api/cin/admin/v1"
 	"cyi-app/app/cin/admin/internal/biz"
@@ -79,4 +80,14 @@ func (s *AdminService) UpdateSettings(ctx context.Context, req *adminv1.UpdateSe
 		return nil, err
 	}
 	return &adminv1.UpdateSettingsReply{Success: true}, nil
+}
+
+// GetPreference 获取用户偏好设置
+func (s *AdminService) GetPreference(ctx context.Context, userID int64) (json.RawMessage, error) {
+	return s.settUC.GetPreference(ctx, userID)
+}
+
+// SavePreference 保存用户偏好设置
+func (s *AdminService) SavePreference(ctx context.Context, userID int64, data json.RawMessage) error {
+	return s.settUC.SavePreference(ctx, userID, data)
 }

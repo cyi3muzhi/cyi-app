@@ -2,7 +2,6 @@ package data
 
 import (
 	"context"
-	"strings"
 
 	userV1 "cyi-app/api/service/user/v1"
 	"cyi-app/app/cin/admin/internal/biz"
@@ -36,16 +35,7 @@ func (r *staffRepo) List(ctx context.Context, page, pageSize int32, keyword, sta
 	}
 	items := make([]*biz.Staff, 0, len(resp.Items))
 	for _, item := range resp.Items {
-		avatar := item.Avatar
-		if avatar != "" && !strings.HasPrefix(avatar, "http") {
-			// OSS 路径转为预签名 URL
-			parts := strings.SplitN(avatar, "/", 2)
-			if len(parts) == 2 {
-				if presigned, err := r.data.oss.GetPresignedURL(ctx, parts[0], parts[1], 3600*24*30); err == nil {
-					avatar = presigned
-				}
-			}
-		}
+		avatar := r.data.resolvePresignedURL(ctx, item.Avatar, 3600*24*30)
 		items = append(items, &biz.Staff{
 			ID:         item.Id,
 			Username:   item.Username,

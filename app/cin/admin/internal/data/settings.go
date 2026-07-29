@@ -2,22 +2,29 @@ package data
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	userV1 "cyi-app/api/service/user/v1"
 	"cyi-app/app/cin/admin/internal/biz"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/redis/go-redis/v9"
 )
 
-// settingsRepo 系统设置数据仓库（gRPC 代理到 User Service）
+// preferenceKeyPrefix 用户偏好设置的 Redis key 前缀
+const preferenceKeyPrefix = "preference:"
+
+// settingsRepo 系统设置数据仓库（gRPC 代理到 User Service + Redis 偏好设置）
 type settingsRepo struct {
 	client userV1.AdminSettingsClient
+	rdb    redis.UniversalClient
 	log    *log.Helper
 }
 
 // NewSettingsRepo 创建 SettingsRepo
-func NewSettingsRepo(client userV1.AdminSettingsClient, logger log.Logger) biz.SettingsRepo {
-	return &settingsRepo{client: client, log: log.NewHelper(logger)}
+func NewSettingsRepo(client userV1.AdminSettingsClient, rdb redis.UniversalClient, logger log.Logger) biz.SettingsRepo {
+	return &settingsRepo{client: client, rdb: rdb, log: log.NewHelper(logger)}
 }
 
 // bizToProto 将 biz 结构体转换为 proto request
@@ -99,4 +106,30 @@ func (r *settingsRepo) Get(ctx context.Context) (*biz.SystemSettings, error) {
 func (r *settingsRepo) Update(ctx context.Context, s *biz.SystemSettings) error {
 	_, err := r.client.UpdateSettings(ctx, bizToProto(s))
 	return err
+}
+
+// GetPreference 从 Redis 获取用户偏好设置（JSON 格式）
+// 偏好设置按 userID 存储在 "preference:admin:{userID}" key 中
+func (r *settingsRepo) GetPreference(ctx context.Context, userID int64) (json.RawMessage, error) {
+	if r.rdb == nil {
+		return json.RawMessage(`{}`), nil
+	}
+	key := fmt.Sprintf("%sadmin:%d", preferenceKeyPrefix, userID)
+	data, err := r.rdb.Get(ctx, key).Bytes()
+	if err == redis.Nil {
+		return json.RawMessage(`{}`), nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return json.RawMessage(data), nil
+}
+
+// SavePreference 将用户偏好设置保存到 Redis
+func (r *settingsRepo) SavePreference(ctx context.Context, userID int64, data json.RawMessage) error {
+	if r.rdb == nil {
+		return fmt.Errorf("存储服务不可用")
+	}
+	key := fmt.Sprintf("%sadmin:%d", preferenceKeyPrefix, userID)
+	return r.rdb.Set(ctx, key, []byte(data), 0).Err()
 }

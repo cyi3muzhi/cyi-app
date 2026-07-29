@@ -175,12 +175,12 @@ func TestEvaluateExpression_InvalidInput(t *testing.T) {
 // TestNewDeepSeekModel 测试DeepSeek模型创建
 func TestNewDeepSeekModel(t *testing.T) {
 	// 测试指定endpoint和model
-	model := NewDeepSeekModel("test-key", "https://custom.api.com/v1", "deepseek-v4-pro")
+	model := NewDeepSeekModel("test-key", "https://custom.api.com/v1", "deepseek-v4-flash")
 	if model == nil {
 		t.Fatal("expected non-nil model")
 	}
-	if model.Name() != "deepseek-v4-pro" {
-		t.Errorf("expected model name 'deepseek-v4-pro', got '%s'", model.Name())
+	if model.Name() != "deepseek-v4-flash" {
+		t.Errorf("expected model name 'deepseek-v4-flash', got '%s'", model.Name())
 	}
 
 	// 测试默认endpoint和model
@@ -193,8 +193,8 @@ func TestNewDeepSeekModel(t *testing.T) {
 		t.Errorf("expected default endpoint 'https://api.deepseek.com/v1', got '%s'", model2.apiEndpoint)
 	}
 	// 验证默认model被设置
-	if model2.Name() != "deepseek-v4-pro" {
-		t.Errorf("expected default model 'deepseek-v4-pro', got '%s'", model2.Name())
+	if model2.Name() != "deepseek-v4-flash" {
+		t.Errorf("expected default model 'deepseek-v4-flash', got '%s'", model2.Name())
 	}
 }
 

@@ -1,4 +1,4 @@
-﻿package main
+package main
 
 import (
 	"fmt"
@@ -82,7 +82,12 @@ func main() {
 		"trace.id", tracing.TraceID(),
 		"span.id", tracing.SpanID(),
 	)
-	conn, err := rmq.NewConnection("amqp://admin:admin@localhost:5672/")
+	// 从配置读取 RabbitMQ 连接地址，如果未配置则使用默认地址
+	rmqURL := bc.Rabbitmq.GetUrl()
+	if rmqURL == "" {
+		rmqURL = "amqp://admin:admin@localhost:5672/"
+	}
+	conn, err := rmq.NewConnection(rmqURL)
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}

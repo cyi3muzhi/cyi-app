@@ -5,8 +5,6 @@ import (
 	"io"
 	"testing"
 
-	v1 "cyi-app/api/service/product/v1"
-
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/stretchr/testify/assert"
 )
@@ -220,7 +218,7 @@ func TestCreateProduct_RepoError(t *testing.T) {
 	uc := newProductTestUseCase(pr, mockStockRepo{}, mockSpecGroupRepo{}, mockSkuRepo{})
 
 	err := uc.CreateProduct(context.Background(), &Product{Name: "测试"})
-	assert.True(t, v1.IsCreateProductFailed(err), "应返回ErrorCreateProductFailed错误")
+	assert.ErrorIs(t, err, ErrCreateProductFailed, "应返回ErrCreateProductFailed错误")
 }
 
 // TestCreateProduct_SpecGroupError 测试创建商品时规格组创建失败
@@ -334,7 +332,7 @@ func TestCreateProduct_StockError(t *testing.T) {
 	uc := newProductTestUseCase(pr, sr, sgr, skur)
 
 	err := uc.CreateProduct(context.Background(), &Product{Name: "测试"})
-	assert.True(t, v1.IsCreateStockFailed(err), "应返回ErrorCreateStockFailed错误")
+	assert.ErrorIs(t, err, ErrCreateStockFailed, "应返回ErrCreateStockFailed错误")
 	assert.True(t, productDeleted, "库存初始化失败时应回滚删除商品")
 }
 

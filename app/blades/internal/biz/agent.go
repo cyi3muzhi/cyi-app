@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"cyi-app/app/blades/internal/conf"
+	pkgblades "cyi-app/pkg/blades"
 
 	"github.com/go-kratos/blades"
 	"github.com/go-kratos/kratos/v2/log"
@@ -31,14 +31,15 @@ const (
 
 // AgentUseCase 智能体用例（组合 AgentFactory + 会话管理）
 type AgentUseCase struct {
-	factory   *AgentFactory
-	rdb       redis.UniversalClient
-	localStor sync.Map // 内存会话存储（Redis 不可用时 fallback）
-	log       *log.Helper
+	factory      *AgentFactory
+	rdb          redis.UniversalClient
+	sessionStore *pkgblades.SessionStore // 公共会话存储
+	localStor    sync.Map                // 偏好存储（Redis 不可用时 fallback）
+	log          *log.Helper
 }
 
 // NewAgentUseCase 创建 AgentUseCase
-func NewAgentUseCase(cfg *conf.Blades, rdb redis.UniversalClient, factory *AgentFactory, logger log.Logger) *AgentUseCase {
+func NewAgentUseCase(rdb redis.UniversalClient, factory *AgentFactory, logger log.Logger) *AgentUseCase {
 	rdbAvailable := rdb != nil
 	if rdbAvailable {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -51,10 +52,19 @@ func NewAgentUseCase(cfg *conf.Blades, rdb redis.UniversalClient, factory *Agent
 	if !rdbAvailable {
 		rdb = nil
 	}
+
+	// 创建公共会话存储，使用 "session:" 前缀以兼容现有 key 模式
+	sessionStore := pkgblades.NewSessionStore(rdb,
+		pkgblades.WithPrefix(agentSessionPrefix),
+		pkgblades.WithTTL(2*time.Hour),
+		pkgblades.WithMaxRounds(20),
+	)
+
 	return &AgentUseCase{
-		factory: factory,
-		rdb:     rdb,
-		log:     log.NewHelper(logger),
+		factory:      factory,
+		rdb:          rdb,
+		sessionStore: sessionStore,
+		log:          log.NewHelper(logger),
 	}
 }
 
@@ -115,102 +125,9 @@ func (uc *AgentUseCase) savePreference(ctx context.Context, source string, userI
 	return nil
 }
 
-// sessionKey 会话 key
+// sessionKey 构造会话存储使用的 key
 func sessionKey(source string, userID int64) string {
-	return agentSessionPrefix + source + ":" + strconv.FormatInt(userID, 10)
-}
-
-type sessionMessage struct {
-	Role      string `json:"role"`
-	Content   string `json:"content"`
-	Timestamp int64  `json:"timestamp,omitempty"`
-}
-
-const sessionTTL = 2 * time.Hour
-
-func (uc *AgentUseCase) loadHistory(ctx context.Context, source string, userID int64) ([]*sessionMessage, error) {
-	key := sessionKey(source, userID)
-
-	// 先尝试从 Redis 加载
-	if uc.rdb != nil {
-		data, err := uc.rdb.Get(ctx, key).Bytes()
-		if err == redis.Nil {
-			return nil, nil
-		}
-		if err != nil {
-			uc.log.Warnf("redis load history failed for key=%s: %v, fallback to local", key, err)
-		} else {
-			var msgs []*sessionMessage
-			if err := json.Unmarshal(data, &msgs); err != nil {
-				return nil, fmt.Errorf("unmarshal failed: %w", err)
-			}
-			if len(msgs) > 20 {
-				msgs = msgs[len(msgs)-20:]
-			}
-			return msgs, nil
-		}
-	}
-
-	// fallback: 从内存加载
-	if val, ok := uc.localStor.Load(key); ok {
-		msgs := val.([]*sessionMessage)
-		if len(msgs) > 20 {
-			msgs = msgs[len(msgs)-20:]
-		}
-		return msgs, nil
-	}
-	return nil, nil
-}
-
-// sessionToBladeMessages 将 session 消息转为 blades.Message 切片
-func (uc *AgentUseCase) sessionToBladeMessages(msgs []*sessionMessage) []*blades.Message {
-	var result []*blades.Message
-	for _, m := range msgs {
-		switch m.Role {
-		case "user":
-			result = append(result, blades.UserMessage(m.Content))
-		case "assistant":
-			result = append(result, &blades.Message{
-				Role:   blades.RoleAssistant,
-				Parts:  blades.NewMessageParts(m.Content),
-				Status: blades.StatusCompleted,
-			})
-		}
-	}
-	return result
-}
-
-func (uc *AgentUseCase) saveHistory(ctx context.Context, source string, userID int64, userMsg, assistantMsg string) {
-	key := sessionKey(source, userID)
-
-	// 读取已有的历史
-	var msgs []*sessionMessage
-	if uc.rdb != nil {
-		// 使用 Background context 避免请求结束时 context canceled
-		data, err := uc.rdb.Get(context.Background(), key).Bytes()
-		if err == nil {
-			json.Unmarshal(data, &msgs)
-		}
-	} else if val, ok := uc.localStor.Load(key); ok {
-		msgs = val.([]*sessionMessage)
-	}
-
-	// 追加新消息
-	now := time.Now().UnixMilli()
-	msgs = append(msgs, &sessionMessage{Role: "user", Content: userMsg, Timestamp: now})
-	msgs = append(msgs, &sessionMessage{Role: "assistant", Content: assistantMsg, Timestamp: now})
-	if len(msgs) > 20 {
-		msgs = msgs[len(msgs)-20:]
-	}
-
-	payload, _ := json.Marshal(msgs)
-
-	// 存到 Redis（优先）或内存
-	if uc.rdb != nil {
-		uc.rdb.Set(context.Background(), key, payload, sessionTTL)
-	} else {
-		uc.localStor.Store(key, msgs)
-	}
+	return source + ":" + strconv.FormatInt(userID, 10)
 }
 
 // Chat 非流式聊天
@@ -220,9 +137,13 @@ func (uc *AgentUseCase) Chat(ctx context.Context, userID int64, source, role, me
 		return "", fmt.Errorf("get agent failed: %w", err)
 	}
 
-	// 加载会话历史并传递给 Agent
-	history, _ := uc.loadHistory(ctx, source, userID)
-	historyMessages := uc.sessionToBladeMessages(history)
+	// 使用公共会话存储加载历史并转为 blades.Message 格式
+	key := sessionKey(source, userID)
+	historyMessages, err := uc.sessionStore.LoadHistory(ctx, key)
+	if err != nil {
+		uc.log.Warnf("load history failed: %v", err)
+	}
+
 	var instruction *blades.Message
 	if prefText := uc.loadPreferences(ctx, source, userID); prefText != "" {
 		instruction = blades.SystemMessage("以下是该用户的偏好信息，请遵守：\n" + prefText)
@@ -238,7 +159,7 @@ func (uc *AgentUseCase) Chat(ctx context.Context, userID int64, source, role, me
 		return "", err
 	}
 
-	uc.saveHistory(ctx, source, userID, message, response)
+	uc.sessionStore.SaveHistory(ctx, key, message, response)
 	return response, nil
 }
 
@@ -249,9 +170,12 @@ func (uc *AgentUseCase) ChatStream(ctx context.Context, userID int64, source, ro
 		return fmt.Errorf("get agent failed: %w", err)
 	}
 
-	// 加载会话历史并传递给 Agent
-	history, _ := uc.loadHistory(ctx, source, userID)
-	historyMessages := uc.sessionToBladeMessages(history)
+	// 使用公共会话存储加载历史并转为 blades.Message 格式
+	key := sessionKey(source, userID)
+	historyMessages, err := uc.sessionStore.LoadHistory(ctx, key)
+	if err != nil {
+		uc.log.Warnf("load history failed: %v", err)
+	}
 
 	// 注入用户偏好作为系统消息
 	var instruction *blades.Message
@@ -274,16 +198,14 @@ func (uc *AgentUseCase) ChatStream(ctx context.Context, userID int64, source, ro
 		return err
 	}
 
-	uc.saveHistory(ctx, source, userID, message, fullResponse)
+	uc.sessionStore.SaveHistory(ctx, key, message, fullResponse)
 	return nil
 }
 
 // ClearHistory 清除聊天历史
 func (uc *AgentUseCase) ClearHistory(ctx context.Context, userID int64, source string) error {
-	if uc.rdb == nil {
-		return nil
-	}
-	return uc.rdb.Del(ctx, sessionKey(source, userID)).Err()
+	key := sessionKey(source, userID)
+	return uc.sessionStore.ClearHistory(ctx, key)
 }
 
 // GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
@@ -309,7 +231,8 @@ type HistoryMessage struct {
 
 // LoadChatHistory 加载聊天历史
 func (uc *AgentUseCase) LoadChatHistory(ctx context.Context, userID int64, source string) ([]*HistoryMessage, error) {
-	msgs, err := uc.loadHistory(ctx, source, userID)
+	key := sessionKey(source, userID)
+	msgs, err := uc.sessionStore.LoadRawHistory(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -320,10 +243,6 @@ func (uc *AgentUseCase) LoadChatHistory(ctx context.Context, userID int64, sourc
 			Content:   m.Content,
 			Timestamp: m.Timestamp,
 		})
-	}
-	// 没有历史返回空数组
-	if len(history) == 0 {
-		return []*HistoryMessage{}, nil
 	}
 	return history, nil
 }

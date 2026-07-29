@@ -3,6 +3,7 @@ package server
 import (
 	"cyi-app/app/task/internal/conf"
 	consul "cyi-app/pkg/kratos/config"
+	kserver "cyi-app/pkg/kratos/server"
 
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -50,15 +51,8 @@ func NewHTTPServerConf(
 }
 
 // 注册服务器
-func NewRegistrar(conf *conf.Registry) registry.Registrar {
-	reg, err := consul.NewConsulRegistry(&consul.ConsulRegistryOptions{
-		Address: conf.Consul.Address,
-		Scheme:  conf.Consul.Scheme,
-	})
-	if err != nil {
-		panic(err)
-	}
-	return reg
+func NewRegistrar(c *conf.Registry) registry.Registrar {
+	return kserver.NewRegistrar(c.Consul.Address, c.Consul.Scheme)
 }
 
 // 发现服务器

@@ -1,8 +1,6 @@
 package biz
 
 import (
-	"cyi-app/app/cin/admin/internal/conf"
-
 	"github.com/google/wire"
 )
 
@@ -22,6 +20,6 @@ var ProviderSet = wire.NewSet(
 	ProvideApiKey,
 )
 
-func ProvideApiKey(cfg *conf.Auth) string {
-	return cfg.ApiKey
+func ProvideApiKey(apiKey string) string {
+	return apiKey
 }

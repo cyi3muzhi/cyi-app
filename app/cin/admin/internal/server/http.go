@@ -20,13 +20,10 @@ import (
 	jwtmiddleware "github.com/go-kratos/kratos/v2/middleware/auth/jwt"
 	kratosHttp "github.com/go-kratos/kratos/v2/transport/http"
 	jwtv5 "github.com/golang-jwt/jwt/v5"
-	"github.com/redis/go-redis/v9"
 )
 
-const preferenceKeyPrefix = "preference:"
-
 // NewHTTPServer new an HTTP server. 注册管理后台的多个接口服务
-func NewHTTPServer(s *ts.HttpServer, adminService *service.AdminService, ac *conf.Auth, rdb redis.UniversalClient) *kratosHttp.Server {
+func NewHTTPServer(s *ts.HttpServer, adminService *service.AdminService, ac *conf.Auth) *kratosHttp.Server {
 	adminv1.RegisterDashboardHTTPServer(s.HttpServer, adminService)
 	adminv1.RegisterAdminProductHTTPServer(s.HttpServer, adminService)
 	adminv1.RegisterAdminOrderHTTPServer(s.HttpServer, adminService)
@@ -42,7 +39,7 @@ func NewHTTPServer(s *ts.HttpServer, adminService *service.AdminService, ac *con
 	// 注册智能体聊天路由
 	registerAgentRoutes(s.HttpServer, adminService, ac)
 	// 注册偏好设置路由
-	registerPreferenceRoutes(s.HttpServer, ac, rdb)
+	registerPreferenceRoutes(s.HttpServer, adminService, ac)
 	return s.HttpServer
 }
 
@@ -382,7 +379,8 @@ func newJWTAuthMiddleware(ac *conf.Auth) middleware.Middleware {
 }
 
 // registerPreferenceRoutes 注册偏好设置路由
-func registerPreferenceRoutes(s *kratosHttp.Server, ac *conf.Auth, rdb redis.UniversalClient) {
+// 通过 service → biz → data 分层调用，不再直接操作 Redis
+func registerPreferenceRoutes(s *kratosHttp.Server, adminService *service.AdminService, ac *conf.Auth) {
 	authMw := []middleware.Middleware{newJWTAuthMiddleware(ac)}
 
 	// GET/PUT /admin/v1/preferences 获取/更新当前用户的偏好
@@ -393,20 +391,10 @@ func registerPreferenceRoutes(s *kratosHttp.Server, ac *conf.Auth, rdb redis.Uni
 			return
 		}
 
-		key := fmt.Sprintf("%sadmin:%d", preferenceKeyPrefix, userID)
-
 		switch r.Method {
 		case nethttp.MethodGet:
 			w.Header().Set("Content-Type", "application/json")
-			if rdb == nil {
-				w.Write([]byte(`{}`))
-				return
-			}
-			data, err := rdb.Get(r.Context(), key).Bytes()
-			if err == redis.Nil {
-				w.Write([]byte(`{}`))
-				return
-			}
+			data, err := adminService.GetPreference(r.Context(), userID)
 			if err != nil {
 				nethttp.Error(w, "读取偏好失败", nethttp.StatusInternalServerError)
 				return
@@ -419,15 +407,12 @@ func registerPreferenceRoutes(s *kratosHttp.Server, ac *conf.Auth, rdb redis.Uni
 				nethttp.Error(w, "读取请求体失败", nethttp.StatusBadRequest)
 				return
 			}
+			if err := adminService.SavePreference(r.Context(), userID, body); err != nil {
+				w.Header().Set("Content-Type", "application/json")
+				w.Write([]byte(`{"success":false,"message":"保存偏好失败"}`))
+				return
+			}
 			w.Header().Set("Content-Type", "application/json")
-			if rdb == nil {
-				w.Write([]byte(`{"success":false,"message":"存储服务不可用"}`))
-				return
-			}
-			if err := rdb.Set(r.Context(), key, body, 0).Err(); err != nil {
-				nethttp.Error(w, "保存偏好失败", nethttp.StatusInternalServerError)
-				return
-			}
 			w.Write([]byte(`{"success":true}`))
 
 		default:

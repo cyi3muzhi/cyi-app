@@ -1,11 +1,10 @@
 package data
 
 import (
-	"context"
 	userRpc "cyi-app/api/service/user/v1"
 	marketingV1 "cyi-app/api/service/marketing/v1"
 	"cyi-app/app/job/internal/conf"
-	"time"
+	kdata "cyi-app/pkg/kratos/data"
 
 	// "cyi-app/app/service/task/internal/data/curd"
 
@@ -47,18 +46,11 @@ func NewData(c *conf.Data, cache redis.UniversalClient, logger log.Logger, serve
 }
 
 func NewRedisClient(c *conf.Data, logger log.Logger) redis.UniversalClient {
-	client := redis.NewClient(&redis.Options{
-		Addr:         c.Redis.Addr,
-		Network:      c.Redis.Network,
-		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
-		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
-		Password:     c.Redis.Password,
-	})
-	timeout, cancelFunc := context.WithTimeout(context.Background(), time.Second*2)
-	defer cancelFunc()
-	err := client.Ping(timeout).Err()
-	if err != nil {
-		panic(err)
-	}
-	return client
+	return kdata.NewRedisClient(
+		c.Redis.Addr,
+		c.Redis.Network,
+		c.Redis.Password,
+		c.Redis.ReadTimeout.AsDuration(),
+		c.Redis.WriteTimeout.AsDuration(),
+	)
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"cyi-app/app/service/product/internal/biz"
 	"cyi-app/pkg/util/convert"
@@ -38,9 +39,8 @@ func (s *ProductService) CreateProduct(ctx context.Context, req *v1.CreateProduc
 	in.SpecGroups = specGroupInfoListToBiz(req.Specs)
 	// 转换SKU
 	in.Skus = skuInfoListToBiz(req.Skus)
-	err := s.uc.CreateProduct(ctx, in)
-	if err != nil {
-		return nil, err
+	if err := s.uc.CreateProduct(ctx, in); err != nil {
+		return nil, convertBizError(err)
 	}
 	return &v1.CreateProductReply{
 		ProductId: in.ID,
@@ -191,6 +191,20 @@ func skuListToProto(skus []*biz.Sku) []*v1.SkuInfo {
 		result = append(result, skuToProto(s))
 	}
 	return result
+}
+
+// convertBizError 将 biz 层错误转换为 proto 错误
+func convertBizError(err error) error {
+	if err == nil {
+		return nil
+	}
+	if errors.Is(err, biz.ErrCreateProductFailed) {
+		return v1.ErrorCreateProductFailed("%s", err.Error())
+	}
+	if errors.Is(err, biz.ErrCreateStockFailed) {
+		return v1.ErrorCreateStockFailed("%s", err.Error())
+	}
+	return err
 }
 
 // bizProductToProductItem 将 biz.Product 转换为 proto ProductItem

@@ -50,14 +50,8 @@ func (r *UploadRepo) GetUploadToken(ctx context.Context, filename, directory str
 	}
 
 	// 确保 bucket 存在，不存在则创建
-	exists, err := r.data.oss.BucketExists(ctx, bucketName)
-	if err != nil {
-		return "", "", "", fmt.Errorf("检查存储桶失败: %w", err)
-	}
-	if !exists {
-		if err := r.data.oss.CreateBucket(ctx, bucketName); err != nil {
-			return "", "", "", fmt.Errorf("创建存储桶失败: %w", err)
-		}
+	if err := r.data.ensureAdminBucket(ctx); err != nil {
+		return "", "", "", err
 	}
 
 	// 生成预签名 PUT URL（1小时有效期，供前端直传）

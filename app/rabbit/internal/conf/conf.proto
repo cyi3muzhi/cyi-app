@@ -12,6 +12,12 @@ message Bootstrap {
   Auth auth = 3;
   Trace trace = 4;
   Log log = 5;
+  RabbitMQ rabbitmq = 6;
+}
+
+// RabbitMQ 配置
+message RabbitMQ {
+  string url = 1; // RabbitMQ 连接地址
 }
 
 message Server {

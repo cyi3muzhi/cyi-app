@@ -2,10 +2,10 @@ package biz
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
-	v1 "cyi-app/api/service/user/v1"
 	"cyi-app/app/service/user/internal/pkg/encryption"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -65,16 +65,16 @@ func NewAdminUserUseCase(repo AdminUserRepo, apiKey string, logger log.Logger) *
 func (uc *AdminUserUseCase) Login(ctx context.Context, username, password string) (*AdminUser, error) {
 	admin, err := uc.repo.FindByUsername(ctx, username)
 	if err != nil {
-		return nil, v1.ErrorUserNotFound("管理员账号不存在")
+		return nil, fmt.Errorf("%w: 管理员账号不存在", ErrUserNotFound)
 	}
 	if admin == nil {
-		return nil, v1.ErrorUserNotFound("管理员账号不存在")
+		return nil, fmt.Errorf("%w: 管理员账号不存在", ErrUserNotFound)
 	}
 	if admin.Status == 2 {
-		return nil, v1.ErrorUserNotFound("管理员账号已冻结")
+		return nil, fmt.Errorf("%w: 管理员账号已冻结", ErrUserNotFound)
 	}
 	if err := uc.repo.VerifyPassword(ctx, admin.ID, password); err != nil {
-		return nil, v1.ErrorPasswordError("管理员密码错误")
+		return nil, fmt.Errorf("%w: 管理员密码错误", ErrPasswordError)
 	}
 	_ = uc.repo.UpdateLastLogin(ctx, admin.ID)
 	return admin, nil
@@ -91,7 +91,7 @@ func (uc *AdminUserUseCase) Create(ctx context.Context, admin *AdminUser) (int64
 	if err != nil {
 		// 用户名重复 → 转换为业务错误
 		if strings.Contains(err.Error(), "Duplicate entry") && strings.Contains(err.Error(), "idx_admin_user_username") {
-			return 0, v1.ErrorUserAlreadyRegistered("该账号已注册，请更换用户名")
+			return 0, fmt.Errorf("%w: 该账号已注册，请更换用户名", ErrUserAlreadyRegistered)
 		}
 		return 0, err
 	}
@@ -123,5 +123,3 @@ func (uc *AdminUserUseCase) UpdateAvatar(ctx context.Context, adminID int64, ava
 	return uc.repo.UpdateAvatar(ctx, adminID, avatarURL)
 }
 
-// 确保 import 不被移除
-var _ = &v1.AdminLoginReply{}

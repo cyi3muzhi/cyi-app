@@ -11,7 +11,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// Deprecated: 事务管理中间件
+// Deprecated: 事务管理中间件，已废弃不再使用。
+// 建议使用 curd.Q.Transaction 或 data 层的事务管理替代。
+// 该实现存在以下问题：
+//   - 使用内存 map 存储事务，多实例环境下不可用
+//   - 通过 gRPC metadata 传递事务 ID，耦合通信协议
+//   - 事务泄漏风险（panic 或超时场景下未正确清理）
 func TransactionMiddleware(db *gorm.DB, transactionList []string) middleware.Middleware {
 	return selector.Server(
 		func(handler middleware.Handler) middleware.Handler {

@@ -437,6 +437,9 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- AI 文案方案选择弹窗 -->
+    <BannerCopyPicker v-model="copyPickerVisible" :options="copyOptions" @confirm="handleCopyPickConfirm" />
   </div>
 </template>
 
@@ -456,6 +459,7 @@ import { listBanners, saveBanners } from '../../api/banner'
 import type { BannerItem } from '../../api/banner'
 import { uploadToOSS } from '../../utils/upload'
 import { generateBannerCopy, type BannerCopyOption } from '../../api/agent'
+import BannerCopyPicker from './BannerCopyPicker.vue'
 
 /* ===== 模板定义 ===== */
 
@@ -599,6 +603,9 @@ const uploading = ref(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 /** AI 生成文案 loading */
 const aiLoading = ref(false)
+/** AI 方案选择弹窗 */
+const copyPickerVisible = ref(false)
+const copyOptions = ref<BannerCopyOption[]>([])
 
 /* ========== 计算属性 ========== */
 
@@ -746,30 +753,25 @@ async function handleAIGenerate() {
       ElMessage.success('文案已生成')
       return
     }
-    // 多组方案时，让用户选择
-    const msg = options.map((opt, i) =>
-      `方案 ${i + 1}：\n标题：${opt.title}\n副标题：${opt.subtitle}\n按钮：${opt.btn_text}\n`
-    ).join('\n')
-    const { value } = await ElMessageBox.prompt(msg + '\n请输入方案编号：', '选择文案方案', {
-      inputValue: '1',
-      inputPlaceholder: '请输入 1~' + options.length,
-      confirmButtonText: '确认',
-      cancelButtonText: '取消'
-    })
-    const idx = parseInt(value) - 1
-    if (idx >= 0 && idx < options.length) {
-      editForm.value.title = options[idx].title
-      editForm.value.subtitle = options[idx].subtitle
-      editForm.value.btn_text = options[idx].btn_text
-      ElMessage.success('文案已应用')
-    } else {
-      ElMessage.warning('无效的方案编号')
-    }
+    // 多组方案时，弹出自定义卡片选择弹窗
+    copyOptions.value = options
+    copyPickerVisible.value = true
   } catch {
     ElMessage.error('AI 生成文案失败')
   } finally {
     aiLoading.value = false
   }
+}
+
+/**
+ * AI 方案选择确认回调
+ * 用户从弹窗中选择方案后，将文案填入表单
+ */
+function handleCopyPickConfirm(option: BannerCopyOption) {
+  editForm.value.title = option.title
+  editForm.value.subtitle = option.subtitle
+  editForm.value.btn_text = option.btn_text
+  ElMessage.success('文案已应用')
 }
 
 /**

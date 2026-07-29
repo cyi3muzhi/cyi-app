@@ -96,6 +96,7 @@ func (r *userRepo) AddUser(ctx context.Context, u *biz.User) error {
 }
 
 // RemoveUser 移除用户
+// TODO: 待业务需求明确后实现
 func (r *userRepo) RemoveUser(ctx context.Context, id int64) error {
 	// _, err := r.data.uc.DeleteUser(ctx, &usV1.DeleteUserRequest{
 	// 	Id: id,
@@ -116,6 +117,8 @@ func (r *userRepo) ModifyUser(ctx context.Context, u *biz.User) error {
 	return nil
 }
 
+// FindUserList 查询用户列表
+// TODO: 待业务需求明确后实现
 func (r *userRepo) FindUserList(ctx context.Context) ([]*biz.User, error) {
 	return nil, nil
 }

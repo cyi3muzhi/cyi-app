@@ -1,8 +1,8 @@
-﻿package server
+package server
 
 import (
 	"cyi-app/app/rabbit/internal/conf"
-	consul "cyi-app/pkg/kratos/config"
+	kserver "cyi-app/pkg/kratos/server"
 	"cyi-app/pkg/rmq"
 
 	"github.com/go-kratos/kratos/v2/registry"
@@ -33,15 +33,8 @@ var ProviderSet = wire.NewSet(NewRegistrar, NewQueueFactory)
 // }
 
 // 注册服务器
-func NewRegistrar(conf *conf.Registry) registry.Registrar {
-	reg, err := consul.NewConsulRegistry(&consul.ConsulRegistryOptions{
-		Address: conf.Consul.Address,
-		Scheme:  conf.Consul.Scheme,
-	})
-	if err != nil {
-		panic(err)
-	}
-	return reg
+func NewRegistrar(c *conf.Registry) registry.Registrar {
+	return kserver.NewRegistrar(c.Consul.Address, c.Consul.Scheme)
 }
 
 func NewQueueFactory(conn *rmq.Connection) *rmq.QueueFactory {

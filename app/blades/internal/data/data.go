@@ -2,12 +2,8 @@ package data
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	orderRpc "cyi-app/api/service/order/v1"
-	productRpc "cyi-app/api/service/product/v1"
-	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/blades/internal/biz"
 	"cyi-app/app/blades/internal/conf"
 
@@ -18,7 +14,6 @@ import (
 
 // ProviderSet is data providers.
 var ProviderSet = wire.NewSet(
-	NewData,
 	NewRedisClient,
 	ProvideUniversalClient,
 	NewVectorStore,
@@ -37,30 +32,6 @@ func ProviderVectorStoreDimension(cfg *conf.Blades) int {
 		return int(cfg.Embedding.Dimension)
 	}
 	return 768
-}
-
-// Data 持有 Redis 连接和各下游服务的 gRPC 客户端
-type Data struct {
-	cache *redis.Client
-	pc    productRpc.ProductClient
-	uc    userRpc.UserClient
-	oc    orderRpc.OrderClient
-}
-
-// NewData .
-func NewData(cache *redis.Client, pc productRpc.ProductClient, uc userRpc.UserClient, oc orderRpc.OrderClient, logger log.Logger) (*Data, func(), error) {
-	cleanup := func() {
-		log.NewHelper(logger).Info("closing the data resources")
-	}
-	if cache == nil {
-		return nil, nil, fmt.Errorf("redis client is nil")
-	}
-	return &Data{
-		cache: cache,
-		pc:    pc,
-		uc:    uc,
-		oc:    oc,
-	}, cleanup, nil
 }
 
 // NewRedisClient .

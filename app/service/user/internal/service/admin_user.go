@@ -30,7 +30,7 @@ func NewAdminUserService(uc *biz.AdminUserUseCase, logger log.Logger) *AdminUser
 func (s *AdminUserService) Login(ctx context.Context, req *v1.AdminLoginRequest) (*v1.AdminLoginReply, error) {
 	admin, err := s.uc.Login(ctx, req.Username, req.Password)
 	if err != nil || admin == nil {
-		return nil, err
+		return nil, convertBizError(err)
 	}
 	return &v1.AdminLoginReply{
 		AdminId:  admin.ID,
@@ -55,7 +55,7 @@ func (s *AdminUserService) CreateAdminUser(ctx context.Context, req *v1.CreateAd
 		Status:     1,
 	})
 	if err != nil {
-		return nil, err
+		return nil, convertBizError(err)
 	}
 	return &v1.CreateAdminUserReply{Id: id}, nil
 }

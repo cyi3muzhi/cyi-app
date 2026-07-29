@@ -86,7 +86,7 @@ func TestSaveAndLoadHistory(t *testing.T) {
 	}
 
 	// 验证Redis中存在数据
-	key := sessionPrefix + sessionID
+	key := defaultSessionPrefix + sessionID
 	if !mr.Exists(key) {
 		t.Error("expected key to exist in Redis")
 	}
@@ -226,7 +226,7 @@ func TestClearHistory(t *testing.T) {
 		t.Fatalf("SaveHistory failed: %v", err)
 	}
 
-	key := sessionPrefix + sessionID
+	key := defaultSessionPrefix + sessionID
 	if !mr.Exists(key) {
 		t.Fatal("expected key to exist before clear")
 	}
@@ -259,7 +259,7 @@ func TestLoadHistory_InvalidJSON(t *testing.T) {
 	sessionID := "test-session-bad-json"
 
 	// 手动写入无效的JSON
-	key := sessionPrefix + sessionID
+	key := defaultSessionPrefix + sessionID
 	mr.Set(key, "invalid json data")
 
 	_, err := LoadHistory(ctx, rdb, sessionID)
@@ -275,7 +275,7 @@ func TestLoadHistory_UnknownRole(t *testing.T) {
 	sessionID := "test-session-unknown-role"
 
 	// 手动写入包含未知角色的JSON
-	key := sessionPrefix + sessionID
+	key := defaultSessionPrefix + sessionID
 	badData := `[{"role":"system","content":"you are helpful"},{"role":"user","content":"hello"},{"role":"assistant","content":"hi"}]`
 	mr.Set(key, badData)
 
@@ -302,7 +302,7 @@ func TestSaveHistory_TTL(t *testing.T) {
 		t.Fatalf("SaveHistory failed: %v", err)
 	}
 
-	key := sessionPrefix + sessionID
+	key := defaultSessionPrefix + sessionID
 	ttl := mr.TTL(key)
 
 	// TTL应该接近2小时（7200秒）

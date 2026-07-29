@@ -2,10 +2,9 @@ package biz
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
-
-	v1 "cyi-app/api/service/user/v1"
 
 	server "cyi-app/pkg/kratos/server/middleware"
 
@@ -22,27 +21,27 @@ func (uc *UserUseCase) Register(ctx context.Context, u *User) error {
 	if err == nil && user != nil && user.ID != 0 {
 		uc.log.Infof("User already exists: %v", user)
 		// 用户已存在
-		return v1.ErrorUserAlreadyRegistered("username already exists")
+		return fmt.Errorf("%w: username already exists", ErrUserAlreadyRegistered)
 	}
 
 	// 检查是否是其他错误（非用户不存在错误）
-	if err != nil && !v1.IsUserNotFound(err) {
-		fmt.Printf("Register err: %v, isUserNotFound: %v\n", err, v1.IsUserNotFound(err))
+	if err != nil && !errors.Is(err, ErrUserNotFound) {
+		fmt.Printf("Register err: %v\n", err)
 		// 记录错误日志
 		uc.log.Errorf("Failed to check user existence: %v", err)
-		return v1.ErrorUserRegisterFailed("check user existence failed")
+		return fmt.Errorf("%w: check user existence failed", ErrUserRegisterFailed)
 	}
 
 	// 添加用户
 	_, err = uc.CreateUser(ctx, u)
 	if err != nil {
 		uc.log.Errorf("Failed to add user: %v", err)
-		return v1.ErrorUserRegisterFailed("add user failed")
+		return fmt.Errorf("%w: add user failed", ErrUserRegisterFailed)
 	}
 	return nil
 }
 
-func (uc *UserUseCase) Login(ctx context.Context, in *User, apiKey string) (*v1.LoginReply, error) {
+func (uc *UserUseCase) Login(ctx context.Context, in *User, apiKey string) (*LoginReply, error) {
 
 	// 业务逻辑
 	// 查看用户是否存在
@@ -50,14 +49,14 @@ func (uc *UserUseCase) Login(ctx context.Context, in *User, apiKey string) (*v1.
 	if err != nil {
 		// 用户不存在
 		uc.log.Errorf("User not found: %v", err)
-		return nil, v1.ErrorUserNotFound("user not found")
+		return nil, fmt.Errorf("%w: user not found", ErrUserNotFound)
 	}
 
 	err = uc.repo.VerifyPassword(ctx, in)
 	if err != nil {
 		// 密码错误
 		uc.log.Errorf("Password error: %v", err)
-		return nil, v1.ErrorPasswordError("password not match")
+		return nil, fmt.Errorf("%w: password not match", ErrPasswordError)
 	}
 	// generate token
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, server.UserClaims{
@@ -75,7 +74,7 @@ func (uc *UserUseCase) Login(ctx context.Context, in *User, apiKey string) (*v1.
 	if err != nil {
 		return nil, err
 	}
-	return &v1.LoginReply{
+	return &LoginReply{
 		Token: signedString,
 	}, nil
 }

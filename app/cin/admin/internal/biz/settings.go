@@ -2,6 +2,7 @@ package biz
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -37,6 +38,10 @@ type SystemSettings struct {
 type SettingsRepo interface {
 	Get(ctx context.Context) (*SystemSettings, error)
 	Update(ctx context.Context, s *SystemSettings) error
+	// GetPreference 获取用户偏好设置（JSON 格式）
+	GetPreference(ctx context.Context, userID int64) (json.RawMessage, error)
+	// SavePreference 保存用户偏好设置（JSON 格式）
+	SavePreference(ctx context.Context, userID int64, data json.RawMessage) error
 }
 
 // SettingsUseCase 系统设置用例
@@ -58,4 +63,14 @@ func (uc *SettingsUseCase) Get(ctx context.Context) (*SystemSettings, error) {
 // Update 更新系统设置
 func (uc *SettingsUseCase) Update(ctx context.Context, s *SystemSettings) error {
 	return uc.repo.Update(ctx, s)
+}
+
+// GetPreference 获取用户偏好设置
+func (uc *SettingsUseCase) GetPreference(ctx context.Context, userID int64) (json.RawMessage, error) {
+	return uc.repo.GetPreference(ctx, userID)
+}
+
+// SavePreference 保存用户偏好设置
+func (uc *SettingsUseCase) SavePreference(ctx context.Context, userID int64, data json.RawMessage) error {
+	return uc.repo.SavePreference(ctx, userID, data)
 }

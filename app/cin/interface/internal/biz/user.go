@@ -42,6 +42,8 @@ func NewUserUseCase(repo UserRepo, logger log.Logger) *UserUseCase {
 	}
 }
 
+// GetUser 获取用户
+// TODO: 待业务需求明确后实现
 func (u *UserUseCase) GetUser(ctx context.Context, id int64) (*User, error) {
 	return nil, nil
 }

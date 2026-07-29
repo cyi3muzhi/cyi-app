@@ -3,8 +3,6 @@ package biz
 import (
 	"context"
 	"fmt"
-
-	"cyi-app/app/blades/internal/conf"
 )
 
 // VectorStore 向量存储接口（由 data 层实现）
@@ -40,11 +38,11 @@ type RAGEngine struct {
 	embedder *EmbeddingClient
 	vectorDB VectorStore
 	splitter *TextSplitter
-	config   *conf.RAGConfig
+	config   *RAGConfigBiz
 }
 
 // NewRAGEngine 创建 RAG 引擎
-func NewRAGEngine(embedder *EmbeddingClient, vectorDB VectorStore, cfg *conf.RAGConfig) *RAGEngine {
+func NewRAGEngine(embedder *EmbeddingClient, vectorDB VectorStore, cfg *RAGConfigBiz) *RAGEngine {
 	splitterCfg := TextSplitterConfig{
 		ChunkSize:    800,
 		ChunkOverlap: 0.15,

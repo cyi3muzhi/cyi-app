@@ -7,7 +7,6 @@ import (
 	"time"
 
 	userRpc "cyi-app/api/service/user/v1"
-	"cyi-app/app/blades/internal/conf"
 	pkgblades "cyi-app/pkg/blades"
 
 	"github.com/go-kratos/blades"
@@ -110,7 +109,7 @@ const agentCacheTTL = 3 * time.Minute
 type AgentFactory struct {
 	mu         sync.RWMutex
 	cache      map[string]*cacheEntry
-	cfg        *conf.Blades
+	cfg        *BladesConfig
 	rag        *RAGEngine
 	reg        *ToolRegistry
 	roleClient userRpc.AdminRoleClient
@@ -118,7 +117,7 @@ type AgentFactory struct {
 }
 
 // NewAgentFactory 创建 Agent 工厂
-func NewAgentFactory(cfg *conf.Blades, rag *RAGEngine, reg *ToolRegistry, rc userRpc.AdminRoleClient, logger log.Logger) *AgentFactory {
+func NewAgentFactory(cfg *BladesConfig, rag *RAGEngine, reg *ToolRegistry, rc userRpc.AdminRoleClient, logger log.Logger) *AgentFactory {
 	return &AgentFactory{
 		cache:      make(map[string]*cacheEntry),
 		cfg:        cfg,

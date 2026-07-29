@@ -3,7 +3,6 @@ package data
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	orderRpc "cyi-app/api/service/order/v1"
@@ -247,17 +246,7 @@ func (r *orderRepo) GetOrder(ctx context.Context, orderID int64) (*biz.Order, er
 
 // resolveImageURL 解析商品图片：OSS 路径转 presigned URL，已有 URL 原样返回
 func (r *orderRepo) resolveImageURL(ctx context.Context, image string) string {
-	if image == "" || strings.HasPrefix(image, "http") {
-		return image
-	}
-	parts := strings.SplitN(image, "/", 2)
-	if len(parts) == 2 {
-		presigned, err := r.data.oss.GetPresignedURL(ctx, parts[0], parts[1], 3600*24*30)
-		if err == nil {
-			return presigned
-		}
-	}
-	return image
+	return r.data.resolvePresignedURL(ctx, image, 3600*24*30)
 }
 
 // ShipOrder 通过 gRPC 调用订单服务发货（待实现订单服务端的发货接口）

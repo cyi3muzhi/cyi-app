@@ -1,13 +1,11 @@
 package data
 
 import (
-	"context"
-	"time"
-
 	orderRpc "cyi-app/api/service/order/v1"
 	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/task/internal/biz"
 	"cyi-app/app/task/internal/conf"
+	kdata "cyi-app/pkg/kratos/data"
 	"cyi-app/pkg/util/rustfs"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -59,20 +57,13 @@ func NewData(c *conf.Data, cache redis.UniversalClient, logger log.Logger, serve
 
 // NewRedisClient 创建 Redis 客户端
 func NewRedisClient(c *conf.Data, logger log.Logger) redis.UniversalClient {
-	client := redis.NewClient(&redis.Options{
-		Addr:         c.Redis.Addr,
-		Network:      c.Redis.Network,
-		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
-		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
-		Password:     c.Redis.Password,
-	})
-	timeout, cancelFunc := context.WithTimeout(context.Background(), time.Second*2)
-	defer cancelFunc()
-	err := client.Ping(timeout).Err()
-	if err != nil {
-		panic(err)
-	}
-	return client
+	return kdata.NewRedisClient(
+		c.Redis.Addr,
+		c.Redis.Network,
+		c.Redis.Password,
+		c.Redis.ReadTimeout.AsDuration(),
+		c.Redis.WriteTimeout.AsDuration(),
+	)
 }
 
 // NewOssClient 创建 OSS（RustFS）客户端，用于订单导出文件上传

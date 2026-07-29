@@ -98,14 +98,8 @@ func (r *exportRepo) GetOrGenerateDownloadURL(ctx context.Context, taskID, objec
 	}
 	// 2. 缓存未命中，生成 presigned URL
 	bucketName := string(rustfs.AdminServiceBucket)
-	exists, err := r.data.oss.BucketExists(ctx, bucketName)
-	if err != nil {
-		return "", fmt.Errorf("检查存储桶失败: %w", err)
-	}
-	if !exists {
-		if err := r.data.oss.CreateBucket(ctx, bucketName); err != nil {
-			return "", fmt.Errorf("创建存储桶失败: %w", err)
-		}
+	if err := r.data.ensureAdminBucket(ctx); err != nil {
+		return "", err
 	}
 	url, err := r.data.oss.GetPresignedURL(ctx, bucketName, objectKey, downloadURLExpiry)
 	if err != nil {
