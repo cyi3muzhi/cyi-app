@@ -49,7 +49,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	bladesService := service.NewBladesService(agentUseCase, knowledgeUseCase, logger)
 	server2 := server.NewGRPCServer(grpcServer, bladesService)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth)
-	server3 := server.NewHTTPServer(httpServer, bladesService)
+	server3 := server.NewHTTPServer(httpServer)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, server2, server3, registrar)
 	return app, func() {

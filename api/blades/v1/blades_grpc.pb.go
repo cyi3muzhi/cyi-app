@@ -32,13 +32,24 @@ const (
 // BladesClient is the client API for Blades service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// Blades 服务 - AI 智能助手
+// 提供 AI 聊天、知识库管理、文本生成等功能
+// 仅供内部服务通过 gRPC 调用，不暴露 HTTP 接口
 type BladesClient interface {
+	// Chat 非流式聊天
 	Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatReply, error)
+	// ChatStream 流式聊天（SSE 流式响应）
 	ChatStream(ctx context.Context, in *ChatStreamRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ChatChunkReply], error)
+	// GetChatHistory 获取聊天历史
 	GetChatHistory(ctx context.Context, in *GetChatHistoryRequest, opts ...grpc.CallOption) (*GetChatHistoryReply, error)
+	// ClearChatHistory 清除聊天历史
 	ClearChatHistory(ctx context.Context, in *ClearChatHistoryRequest, opts ...grpc.CallOption) (*ClearChatHistoryReply, error)
+	// UploadKnowledge 上传知识库文档（流式上传，支持大文件分片）
 	UploadKnowledge(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[UploadKnowledgeRequest, UploadKnowledgeReply], error)
+	// SearchKnowledge 搜索知识库
 	SearchKnowledge(ctx context.Context, in *SearchKnowledgeRequest, opts ...grpc.CallOption) (*SearchKnowledgeReply, error)
+	// DeleteKnowledge 删除知识库文档
 	DeleteKnowledge(ctx context.Context, in *DeleteKnowledgeRequest, opts ...grpc.CallOption) (*DeleteKnowledgeReply, error)
 	// GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
 	GenerateText(ctx context.Context, in *GenerateTextRequest, opts ...grpc.CallOption) (*GenerateTextReply, error)
@@ -147,13 +158,24 @@ func (c *bladesClient) GenerateText(ctx context.Context, in *GenerateTextRequest
 // BladesServer is the server API for Blades service.
 // All implementations must embed UnimplementedBladesServer
 // for forward compatibility.
+//
+// Blades 服务 - AI 智能助手
+// 提供 AI 聊天、知识库管理、文本生成等功能
+// 仅供内部服务通过 gRPC 调用，不暴露 HTTP 接口
 type BladesServer interface {
+	// Chat 非流式聊天
 	Chat(context.Context, *ChatRequest) (*ChatReply, error)
+	// ChatStream 流式聊天（SSE 流式响应）
 	ChatStream(*ChatStreamRequest, grpc.ServerStreamingServer[ChatChunkReply]) error
+	// GetChatHistory 获取聊天历史
 	GetChatHistory(context.Context, *GetChatHistoryRequest) (*GetChatHistoryReply, error)
+	// ClearChatHistory 清除聊天历史
 	ClearChatHistory(context.Context, *ClearChatHistoryRequest) (*ClearChatHistoryReply, error)
+	// UploadKnowledge 上传知识库文档（流式上传，支持大文件分片）
 	UploadKnowledge(grpc.ClientStreamingServer[UploadKnowledgeRequest, UploadKnowledgeReply]) error
+	// SearchKnowledge 搜索知识库
 	SearchKnowledge(context.Context, *SearchKnowledgeRequest) (*SearchKnowledgeReply, error)
+	// DeleteKnowledge 删除知识库文档
 	DeleteKnowledge(context.Context, *DeleteKnowledgeRequest) (*DeleteKnowledgeReply, error)
 	// GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
 	GenerateText(context.Context, *GenerateTextRequest) (*GenerateTextReply, error)

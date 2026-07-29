@@ -118,19 +118,19 @@ export async function generateBannerCopy(topic: string, subtitle?: string): Prom
  * AI 生成分类 SEO 信息
  */
 export async function generateCategorySEO(categoryName: string, description?: string): Promise<{
-  seo_title: string
-  seo_keywords: string
-  seo_description: string
+  seoTitle: string
+  seoKeywords: string
+  seoDescription: string
 }> {
   try {
-    const res = await request.post<any, { seo_title: string; seo_keywords: string; seo_description: string }>('/admin/v1/agent/generate-seo', {
+    const res = await request.post<any, { seoTitle: string; seoKeywords: string; seoDescription: string }>('/admin/v1/agent/generate-seo', {
       category_name: categoryName,
       description: description || ''
     })
     return res
   } catch (error) {
     console.error('AI 生成 SEO 失败:', error)
-    return { seo_title: '', seo_keywords: '', seo_description: '' }
+    return { seoTitle: '', seoKeywords: '', seoDescription: '' }
   }
 }
 

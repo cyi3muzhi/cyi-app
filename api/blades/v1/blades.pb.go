@@ -8,7 +8,6 @@ package v1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -23,9 +22,11 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// GenerateTextRequest 文本生成请求
 type GenerateTextRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Prompt        string                 `protobuf:"bytes,1,opt,name=prompt,proto3" json:"prompt,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 提示词，长度 1-2000 字符
+	Prompt        string `protobuf:"bytes,1,opt,name=prompt,proto3" json:"prompt,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -67,9 +68,11 @@ func (x *GenerateTextRequest) GetPrompt() string {
 	return ""
 }
 
+// GenerateTextReply 文本生成响应
 type GenerateTextReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 生成的文本内容
+	Text          string `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -111,13 +114,19 @@ func (x *GenerateTextReply) GetText() string {
 	return ""
 }
 
+// ChatRequest 非流式聊天请求
 type ChatRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
-	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
-	Message       string                 `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
-	EnableRag     bool                   `protobuf:"varint,5,opt,name=enable_rag,json=enableRag,proto3" json:"enable_rag,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户 ID（必须大于 0）
+	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 来源：admin（管理后台）、user（用户端）、other（其他）
+	Source string `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	// 角色标识（如 admin、super_admin 等）
+	Role string `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
+	// 用户消息，长度 1-2000 字符
+	Message string `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
+	// 是否启用 RAG 知识库检索
+	EnableRag     bool `protobuf:"varint,5,opt,name=enable_rag,json=enableRag,proto3" json:"enable_rag,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -187,9 +196,11 @@ func (x *ChatRequest) GetEnableRag() bool {
 	return false
 }
 
+// ChatReply 非流式聊天响应
 type ChatReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// AI 回复内容
+	Message       string `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -231,13 +242,19 @@ func (x *ChatReply) GetMessage() string {
 	return ""
 }
 
+// ChatStreamRequest 流式聊天请求
 type ChatStreamRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
-	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
-	Message       string                 `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
-	EnableRag     bool                   `protobuf:"varint,5,opt,name=enable_rag,json=enableRag,proto3" json:"enable_rag,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户 ID（必须大于 0）
+	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 来源：admin（管理后台）、user（用户端）、other（其他）
+	Source string `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	// 角色标识
+	Role string `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
+	// 用户消息，长度 1-2000 字符
+	Message string `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
+	// 是否启用 RAG 知识库检索
+	EnableRag     bool `protobuf:"varint,5,opt,name=enable_rag,json=enableRag,proto3" json:"enable_rag,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -307,10 +324,13 @@ func (x *ChatStreamRequest) GetEnableRag() bool {
 	return false
 }
 
+// ChatChunkReply 流式聊天响应块
 type ChatChunkReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Chunk         string                 `protobuf:"bytes,1,opt,name=chunk,proto3" json:"chunk,omitempty"`
-	Done          bool                   `protobuf:"varint,2,opt,name=done,proto3" json:"done,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 当前块的文本片段
+	Chunk string `protobuf:"bytes,1,opt,name=chunk,proto3" json:"chunk,omitempty"`
+	// 是否已完成全部响应
+	Done          bool `protobuf:"varint,2,opt,name=done,proto3" json:"done,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -359,10 +379,13 @@ func (x *ChatChunkReply) GetDone() bool {
 	return false
 }
 
+// GetChatHistoryRequest 获取聊天历史请求
 type GetChatHistoryRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户 ID（必须大于 0）
+	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 来源过滤
+	Source        string `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -411,11 +434,15 @@ func (x *GetChatHistoryRequest) GetSource() string {
 	return ""
 }
 
+// HistoryMessage 聊天历史消息
 type HistoryMessage struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Role          string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
-	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
-	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 消息角色（user/assistant/system）
+	Role string `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	// 消息内容
+	Content string `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	// 消息时间戳
+	Timestamp     int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -471,9 +498,11 @@ func (x *HistoryMessage) GetTimestamp() int64 {
 	return 0
 }
 
+// GetChatHistoryReply 获取聊天历史响应
 type GetChatHistoryReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Messages      []*HistoryMessage      `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 历史消息列表
+	Messages      []*HistoryMessage `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -515,10 +544,13 @@ func (x *GetChatHistoryReply) GetMessages() []*HistoryMessage {
 	return nil
 }
 
+// ClearChatHistoryRequest 清除聊天历史请求
 type ClearChatHistoryRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户 ID（必须大于 0）
+	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 来源
+	Source        string `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -567,9 +599,11 @@ func (x *ClearChatHistoryRequest) GetSource() string {
 	return ""
 }
 
+// ClearChatHistoryReply 清除聊天历史响应
 type ClearChatHistoryReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否清除成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -611,8 +645,11 @@ func (x *ClearChatHistoryReply) GetSuccess() bool {
 	return false
 }
 
+// UploadKnowledgeRequest 上传知识库文档请求（流式）
 type UploadKnowledgeRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// 上传数据类型：meta（文档元信息）或 content_chunk（文件内容分片）
+	//
 	// Types that are valid to be assigned to Data:
 	//
 	//	*UploadKnowledgeRequest_Meta
@@ -682,10 +719,12 @@ type isUploadKnowledgeRequest_Data interface {
 }
 
 type UploadKnowledgeRequest_Meta struct {
+	// 文档元信息（第一个分片发送）
 	Meta *KnowledgeMeta `protobuf:"bytes,1,opt,name=meta,proto3,oneof"`
 }
 
 type UploadKnowledgeRequest_ContentChunk struct {
+	// 文件内容分片（后续分片发送）
 	ContentChunk []byte `protobuf:"bytes,2,opt,name=content_chunk,json=contentChunk,proto3,oneof"`
 }
 
@@ -693,13 +732,19 @@ func (*UploadKnowledgeRequest_Meta) isUploadKnowledgeRequest_Data() {}
 
 func (*UploadKnowledgeRequest_ContentChunk) isUploadKnowledgeRequest_Data() {}
 
+// KnowledgeMeta 知识库文档元信息
 type KnowledgeMeta struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DocId         string                 `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
-	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
-	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
-	ContentType   string                 `protobuf:"bytes,4,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
-	Tags          map[string]string      `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 文档唯一标识
+	DocId string `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
+	// 来源：admin（管理后台）、user（用户端）、public（公开）
+	Source string `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	// 文档标题
+	Title string `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	// 内容类型（如 pdf、docx、txt、markdown 等）
+	ContentType string `protobuf:"bytes,4,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
+	// 自定义标签
+	Tags          map[string]string `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -769,11 +814,15 @@ func (x *KnowledgeMeta) GetTags() map[string]string {
 	return nil
 }
 
+// UploadKnowledgeReply 上传知识库文档响应
 type UploadKnowledgeReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DocId         string                 `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
-	ChunkCount    int32                  `protobuf:"varint,2,opt,name=chunk_count,json=chunkCount,proto3" json:"chunk_count,omitempty"`
-	TokenCount    int32                  `protobuf:"varint,3,opt,name=token_count,json=tokenCount,proto3" json:"token_count,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 文档唯一标识
+	DocId string `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
+	// 分块数量
+	ChunkCount int32 `protobuf:"varint,2,opt,name=chunk_count,json=chunkCount,proto3" json:"chunk_count,omitempty"`
+	// Token 数量
+	TokenCount    int32 `protobuf:"varint,3,opt,name=token_count,json=tokenCount,proto3" json:"token_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -829,11 +878,15 @@ func (x *UploadKnowledgeReply) GetTokenCount() int32 {
 	return 0
 }
 
+// SearchKnowledgeRequest 搜索知识库请求
 type SearchKnowledgeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Source        string                 `protobuf:"bytes,1,opt,name=source,proto3" json:"source,omitempty"`
-	Query         string                 `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
-	TopK          int32                  `protobuf:"varint,3,opt,name=top_k,json=topK,proto3" json:"top_k,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 来源过滤
+	Source string `protobuf:"bytes,1,opt,name=source,proto3" json:"source,omitempty"`
+	// 搜索关键词
+	Query string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
+	// 返回结果数量上限
+	TopK          int32 `protobuf:"varint,3,opt,name=top_k,json=topK,proto3" json:"top_k,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -889,13 +942,19 @@ func (x *SearchKnowledgeRequest) GetTopK() int32 {
 	return 0
 }
 
+// KnowledgeChunk 知识库搜索结果片段
 type KnowledgeChunk struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DocId         string                 `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
-	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
-	Score         float32                `protobuf:"fixed32,4,opt,name=score,proto3" json:"score,omitempty"`
-	Tags          map[string]string      `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 所属文档 ID
+	DocId string `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
+	// 文档标题
+	Title string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	// 匹配内容
+	Content string `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	// 匹配得分
+	Score float32 `protobuf:"fixed32,4,opt,name=score,proto3" json:"score,omitempty"`
+	// 自定义标签
+	Tags          map[string]string `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -965,9 +1024,11 @@ func (x *KnowledgeChunk) GetTags() map[string]string {
 	return nil
 }
 
+// SearchKnowledgeReply 搜索知识库响应
 type SearchKnowledgeReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Chunks        []*KnowledgeChunk      `protobuf:"bytes,1,rep,name=chunks,proto3" json:"chunks,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 匹配的文档片段列表
+	Chunks        []*KnowledgeChunk `protobuf:"bytes,1,rep,name=chunks,proto3" json:"chunks,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1009,10 +1070,13 @@ func (x *SearchKnowledgeReply) GetChunks() []*KnowledgeChunk {
 	return nil
 }
 
+// DeleteKnowledgeRequest 删除知识库文档请求
 type DeleteKnowledgeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DocId         string                 `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
-	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 要删除的文档 ID
+	DocId string `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
+	// 来源
+	Source        string `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1061,9 +1125,11 @@ func (x *DeleteKnowledgeRequest) GetSource() string {
 	return ""
 }
 
+// DeleteKnowledgeReply 删除知识库文档响应
 type DeleteKnowledgeReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否删除成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1109,7 +1175,7 @@ var File_api_blades_v1_blades_proto protoreflect.FileDescriptor
 
 const file_api_blades_v1_blades_proto_rawDesc = "" +
 	"\n" +
-	"\x1aapi/blades/v1/blades.proto\x12\rapi.blades.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"9\n" +
+	"\x1aapi/blades/v1/blades.proto\x12\rapi.blades.v1\x1a\x17validate/validate.proto\"9\n" +
 	"\x13GenerateTextRequest\x12\"\n" +
 	"\x06prompt\x18\x01 \x01(\tB\n" +
 	"\xfaB\ar\x05\x10\x01\x18\xd0\x0fR\x06prompt\"'\n" +
@@ -1188,17 +1254,17 @@ const file_api_blades_v1_blades_proto_rawDesc = "" +
 	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12\x16\n" +
 	"\x06source\x18\x02 \x01(\tR\x06source\"0\n" +
 	"\x14DeleteKnowledgeReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xf8\a\n" +
-	"\x06Blades\x12X\n" +
-	"\x04Chat\x12\x1a.api.blades.v1.ChatRequest\x1a\x18.api.blades.v1.ChatReply\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/blades/v1/chat\x12r\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xca\x05\n" +
+	"\x06Blades\x12<\n" +
+	"\x04Chat\x12\x1a.api.blades.v1.ChatRequest\x1a\x18.api.blades.v1.ChatReply\x12O\n" +
 	"\n" +
-	"ChatStream\x12 .api.blades.v1.ChatStreamRequest\x1a\x1d.api.blades.v1.ChatChunkReply\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/blades/v1/chat/stream0\x01\x12\x85\x01\n" +
-	"\x0eGetChatHistory\x12$.api.blades.v1.GetChatHistoryRequest\x1a\".api.blades.v1.GetChatHistoryReply\")\x82\xd3\xe4\x93\x02#\x12!/blades/v1/chat/history/{user_id}\x12\x82\x01\n" +
-	"\x10ClearChatHistory\x12&.api.blades.v1.ClearChatHistoryRequest\x1a$.api.blades.v1.ClearChatHistoryReply\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/blades/v1/chat/clear\x12\x87\x01\n" +
-	"\x0fUploadKnowledge\x12%.api.blades.v1.UploadKnowledgeRequest\x1a#.api.blades.v1.UploadKnowledgeReply\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/blades/v1/knowledge/upload(\x01\x12\x85\x01\n" +
-	"\x0fSearchKnowledge\x12%.api.blades.v1.SearchKnowledgeRequest\x1a#.api.blades.v1.SearchKnowledgeReply\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/blades/v1/knowledge/search\x12\x85\x01\n" +
-	"\x0fDeleteKnowledge\x12%.api.blades.v1.DeleteKnowledgeRequest\x1a#.api.blades.v1.DeleteKnowledgeReply\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/blades/v1/knowledge/delete\x12y\n" +
-	"\fGenerateText\x12\".api.blades.v1.GenerateTextRequest\x1a .api.blades.v1.GenerateTextReply\"#\x82\xd3\xe4\x93\x02\x1d:\x01*\"\x18/blades/v1/generate/textB+\n" +
+	"ChatStream\x12 .api.blades.v1.ChatStreamRequest\x1a\x1d.api.blades.v1.ChatChunkReply0\x01\x12Z\n" +
+	"\x0eGetChatHistory\x12$.api.blades.v1.GetChatHistoryRequest\x1a\".api.blades.v1.GetChatHistoryReply\x12`\n" +
+	"\x10ClearChatHistory\x12&.api.blades.v1.ClearChatHistoryRequest\x1a$.api.blades.v1.ClearChatHistoryReply\x12_\n" +
+	"\x0fUploadKnowledge\x12%.api.blades.v1.UploadKnowledgeRequest\x1a#.api.blades.v1.UploadKnowledgeReply(\x01\x12]\n" +
+	"\x0fSearchKnowledge\x12%.api.blades.v1.SearchKnowledgeRequest\x1a#.api.blades.v1.SearchKnowledgeReply\x12]\n" +
+	"\x0fDeleteKnowledge\x12%.api.blades.v1.DeleteKnowledgeRequest\x1a#.api.blades.v1.DeleteKnowledgeReply\x12T\n" +
+	"\fGenerateText\x12\".api.blades.v1.GenerateTextRequest\x1a .api.blades.v1.GenerateTextReplyB+\n" +
 	"\rapi.blades.v1P\x01Z\x18cyi-app/api/blades/v1;v1b\x06proto3"
 
 var (

@@ -530,3 +530,417 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = UpdateSettingsReplyValidationError{}
+
+// Validate checks the field values on GetPreferenceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetPreferenceRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetPreferenceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetPreferenceRequestMultiError, or nil if none found.
+func (m *GetPreferenceRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetPreferenceRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return GetPreferenceRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetPreferenceRequestMultiError is an error wrapping multiple validation
+// errors returned by GetPreferenceRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetPreferenceRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetPreferenceRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetPreferenceRequestMultiError) AllErrors() []error { return m }
+
+// GetPreferenceRequestValidationError is the validation error returned by
+// GetPreferenceRequest.Validate if the designated constraints aren't met.
+type GetPreferenceRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetPreferenceRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetPreferenceRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetPreferenceRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetPreferenceRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetPreferenceRequestValidationError) ErrorName() string {
+	return "GetPreferenceRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetPreferenceRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetPreferenceRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetPreferenceRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetPreferenceRequestValidationError{}
+
+// Validate checks the field values on GetPreferenceReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetPreferenceReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetPreferenceReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetPreferenceReplyMultiError, or nil if none found.
+func (m *GetPreferenceReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetPreferenceReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Data
+
+	if len(errors) > 0 {
+		return GetPreferenceReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetPreferenceReplyMultiError is an error wrapping multiple validation errors
+// returned by GetPreferenceReply.ValidateAll() if the designated constraints
+// aren't met.
+type GetPreferenceReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetPreferenceReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetPreferenceReplyMultiError) AllErrors() []error { return m }
+
+// GetPreferenceReplyValidationError is the validation error returned by
+// GetPreferenceReply.Validate if the designated constraints aren't met.
+type GetPreferenceReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetPreferenceReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetPreferenceReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetPreferenceReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetPreferenceReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetPreferenceReplyValidationError) ErrorName() string {
+	return "GetPreferenceReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetPreferenceReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetPreferenceReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetPreferenceReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetPreferenceReplyValidationError{}
+
+// Validate checks the field values on SavePreferenceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SavePreferenceRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SavePreferenceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SavePreferenceRequestMultiError, or nil if none found.
+func (m *SavePreferenceRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SavePreferenceRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Data
+
+	if len(errors) > 0 {
+		return SavePreferenceRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SavePreferenceRequestMultiError is an error wrapping multiple validation
+// errors returned by SavePreferenceRequest.ValidateAll() if the designated
+// constraints aren't met.
+type SavePreferenceRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SavePreferenceRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SavePreferenceRequestMultiError) AllErrors() []error { return m }
+
+// SavePreferenceRequestValidationError is the validation error returned by
+// SavePreferenceRequest.Validate if the designated constraints aren't met.
+type SavePreferenceRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SavePreferenceRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SavePreferenceRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SavePreferenceRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SavePreferenceRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SavePreferenceRequestValidationError) ErrorName() string {
+	return "SavePreferenceRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SavePreferenceRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSavePreferenceRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SavePreferenceRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SavePreferenceRequestValidationError{}
+
+// Validate checks the field values on SavePreferenceReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SavePreferenceReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SavePreferenceReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SavePreferenceReplyMultiError, or nil if none found.
+func (m *SavePreferenceReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SavePreferenceReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Success
+
+	if len(errors) > 0 {
+		return SavePreferenceReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// SavePreferenceReplyMultiError is an error wrapping multiple validation
+// errors returned by SavePreferenceReply.ValidateAll() if the designated
+// constraints aren't met.
+type SavePreferenceReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SavePreferenceReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SavePreferenceReplyMultiError) AllErrors() []error { return m }
+
+// SavePreferenceReplyValidationError is the validation error returned by
+// SavePreferenceReply.Validate if the designated constraints aren't met.
+type SavePreferenceReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SavePreferenceReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SavePreferenceReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SavePreferenceReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SavePreferenceReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SavePreferenceReplyValidationError) ErrorName() string {
+	return "SavePreferenceReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SavePreferenceReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSavePreferenceReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SavePreferenceReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SavePreferenceReplyValidationError{}

@@ -52,18 +52,18 @@ type AgentHTTPServer interface {
 
 func RegisterAgentHTTPServer(s *http.Server, srv AgentHTTPServer) {
 	r := s.Route("/")
-	r.POST("/admin/v1/agent/chat", _Agent_Chat1_HTTP_Handler(srv))
+	r.POST("/admin/v1/agent/chat", _Agent_Chat0_HTTP_Handler(srv))
 	r.POST("/admin/v1/agent/generate-description", _Agent_GenerateDescription0_HTTP_Handler(srv))
 	r.POST("/admin/v1/agent/expand-description", _Agent_ExpandDescription0_HTTP_Handler(srv))
 	r.POST("/admin/v1/agent/generate-banner", _Agent_GenerateBannerCopy0_HTTP_Handler(srv))
 	r.POST("/admin/v1/agent/generate-seo", _Agent_GenerateCategorySEO0_HTTP_Handler(srv))
 	r.POST("/admin/v1/agent/generate-summary", _Agent_GenerateSummary0_HTTP_Handler(srv))
 	r.POST("/admin/v1/agent/suggest-questions", _Agent_SuggestQuestions0_HTTP_Handler(srv))
-	r.GET("/admin/v1/agent/chat/history", _Agent_GetChatHistory1_HTTP_Handler(srv))
-	r.POST("/admin/v1/agent/chat/clear", _Agent_ClearChatHistory1_HTTP_Handler(srv))
+	r.GET("/admin/v1/agent/chat/history", _Agent_GetChatHistory0_HTTP_Handler(srv))
+	r.POST("/admin/v1/agent/chat/clear", _Agent_ClearChatHistory0_HTTP_Handler(srv))
 }
 
-func _Agent_Chat1_HTTP_Handler(srv AgentHTTPServer) func(ctx http.Context) error {
+func _Agent_Chat0_HTTP_Handler(srv AgentHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in ChatRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -217,7 +217,7 @@ func _Agent_SuggestQuestions0_HTTP_Handler(srv AgentHTTPServer) func(ctx http.Co
 	}
 }
 
-func _Agent_GetChatHistory1_HTTP_Handler(srv AgentHTTPServer) func(ctx http.Context) error {
+func _Agent_GetChatHistory0_HTTP_Handler(srv AgentHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in GetChatHistoryRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -236,7 +236,7 @@ func _Agent_GetChatHistory1_HTTP_Handler(srv AgentHTTPServer) func(ctx http.Cont
 	}
 }
 
-func _Agent_ClearChatHistory1_HTTP_Handler(srv AgentHTTPServer) func(ctx http.Context) error {
+func _Agent_ClearChatHistory0_HTTP_Handler(srv AgentHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in ClearChatHistoryRequest
 		if err := ctx.Bind(&in); err != nil {

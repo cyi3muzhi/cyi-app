@@ -27,12 +27,17 @@ const OperationBladesGetChatHistory = "/api.blades.v1.Blades/GetChatHistory"
 const OperationBladesSearchKnowledge = "/api.blades.v1.Blades/SearchKnowledge"
 
 type BladesHTTPServer interface {
+	// Chat Chat 非流式聊天
 	Chat(context.Context, *ChatRequest) (*ChatReply, error)
+	// ClearChatHistory ClearChatHistory 清除聊天历史
 	ClearChatHistory(context.Context, *ClearChatHistoryRequest) (*ClearChatHistoryReply, error)
+	// DeleteKnowledge DeleteKnowledge 删除知识库文档
 	DeleteKnowledge(context.Context, *DeleteKnowledgeRequest) (*DeleteKnowledgeReply, error)
 	// GenerateText GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
 	GenerateText(context.Context, *GenerateTextRequest) (*GenerateTextReply, error)
+	// GetChatHistory GetChatHistory 获取聊天历史
 	GetChatHistory(context.Context, *GetChatHistoryRequest) (*GetChatHistoryReply, error)
+	// SearchKnowledge SearchKnowledge 搜索知识库
 	SearchKnowledge(context.Context, *SearchKnowledgeRequest) (*SearchKnowledgeReply, error)
 }
 
@@ -179,12 +184,17 @@ func _Blades_GenerateText0_HTTP_Handler(srv BladesHTTPServer) func(ctx http.Cont
 }
 
 type BladesHTTPClient interface {
+	// Chat Chat 非流式聊天
 	Chat(ctx context.Context, req *ChatRequest, opts ...http.CallOption) (rsp *ChatReply, err error)
+	// ClearChatHistory ClearChatHistory 清除聊天历史
 	ClearChatHistory(ctx context.Context, req *ClearChatHistoryRequest, opts ...http.CallOption) (rsp *ClearChatHistoryReply, err error)
+	// DeleteKnowledge DeleteKnowledge 删除知识库文档
 	DeleteKnowledge(ctx context.Context, req *DeleteKnowledgeRequest, opts ...http.CallOption) (rsp *DeleteKnowledgeReply, err error)
 	// GenerateText GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
 	GenerateText(ctx context.Context, req *GenerateTextRequest, opts ...http.CallOption) (rsp *GenerateTextReply, err error)
+	// GetChatHistory GetChatHistory 获取聊天历史
 	GetChatHistory(ctx context.Context, req *GetChatHistoryRequest, opts ...http.CallOption) (rsp *GetChatHistoryReply, err error)
+	// SearchKnowledge SearchKnowledge 搜索知识库
 	SearchKnowledge(ctx context.Context, req *SearchKnowledgeRequest, opts ...http.CallOption) (rsp *SearchKnowledgeReply, err error)
 }
 
@@ -196,6 +206,7 @@ func NewBladesHTTPClient(client *http.Client) BladesHTTPClient {
 	return &BladesHTTPClientImpl{client}
 }
 
+// Chat Chat 非流式聊天
 func (c *BladesHTTPClientImpl) Chat(ctx context.Context, in *ChatRequest, opts ...http.CallOption) (*ChatReply, error) {
 	var out ChatReply
 	pattern := "/blades/v1/chat"
@@ -209,6 +220,7 @@ func (c *BladesHTTPClientImpl) Chat(ctx context.Context, in *ChatRequest, opts .
 	return &out, nil
 }
 
+// ClearChatHistory ClearChatHistory 清除聊天历史
 func (c *BladesHTTPClientImpl) ClearChatHistory(ctx context.Context, in *ClearChatHistoryRequest, opts ...http.CallOption) (*ClearChatHistoryReply, error) {
 	var out ClearChatHistoryReply
 	pattern := "/blades/v1/chat/clear"
@@ -222,6 +234,7 @@ func (c *BladesHTTPClientImpl) ClearChatHistory(ctx context.Context, in *ClearCh
 	return &out, nil
 }
 
+// DeleteKnowledge DeleteKnowledge 删除知识库文档
 func (c *BladesHTTPClientImpl) DeleteKnowledge(ctx context.Context, in *DeleteKnowledgeRequest, opts ...http.CallOption) (*DeleteKnowledgeReply, error) {
 	var out DeleteKnowledgeReply
 	pattern := "/blades/v1/knowledge/delete"
@@ -249,6 +262,7 @@ func (c *BladesHTTPClientImpl) GenerateText(ctx context.Context, in *GenerateTex
 	return &out, nil
 }
 
+// GetChatHistory GetChatHistory 获取聊天历史
 func (c *BladesHTTPClientImpl) GetChatHistory(ctx context.Context, in *GetChatHistoryRequest, opts ...http.CallOption) (*GetChatHistoryReply, error) {
 	var out GetChatHistoryReply
 	pattern := "/blades/v1/chat/history/{user_id}"
@@ -262,6 +276,7 @@ func (c *BladesHTTPClientImpl) GetChatHistory(ctx context.Context, in *GetChatHi
 	return &out, nil
 }
 
+// SearchKnowledge SearchKnowledge 搜索知识库
 func (c *BladesHTTPClientImpl) SearchKnowledge(ctx context.Context, in *SearchKnowledgeRequest, opts ...http.CallOption) (*SearchKnowledgeReply, error) {
 	var out SearchKnowledgeReply
 	pattern := "/blades/v1/knowledge/search"

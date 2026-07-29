@@ -360,10 +360,10 @@ async function handleAIGenerateSEO() {
   seoLoading.value = true
   try {
     const result = await generateCategorySEO(formData.name.trim())
-    if (result.seo_title || result.seo_keywords || result.seo_description) {
-      if (result.seo_title) formData.seoTitle = result.seo_title
-      if (result.seo_keywords) formData.seoKeywords = result.seo_keywords
-      if (result.seo_description) formData.seoDesc = result.seo_description
+    if (result.seoTitle || result.seoKeywords || result.seoDescription) {
+      if (result.seoTitle) formData.seoTitle = result.seoTitle
+      if (result.seoKeywords) formData.seoKeywords = result.seoKeywords
+      if (result.seoDescription) formData.seoDesc = result.seoDescription
       ElMessage.success('SEO 信息已生成')
     } else {
       ElMessage.warning('AI 生成 SEO 失败，请重试')
