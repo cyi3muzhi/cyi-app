@@ -1423,7 +1423,7 @@ paths:
         post:
             tags:
                 - Blades
-            description: chat 聊天
+            description: Chat 非流式聊天
             operationId: Blades_Chat
             requestBody:
                 content:
@@ -1438,6 +1438,63 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.blades.v1.ChatReply'
+    /blades/v1/chat/clear:
+        post:
+            tags:
+                - Blades
+            description: ClearChatHistory 清除聊天历史
+            operationId: Blades_ClearChatHistory
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.blades.v1.ClearChatHistoryRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.blades.v1.ClearChatHistoryReply'
+    /blades/v1/chat/history/{adminId}:
+        get:
+            tags:
+                - Blades
+            description: GetChatHistory 获取聊天历史
+            operationId: Blades_GetChatHistory
+            parameters:
+                - name: adminId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.blades.v1.GetChatHistoryReply'
+    /blades/v1/chat/stream:
+        post:
+            tags:
+                - Blades
+            description: ChatStream 流式聊天（服务端流式）
+            operationId: Blades_ChatStream
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.blades.v1.ChatStreamRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.blades.v1.ChatChunkReply'
     /cart/v1/add:
         post:
             tags:
@@ -1840,16 +1897,70 @@ paths:
                                 $ref: '#/components/schemas/api.cin.interface.v1.GetUserInfoReply'
 components:
     schemas:
+        api.blades.v1.ChatChunkReply:
+            type: object
+            properties:
+                chunk:
+                    type: string
+                done:
+                    type: boolean
+            description: ChatChunkReply 流式聊天块响应
         api.blades.v1.ChatReply:
             type: object
             properties:
                 message:
                     type: string
+            description: ChatReply 非流式聊天响应
         api.blades.v1.ChatRequest:
             type: object
             properties:
+                adminId:
+                    type: string
+                role:
+                    type: string
                 message:
                     type: string
+            description: ChatRequest 非流式聊天请求
+        api.blades.v1.ChatStreamRequest:
+            type: object
+            properties:
+                adminId:
+                    type: string
+                role:
+                    type: string
+                message:
+                    type: string
+            description: ChatStreamRequest 流式聊天请求
+        api.blades.v1.ClearChatHistoryReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+            description: ClearChatHistoryReply 清除聊天历史响应
+        api.blades.v1.ClearChatHistoryRequest:
+            type: object
+            properties:
+                adminId:
+                    type: string
+            description: ClearChatHistoryRequest 清除聊天历史请求
+        api.blades.v1.GetChatHistoryReply:
+            type: object
+            properties:
+                messages:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.blades.v1.HistoryMessage'
+            description: GetChatHistoryReply 获取聊天历史响应
+        api.blades.v1.HistoryMessage:
+            type: object
+            properties:
+                role:
+                    type: string
+                content:
+                    type: string
+                timestamp:
+                    type: string
+            description: HistoryMessage 历史消息
         api.cin.admin.v1.AdminInfo:
             type: object
             properties:
@@ -3703,6 +3814,7 @@ tags:
     - name: Banner
       description: 公开 Banner 服务
     - name: Blades
+      description: Blades 服务 - 智能体 AI 服务
     - name: Blades
       description: AI 智能助手服务
     - name: Cart

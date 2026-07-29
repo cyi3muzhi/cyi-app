@@ -2,13 +2,12 @@ package data
 
 import (
 	"context"
-	"cyi-app/pkg/util/rustfs"
+	"fmt"
 	"time"
 
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
-
+	orderRpc "cyi-app/api/service/order/v1"
+	productRpc "cyi-app/api/service/product/v1"
+	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/blades/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -20,58 +19,35 @@ import (
 var ProviderSet = wire.NewSet(
 	NewBladesRepo,
 	NewData,
-	NewDB,
 	NewRedisClient,
-	NewOssClient,
+	ProvideUniversalClient,
+	NewProductServiceClient,
+	NewUserServiceClient,
+	NewOrderServiceClient,
 )
 
+// Data 持有 Redis 连接和各下游服务的 gRPC 客户端
 type Data struct {
 	cache *redis.Client
-	oss   *rustfs.RustFSClient
+	pc    productRpc.ProductClient
+	uc    userRpc.UserClient
+	oc    orderRpc.OrderClient
 }
 
 // NewData .
-func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, oss *rustfs.RustFSClient, logger log.Logger) (*Data, func(), error) {
-
+func NewData(cache *redis.Client, pc productRpc.ProductClient, uc userRpc.UserClient, oc orderRpc.OrderClient, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
+	if cache == nil {
+		return nil, nil, fmt.Errorf("redis client is nil")
+	}
 	return &Data{
 		cache: cache,
-		oss:   oss,
+		pc:    pc,
+		uc:    uc,
+		oc:    oc,
 	}, cleanup, nil
-}
-
-func NewDB(c *conf.Data) *gorm.DB {
-	// 连接数据库
-	db, err := gorm.Open(mysql.Open(c.Database.Source), &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			// 表名不使用复数
-			SingularTable: true,
-		},
-		SkipDefaultTransaction: true,
-	})
-	if err != nil {
-		// 数据库连接失败，返回nil，服务可以继续运行
-		return nil
-	}
-
-	// // 初始化生成器（可选，用于生成查询代码）
-	// g := gen.NewGenerator(gen.Config{
-	// 	OutPath: "../../internal/data/curd",                // 生成文件的输出路径
-	// 	Mode:    gen.WithoutContext | gen.WithDefaultQuery, // 生成模式
-	// })
-	// // 添加数据库连接
-	// g.UseDB(db)
-	// // 生成模型的查询代码
-	// g.ApplyBasic(
-	// 	&mod.User{},
-	// )
-	// g.ApplyInterface(func(mod.IUser) {}, mod.User{})
-	// g.ApplyInterface(func(mod.IAddress) {}, mod.Address{})
-	// // 执行生成代码
-	// g.Execute()
-	return db
 }
 
 // NewRedisClient .
@@ -83,26 +59,16 @@ func NewRedisClient(c *conf.Data, logger log.Logger) *redis.Client {
 		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
 		Password:     c.Redis.Password,
 	})
-	// client.AddHook(redisotel.NewTracingHook())
 	timeout, cancelFunc := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancelFunc()
 	err := client.Ping(timeout).Err()
 	if err != nil {
-		// Redis连接失败，返回nil，服务可以继续运行
 		return nil
 	}
 	return client
 }
 
-func NewOssClient(cfg *conf.Data) (*rustfs.RustFSClient, error) {
-	client, err := rustfs.NewRustFSClient(&rustfs.Config{
-		Endpoint:  cfg.Oss.Endpoint,
-		AccessKey: cfg.Oss.AccessKey,
-		SecretKey: cfg.Oss.SecretKey,
-	})
-	if err != nil {
-		// OSS连接失败，返回nil和错误，服务可以继续运行
-		return nil, err
-	}
-	return client, nil
+// ProvideUniversalClient 将 *redis.Client 转换为 redis.UniversalClient
+func ProvideUniversalClient(client *redis.Client) redis.UniversalClient {
+	return client
 }

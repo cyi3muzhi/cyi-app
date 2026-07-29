@@ -29,13 +29,12 @@ import (
 func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blades *conf.Blades, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, meter *middleware.Meter) (*kratos.App, func(), error) {
 	traceTracerProvider := provideTracerProvider(tracerProvider)
 	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth)
-	db := data.NewDB(confData)
 	client := data.NewRedisClient(confData, logger)
-	rustFSClient, err := data.NewOssClient(confData)
-	if err != nil {
-		return nil, nil, err
-	}
-	dataData, cleanup, err := data.NewData(confData, db, client, rustFSClient, logger)
+	discovery := server.NewDiscovery(registry)
+	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	dataData, cleanup, err := data.NewData(client, productClient, userClient, orderClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -45,7 +44,13 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 		cleanup()
 		return nil, nil, err
 	}
-	bladesService := service.NewBladesService(bladesUseCase, logger)
+	universalClient := data.ProvideUniversalClient(client)
+	agentUseCase, err := biz.NewAgentUseCase(blades, universalClient, productClient, userClient, orderClient, logger)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	bladesService := service.NewBladesService(bladesUseCase, agentUseCase, logger)
 	server2 := server.NewGRPCServer(grpcServer, bladesService)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	server3 := server.NewHTTPServer(httpServer, bladesService)

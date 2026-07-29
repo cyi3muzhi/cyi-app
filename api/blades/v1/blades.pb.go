@@ -23,9 +23,12 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ChatRequest 非流式聊天请求
 type ChatRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	AdminId       int64                  `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"` // 管理员 ID
+	Role          string                 `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`                       // 角色（用于权限校验）
+	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`                 // 用户消息
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -60,6 +63,20 @@ func (*ChatRequest) Descriptor() ([]byte, []int) {
 	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{0}
 }
 
+func (x *ChatRequest) GetAdminId() int64 {
+	if x != nil {
+		return x.AdminId
+	}
+	return 0
+}
+
+func (x *ChatRequest) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
 func (x *ChatRequest) GetMessage() string {
 	if x != nil {
 		return x.Message
@@ -67,6 +84,7 @@ func (x *ChatRequest) GetMessage() string {
 	return ""
 }
 
+// ChatReply 非流式聊天响应
 type ChatReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
@@ -111,18 +129,399 @@ func (x *ChatReply) GetMessage() string {
 	return ""
 }
 
+// ChatStreamRequest 流式聊天请求
+type ChatStreamRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AdminId       int64                  `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"` // 管理员 ID
+	Role          string                 `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`                       // 角色（用于权限校验）
+	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`                 // 用户消息
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChatStreamRequest) Reset() {
+	*x = ChatStreamRequest{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChatStreamRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChatStreamRequest) ProtoMessage() {}
+
+func (x *ChatStreamRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChatStreamRequest.ProtoReflect.Descriptor instead.
+func (*ChatStreamRequest) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ChatStreamRequest) GetAdminId() int64 {
+	if x != nil {
+		return x.AdminId
+	}
+	return 0
+}
+
+func (x *ChatStreamRequest) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+func (x *ChatStreamRequest) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+// ChatChunkReply 流式聊天块响应
+type ChatChunkReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Chunk         string                 `protobuf:"bytes,1,opt,name=chunk,proto3" json:"chunk,omitempty"` // 文本块
+	Done          bool                   `protobuf:"varint,2,opt,name=done,proto3" json:"done,omitempty"`  // 是否完成
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChatChunkReply) Reset() {
+	*x = ChatChunkReply{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChatChunkReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChatChunkReply) ProtoMessage() {}
+
+func (x *ChatChunkReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChatChunkReply.ProtoReflect.Descriptor instead.
+func (*ChatChunkReply) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ChatChunkReply) GetChunk() string {
+	if x != nil {
+		return x.Chunk
+	}
+	return ""
+}
+
+func (x *ChatChunkReply) GetDone() bool {
+	if x != nil {
+		return x.Done
+	}
+	return false
+}
+
+// GetChatHistoryRequest 获取聊天历史请求
+type GetChatHistoryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AdminId       int64                  `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"` // 管理员 ID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetChatHistoryRequest) Reset() {
+	*x = GetChatHistoryRequest{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetChatHistoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetChatHistoryRequest) ProtoMessage() {}
+
+func (x *GetChatHistoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetChatHistoryRequest.ProtoReflect.Descriptor instead.
+func (*GetChatHistoryRequest) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetChatHistoryRequest) GetAdminId() int64 {
+	if x != nil {
+		return x.AdminId
+	}
+	return 0
+}
+
+// HistoryMessage 历史消息
+type HistoryMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Role          string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`            // 角色：user / assistant
+	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`      // 消息内容
+	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"` // 时间戳
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HistoryMessage) Reset() {
+	*x = HistoryMessage{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HistoryMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HistoryMessage) ProtoMessage() {}
+
+func (x *HistoryMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HistoryMessage.ProtoReflect.Descriptor instead.
+func (*HistoryMessage) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *HistoryMessage) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+func (x *HistoryMessage) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *HistoryMessage) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
+// GetChatHistoryReply 获取聊天历史响应
+type GetChatHistoryReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Messages      []*HistoryMessage      `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetChatHistoryReply) Reset() {
+	*x = GetChatHistoryReply{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetChatHistoryReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetChatHistoryReply) ProtoMessage() {}
+
+func (x *GetChatHistoryReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetChatHistoryReply.ProtoReflect.Descriptor instead.
+func (*GetChatHistoryReply) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetChatHistoryReply) GetMessages() []*HistoryMessage {
+	if x != nil {
+		return x.Messages
+	}
+	return nil
+}
+
+// ClearChatHistoryRequest 清除聊天历史请求
+type ClearChatHistoryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AdminId       int64                  `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"` // 管理员 ID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ClearChatHistoryRequest) Reset() {
+	*x = ClearChatHistoryRequest{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClearChatHistoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClearChatHistoryRequest) ProtoMessage() {}
+
+func (x *ClearChatHistoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClearChatHistoryRequest.ProtoReflect.Descriptor instead.
+func (*ClearChatHistoryRequest) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ClearChatHistoryRequest) GetAdminId() int64 {
+	if x != nil {
+		return x.AdminId
+	}
+	return 0
+}
+
+// ClearChatHistoryReply 清除聊天历史响应
+type ClearChatHistoryReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ClearChatHistoryReply) Reset() {
+	*x = ClearChatHistoryReply{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClearChatHistoryReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClearChatHistoryReply) ProtoMessage() {}
+
+func (x *ClearChatHistoryReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClearChatHistoryReply.ProtoReflect.Descriptor instead.
+func (*ClearChatHistoryReply) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ClearChatHistoryReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_api_blades_v1_blades_proto protoreflect.FileDescriptor
 
 const file_api_blades_v1_blades_proto_rawDesc = "" +
 	"\n" +
-	"\x1aapi/blades/v1/blades.proto\x12\rapi.blades.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"3\n" +
-	"\vChatRequest\x12$\n" +
-	"\amessage\x18\x01 \x01(\tB\n" +
+	"\x1aapi/blades/v1/blades.proto\x12\rapi.blades.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"k\n" +
+	"\vChatRequest\x12\"\n" +
+	"\badmin_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aadminId\x12\x12\n" +
+	"\x04role\x18\x02 \x01(\tR\x04role\x12$\n" +
+	"\amessage\x18\x03 \x01(\tB\n" +
 	"\xfaB\ar\x05\x10\x01\x18\xc8\x01R\amessage\"%\n" +
 	"\tChatReply\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2b\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\"q\n" +
+	"\x11ChatStreamRequest\x12\"\n" +
+	"\badmin_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aadminId\x12\x12\n" +
+	"\x04role\x18\x02 \x01(\tR\x04role\x12$\n" +
+	"\amessage\x18\x03 \x01(\tB\n" +
+	"\xfaB\ar\x05\x10\x01\x18\xc8\x01R\amessage\":\n" +
+	"\x0eChatChunkReply\x12\x14\n" +
+	"\x05chunk\x18\x01 \x01(\tR\x05chunk\x12\x12\n" +
+	"\x04done\x18\x02 \x01(\bR\x04done\";\n" +
+	"\x15GetChatHistoryRequest\x12\"\n" +
+	"\badmin_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aadminId\"\\\n" +
+	"\x0eHistoryMessage\x12\x12\n" +
+	"\x04role\x18\x01 \x01(\tR\x04role\x12\x18\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\x12\x1c\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"P\n" +
+	"\x13GetChatHistoryReply\x129\n" +
+	"\bmessages\x18\x01 \x03(\v2\x1d.api.blades.v1.HistoryMessageR\bmessages\"=\n" +
+	"\x17ClearChatHistoryRequest\x12\"\n" +
+	"\badmin_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aadminId\"1\n" +
+	"\x15ClearChatHistoryReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xe4\x03\n" +
 	"\x06Blades\x12X\n" +
-	"\x04Chat\x12\x1a.api.blades.v1.ChatRequest\x1a\x18.api.blades.v1.ChatReply\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/blades/v1/chatB+\n" +
+	"\x04Chat\x12\x1a.api.blades.v1.ChatRequest\x1a\x18.api.blades.v1.ChatReply\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/blades/v1/chat\x12r\n" +
+	"\n" +
+	"ChatStream\x12 .api.blades.v1.ChatStreamRequest\x1a\x1d.api.blades.v1.ChatChunkReply\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/blades/v1/chat/stream0\x01\x12\x86\x01\n" +
+	"\x0eGetChatHistory\x12$.api.blades.v1.GetChatHistoryRequest\x1a\".api.blades.v1.GetChatHistoryReply\"*\x82\xd3\xe4\x93\x02$\x12\"/blades/v1/chat/history/{admin_id}\x12\x82\x01\n" +
+	"\x10ClearChatHistory\x12&.api.blades.v1.ClearChatHistoryRequest\x1a$.api.blades.v1.ClearChatHistoryReply\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/blades/v1/chat/clearB+\n" +
 	"\rapi.blades.v1P\x01Z\x18cyi-app/api/blades/v1;v1b\x06proto3"
 
 var (
@@ -137,19 +536,33 @@ func file_api_blades_v1_blades_proto_rawDescGZIP() []byte {
 	return file_api_blades_v1_blades_proto_rawDescData
 }
 
-var file_api_blades_v1_blades_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_api_blades_v1_blades_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_api_blades_v1_blades_proto_goTypes = []any{
-	(*ChatRequest)(nil), // 0: api.blades.v1.ChatRequest
-	(*ChatReply)(nil),   // 1: api.blades.v1.ChatReply
+	(*ChatRequest)(nil),             // 0: api.blades.v1.ChatRequest
+	(*ChatReply)(nil),               // 1: api.blades.v1.ChatReply
+	(*ChatStreamRequest)(nil),       // 2: api.blades.v1.ChatStreamRequest
+	(*ChatChunkReply)(nil),          // 3: api.blades.v1.ChatChunkReply
+	(*GetChatHistoryRequest)(nil),   // 4: api.blades.v1.GetChatHistoryRequest
+	(*HistoryMessage)(nil),          // 5: api.blades.v1.HistoryMessage
+	(*GetChatHistoryReply)(nil),     // 6: api.blades.v1.GetChatHistoryReply
+	(*ClearChatHistoryRequest)(nil), // 7: api.blades.v1.ClearChatHistoryRequest
+	(*ClearChatHistoryReply)(nil),   // 8: api.blades.v1.ClearChatHistoryReply
 }
 var file_api_blades_v1_blades_proto_depIdxs = []int32{
-	0, // 0: api.blades.v1.Blades.Chat:input_type -> api.blades.v1.ChatRequest
-	1, // 1: api.blades.v1.Blades.Chat:output_type -> api.blades.v1.ChatReply
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	5, // 0: api.blades.v1.GetChatHistoryReply.messages:type_name -> api.blades.v1.HistoryMessage
+	0, // 1: api.blades.v1.Blades.Chat:input_type -> api.blades.v1.ChatRequest
+	2, // 2: api.blades.v1.Blades.ChatStream:input_type -> api.blades.v1.ChatStreamRequest
+	4, // 3: api.blades.v1.Blades.GetChatHistory:input_type -> api.blades.v1.GetChatHistoryRequest
+	7, // 4: api.blades.v1.Blades.ClearChatHistory:input_type -> api.blades.v1.ClearChatHistoryRequest
+	1, // 5: api.blades.v1.Blades.Chat:output_type -> api.blades.v1.ChatReply
+	3, // 6: api.blades.v1.Blades.ChatStream:output_type -> api.blades.v1.ChatChunkReply
+	6, // 7: api.blades.v1.Blades.GetChatHistory:output_type -> api.blades.v1.GetChatHistoryReply
+	8, // 8: api.blades.v1.Blades.ClearChatHistory:output_type -> api.blades.v1.ClearChatHistoryReply
+	5, // [5:9] is the sub-list for method output_type
+	1, // [1:5] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_api_blades_v1_blades_proto_init() }
@@ -163,7 +576,7 @@ func file_api_blades_v1_blades_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_blades_v1_blades_proto_rawDesc), len(file_api_blades_v1_blades_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

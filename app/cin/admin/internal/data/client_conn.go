@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	bladesRpc "cyi-app/api/blades/v1"
 	orderRpc "cyi-app/api/service/order/v1"
 	productRpc "cyi-app/api/service/product/v1"
 	userRpc "cyi-app/api/service/user/v1"
@@ -197,4 +198,24 @@ func NewAdminSettingsClient(r registry.Discovery, conf *conf.Server, auth *conf.
 		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.USER_SERVICE, err))
 	}
 	return userRpc.NewAdminSettingsClient(conn)
+}
+
+// NewBladesClient 创建 Blades AI 服务 gRPC 客户端
+func NewBladesClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) bladesRpc.BladesClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.BLADES_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			ServiceKey:     auth.ServiceKey[grpc.BLADES_SERVICE],
+			Meter:          metric,
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.BLADES_SERVICE, err))
+	}
+	return bladesRpc.NewBladesClient(conn)
 }

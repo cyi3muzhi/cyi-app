@@ -19,15 +19,26 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Blades_Chat_FullMethodName = "/api.blades.v1.Blades/Chat"
+	Blades_Chat_FullMethodName             = "/api.blades.v1.Blades/Chat"
+	Blades_ChatStream_FullMethodName       = "/api.blades.v1.Blades/ChatStream"
+	Blades_GetChatHistory_FullMethodName   = "/api.blades.v1.Blades/GetChatHistory"
+	Blades_ClearChatHistory_FullMethodName = "/api.blades.v1.Blades/ClearChatHistory"
 )
 
 // BladesClient is the client API for Blades service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// Blades 服务 - 智能体 AI 服务
 type BladesClient interface {
-	// chat 聊天
+	// Chat 非流式聊天
 	Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatReply, error)
+	// ChatStream 流式聊天（服务端流式）
+	ChatStream(ctx context.Context, in *ChatStreamRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ChatChunkReply], error)
+	// GetChatHistory 获取聊天历史
+	GetChatHistory(ctx context.Context, in *GetChatHistoryRequest, opts ...grpc.CallOption) (*GetChatHistoryReply, error)
+	// ClearChatHistory 清除聊天历史
+	ClearChatHistory(ctx context.Context, in *ClearChatHistoryRequest, opts ...grpc.CallOption) (*ClearChatHistoryReply, error)
 }
 
 type bladesClient struct {
@@ -48,12 +59,59 @@ func (c *bladesClient) Chat(ctx context.Context, in *ChatRequest, opts ...grpc.C
 	return out, nil
 }
 
+func (c *bladesClient) ChatStream(ctx context.Context, in *ChatStreamRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ChatChunkReply], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Blades_ServiceDesc.Streams[0], Blades_ChatStream_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[ChatStreamRequest, ChatChunkReply]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Blades_ChatStreamClient = grpc.ServerStreamingClient[ChatChunkReply]
+
+func (c *bladesClient) GetChatHistory(ctx context.Context, in *GetChatHistoryRequest, opts ...grpc.CallOption) (*GetChatHistoryReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetChatHistoryReply)
+	err := c.cc.Invoke(ctx, Blades_GetChatHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bladesClient) ClearChatHistory(ctx context.Context, in *ClearChatHistoryRequest, opts ...grpc.CallOption) (*ClearChatHistoryReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ClearChatHistoryReply)
+	err := c.cc.Invoke(ctx, Blades_ClearChatHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BladesServer is the server API for Blades service.
 // All implementations must embed UnimplementedBladesServer
 // for forward compatibility.
+//
+// Blades 服务 - 智能体 AI 服务
 type BladesServer interface {
-	// chat 聊天
+	// Chat 非流式聊天
 	Chat(context.Context, *ChatRequest) (*ChatReply, error)
+	// ChatStream 流式聊天（服务端流式）
+	ChatStream(*ChatStreamRequest, grpc.ServerStreamingServer[ChatChunkReply]) error
+	// GetChatHistory 获取聊天历史
+	GetChatHistory(context.Context, *GetChatHistoryRequest) (*GetChatHistoryReply, error)
+	// ClearChatHistory 清除聊天历史
+	ClearChatHistory(context.Context, *ClearChatHistoryRequest) (*ClearChatHistoryReply, error)
 	mustEmbedUnimplementedBladesServer()
 }
 
@@ -66,6 +124,15 @@ type UnimplementedBladesServer struct{}
 
 func (UnimplementedBladesServer) Chat(context.Context, *ChatRequest) (*ChatReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Chat not implemented")
+}
+func (UnimplementedBladesServer) ChatStream(*ChatStreamRequest, grpc.ServerStreamingServer[ChatChunkReply]) error {
+	return status.Errorf(codes.Unimplemented, "method ChatStream not implemented")
+}
+func (UnimplementedBladesServer) GetChatHistory(context.Context, *GetChatHistoryRequest) (*GetChatHistoryReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChatHistory not implemented")
+}
+func (UnimplementedBladesServer) ClearChatHistory(context.Context, *ClearChatHistoryRequest) (*ClearChatHistoryReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClearChatHistory not implemented")
 }
 func (UnimplementedBladesServer) mustEmbedUnimplementedBladesServer() {}
 func (UnimplementedBladesServer) testEmbeddedByValue()                {}
@@ -106,6 +173,53 @@ func _Blades_Chat_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Blades_ChatStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ChatStreamRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(BladesServer).ChatStream(m, &grpc.GenericServerStream[ChatStreamRequest, ChatChunkReply]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Blades_ChatStreamServer = grpc.ServerStreamingServer[ChatChunkReply]
+
+func _Blades_GetChatHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetChatHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BladesServer).GetChatHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Blades_GetChatHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BladesServer).GetChatHistory(ctx, req.(*GetChatHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Blades_ClearChatHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClearChatHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BladesServer).ClearChatHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Blades_ClearChatHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BladesServer).ClearChatHistory(ctx, req.(*ClearChatHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Blades_ServiceDesc is the grpc.ServiceDesc for Blades service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -117,7 +231,21 @@ var Blades_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Chat",
 			Handler:    _Blades_Chat_Handler,
 		},
+		{
+			MethodName: "GetChatHistory",
+			Handler:    _Blades_GetChatHistory_Handler,
+		},
+		{
+			MethodName: "ClearChatHistory",
+			Handler:    _Blades_ClearChatHistory_Handler,
+		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ChatStream",
+			Handler:       _Blades_ChatStream_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "api/blades/v1/blades.proto",
 }

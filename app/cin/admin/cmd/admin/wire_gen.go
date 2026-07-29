@@ -39,13 +39,14 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	couponServiceClient := data.NewCouponServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	bladesClient := data.NewBladesClient(discovery, confServer, auth, traceTracerProvider, meter)
 	rustFSClient, err := data.NewOssClient(confData)
 	if err != nil {
 		return nil, nil, err
 	}
 	client := data.NewRedisClient(confData)
 	asynqClient := data.NewAsynqClient(confData, logger)
-	dataData, cleanup, err := data.NewData(productClient, categoryClient, adminUserClient, orderClient, userClient, couponServiceClient, rustFSClient, client, asynqClient, logger)
+	dataData, cleanup, err := data.NewData(productClient, categoryClient, adminUserClient, orderClient, userClient, couponServiceClient, bladesClient, rustFSClient, client, asynqClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -68,12 +69,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	couponRepo := data.NewCouponRepo(dataData, logger)
 	couponUseCase := biz.NewCouponUseCase(couponRepo, logger)
 	uploadRepo := data.NewUploadRepo(dataData, logger)
-	universalClient := data.ProvideUniversalClient(client)
-	agentUseCase, err := biz.NewAgentUseCase(blades, universalClient, dashboardUseCase, orderUseCase, enforcerProvider, logger)
-	if err != nil {
-		cleanup()
-		return nil, nil, err
-	}
+	agentUseCase := biz.NewAgentUseCase(bladesClient, enforcerProvider, logger)
 	adminSettingsClient := data.NewAdminSettingsClient(discovery, confServer, auth, traceTracerProvider, meter)
 	settingsRepo := data.NewSettingsRepo(adminSettingsClient, logger)
 	settingsUseCase := biz.NewSettingsUseCase(settingsRepo, logger)

@@ -30,10 +30,6 @@ message Server {
 }
 
 message Data {
-  message Database {
-    string driver = 1;
-    string source = 2;
-  }
   message Redis {
     string network = 1;
     string addr = 2;
@@ -41,9 +37,7 @@ message Data {
     google.protobuf.Duration write_timeout = 4;
     string password = 5;
   }
-  Database database = 1;
   Redis redis = 2;
-  OSS oss = 3;
 }
 
 message Registry {
@@ -60,8 +54,9 @@ message Registry {
 }
 
 message Auth {
-    string api_key = 1;
-    repeated string white_list = 2; // 白名单
+    map<string, string> service_key = 1; // 下游服务认证密钥
+    string api_key = 2;
+    repeated string white_list = 3; // 白名单
 }
 
 message Trace {
@@ -76,13 +71,6 @@ message Log {
     string log_dir = 4; // 日志目录
     string time_format = 5; // 时间格式
     bool enable_color = 6; // 是否启用颜色
-}
-
-// OSS 配置
-message OSS {
-    string endpoint = 1;
-    string access_key = 2;
-    string secret_key = 3;
 }
 
 // Blades 配置
