@@ -23,22 +23,22 @@ const (
 	Blades_ChatStream_FullMethodName       = "/api.blades.v1.Blades/ChatStream"
 	Blades_GetChatHistory_FullMethodName   = "/api.blades.v1.Blades/GetChatHistory"
 	Blades_ClearChatHistory_FullMethodName = "/api.blades.v1.Blades/ClearChatHistory"
+	Blades_UploadKnowledge_FullMethodName  = "/api.blades.v1.Blades/UploadKnowledge"
+	Blades_SearchKnowledge_FullMethodName  = "/api.blades.v1.Blades/SearchKnowledge"
+	Blades_DeleteKnowledge_FullMethodName  = "/api.blades.v1.Blades/DeleteKnowledge"
 )
 
 // BladesClient is the client API for Blades service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// Blades 服务 - 智能体 AI 服务
 type BladesClient interface {
-	// Chat 非流式聊天
 	Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatReply, error)
-	// ChatStream 流式聊天（服务端流式）
 	ChatStream(ctx context.Context, in *ChatStreamRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ChatChunkReply], error)
-	// GetChatHistory 获取聊天历史
 	GetChatHistory(ctx context.Context, in *GetChatHistoryRequest, opts ...grpc.CallOption) (*GetChatHistoryReply, error)
-	// ClearChatHistory 清除聊天历史
 	ClearChatHistory(ctx context.Context, in *ClearChatHistoryRequest, opts ...grpc.CallOption) (*ClearChatHistoryReply, error)
+	UploadKnowledge(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[UploadKnowledgeRequest, UploadKnowledgeReply], error)
+	SearchKnowledge(ctx context.Context, in *SearchKnowledgeRequest, opts ...grpc.CallOption) (*SearchKnowledgeReply, error)
+	DeleteKnowledge(ctx context.Context, in *DeleteKnowledgeRequest, opts ...grpc.CallOption) (*DeleteKnowledgeReply, error)
 }
 
 type bladesClient struct {
@@ -98,20 +98,50 @@ func (c *bladesClient) ClearChatHistory(ctx context.Context, in *ClearChatHistor
 	return out, nil
 }
 
+func (c *bladesClient) UploadKnowledge(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[UploadKnowledgeRequest, UploadKnowledgeReply], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Blades_ServiceDesc.Streams[1], Blades_UploadKnowledge_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[UploadKnowledgeRequest, UploadKnowledgeReply]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Blades_UploadKnowledgeClient = grpc.ClientStreamingClient[UploadKnowledgeRequest, UploadKnowledgeReply]
+
+func (c *bladesClient) SearchKnowledge(ctx context.Context, in *SearchKnowledgeRequest, opts ...grpc.CallOption) (*SearchKnowledgeReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SearchKnowledgeReply)
+	err := c.cc.Invoke(ctx, Blades_SearchKnowledge_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bladesClient) DeleteKnowledge(ctx context.Context, in *DeleteKnowledgeRequest, opts ...grpc.CallOption) (*DeleteKnowledgeReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteKnowledgeReply)
+	err := c.cc.Invoke(ctx, Blades_DeleteKnowledge_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BladesServer is the server API for Blades service.
 // All implementations must embed UnimplementedBladesServer
 // for forward compatibility.
-//
-// Blades 服务 - 智能体 AI 服务
 type BladesServer interface {
-	// Chat 非流式聊天
 	Chat(context.Context, *ChatRequest) (*ChatReply, error)
-	// ChatStream 流式聊天（服务端流式）
 	ChatStream(*ChatStreamRequest, grpc.ServerStreamingServer[ChatChunkReply]) error
-	// GetChatHistory 获取聊天历史
 	GetChatHistory(context.Context, *GetChatHistoryRequest) (*GetChatHistoryReply, error)
-	// ClearChatHistory 清除聊天历史
 	ClearChatHistory(context.Context, *ClearChatHistoryRequest) (*ClearChatHistoryReply, error)
+	UploadKnowledge(grpc.ClientStreamingServer[UploadKnowledgeRequest, UploadKnowledgeReply]) error
+	SearchKnowledge(context.Context, *SearchKnowledgeRequest) (*SearchKnowledgeReply, error)
+	DeleteKnowledge(context.Context, *DeleteKnowledgeRequest) (*DeleteKnowledgeReply, error)
 	mustEmbedUnimplementedBladesServer()
 }
 
@@ -133,6 +163,15 @@ func (UnimplementedBladesServer) GetChatHistory(context.Context, *GetChatHistory
 }
 func (UnimplementedBladesServer) ClearChatHistory(context.Context, *ClearChatHistoryRequest) (*ClearChatHistoryReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClearChatHistory not implemented")
+}
+func (UnimplementedBladesServer) UploadKnowledge(grpc.ClientStreamingServer[UploadKnowledgeRequest, UploadKnowledgeReply]) error {
+	return status.Errorf(codes.Unimplemented, "method UploadKnowledge not implemented")
+}
+func (UnimplementedBladesServer) SearchKnowledge(context.Context, *SearchKnowledgeRequest) (*SearchKnowledgeReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchKnowledge not implemented")
+}
+func (UnimplementedBladesServer) DeleteKnowledge(context.Context, *DeleteKnowledgeRequest) (*DeleteKnowledgeReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteKnowledge not implemented")
 }
 func (UnimplementedBladesServer) mustEmbedUnimplementedBladesServer() {}
 func (UnimplementedBladesServer) testEmbeddedByValue()                {}
@@ -220,6 +259,49 @@ func _Blades_ClearChatHistory_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Blades_UploadKnowledge_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(BladesServer).UploadKnowledge(&grpc.GenericServerStream[UploadKnowledgeRequest, UploadKnowledgeReply]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Blades_UploadKnowledgeServer = grpc.ClientStreamingServer[UploadKnowledgeRequest, UploadKnowledgeReply]
+
+func _Blades_SearchKnowledge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchKnowledgeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BladesServer).SearchKnowledge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Blades_SearchKnowledge_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BladesServer).SearchKnowledge(ctx, req.(*SearchKnowledgeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Blades_DeleteKnowledge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteKnowledgeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BladesServer).DeleteKnowledge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Blades_DeleteKnowledge_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BladesServer).DeleteKnowledge(ctx, req.(*DeleteKnowledgeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Blades_ServiceDesc is the grpc.ServiceDesc for Blades service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -239,12 +321,25 @@ var Blades_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ClearChatHistory",
 			Handler:    _Blades_ClearChatHistory_Handler,
 		},
+		{
+			MethodName: "SearchKnowledge",
+			Handler:    _Blades_SearchKnowledge_Handler,
+		},
+		{
+			MethodName: "DeleteKnowledge",
+			Handler:    _Blades_DeleteKnowledge_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "ChatStream",
 			Handler:       _Blades_ChatStream_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "UploadKnowledge",
+			Handler:       _Blades_UploadKnowledge_Handler,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "api/blades/v1/blades.proto",

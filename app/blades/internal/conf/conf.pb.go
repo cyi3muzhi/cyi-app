@@ -442,6 +442,9 @@ type Blades struct {
 	Model         string                 `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`                           // 模型名称，默认 deepseek-chat
 	MaxTokens     int32                  `protobuf:"varint,3,opt,name=max_tokens,json=maxTokens,proto3" json:"max_tokens,omitempty"` // 最大令牌数
 	Temperature   float32                `protobuf:"fixed32,4,opt,name=temperature,proto3" json:"temperature,omitempty"`             // 温度参数
+	Embedding     *EmbeddingConfig       `protobuf:"bytes,5,opt,name=embedding,proto3" json:"embedding,omitempty"`                   // Embedding 配置
+	Rag           *RAGConfig             `protobuf:"bytes,6,opt,name=rag,proto3" json:"rag,omitempty"`                               // RAG 配置
+	Knowledge     *KnowledgeConfig       `protobuf:"bytes,7,opt,name=knowledge,proto3" json:"knowledge,omitempty"`                   // 知识库配置
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -504,6 +507,194 @@ func (x *Blades) GetTemperature() float32 {
 	return 0
 }
 
+func (x *Blades) GetEmbedding() *EmbeddingConfig {
+	if x != nil {
+		return x.Embedding
+	}
+	return nil
+}
+
+func (x *Blades) GetRag() *RAGConfig {
+	if x != nil {
+		return x.Rag
+	}
+	return nil
+}
+
+func (x *Blades) GetKnowledge() *KnowledgeConfig {
+	if x != nil {
+		return x.Knowledge
+	}
+	return nil
+}
+
+// Embedding 配置
+type EmbeddingConfig struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Model         string                 `protobuf:"bytes,1,opt,name=model,proto3" json:"model,omitempty"`          // 模型名称，默认 deepseek-embedding
+	Dimension     int32                  `protobuf:"varint,2,opt,name=dimension,proto3" json:"dimension,omitempty"` // 向量维度，默认 768
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EmbeddingConfig) Reset() {
+	*x = EmbeddingConfig{}
+	mi := &file_conf_conf_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EmbeddingConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EmbeddingConfig) ProtoMessage() {}
+
+func (x *EmbeddingConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_conf_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EmbeddingConfig.ProtoReflect.Descriptor instead.
+func (*EmbeddingConfig) Descriptor() ([]byte, []int) {
+	return file_conf_conf_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *EmbeddingConfig) GetModel() string {
+	if x != nil {
+		return x.Model
+	}
+	return ""
+}
+
+func (x *EmbeddingConfig) GetDimension() int32 {
+	if x != nil {
+		return x.Dimension
+	}
+	return 0
+}
+
+// RAG 配置
+type RAGConfig struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	TopK           int32                  `protobuf:"varint,1,opt,name=top_k,json=topK,proto3" json:"top_k,omitempty"`                               // 默认召回条数，默认 5
+	ChunkSize      int32                  `protobuf:"varint,2,opt,name=chunk_size,json=chunkSize,proto3" json:"chunk_size,omitempty"`                // 分块大小（tokens），默认 800
+	ChunkOverlap   float32                `protobuf:"fixed32,3,opt,name=chunk_overlap,json=chunkOverlap,proto3" json:"chunk_overlap,omitempty"`      // 分块重叠比例，默认 0.15
+	AlwaysRetrieve bool                   `protobuf:"varint,4,opt,name=always_retrieve,json=alwaysRetrieve,proto3" json:"always_retrieve,omitempty"` // 是否始终检索
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *RAGConfig) Reset() {
+	*x = RAGConfig{}
+	mi := &file_conf_conf_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RAGConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RAGConfig) ProtoMessage() {}
+
+func (x *RAGConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_conf_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RAGConfig.ProtoReflect.Descriptor instead.
+func (*RAGConfig) Descriptor() ([]byte, []int) {
+	return file_conf_conf_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *RAGConfig) GetTopK() int32 {
+	if x != nil {
+		return x.TopK
+	}
+	return 0
+}
+
+func (x *RAGConfig) GetChunkSize() int32 {
+	if x != nil {
+		return x.ChunkSize
+	}
+	return 0
+}
+
+func (x *RAGConfig) GetChunkOverlap() float32 {
+	if x != nil {
+		return x.ChunkOverlap
+	}
+	return 0
+}
+
+func (x *RAGConfig) GetAlwaysRetrieve() bool {
+	if x != nil {
+		return x.AlwaysRetrieve
+	}
+	return false
+}
+
+// 知识库配置
+type KnowledgeConfig struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	MaxDocsPerSource int32                  `protobuf:"varint,1,opt,name=max_docs_per_source,json=maxDocsPerSource,proto3" json:"max_docs_per_source,omitempty"` // 每端知识库最大文档数，默认 1000
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *KnowledgeConfig) Reset() {
+	*x = KnowledgeConfig{}
+	mi := &file_conf_conf_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KnowledgeConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KnowledgeConfig) ProtoMessage() {}
+
+func (x *KnowledgeConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_conf_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KnowledgeConfig.ProtoReflect.Descriptor instead.
+func (*KnowledgeConfig) Descriptor() ([]byte, []int) {
+	return file_conf_conf_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *KnowledgeConfig) GetMaxDocsPerSource() int32 {
+	if x != nil {
+		return x.MaxDocsPerSource
+	}
+	return 0
+}
+
 type Server_HTTP struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Network       string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
@@ -515,7 +706,7 @@ type Server_HTTP struct {
 
 func (x *Server_HTTP) Reset() {
 	*x = Server_HTTP{}
-	mi := &file_conf_conf_proto_msgTypes[8]
+	mi := &file_conf_conf_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -527,7 +718,7 @@ func (x *Server_HTTP) String() string {
 func (*Server_HTTP) ProtoMessage() {}
 
 func (x *Server_HTTP) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[8]
+	mi := &file_conf_conf_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -575,7 +766,7 @@ type Server_GRPC struct {
 
 func (x *Server_GRPC) Reset() {
 	*x = Server_GRPC{}
-	mi := &file_conf_conf_proto_msgTypes[9]
+	mi := &file_conf_conf_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -587,7 +778,7 @@ func (x *Server_GRPC) String() string {
 func (*Server_GRPC) ProtoMessage() {}
 
 func (x *Server_GRPC) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[9]
+	mi := &file_conf_conf_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -637,7 +828,7 @@ type Data_Redis struct {
 
 func (x *Data_Redis) Reset() {
 	*x = Data_Redis{}
-	mi := &file_conf_conf_proto_msgTypes[10]
+	mi := &file_conf_conf_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -649,7 +840,7 @@ func (x *Data_Redis) String() string {
 func (*Data_Redis) ProtoMessage() {}
 
 func (x *Data_Redis) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[10]
+	mi := &file_conf_conf_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -715,7 +906,7 @@ type Registry_Consul struct {
 
 func (x *Registry_Consul) Reset() {
 	*x = Registry_Consul{}
-	mi := &file_conf_conf_proto_msgTypes[11]
+	mi := &file_conf_conf_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -727,7 +918,7 @@ func (x *Registry_Consul) String() string {
 func (*Registry_Consul) ProtoMessage() {}
 
 func (x *Registry_Consul) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[11]
+	mi := &file_conf_conf_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -853,13 +1044,27 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\alog_dir\x18\x04 \x01(\tR\x06logDir\x12\x1f\n" +
 	"\vtime_format\x18\x05 \x01(\tR\n" +
 	"timeFormat\x12!\n" +
-	"\fenable_color\x18\x06 \x01(\bR\venableColor\"x\n" +
+	"\fenable_color\x18\x06 \x01(\bR\venableColor\"\x97\x02\n" +
 	"\x06Blades\x12\x17\n" +
 	"\aapi_key\x18\x01 \x01(\tR\x06apiKey\x12\x14\n" +
 	"\x05model\x18\x02 \x01(\tR\x05model\x12\x1d\n" +
 	"\n" +
 	"max_tokens\x18\x03 \x01(\x05R\tmaxTokens\x12 \n" +
-	"\vtemperature\x18\x04 \x01(\x02R\vtemperatureB'Z%cyi-app/app/blades/internal/conf;confb\x06proto3"
+	"\vtemperature\x18\x04 \x01(\x02R\vtemperature\x129\n" +
+	"\tembedding\x18\x05 \x01(\v2\x1b.kratos.api.EmbeddingConfigR\tembedding\x12'\n" +
+	"\x03rag\x18\x06 \x01(\v2\x15.kratos.api.RAGConfigR\x03rag\x129\n" +
+	"\tknowledge\x18\a \x01(\v2\x1b.kratos.api.KnowledgeConfigR\tknowledge\"E\n" +
+	"\x0fEmbeddingConfig\x12\x14\n" +
+	"\x05model\x18\x01 \x01(\tR\x05model\x12\x1c\n" +
+	"\tdimension\x18\x02 \x01(\x05R\tdimension\"\x8d\x01\n" +
+	"\tRAGConfig\x12\x13\n" +
+	"\x05top_k\x18\x01 \x01(\x05R\x04topK\x12\x1d\n" +
+	"\n" +
+	"chunk_size\x18\x02 \x01(\x05R\tchunkSize\x12#\n" +
+	"\rchunk_overlap\x18\x03 \x01(\x02R\fchunkOverlap\x12'\n" +
+	"\x0falways_retrieve\x18\x04 \x01(\bR\x0ealwaysRetrieve\"@\n" +
+	"\x0fKnowledgeConfig\x12-\n" +
+	"\x13max_docs_per_source\x18\x01 \x01(\x05R\x10maxDocsPerSourceB'Z%cyi-app/app/blades/internal/conf;confb\x06proto3"
 
 var (
 	file_conf_conf_proto_rawDescOnce sync.Once
@@ -873,7 +1078,7 @@ func file_conf_conf_proto_rawDescGZIP() []byte {
 	return file_conf_conf_proto_rawDescData
 }
 
-var file_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_conf_conf_proto_goTypes = []any{
 	(*Bootstrap)(nil),           // 0: kratos.api.Bootstrap
 	(*Server)(nil),              // 1: kratos.api.Server
@@ -883,12 +1088,15 @@ var file_conf_conf_proto_goTypes = []any{
 	(*Trace)(nil),               // 5: kratos.api.Trace
 	(*Log)(nil),                 // 6: kratos.api.Log
 	(*Blades)(nil),              // 7: kratos.api.Blades
-	(*Server_HTTP)(nil),         // 8: kratos.api.Server.HTTP
-	(*Server_GRPC)(nil),         // 9: kratos.api.Server.GRPC
-	(*Data_Redis)(nil),          // 10: kratos.api.Data.Redis
-	(*Registry_Consul)(nil),     // 11: kratos.api.Registry.Consul
-	nil,                         // 12: kratos.api.Auth.ServiceKeyEntry
-	(*durationpb.Duration)(nil), // 13: google.protobuf.Duration
+	(*EmbeddingConfig)(nil),     // 8: kratos.api.EmbeddingConfig
+	(*RAGConfig)(nil),           // 9: kratos.api.RAGConfig
+	(*KnowledgeConfig)(nil),     // 10: kratos.api.KnowledgeConfig
+	(*Server_HTTP)(nil),         // 11: kratos.api.Server.HTTP
+	(*Server_GRPC)(nil),         // 12: kratos.api.Server.GRPC
+	(*Data_Redis)(nil),          // 13: kratos.api.Data.Redis
+	(*Registry_Consul)(nil),     // 14: kratos.api.Registry.Consul
+	nil,                         // 15: kratos.api.Auth.ServiceKeyEntry
+	(*durationpb.Duration)(nil), // 16: google.protobuf.Duration
 }
 var file_conf_conf_proto_depIdxs = []int32{
 	1,  // 0: kratos.api.Bootstrap.server:type_name -> kratos.api.Server
@@ -897,20 +1105,23 @@ var file_conf_conf_proto_depIdxs = []int32{
 	5,  // 3: kratos.api.Bootstrap.trace:type_name -> kratos.api.Trace
 	6,  // 4: kratos.api.Bootstrap.log:type_name -> kratos.api.Log
 	7,  // 5: kratos.api.Bootstrap.blades:type_name -> kratos.api.Blades
-	8,  // 6: kratos.api.Server.http:type_name -> kratos.api.Server.HTTP
-	9,  // 7: kratos.api.Server.grpc:type_name -> kratos.api.Server.GRPC
-	10, // 8: kratos.api.Data.redis:type_name -> kratos.api.Data.Redis
-	11, // 9: kratos.api.Registry.consul:type_name -> kratos.api.Registry.Consul
-	12, // 10: kratos.api.Auth.service_key:type_name -> kratos.api.Auth.ServiceKeyEntry
-	13, // 11: kratos.api.Server.HTTP.timeout:type_name -> google.protobuf.Duration
-	13, // 12: kratos.api.Server.GRPC.timeout:type_name -> google.protobuf.Duration
-	13, // 13: kratos.api.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
-	13, // 14: kratos.api.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
-	15, // [15:15] is the sub-list for method output_type
-	15, // [15:15] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	11, // 6: kratos.api.Server.http:type_name -> kratos.api.Server.HTTP
+	12, // 7: kratos.api.Server.grpc:type_name -> kratos.api.Server.GRPC
+	13, // 8: kratos.api.Data.redis:type_name -> kratos.api.Data.Redis
+	14, // 9: kratos.api.Registry.consul:type_name -> kratos.api.Registry.Consul
+	15, // 10: kratos.api.Auth.service_key:type_name -> kratos.api.Auth.ServiceKeyEntry
+	8,  // 11: kratos.api.Blades.embedding:type_name -> kratos.api.EmbeddingConfig
+	9,  // 12: kratos.api.Blades.rag:type_name -> kratos.api.RAGConfig
+	10, // 13: kratos.api.Blades.knowledge:type_name -> kratos.api.KnowledgeConfig
+	16, // 14: kratos.api.Server.HTTP.timeout:type_name -> google.protobuf.Duration
+	16, // 15: kratos.api.Server.GRPC.timeout:type_name -> google.protobuf.Duration
+	16, // 16: kratos.api.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
+	16, // 17: kratos.api.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
+	18, // [18:18] is the sub-list for method output_type
+	18, // [18:18] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_conf_conf_proto_init() }
@@ -924,7 +1135,7 @@ func file_conf_conf_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_conf_conf_proto_rawDesc), len(file_conf_conf_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

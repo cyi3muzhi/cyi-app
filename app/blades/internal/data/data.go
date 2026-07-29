@@ -8,6 +8,7 @@ import (
 	orderRpc "cyi-app/api/service/order/v1"
 	productRpc "cyi-app/api/service/product/v1"
 	userRpc "cyi-app/api/service/user/v1"
+	"cyi-app/app/blades/internal/biz"
 	"cyi-app/app/blades/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -21,10 +22,21 @@ var ProviderSet = wire.NewSet(
 	NewData,
 	NewRedisClient,
 	ProvideUniversalClient,
+	NewVectorStore,
+	ProviderVectorStoreDimension,
+	wire.Bind(new(biz.VectorStore), new(*VectorStore)),
 	NewProductServiceClient,
 	NewUserServiceClient,
 	NewOrderServiceClient,
 )
+
+// ProviderVectorStoreDimension 从配置获取向量维度
+func ProviderVectorStoreDimension(cfg *conf.Blades) int {
+	if cfg != nil && cfg.Embedding != nil && cfg.Embedding.Dimension > 0 {
+		return int(cfg.Embedding.Dimension)
+	}
+	return 768
+}
 
 // Data 持有 Redis 连接和各下游服务的 gRPC 客户端
 type Data struct {

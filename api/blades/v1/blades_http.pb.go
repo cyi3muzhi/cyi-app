@@ -21,22 +21,25 @@ const _ = http.SupportPackageIsVersion1
 
 const OperationBladesChat = "/api.blades.v1.Blades/Chat"
 const OperationBladesClearChatHistory = "/api.blades.v1.Blades/ClearChatHistory"
+const OperationBladesDeleteKnowledge = "/api.blades.v1.Blades/DeleteKnowledge"
 const OperationBladesGetChatHistory = "/api.blades.v1.Blades/GetChatHistory"
+const OperationBladesSearchKnowledge = "/api.blades.v1.Blades/SearchKnowledge"
 
 type BladesHTTPServer interface {
-	// Chat Chat 非流式聊天
 	Chat(context.Context, *ChatRequest) (*ChatReply, error)
-	// ClearChatHistory ClearChatHistory 清除聊天历史
 	ClearChatHistory(context.Context, *ClearChatHistoryRequest) (*ClearChatHistoryReply, error)
-	// GetChatHistory GetChatHistory 获取聊天历史
+	DeleteKnowledge(context.Context, *DeleteKnowledgeRequest) (*DeleteKnowledgeReply, error)
 	GetChatHistory(context.Context, *GetChatHistoryRequest) (*GetChatHistoryReply, error)
+	SearchKnowledge(context.Context, *SearchKnowledgeRequest) (*SearchKnowledgeReply, error)
 }
 
 func RegisterBladesHTTPServer(s *http.Server, srv BladesHTTPServer) {
 	r := s.Route("/")
 	r.POST("/blades/v1/chat", _Blades_Chat0_HTTP_Handler(srv))
-	r.GET("/blades/v1/chat/history/{admin_id}", _Blades_GetChatHistory0_HTTP_Handler(srv))
+	r.GET("/blades/v1/chat/history/{user_id}", _Blades_GetChatHistory0_HTTP_Handler(srv))
 	r.POST("/blades/v1/chat/clear", _Blades_ClearChatHistory0_HTTP_Handler(srv))
+	r.POST("/blades/v1/knowledge/search", _Blades_SearchKnowledge0_HTTP_Handler(srv))
+	r.POST("/blades/v1/knowledge/delete", _Blades_DeleteKnowledge0_HTTP_Handler(srv))
 }
 
 func _Blades_Chat0_HTTP_Handler(srv BladesHTTPServer) func(ctx http.Context) error {
@@ -105,13 +108,56 @@ func _Blades_ClearChatHistory0_HTTP_Handler(srv BladesHTTPServer) func(ctx http.
 	}
 }
 
+func _Blades_SearchKnowledge0_HTTP_Handler(srv BladesHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SearchKnowledgeRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationBladesSearchKnowledge)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.SearchKnowledge(ctx, req.(*SearchKnowledgeRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SearchKnowledgeReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Blades_DeleteKnowledge0_HTTP_Handler(srv BladesHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DeleteKnowledgeRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationBladesDeleteKnowledge)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeleteKnowledge(ctx, req.(*DeleteKnowledgeRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DeleteKnowledgeReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type BladesHTTPClient interface {
-	// Chat Chat 非流式聊天
 	Chat(ctx context.Context, req *ChatRequest, opts ...http.CallOption) (rsp *ChatReply, err error)
-	// ClearChatHistory ClearChatHistory 清除聊天历史
 	ClearChatHistory(ctx context.Context, req *ClearChatHistoryRequest, opts ...http.CallOption) (rsp *ClearChatHistoryReply, err error)
-	// GetChatHistory GetChatHistory 获取聊天历史
+	DeleteKnowledge(ctx context.Context, req *DeleteKnowledgeRequest, opts ...http.CallOption) (rsp *DeleteKnowledgeReply, err error)
 	GetChatHistory(ctx context.Context, req *GetChatHistoryRequest, opts ...http.CallOption) (rsp *GetChatHistoryReply, err error)
+	SearchKnowledge(ctx context.Context, req *SearchKnowledgeRequest, opts ...http.CallOption) (rsp *SearchKnowledgeReply, err error)
 }
 
 type BladesHTTPClientImpl struct {
@@ -122,7 +168,6 @@ func NewBladesHTTPClient(client *http.Client) BladesHTTPClient {
 	return &BladesHTTPClientImpl{client}
 }
 
-// Chat Chat 非流式聊天
 func (c *BladesHTTPClientImpl) Chat(ctx context.Context, in *ChatRequest, opts ...http.CallOption) (*ChatReply, error) {
 	var out ChatReply
 	pattern := "/blades/v1/chat"
@@ -136,7 +181,6 @@ func (c *BladesHTTPClientImpl) Chat(ctx context.Context, in *ChatRequest, opts .
 	return &out, nil
 }
 
-// ClearChatHistory ClearChatHistory 清除聊天历史
 func (c *BladesHTTPClientImpl) ClearChatHistory(ctx context.Context, in *ClearChatHistoryRequest, opts ...http.CallOption) (*ClearChatHistoryReply, error) {
 	var out ClearChatHistoryReply
 	pattern := "/blades/v1/chat/clear"
@@ -150,14 +194,39 @@ func (c *BladesHTTPClientImpl) ClearChatHistory(ctx context.Context, in *ClearCh
 	return &out, nil
 }
 
-// GetChatHistory GetChatHistory 获取聊天历史
+func (c *BladesHTTPClientImpl) DeleteKnowledge(ctx context.Context, in *DeleteKnowledgeRequest, opts ...http.CallOption) (*DeleteKnowledgeReply, error) {
+	var out DeleteKnowledgeReply
+	pattern := "/blades/v1/knowledge/delete"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationBladesDeleteKnowledge))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *BladesHTTPClientImpl) GetChatHistory(ctx context.Context, in *GetChatHistoryRequest, opts ...http.CallOption) (*GetChatHistoryReply, error) {
 	var out GetChatHistoryReply
-	pattern := "/blades/v1/chat/history/{admin_id}"
+	pattern := "/blades/v1/chat/history/{user_id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationBladesGetChatHistory))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *BladesHTTPClientImpl) SearchKnowledge(ctx context.Context, in *SearchKnowledgeRequest, opts ...http.CallOption) (*SearchKnowledgeReply, error) {
+	var out SearchKnowledgeReply
+	pattern := "/blades/v1/knowledge/search"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationBladesSearchKnowledge))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

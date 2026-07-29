@@ -23,12 +23,13 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// ChatRequest 非流式聊天请求
 type ChatRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdminId       int64                  `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"` // 管理员 ID
-	Role          string                 `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`                       // 角色（用于权限校验）
-	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`                 // 用户消息
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
+	Message       string                 `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
+	EnableRag     bool                   `protobuf:"varint,5,opt,name=enable_rag,json=enableRag,proto3" json:"enable_rag,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -63,11 +64,18 @@ func (*ChatRequest) Descriptor() ([]byte, []int) {
 	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ChatRequest) GetAdminId() int64 {
+func (x *ChatRequest) GetUserId() int64 {
 	if x != nil {
-		return x.AdminId
+		return x.UserId
 	}
 	return 0
+}
+
+func (x *ChatRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
 }
 
 func (x *ChatRequest) GetRole() string {
@@ -84,7 +92,13 @@ func (x *ChatRequest) GetMessage() string {
 	return ""
 }
 
-// ChatReply 非流式聊天响应
+func (x *ChatRequest) GetEnableRag() bool {
+	if x != nil {
+		return x.EnableRag
+	}
+	return false
+}
+
 type ChatReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
@@ -129,12 +143,13 @@ func (x *ChatReply) GetMessage() string {
 	return ""
 }
 
-// ChatStreamRequest 流式聊天请求
 type ChatStreamRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdminId       int64                  `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"` // 管理员 ID
-	Role          string                 `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`                       // 角色（用于权限校验）
-	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`                 // 用户消息
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
+	Message       string                 `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
+	EnableRag     bool                   `protobuf:"varint,5,opt,name=enable_rag,json=enableRag,proto3" json:"enable_rag,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -169,11 +184,18 @@ func (*ChatStreamRequest) Descriptor() ([]byte, []int) {
 	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *ChatStreamRequest) GetAdminId() int64 {
+func (x *ChatStreamRequest) GetUserId() int64 {
 	if x != nil {
-		return x.AdminId
+		return x.UserId
 	}
 	return 0
+}
+
+func (x *ChatStreamRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
 }
 
 func (x *ChatStreamRequest) GetRole() string {
@@ -190,11 +212,17 @@ func (x *ChatStreamRequest) GetMessage() string {
 	return ""
 }
 
-// ChatChunkReply 流式聊天块响应
+func (x *ChatStreamRequest) GetEnableRag() bool {
+	if x != nil {
+		return x.EnableRag
+	}
+	return false
+}
+
 type ChatChunkReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Chunk         string                 `protobuf:"bytes,1,opt,name=chunk,proto3" json:"chunk,omitempty"` // 文本块
-	Done          bool                   `protobuf:"varint,2,opt,name=done,proto3" json:"done,omitempty"`  // 是否完成
+	Chunk         string                 `protobuf:"bytes,1,opt,name=chunk,proto3" json:"chunk,omitempty"`
+	Done          bool                   `protobuf:"varint,2,opt,name=done,proto3" json:"done,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -243,10 +271,10 @@ func (x *ChatChunkReply) GetDone() bool {
 	return false
 }
 
-// GetChatHistoryRequest 获取聊天历史请求
 type GetChatHistoryRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdminId       int64                  `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"` // 管理员 ID
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -281,19 +309,25 @@ func (*GetChatHistoryRequest) Descriptor() ([]byte, []int) {
 	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *GetChatHistoryRequest) GetAdminId() int64 {
+func (x *GetChatHistoryRequest) GetUserId() int64 {
 	if x != nil {
-		return x.AdminId
+		return x.UserId
 	}
 	return 0
 }
 
-// HistoryMessage 历史消息
+func (x *GetChatHistoryRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
 type HistoryMessage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Role          string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`            // 角色：user / assistant
-	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`      // 消息内容
-	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"` // 时间戳
+	Role          string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -349,7 +383,6 @@ func (x *HistoryMessage) GetTimestamp() int64 {
 	return 0
 }
 
-// GetChatHistoryReply 获取聊天历史响应
 type GetChatHistoryReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Messages      []*HistoryMessage      `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
@@ -394,10 +427,10 @@ func (x *GetChatHistoryReply) GetMessages() []*HistoryMessage {
 	return nil
 }
 
-// ClearChatHistoryRequest 清除聊天历史请求
 type ClearChatHistoryRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdminId       int64                  `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"` // 管理员 ID
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -432,14 +465,20 @@ func (*ClearChatHistoryRequest) Descriptor() ([]byte, []int) {
 	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *ClearChatHistoryRequest) GetAdminId() int64 {
+func (x *ClearChatHistoryRequest) GetUserId() int64 {
 	if x != nil {
-		return x.AdminId
+		return x.UserId
 	}
 	return 0
 }
 
-// ClearChatHistoryReply 清除聊天历史响应
+func (x *ClearChatHistoryRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
 type ClearChatHistoryReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
@@ -484,44 +523,588 @@ func (x *ClearChatHistoryReply) GetSuccess() bool {
 	return false
 }
 
+type UploadKnowledgeRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Data:
+	//
+	//	*UploadKnowledgeRequest_Meta
+	//	*UploadKnowledgeRequest_ContentChunk
+	Data          isUploadKnowledgeRequest_Data `protobuf_oneof:"data"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadKnowledgeRequest) Reset() {
+	*x = UploadKnowledgeRequest{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadKnowledgeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadKnowledgeRequest) ProtoMessage() {}
+
+func (x *UploadKnowledgeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadKnowledgeRequest.ProtoReflect.Descriptor instead.
+func (*UploadKnowledgeRequest) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *UploadKnowledgeRequest) GetData() isUploadKnowledgeRequest_Data {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *UploadKnowledgeRequest) GetMeta() *KnowledgeMeta {
+	if x != nil {
+		if x, ok := x.Data.(*UploadKnowledgeRequest_Meta); ok {
+			return x.Meta
+		}
+	}
+	return nil
+}
+
+func (x *UploadKnowledgeRequest) GetContentChunk() []byte {
+	if x != nil {
+		if x, ok := x.Data.(*UploadKnowledgeRequest_ContentChunk); ok {
+			return x.ContentChunk
+		}
+	}
+	return nil
+}
+
+type isUploadKnowledgeRequest_Data interface {
+	isUploadKnowledgeRequest_Data()
+}
+
+type UploadKnowledgeRequest_Meta struct {
+	Meta *KnowledgeMeta `protobuf:"bytes,1,opt,name=meta,proto3,oneof"`
+}
+
+type UploadKnowledgeRequest_ContentChunk struct {
+	ContentChunk []byte `protobuf:"bytes,2,opt,name=content_chunk,json=contentChunk,proto3,oneof"`
+}
+
+func (*UploadKnowledgeRequest_Meta) isUploadKnowledgeRequest_Data() {}
+
+func (*UploadKnowledgeRequest_ContentChunk) isUploadKnowledgeRequest_Data() {}
+
+type KnowledgeMeta struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DocId         string                 `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
+	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	ContentType   string                 `protobuf:"bytes,4,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
+	Tags          map[string]string      `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *KnowledgeMeta) Reset() {
+	*x = KnowledgeMeta{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KnowledgeMeta) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KnowledgeMeta) ProtoMessage() {}
+
+func (x *KnowledgeMeta) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KnowledgeMeta.ProtoReflect.Descriptor instead.
+func (*KnowledgeMeta) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *KnowledgeMeta) GetDocId() string {
+	if x != nil {
+		return x.DocId
+	}
+	return ""
+}
+
+func (x *KnowledgeMeta) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *KnowledgeMeta) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *KnowledgeMeta) GetContentType() string {
+	if x != nil {
+		return x.ContentType
+	}
+	return ""
+}
+
+func (x *KnowledgeMeta) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+type UploadKnowledgeReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DocId         string                 `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
+	ChunkCount    int32                  `protobuf:"varint,2,opt,name=chunk_count,json=chunkCount,proto3" json:"chunk_count,omitempty"`
+	TokenCount    int32                  `protobuf:"varint,3,opt,name=token_count,json=tokenCount,proto3" json:"token_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadKnowledgeReply) Reset() {
+	*x = UploadKnowledgeReply{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadKnowledgeReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadKnowledgeReply) ProtoMessage() {}
+
+func (x *UploadKnowledgeReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadKnowledgeReply.ProtoReflect.Descriptor instead.
+func (*UploadKnowledgeReply) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *UploadKnowledgeReply) GetDocId() string {
+	if x != nil {
+		return x.DocId
+	}
+	return ""
+}
+
+func (x *UploadKnowledgeReply) GetChunkCount() int32 {
+	if x != nil {
+		return x.ChunkCount
+	}
+	return 0
+}
+
+func (x *UploadKnowledgeReply) GetTokenCount() int32 {
+	if x != nil {
+		return x.TokenCount
+	}
+	return 0
+}
+
+type SearchKnowledgeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Source        string                 `protobuf:"bytes,1,opt,name=source,proto3" json:"source,omitempty"`
+	Query         string                 `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
+	TopK          int32                  `protobuf:"varint,3,opt,name=top_k,json=topK,proto3" json:"top_k,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchKnowledgeRequest) Reset() {
+	*x = SearchKnowledgeRequest{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchKnowledgeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchKnowledgeRequest) ProtoMessage() {}
+
+func (x *SearchKnowledgeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchKnowledgeRequest.ProtoReflect.Descriptor instead.
+func (*SearchKnowledgeRequest) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SearchKnowledgeRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *SearchKnowledgeRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *SearchKnowledgeRequest) GetTopK() int32 {
+	if x != nil {
+		return x.TopK
+	}
+	return 0
+}
+
+type KnowledgeChunk struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DocId         string                 `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
+	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	Score         float32                `protobuf:"fixed32,4,opt,name=score,proto3" json:"score,omitempty"`
+	Tags          map[string]string      `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *KnowledgeChunk) Reset() {
+	*x = KnowledgeChunk{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KnowledgeChunk) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KnowledgeChunk) ProtoMessage() {}
+
+func (x *KnowledgeChunk) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KnowledgeChunk.ProtoReflect.Descriptor instead.
+func (*KnowledgeChunk) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *KnowledgeChunk) GetDocId() string {
+	if x != nil {
+		return x.DocId
+	}
+	return ""
+}
+
+func (x *KnowledgeChunk) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *KnowledgeChunk) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *KnowledgeChunk) GetScore() float32 {
+	if x != nil {
+		return x.Score
+	}
+	return 0
+}
+
+func (x *KnowledgeChunk) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+type SearchKnowledgeReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Chunks        []*KnowledgeChunk      `protobuf:"bytes,1,rep,name=chunks,proto3" json:"chunks,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchKnowledgeReply) Reset() {
+	*x = SearchKnowledgeReply{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchKnowledgeReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchKnowledgeReply) ProtoMessage() {}
+
+func (x *SearchKnowledgeReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchKnowledgeReply.ProtoReflect.Descriptor instead.
+func (*SearchKnowledgeReply) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *SearchKnowledgeReply) GetChunks() []*KnowledgeChunk {
+	if x != nil {
+		return x.Chunks
+	}
+	return nil
+}
+
+type DeleteKnowledgeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DocId         string                 `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
+	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteKnowledgeRequest) Reset() {
+	*x = DeleteKnowledgeRequest{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteKnowledgeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteKnowledgeRequest) ProtoMessage() {}
+
+func (x *DeleteKnowledgeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteKnowledgeRequest.ProtoReflect.Descriptor instead.
+func (*DeleteKnowledgeRequest) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *DeleteKnowledgeRequest) GetDocId() string {
+	if x != nil {
+		return x.DocId
+	}
+	return ""
+}
+
+func (x *DeleteKnowledgeRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+type DeleteKnowledgeReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteKnowledgeReply) Reset() {
+	*x = DeleteKnowledgeReply{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteKnowledgeReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteKnowledgeReply) ProtoMessage() {}
+
+func (x *DeleteKnowledgeReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteKnowledgeReply.ProtoReflect.Descriptor instead.
+func (*DeleteKnowledgeReply) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *DeleteKnowledgeReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_api_blades_v1_blades_proto protoreflect.FileDescriptor
 
 const file_api_blades_v1_blades_proto_rawDesc = "" +
 	"\n" +
-	"\x1aapi/blades/v1/blades.proto\x12\rapi.blades.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"k\n" +
-	"\vChatRequest\x12\"\n" +
-	"\badmin_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aadminId\x12\x12\n" +
-	"\x04role\x18\x02 \x01(\tR\x04role\x12$\n" +
-	"\amessage\x18\x03 \x01(\tB\n" +
-	"\xfaB\ar\x05\x10\x01\x18\xc8\x01R\amessage\"%\n" +
+	"\x1aapi/blades/v1/blades.proto\x12\rapi.blades.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\xbb\x01\n" +
+	"\vChatRequest\x12 \n" +
+	"\auser_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x121\n" +
+	"\x06source\x18\x02 \x01(\tB\x19\xfaB\x16r\x14R\x05adminR\x04userR\x05otherR\x06source\x12\x12\n" +
+	"\x04role\x18\x03 \x01(\tR\x04role\x12$\n" +
+	"\amessage\x18\x04 \x01(\tB\n" +
+	"\xfaB\ar\x05\x10\x01\x18\xd0\x0fR\amessage\x12\x1d\n" +
+	"\n" +
+	"enable_rag\x18\x05 \x01(\bR\tenableRag\"%\n" +
 	"\tChatReply\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\"q\n" +
-	"\x11ChatStreamRequest\x12\"\n" +
-	"\badmin_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aadminId\x12\x12\n" +
-	"\x04role\x18\x02 \x01(\tR\x04role\x12$\n" +
-	"\amessage\x18\x03 \x01(\tB\n" +
-	"\xfaB\ar\x05\x10\x01\x18\xc8\x01R\amessage\":\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\"\xc1\x01\n" +
+	"\x11ChatStreamRequest\x12 \n" +
+	"\auser_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x121\n" +
+	"\x06source\x18\x02 \x01(\tB\x19\xfaB\x16r\x14R\x05adminR\x04userR\x05otherR\x06source\x12\x12\n" +
+	"\x04role\x18\x03 \x01(\tR\x04role\x12$\n" +
+	"\amessage\x18\x04 \x01(\tB\n" +
+	"\xfaB\ar\x05\x10\x01\x18\xd0\x0fR\amessage\x12\x1d\n" +
+	"\n" +
+	"enable_rag\x18\x05 \x01(\bR\tenableRag\":\n" +
 	"\x0eChatChunkReply\x12\x14\n" +
 	"\x05chunk\x18\x01 \x01(\tR\x05chunk\x12\x12\n" +
-	"\x04done\x18\x02 \x01(\bR\x04done\";\n" +
-	"\x15GetChatHistoryRequest\x12\"\n" +
-	"\badmin_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aadminId\"\\\n" +
+	"\x04done\x18\x02 \x01(\bR\x04done\"Q\n" +
+	"\x15GetChatHistoryRequest\x12 \n" +
+	"\auser_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x12\x16\n" +
+	"\x06source\x18\x02 \x01(\tR\x06source\"\\\n" +
 	"\x0eHistoryMessage\x12\x12\n" +
 	"\x04role\x18\x01 \x01(\tR\x04role\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\x12\x1c\n" +
 	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"P\n" +
 	"\x13GetChatHistoryReply\x129\n" +
-	"\bmessages\x18\x01 \x03(\v2\x1d.api.blades.v1.HistoryMessageR\bmessages\"=\n" +
-	"\x17ClearChatHistoryRequest\x12\"\n" +
-	"\badmin_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aadminId\"1\n" +
+	"\bmessages\x18\x01 \x03(\v2\x1d.api.blades.v1.HistoryMessageR\bmessages\"S\n" +
+	"\x17ClearChatHistoryRequest\x12 \n" +
+	"\auser_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x12\x16\n" +
+	"\x06source\x18\x02 \x01(\tR\x06source\"1\n" +
 	"\x15ClearChatHistoryReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xe4\x03\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"{\n" +
+	"\x16UploadKnowledgeRequest\x122\n" +
+	"\x04meta\x18\x01 \x01(\v2\x1c.api.blades.v1.KnowledgeMetaH\x00R\x04meta\x12%\n" +
+	"\rcontent_chunk\x18\x02 \x01(\fH\x00R\fcontentChunkB\x06\n" +
+	"\x04data\"\x88\x02\n" +
+	"\rKnowledgeMeta\x12\x15\n" +
+	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x122\n" +
+	"\x06source\x18\x02 \x01(\tB\x1a\xfaB\x17r\x15R\x05adminR\x04userR\x06publicR\x06source\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12!\n" +
+	"\fcontent_type\x18\x04 \x01(\tR\vcontentType\x12:\n" +
+	"\x04tags\x18\x05 \x03(\v2&.api.blades.v1.KnowledgeMeta.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"o\n" +
+	"\x14UploadKnowledgeReply\x12\x15\n" +
+	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12\x1f\n" +
+	"\vchunk_count\x18\x02 \x01(\x05R\n" +
+	"chunkCount\x12\x1f\n" +
+	"\vtoken_count\x18\x03 \x01(\x05R\n" +
+	"tokenCount\"d\n" +
+	"\x16SearchKnowledgeRequest\x12\x16\n" +
+	"\x06source\x18\x01 \x01(\tR\x06source\x12\x1d\n" +
+	"\x05query\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x05query\x12\x13\n" +
+	"\x05top_k\x18\x03 \x01(\x05R\x04topK\"\xe3\x01\n" +
+	"\x0eKnowledgeChunk\x12\x15\n" +
+	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x18\n" +
+	"\acontent\x18\x03 \x01(\tR\acontent\x12\x14\n" +
+	"\x05score\x18\x04 \x01(\x02R\x05score\x12;\n" +
+	"\x04tags\x18\x05 \x03(\v2'.api.blades.v1.KnowledgeChunk.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"M\n" +
+	"\x14SearchKnowledgeReply\x125\n" +
+	"\x06chunks\x18\x01 \x03(\v2\x1d.api.blades.v1.KnowledgeChunkR\x06chunks\"G\n" +
+	"\x16DeleteKnowledgeRequest\x12\x15\n" +
+	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12\x16\n" +
+	"\x06source\x18\x02 \x01(\tR\x06source\"0\n" +
+	"\x14DeleteKnowledgeReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xfd\x06\n" +
 	"\x06Blades\x12X\n" +
 	"\x04Chat\x12\x1a.api.blades.v1.ChatRequest\x1a\x18.api.blades.v1.ChatReply\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/blades/v1/chat\x12r\n" +
 	"\n" +
-	"ChatStream\x12 .api.blades.v1.ChatStreamRequest\x1a\x1d.api.blades.v1.ChatChunkReply\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/blades/v1/chat/stream0\x01\x12\x86\x01\n" +
-	"\x0eGetChatHistory\x12$.api.blades.v1.GetChatHistoryRequest\x1a\".api.blades.v1.GetChatHistoryReply\"*\x82\xd3\xe4\x93\x02$\x12\"/blades/v1/chat/history/{admin_id}\x12\x82\x01\n" +
-	"\x10ClearChatHistory\x12&.api.blades.v1.ClearChatHistoryRequest\x1a$.api.blades.v1.ClearChatHistoryReply\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/blades/v1/chat/clearB+\n" +
+	"ChatStream\x12 .api.blades.v1.ChatStreamRequest\x1a\x1d.api.blades.v1.ChatChunkReply\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/blades/v1/chat/stream0\x01\x12\x85\x01\n" +
+	"\x0eGetChatHistory\x12$.api.blades.v1.GetChatHistoryRequest\x1a\".api.blades.v1.GetChatHistoryReply\")\x82\xd3\xe4\x93\x02#\x12!/blades/v1/chat/history/{user_id}\x12\x82\x01\n" +
+	"\x10ClearChatHistory\x12&.api.blades.v1.ClearChatHistoryRequest\x1a$.api.blades.v1.ClearChatHistoryReply\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/blades/v1/chat/clear\x12\x87\x01\n" +
+	"\x0fUploadKnowledge\x12%.api.blades.v1.UploadKnowledgeRequest\x1a#.api.blades.v1.UploadKnowledgeReply\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/blades/v1/knowledge/upload(\x01\x12\x85\x01\n" +
+	"\x0fSearchKnowledge\x12%.api.blades.v1.SearchKnowledgeRequest\x1a#.api.blades.v1.SearchKnowledgeReply\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/blades/v1/knowledge/search\x12\x85\x01\n" +
+	"\x0fDeleteKnowledge\x12%.api.blades.v1.DeleteKnowledgeRequest\x1a#.api.blades.v1.DeleteKnowledgeReply\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/blades/v1/knowledge/deleteB+\n" +
 	"\rapi.blades.v1P\x01Z\x18cyi-app/api/blades/v1;v1b\x06proto3"
 
 var (
@@ -536,7 +1119,7 @@ func file_api_blades_v1_blades_proto_rawDescGZIP() []byte {
 	return file_api_blades_v1_blades_proto_rawDescData
 }
 
-var file_api_blades_v1_blades_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_api_blades_v1_blades_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_api_blades_v1_blades_proto_goTypes = []any{
 	(*ChatRequest)(nil),             // 0: api.blades.v1.ChatRequest
 	(*ChatReply)(nil),               // 1: api.blades.v1.ChatReply
@@ -547,22 +1130,42 @@ var file_api_blades_v1_blades_proto_goTypes = []any{
 	(*GetChatHistoryReply)(nil),     // 6: api.blades.v1.GetChatHistoryReply
 	(*ClearChatHistoryRequest)(nil), // 7: api.blades.v1.ClearChatHistoryRequest
 	(*ClearChatHistoryReply)(nil),   // 8: api.blades.v1.ClearChatHistoryReply
+	(*UploadKnowledgeRequest)(nil),  // 9: api.blades.v1.UploadKnowledgeRequest
+	(*KnowledgeMeta)(nil),           // 10: api.blades.v1.KnowledgeMeta
+	(*UploadKnowledgeReply)(nil),    // 11: api.blades.v1.UploadKnowledgeReply
+	(*SearchKnowledgeRequest)(nil),  // 12: api.blades.v1.SearchKnowledgeRequest
+	(*KnowledgeChunk)(nil),          // 13: api.blades.v1.KnowledgeChunk
+	(*SearchKnowledgeReply)(nil),    // 14: api.blades.v1.SearchKnowledgeReply
+	(*DeleteKnowledgeRequest)(nil),  // 15: api.blades.v1.DeleteKnowledgeRequest
+	(*DeleteKnowledgeReply)(nil),    // 16: api.blades.v1.DeleteKnowledgeReply
+	nil,                             // 17: api.blades.v1.KnowledgeMeta.TagsEntry
+	nil,                             // 18: api.blades.v1.KnowledgeChunk.TagsEntry
 }
 var file_api_blades_v1_blades_proto_depIdxs = []int32{
-	5, // 0: api.blades.v1.GetChatHistoryReply.messages:type_name -> api.blades.v1.HistoryMessage
-	0, // 1: api.blades.v1.Blades.Chat:input_type -> api.blades.v1.ChatRequest
-	2, // 2: api.blades.v1.Blades.ChatStream:input_type -> api.blades.v1.ChatStreamRequest
-	4, // 3: api.blades.v1.Blades.GetChatHistory:input_type -> api.blades.v1.GetChatHistoryRequest
-	7, // 4: api.blades.v1.Blades.ClearChatHistory:input_type -> api.blades.v1.ClearChatHistoryRequest
-	1, // 5: api.blades.v1.Blades.Chat:output_type -> api.blades.v1.ChatReply
-	3, // 6: api.blades.v1.Blades.ChatStream:output_type -> api.blades.v1.ChatChunkReply
-	6, // 7: api.blades.v1.Blades.GetChatHistory:output_type -> api.blades.v1.GetChatHistoryReply
-	8, // 8: api.blades.v1.Blades.ClearChatHistory:output_type -> api.blades.v1.ClearChatHistoryReply
-	5, // [5:9] is the sub-list for method output_type
-	1, // [1:5] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	5,  // 0: api.blades.v1.GetChatHistoryReply.messages:type_name -> api.blades.v1.HistoryMessage
+	10, // 1: api.blades.v1.UploadKnowledgeRequest.meta:type_name -> api.blades.v1.KnowledgeMeta
+	17, // 2: api.blades.v1.KnowledgeMeta.tags:type_name -> api.blades.v1.KnowledgeMeta.TagsEntry
+	18, // 3: api.blades.v1.KnowledgeChunk.tags:type_name -> api.blades.v1.KnowledgeChunk.TagsEntry
+	13, // 4: api.blades.v1.SearchKnowledgeReply.chunks:type_name -> api.blades.v1.KnowledgeChunk
+	0,  // 5: api.blades.v1.Blades.Chat:input_type -> api.blades.v1.ChatRequest
+	2,  // 6: api.blades.v1.Blades.ChatStream:input_type -> api.blades.v1.ChatStreamRequest
+	4,  // 7: api.blades.v1.Blades.GetChatHistory:input_type -> api.blades.v1.GetChatHistoryRequest
+	7,  // 8: api.blades.v1.Blades.ClearChatHistory:input_type -> api.blades.v1.ClearChatHistoryRequest
+	9,  // 9: api.blades.v1.Blades.UploadKnowledge:input_type -> api.blades.v1.UploadKnowledgeRequest
+	12, // 10: api.blades.v1.Blades.SearchKnowledge:input_type -> api.blades.v1.SearchKnowledgeRequest
+	15, // 11: api.blades.v1.Blades.DeleteKnowledge:input_type -> api.blades.v1.DeleteKnowledgeRequest
+	1,  // 12: api.blades.v1.Blades.Chat:output_type -> api.blades.v1.ChatReply
+	3,  // 13: api.blades.v1.Blades.ChatStream:output_type -> api.blades.v1.ChatChunkReply
+	6,  // 14: api.blades.v1.Blades.GetChatHistory:output_type -> api.blades.v1.GetChatHistoryReply
+	8,  // 15: api.blades.v1.Blades.ClearChatHistory:output_type -> api.blades.v1.ClearChatHistoryReply
+	11, // 16: api.blades.v1.Blades.UploadKnowledge:output_type -> api.blades.v1.UploadKnowledgeReply
+	14, // 17: api.blades.v1.Blades.SearchKnowledge:output_type -> api.blades.v1.SearchKnowledgeReply
+	16, // 18: api.blades.v1.Blades.DeleteKnowledge:output_type -> api.blades.v1.DeleteKnowledgeReply
+	12, // [12:19] is the sub-list for method output_type
+	5,  // [5:12] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_api_blades_v1_blades_proto_init() }
@@ -570,13 +1173,17 @@ func file_api_blades_v1_blades_proto_init() {
 	if File_api_blades_v1_blades_proto != nil {
 		return
 	}
+	file_api_blades_v1_blades_proto_msgTypes[9].OneofWrappers = []any{
+		(*UploadKnowledgeRequest_Meta)(nil),
+		(*UploadKnowledgeRequest_ContentChunk)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_blades_v1_blades_proto_rawDesc), len(file_api_blades_v1_blades_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

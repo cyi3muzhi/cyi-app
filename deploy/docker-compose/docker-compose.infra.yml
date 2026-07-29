@@ -66,9 +66,9 @@ services:
     networks:
       - cyi-network
 
-  # Redis服务 - 用于缓存
+  # Redis服务 - 用于缓存和向量搜索（RAG）
   redis:
-    image: redis:7.0.12
+    image: redis/redis-stack-server:7.2.0-v10
     container_name: redis
     restart: always
     volumes:
@@ -79,12 +79,6 @@ services:
       - REDIS_PASSWORD=redis0411  # 设置Redis密码
       - REDIS_MAXMEMORY=1gb  # 设置最大内存使用
       - REDIS_MAXMEMORY_POLICY=allkeys-lru  # 内存不足时的淘汰策略
-    command:
-      - redis-server
-      - --requirepass ${REDIS_PASSWORD:-redis0411}
-      - --maxmemory ${REDIS_MAXMEMORY:-1gb}
-      - --maxmemory-policy ${REDIS_MAXMEMORY_POLICY:-allkeys-lru}
-      - --appendonly yes  # 启用AOF持久化
     networks:
       - cyi-network
 

@@ -8,88 +8,110 @@ option java_package = "api.blades.v1";
 import "validate/validate.proto";
 import "google/api/annotations.proto";
 
-// Blades 服务 - 智能体 AI 服务
 service Blades {
-    // Chat 非流式聊天
     rpc Chat (ChatRequest) returns (ChatReply) {
-        option (google.api.http) = {
-            post: "/blades/v1/chat"
-            body: "*"
-        };
-    };
-
-    // ChatStream 流式聊天（服务端流式）
+        option (google.api.http) = { post: "/blades/v1/chat" body: "*" };
+    }
     rpc ChatStream (ChatStreamRequest) returns (stream ChatChunkReply) {
-        option (google.api.http) = {
-            post: "/blades/v1/chat/stream"
-            body: "*"
-        };
-    };
-
-    // GetChatHistory 获取聊天历史
+        option (google.api.http) = { post: "/blades/v1/chat/stream" body: "*" };
+    }
     rpc GetChatHistory (GetChatHistoryRequest) returns (GetChatHistoryReply) {
-        option (google.api.http) = {
-            get: "/blades/v1/chat/history/{admin_id}"
-        };
-    };
-
-    // ClearChatHistory 清除聊天历史
+        option (google.api.http) = { get: "/blades/v1/chat/history/{user_id}" };
+    }
     rpc ClearChatHistory (ClearChatHistoryRequest) returns (ClearChatHistoryReply) {
-        option (google.api.http) = {
-            post: "/blades/v1/chat/clear"
-            body: "*"
-        };
-    };
+        option (google.api.http) = { post: "/blades/v1/chat/clear" body: "*" };
+    }
+    rpc UploadKnowledge (stream UploadKnowledgeRequest) returns (UploadKnowledgeReply) {
+        option (google.api.http) = { post: "/blades/v1/knowledge/upload" body: "*" };
+    }
+    rpc SearchKnowledge (SearchKnowledgeRequest) returns (SearchKnowledgeReply) {
+        option (google.api.http) = { post: "/blades/v1/knowledge/search" body: "*" };
+    }
+    rpc DeleteKnowledge (DeleteKnowledgeRequest) returns (DeleteKnowledgeReply) {
+        option (google.api.http) = { post: "/blades/v1/knowledge/delete" body: "*" };
+    }
 }
 
-// ChatRequest 非流式聊天请求
 message ChatRequest {
-    int64 admin_id = 1 [(validate.rules).int64.gt = 0];     // 管理员 ID
-    string role = 2;                                         // 角色（用于权限校验）
-    string message = 3 [(validate.rules).string = {min_len: 1, max_len: 200}]; // 用户消息
+    int64 user_id = 1 [(validate.rules).int64.gt = 0];
+    string source = 2 [(validate.rules).string = {in: ["admin", "user", "other"]}];
+    string role = 3;
+    string message = 4 [(validate.rules).string = {min_len: 1, max_len: 2000}];
+    bool enable_rag = 5;
 }
 
-// ChatReply 非流式聊天响应
-message ChatReply {
-    string message = 1;
-}
+message ChatReply { string message = 1; }
 
-// ChatStreamRequest 流式聊天请求
 message ChatStreamRequest {
-    int64 admin_id = 1 [(validate.rules).int64.gt = 0];     // 管理员 ID
-    string role = 2;                                         // 角色（用于权限校验）
-    string message = 3 [(validate.rules).string = {min_len: 1, max_len: 200}]; // 用户消息
+    int64 user_id = 1 [(validate.rules).int64.gt = 0];
+    string source = 2 [(validate.rules).string = {in: ["admin", "user", "other"]}];
+    string role = 3;
+    string message = 4 [(validate.rules).string = {min_len: 1, max_len: 2000}];
+    bool enable_rag = 5;
 }
 
-// ChatChunkReply 流式聊天块响应
-message ChatChunkReply {
-    string chunk = 1;    // 文本块
-    bool done = 2;       // 是否完成
-}
+message ChatChunkReply { string chunk = 1; bool done = 2; }
 
-// GetChatHistoryRequest 获取聊天历史请求
 message GetChatHistoryRequest {
-    int64 admin_id = 1 [(validate.rules).int64.gt = 0];     // 管理员 ID
+    int64 user_id = 1 [(validate.rules).int64.gt = 0];
+    string source = 2;
 }
 
-// HistoryMessage 历史消息
 message HistoryMessage {
-    string role = 1;          // 角色：user / assistant
-    string content = 2;       // 消息内容
-    int64 timestamp = 3;      // 时间戳
+    string role = 1;
+    string content = 2;
+    int64 timestamp = 3;
 }
 
-// GetChatHistoryReply 获取聊天历史响应
-message GetChatHistoryReply {
-    repeated HistoryMessage messages = 1;
-}
+message GetChatHistoryReply { repeated HistoryMessage messages = 1; }
 
-// ClearChatHistoryRequest 清除聊天历史请求
 message ClearChatHistoryRequest {
-    int64 admin_id = 1 [(validate.rules).int64.gt = 0];     // 管理员 ID
+    int64 user_id = 1 [(validate.rules).int64.gt = 0];
+    string source = 2;
 }
 
-// ClearChatHistoryReply 清除聊天历史响应
-message ClearChatHistoryReply {
-    bool success = 1;
+message ClearChatHistoryReply { bool success = 1; }
+
+message UploadKnowledgeRequest {
+    oneof data {
+        KnowledgeMeta meta = 1;
+        bytes content_chunk = 2;
+    }
 }
+
+message KnowledgeMeta {
+    string doc_id = 1;
+    string source = 2 [(validate.rules).string = {in: ["admin", "user", "public"]}];
+    string title = 3;
+    string content_type = 4;
+    map<string, string> tags = 5;
+}
+
+message UploadKnowledgeReply {
+    string doc_id = 1;
+    int32 chunk_count = 2;
+    int32 token_count = 3;
+}
+
+message SearchKnowledgeRequest {
+    string source = 1;
+    string query = 2 [(validate.rules).string = {min_len: 1}];
+    int32 top_k = 3;
+}
+
+message KnowledgeChunk {
+    string doc_id = 1;
+    string title = 2;
+    string content = 3;
+    float score = 4;
+    map<string, string> tags = 5;
+}
+
+message SearchKnowledgeReply { repeated KnowledgeChunk chunks = 1; }
+
+message DeleteKnowledgeRequest {
+    string doc_id = 1;
+    string source = 2;
+}
+
+message DeleteKnowledgeReply { bool success = 1; }

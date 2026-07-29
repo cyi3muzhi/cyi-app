@@ -29,9 +29,11 @@ func NewAgentUseCase(client bladesRpc.BladesClient, enforcer mid.EnforcerProvide
 // Chat 非流式聊天
 func (uc *AgentUseCase) Chat(ctx context.Context, adminID int64, role string, message string) (string, error) {
 	req := &bladesRpc.ChatRequest{
-		AdminId: adminID,
-		Role:    role,
-		Message: message,
+		UserId:    adminID,
+		Source:    "admin",
+		Role:      role,
+		Message:   message,
+		EnableRag: true,
 	}
 	resp, err := uc.client.Chat(ctx, req)
 	if err != nil {
@@ -44,9 +46,11 @@ func (uc *AgentUseCase) Chat(ctx context.Context, adminID int64, role string, me
 // ChatStream 流式聊天
 func (uc *AgentUseCase) ChatStream(ctx context.Context, adminID int64, role string, message string, chunkCb func(chunk string)) (string, error) {
 	req := &bladesRpc.ChatStreamRequest{
-		AdminId: adminID,
-		Role:    role,
-		Message: message,
+		UserId:    adminID,
+		Source:    "admin",
+		Role:      role,
+		Message:   message,
+		EnableRag: true,
 	}
 	stream, err := uc.client.ChatStream(ctx, req)
 	if err != nil {
@@ -80,7 +84,8 @@ func (uc *AgentUseCase) ChatStream(ctx context.Context, adminID int64, role stri
 // ClearHistory 清除聊天历史
 func (uc *AgentUseCase) ClearHistory(ctx context.Context, adminID int64) error {
 	req := &bladesRpc.ClearChatHistoryRequest{
-		AdminId: adminID,
+		UserId: adminID,
+		Source: "admin",
 	}
 	_, err := uc.client.ClearChatHistory(ctx, req)
 	if err != nil {
@@ -100,7 +105,8 @@ type HistoryMessage struct {
 // LoadChatHistory 加载聊天历史
 func (uc *AgentUseCase) LoadChatHistory(ctx context.Context, adminID int64) ([]*HistoryMessage, error) {
 	req := &bladesRpc.GetChatHistoryRequest{
-		AdminId: adminID,
+		UserId: adminID,
+		Source: "admin",
 	}
 	resp, err := uc.client.GetChatHistory(ctx, req)
 	if err != nil {

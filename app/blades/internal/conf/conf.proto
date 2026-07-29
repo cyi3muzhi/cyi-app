@@ -42,13 +42,13 @@ message Data {
 
 message Registry {
     message Consul {
-        string address = 1;        // 服务器地址，支持多个地址逗号分隔
-        string scheme = 2;         // http 或 https
-        string token = 3;          // ACL 令牌
-        string username = 4;       // 基本认证用户名
-        string password = 5;       // 基本认证密码
+        string address = 1; // 服务器地址，支持多个地址逗号分隔
+        string scheme = 2; // http 或 https
+        string token = 3; // ACL 令牌
+        string username = 4; // 基本认证用户名
+        string password = 5; // 基本认证密码
         bool enable_health_check = 8; // 是否启用健康检查
-        int32 check_interval = 9;  // 健康检查间隔(秒)
+        int32 check_interval = 9; // 健康检查间隔(秒)
     }
     Consul consul = 1;
 }
@@ -79,4 +79,26 @@ message Blades {
     string model = 2; // 模型名称，默认 deepseek-chat
     int32 max_tokens = 3; // 最大令牌数
     float temperature = 4; // 温度参数
+    EmbeddingConfig embedding = 5; // Embedding 配置
+    RAGConfig rag = 6; // RAG 配置
+    KnowledgeConfig knowledge = 7; // 知识库配置
+}
+
+// Embedding 配置
+message EmbeddingConfig {
+    string model = 1; // 模型名称，默认 deepseek-embedding
+    int32 dimension = 2; // 向量维度，默认 768
+}
+
+// RAG 配置
+message RAGConfig {
+    int32 top_k = 1; // 默认召回条数，默认 5
+    int32 chunk_size = 2; // 分块大小（tokens），默认 800
+    float chunk_overlap = 3; // 分块重叠比例，默认 0.15
+    bool always_retrieve = 4; // 是否始终检索
+}
+
+// 知识库配置
+message KnowledgeConfig {
+    int32 max_docs_per_source = 1; // 每端知识库最大文档数，默认 1000
 }

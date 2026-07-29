@@ -40,153 +40,382 @@ func (m *DeepSeekModel) Name() string {
 	return m.model
 }
 
-func (m *DeepSeekModel) Generate(ctx context.Context, req *blades.ModelRequest) (*blades.ModelResponse, error) {
-	apiURL := m.apiEndpoint + "/chat/completions"
-	var messages []map[string]interface{}
-	for _, msg := range req.Messages {
-		role := string(msg.Role)
-		content := msg.Text()
-		messages = append(messages, map[string]interface{}{
-			"role":    role,
-			"content": content,
+// deepseekTools 转为 DeepSeek API 工具格式
+func deepseekTools(reqTools []tools.Tool) []map[string]interface{} {
+	var result []map[string]interface{}
+	for _, t := range reqTools {
+		schema := t.InputSchema()
+		result = append(result, map[string]interface{}{
+			"type": "function",
+			"function": map[string]interface{}{
+				"name":        t.Name(),
+				"description": t.Description(),
+				"parameters":  schema,
+			},
 		})
 	}
-	requestBody := map[string]interface{}{
-		"model":       m.model,
-		"messages":    messages,
-		"temperature": 0.7,
-		"max_tokens":  1000,
-	}
-	jsonData, err := json.Marshal(requestBody)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
-	}
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", apiURL, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.Header.Set("Authorization", "Bearer "+m.apiKey)
-	client := &http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Do(httpReq)
-	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("deepseek api error: status=%d, body=%s", resp.StatusCode, string(bodyBytes))
-	}
-
-	var apiResp struct {
-		Choices []struct {
-			Message struct {
-				Role    string `json:"role"`
-				Content string `json:"content"`
-			} `json:"message"`
-		} `json:"choices"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-	if len(apiResp.Choices) == 0 {
-		return nil, fmt.Errorf("no response from DeepSeek API")
-	}
-	return &blades.ModelResponse{
-		Message: &blades.Message{
-			Role:   blades.RoleAssistant,
-			Parts:  blades.NewMessageParts(apiResp.Choices[0].Message.Content),
-			Status: blades.StatusCompleted,
-		},
-	}, nil
+	return result
 }
 
-func (m *DeepSeekModel) NewStreaming(ctx context.Context, req *blades.ModelRequest) blades.Generator[*blades.ModelResponse, error] {
-	return func(yield func(*blades.ModelResponse, error) bool) {
-		apiURL := m.apiEndpoint + "/chat/completions"
-		var messages []map[string]interface{}
-		for _, msg := range req.Messages {
+// convertToolCalls 将 DeepSeek 返回的 tool_calls 转为 API 请求格式
+func convertToolCalls(toolCalls []deepSeekToolCall) []map[string]interface{} {
+	var result []map[string]interface{}
+	for _, tc := range toolCalls {
+		tcType := tc.Type
+		if tcType == "" {
+			tcType = "function"
+		}
+		result = append(result, map[string]interface{}{
+			"id":   tc.ID,
+			"type": tcType,
+			"function": map[string]interface{}{
+				"name":      tc.Function.Name,
+				"arguments": tc.Function.Arguments,
+			},
+		})
+	}
+	return result
+}
+
+// deepSeekToolCall DeepSeek tool_calls 结构（解析用）
+// Index SSE 流式中的索引号，用于区分多个并行工具调用
+type deepSeekToolCall struct {
+	Index    int    `json:"index"`
+	ID       string `json:"id"`
+	Type     string `json:"type"` //nolint:govet
+	Function struct {
+		Name      string `json:"name"`
+		Arguments string `json:"arguments"`
+	} `json:"function"`
+}
+
+// deepSeekChoice DeepSeek API 响应中的 choice 结构
+type deepSeekChoice struct {
+	Message struct {
+		Role      string             `json:"role"`
+		Content   string             `json:"content"`
+		ToolCalls []deepSeekToolCall `json:"tool_calls"`
+	} `json:"message"`
+	FinishReason string `json:"finish_reason"`
+}
+
+// deepSeekSSEDelta SSE 流中的 delta 结构
+type deepSeekSSEDelta struct {
+	Role      string             `json:"role"`
+	Content   string             `json:"content"`
+	ToolCalls []deepSeekToolCall `json:"tool_calls"`
+}
+
+// deepSeekSSEEvent SSE 事件结构
+type deepSeekSSEEvent struct {
+	Choices []struct {
+		Delta        deepSeekSSEDelta `json:"delta"`
+		FinishReason *string          `json:"finish_reason"`
+	} `json:"choices"`
+}
+
+// buildMessages 构建发送给 DeepSeek API 的消息列表
+func (m *DeepSeekModel) buildMessages(req *blades.ModelRequest) []map[string]interface{} {
+	var messages []map[string]interface{}
+
+	// 添加系统指令
+	if req.Instruction != nil {
+		text := req.Instruction.Text()
+		if text != "" {
 			messages = append(messages, map[string]interface{}{
-				"role":    string(msg.Role),
-				"content": msg.Text(),
+				"role":    "system",
+				"content": text,
 			})
 		}
+	}
+
+	// 添加历史消息
+	for _, msg := range req.Messages {
+		messages = append(messages, map[string]interface{}{
+			"role":    string(msg.Role),
+			"content": msg.Text(),
+		})
+	}
+
+	return messages
+}
+
+// executeTool 执行单个工具调用
+func (m *DeepSeekModel) executeTool(ctx context.Context, toolList []tools.Tool, tc deepSeekToolCall) string {
+	for _, t := range toolList {
+		if t.Name() == tc.Function.Name {
+			result, err := t.Handle(ctx, tc.Function.Arguments)
+			if err != nil {
+				return fmt.Sprintf("工具执行失败: %v", err)
+			}
+			return result
+		}
+	}
+	return fmt.Sprintf("未找到工具: %s", tc.Function.Name)
+}
+
+// Generate 非流式生成（模型内部完成工具调用轮询）
+func (m *DeepSeekModel) Generate(ctx context.Context, req *blades.ModelRequest) (*blades.ModelResponse, error) {
+	apiURL := m.apiEndpoint + "/chat/completions"
+	client := &http.Client{Timeout: 120 * time.Second}
+
+	// 构建初始消息列表
+	messages := m.buildMessages(req)
+
+	for round := 0; round < 3; round++ {
+		// 构建请求体
 		requestBody := map[string]interface{}{
 			"model":       m.model,
 			"messages":    messages,
 			"temperature": 0.7,
 			"max_tokens":  4096,
-			"stream":      true,
 		}
+		if len(req.Tools) > 0 {
+			requestBody["tools"] = deepseekTools(req.Tools)
+		}
+
 		jsonData, err := json.Marshal(requestBody)
 		if err != nil {
-			yield(nil, fmt.Errorf("failed to marshal request: %w", err))
-			return
+			return nil, fmt.Errorf("failed to marshal request: %w", err)
 		}
+
 		httpReq, err := http.NewRequestWithContext(ctx, "POST", apiURL, bytes.NewBuffer(jsonData))
 		if err != nil {
-			yield(nil, fmt.Errorf("failed to create request: %w", err))
-			return
+			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 		httpReq.Header.Set("Content-Type", "application/json")
 		httpReq.Header.Set("Authorization", "Bearer "+m.apiKey)
-		httpReq.Header.Set("Accept", "text/event-stream")
-		client := &http.Client{Timeout: 60 * time.Second}
+
 		resp, err := client.Do(httpReq)
 		if err != nil {
-			yield(nil, fmt.Errorf("failed to send request: %w", err))
-			return
+			return nil, fmt.Errorf("failed to send request: %w", err)
 		}
-		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
 			bodyBytes, _ := io.ReadAll(resp.Body)
-			yield(nil, fmt.Errorf("deepseek api error: status=%d, body=%s", resp.StatusCode, string(bodyBytes)))
-			return
+			resp.Body.Close()
+			return nil, fmt.Errorf("deepseek api error: status=%d, body=%s", resp.StatusCode, string(bodyBytes))
 		}
 
-		scanner := NewSSEScanner(resp.Body)
-		for scanner.Scan() {
-			data := scanner.Data()
-			if data == nil || string(data) == "[DONE]" {
-				continue
-			}
-			var sseEvent struct {
-				Choices []struct {
-					Delta struct {
-						Content string `json:"content"`
-					} `json:"delta"`
-					FinishReason *string `json:"finish_reason"`
-				} `json:"choices"`
-			}
-			if err := json.Unmarshal(data, &sseEvent); err != nil {
-				continue
-			}
-			if len(sseEvent.Choices) == 0 {
-				continue
-			}
-			content := sseEvent.Choices[0].Delta.Content
-			status := blades.StatusInProgress
-			if sseEvent.Choices[0].FinishReason != nil {
-				status = blades.StatusCompleted
-			}
-			if content == "" && status != blades.StatusCompleted {
-				continue
-			}
-			if !yield(&blades.ModelResponse{
+		var apiResp struct {
+			Choices []deepSeekChoice `json:"choices"`
+		}
+		if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
+			resp.Body.Close()
+			return nil, fmt.Errorf("failed to decode response: %w", err)
+		}
+		resp.Body.Close()
+
+		if len(apiResp.Choices) == 0 {
+			return nil, fmt.Errorf("no response from DeepSeek API")
+		}
+
+		choice := apiResp.Choices[0]
+
+		// 没有工具调用 → 返回最终文本响应
+		if len(choice.Message.ToolCalls) == 0 {
+			return &blades.ModelResponse{
 				Message: &blades.Message{
 					Role:   blades.RoleAssistant,
-					Parts:  blades.NewMessageParts(content),
-					Status: status,
+					Parts:  blades.NewMessageParts(choice.Message.Content),
+					Status: blades.StatusCompleted,
 				},
-			}, nil) {
+			}, nil
+		}
+
+		// 有工具调用 → 添加 assistant 消息（含 tool_calls）
+		assistantMsg := map[string]interface{}{
+			"role":       "assistant",
+			"content":    choice.Message.Content,
+			"tool_calls": convertToolCalls(choice.Message.ToolCalls),
+		}
+		messages = append(messages, assistantMsg)
+
+		// 执行工具并添加 tool 消息
+		for _, tc := range choice.Message.ToolCalls {
+			result := m.executeTool(ctx, req.Tools, tc)
+			messages = append(messages, map[string]interface{}{
+				"role":         "tool",
+				"content":      result,
+				"tool_call_id": tc.ID,
+			})
+		}
+	}
+
+	return nil, fmt.Errorf("max tool call rounds exceeded")
+}
+
+// NewStreaming 流式生成（模型内部完成工具调用轮询）
+func (m *DeepSeekModel) NewStreaming(ctx context.Context, req *blades.ModelRequest) blades.Generator[*blades.ModelResponse, error] {
+	return func(yield func(*blades.ModelResponse, error) bool) {
+		apiURL := m.apiEndpoint + "/chat/completions"
+		client := &http.Client{Timeout: 120 * time.Second}
+
+		// 构建初始消息列表
+		messages := m.buildMessages(req)
+
+		for round := 0; round < 3; round++ {
+			// 构建请求体
+			requestBody := map[string]interface{}{
+				"model":       m.model,
+				"messages":    messages,
+				"temperature": 0.7,
+				"max_tokens":  4096,
+				"stream":      true,
+			}
+			if len(req.Tools) > 0 {
+				requestBody["tools"] = deepseekTools(req.Tools)
+			}
+
+			jsonData, err := json.Marshal(requestBody)
+			if err != nil {
+				yield(nil, fmt.Errorf("failed to marshal request: %w", err))
 				return
 			}
+
+			httpReq, err := http.NewRequestWithContext(ctx, "POST", apiURL, bytes.NewBuffer(jsonData))
+			if err != nil {
+				yield(nil, fmt.Errorf("failed to create request: %w", err))
+				return
+			}
+			httpReq.Header.Set("Content-Type", "application/json")
+			httpReq.Header.Set("Authorization", "Bearer "+m.apiKey)
+			httpReq.Header.Set("Accept", "text/event-stream")
+
+			resp, err := client.Do(httpReq)
+			if err != nil {
+				yield(nil, fmt.Errorf("failed to send request: %w", err))
+				return
+			}
+
+			if resp.StatusCode != http.StatusOK {
+				bodyBytes, _ := io.ReadAll(resp.Body)
+				resp.Body.Close()
+				yield(nil, fmt.Errorf("deepseek api error: status=%d, body=%s", resp.StatusCode, string(bodyBytes)))
+				return
+			}
+
+			// 流式读取 SSE 事件
+			type toolCallAcc struct {
+				ID      string
+				Name    string
+				ArgsBuf string
+			}
+			accumulated := make(map[int]*toolCallAcc)
+			var fullContent string
+			hasToolCalls := false
+
+			scanner := NewSSEScanner(resp.Body)
+			for scanner.Scan() {
+				data := scanner.Data()
+				if data == nil || string(data) == "[DONE]" {
+					continue
+				}
+
+				var sseEvent deepSeekSSEEvent
+				if err := json.Unmarshal(data, &sseEvent); err != nil {
+					continue
+				}
+				if len(sseEvent.Choices) == 0 {
+					continue
+				}
+
+				delta := sseEvent.Choices[0].Delta
+				finishReason := sseEvent.Choices[0].FinishReason
+
+				// 累积工具调用
+				if len(delta.ToolCalls) > 0 {
+					hasToolCalls = true
+					for _, tc := range delta.ToolCalls {
+						acc, ok := accumulated[tc.Index]
+						if !ok {
+							acc = &toolCallAcc{}
+							accumulated[tc.Index] = acc
+						}
+						if tc.ID != "" {
+							acc.ID = tc.ID
+						}
+						if tc.Function.Name != "" {
+							acc.Name = tc.Function.Name
+						}
+						acc.ArgsBuf += tc.Function.Arguments
+					}
+					continue
+				}
+
+				// 处理文本内容
+				content := delta.Content
+				fullContent += content
+				status := blades.StatusInProgress
+				if finishReason != nil {
+					status = blades.StatusCompleted
+				}
+
+				if content == "" && status != blades.StatusCompleted {
+					continue
+				}
+
+				// 文本流式输出
+				if !yield(&blades.ModelResponse{
+					Message: &blades.Message{
+						Role:   blades.RoleAssistant,
+						Parts:  blades.NewMessageParts(content),
+						Status: status,
+					},
+				}, nil) {
+					resp.Body.Close()
+					return
+				}
+			}
+			resp.Body.Close()
+
+			if err := scanner.Err(); err != nil {
+				yield(nil, fmt.Errorf("sse read error: %w", err))
+				return
+			}
+
+			// 没有工具调用 → 流结束
+			if !hasToolCalls {
+				return
+			}
+
+			// 有工具调用 → 添加 assistant 消息（含 tool_calls）
+			var toolCalls []map[string]interface{}
+			for _, acc := range accumulated {
+				toolCalls = append(toolCalls, map[string]interface{}{
+					"id":   acc.ID,
+					"type": "function",
+					"function": map[string]interface{}{
+						"name":      acc.Name,
+						"arguments": acc.ArgsBuf,
+					},
+				})
+			}
+			assistantMsg := map[string]interface{}{
+				"role":       "assistant",
+				"content":    fullContent,
+				"tool_calls": toolCalls,
+			}
+			messages = append(messages, assistantMsg)
+
+			// 执行工具并添加 tool 消息
+			for _, acc := range accumulated {
+				tc := deepSeekToolCall{
+					ID:   acc.ID,
+					Type: "function",
+				}
+				tc.Function.Name = acc.Name
+				tc.Function.Arguments = acc.ArgsBuf
+				result := m.executeTool(ctx, req.Tools, tc)
+				messages = append(messages, map[string]interface{}{
+					"role":         "tool",
+					"content":      result,
+					"tool_call_id": acc.ID,
+				})
+			}
 		}
-		if err := scanner.Err(); err != nil {
-			yield(nil, fmt.Errorf("sse read error: %w", err))
-		}
+
+		yield(nil, fmt.Errorf("max tool call rounds exceeded"))
 	}
 }
 

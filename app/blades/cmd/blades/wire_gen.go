@@ -30,34 +30,27 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	traceTracerProvider := provideTracerProvider(tracerProvider)
 	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	client := data.NewRedisClient(confData, logger)
+	universalClient := data.ProvideUniversalClient(client)
+	embeddingClient := biz.ProviderEmbeddingClient(blades)
+	int2 := data.ProviderVectorStoreDimension(blades)
+	vectorStore := data.NewVectorStore(universalClient, int2)
+	ragConfig := biz.ProviderRAGConfig(blades)
+	ragEngine := biz.NewRAGEngine(embeddingClient, vectorStore, ragConfig)
 	discovery := server.NewDiscovery(registry)
 	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
-	dataData, cleanup, err := data.NewData(client, productClient, userClient, orderClient, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	bladesRepo := data.NewBladesRepo(dataData)
-	bladesUseCase, err := biz.NewBladesUseCase(bladesRepo, blades)
-	if err != nil {
-		cleanup()
-		return nil, nil, err
-	}
-	universalClient := data.ProvideUniversalClient(client)
-	agentUseCase, err := biz.NewAgentUseCase(blades, universalClient, productClient, userClient, orderClient, logger)
-	if err != nil {
-		cleanup()
-		return nil, nil, err
-	}
-	bladesService := service.NewBladesService(bladesUseCase, agentUseCase, logger)
+	toolRegistry := biz.InitToolRegistry(productClient, userClient, orderClient, ragEngine)
+	agentFactory := biz.NewAgentFactory(blades, ragEngine, toolRegistry, logger)
+	agentUseCase := biz.NewAgentUseCase(blades, universalClient, agentFactory, logger)
+	knowledgeUseCase := biz.NewKnowledgeUseCase(ragEngine, universalClient, logger)
+	bladesService := service.NewBladesService(agentUseCase, knowledgeUseCase, logger)
 	server2 := server.NewGRPCServer(grpcServer, bladesService)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	server3 := server.NewHTTPServer(httpServer, bladesService)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, server2, server3, registrar)
 	return app, func() {
-		cleanup()
 	}, nil
 }
 
