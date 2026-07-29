@@ -79,3 +79,11 @@ func (uc *KnowledgeUseCase) DeleteDocument(ctx context.Context, docID, source st
 	}
 	return uc.rag.vectorDB.DeleteDoc(ctx, docID, source)
 }
+
+// ListDocuments 列出知识库文档
+func (uc *KnowledgeUseCase) ListDocuments(ctx context.Context, source string) ([]*DocInfo, error) {
+	if uc.rag == nil || uc.rag.vectorDB == nil {
+		return nil, nil
+	}
+	return uc.rag.vectorDB.ListDocuments(ctx, source)
+}

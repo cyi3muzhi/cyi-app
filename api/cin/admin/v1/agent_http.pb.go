@@ -21,12 +21,15 @@ const _ = http.SupportPackageIsVersion1
 
 const OperationAgentChat = "/api.cin.admin.v1.Agent/Chat"
 const OperationAgentClearChatHistory = "/api.cin.admin.v1.Agent/ClearChatHistory"
+const OperationAgentDeleteKnowledge = "/api.cin.admin.v1.Agent/DeleteKnowledge"
 const OperationAgentExpandDescription = "/api.cin.admin.v1.Agent/ExpandDescription"
 const OperationAgentGenerateBannerCopy = "/api.cin.admin.v1.Agent/GenerateBannerCopy"
 const OperationAgentGenerateCategorySEO = "/api.cin.admin.v1.Agent/GenerateCategorySEO"
 const OperationAgentGenerateDescription = "/api.cin.admin.v1.Agent/GenerateDescription"
 const OperationAgentGenerateSummary = "/api.cin.admin.v1.Agent/GenerateSummary"
 const OperationAgentGetChatHistory = "/api.cin.admin.v1.Agent/GetChatHistory"
+const OperationAgentListKnowledge = "/api.cin.admin.v1.Agent/ListKnowledge"
+const OperationAgentSearchKnowledge = "/api.cin.admin.v1.Agent/SearchKnowledge"
 const OperationAgentSuggestQuestions = "/api.cin.admin.v1.Agent/SuggestQuestions"
 
 type AgentHTTPServer interface {
@@ -34,6 +37,8 @@ type AgentHTTPServer interface {
 	Chat(context.Context, *ChatRequest) (*ChatReply, error)
 	// ClearChatHistory 清除聊天历史
 	ClearChatHistory(context.Context, *ClearChatHistoryRequest) (*ClearChatHistoryReply, error)
+	// DeleteKnowledge 删除知识库文档
+	DeleteKnowledge(context.Context, *DeleteKnowledgeRequest) (*DeleteKnowledgeReply, error)
 	// ExpandDescription AI 扩写商品描述
 	ExpandDescription(context.Context, *ExpandDescriptionRequest) (*ExpandDescriptionReply, error)
 	// GenerateBannerCopy AI 生成 Banner 文案
@@ -46,6 +51,10 @@ type AgentHTTPServer interface {
 	GenerateSummary(context.Context, *GenerateSummaryRequest) (*GenerateSummaryReply, error)
 	// GetChatHistory 获取聊天历史
 	GetChatHistory(context.Context, *GetChatHistoryRequest) (*GetChatHistoryReply, error)
+	// ListKnowledge 列出知识库文档
+	ListKnowledge(context.Context, *ListKnowledgeRequest) (*ListKnowledgeReply, error)
+	// SearchKnowledge 搜索知识库
+	SearchKnowledge(context.Context, *SearchKnowledgeRequest) (*SearchKnowledgeReply, error)
 	// SuggestQuestions AI 推荐快捷提问
 	SuggestQuestions(context.Context, *SuggestQuestionsRequest) (*SuggestQuestionsReply, error)
 }
@@ -61,6 +70,9 @@ func RegisterAgentHTTPServer(s *http.Server, srv AgentHTTPServer) {
 	r.POST("/admin/v1/agent/suggest-questions", _Agent_SuggestQuestions0_HTTP_Handler(srv))
 	r.GET("/admin/v1/agent/chat/history", _Agent_GetChatHistory0_HTTP_Handler(srv))
 	r.POST("/admin/v1/agent/chat/clear", _Agent_ClearChatHistory0_HTTP_Handler(srv))
+	r.GET("/admin/v1/agent/knowledge/list", _Agent_ListKnowledge0_HTTP_Handler(srv))
+	r.POST("/admin/v1/agent/knowledge/delete", _Agent_DeleteKnowledge0_HTTP_Handler(srv))
+	r.POST("/admin/v1/agent/knowledge/search", _Agent_SearchKnowledge0_HTTP_Handler(srv))
 }
 
 func _Agent_Chat0_HTTP_Handler(srv AgentHTTPServer) func(ctx http.Context) error {
@@ -258,11 +270,76 @@ func _Agent_ClearChatHistory0_HTTP_Handler(srv AgentHTTPServer) func(ctx http.Co
 	}
 }
 
+func _Agent_ListKnowledge0_HTTP_Handler(srv AgentHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListKnowledgeRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAgentListKnowledge)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListKnowledge(ctx, req.(*ListKnowledgeRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListKnowledgeReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Agent_DeleteKnowledge0_HTTP_Handler(srv AgentHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DeleteKnowledgeRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAgentDeleteKnowledge)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeleteKnowledge(ctx, req.(*DeleteKnowledgeRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DeleteKnowledgeReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Agent_SearchKnowledge0_HTTP_Handler(srv AgentHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SearchKnowledgeRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAgentSearchKnowledge)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.SearchKnowledge(ctx, req.(*SearchKnowledgeRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SearchKnowledgeReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type AgentHTTPClient interface {
 	// Chat 非流式聊天
 	Chat(ctx context.Context, req *ChatRequest, opts ...http.CallOption) (rsp *ChatReply, err error)
 	// ClearChatHistory 清除聊天历史
 	ClearChatHistory(ctx context.Context, req *ClearChatHistoryRequest, opts ...http.CallOption) (rsp *ClearChatHistoryReply, err error)
+	// DeleteKnowledge 删除知识库文档
+	DeleteKnowledge(ctx context.Context, req *DeleteKnowledgeRequest, opts ...http.CallOption) (rsp *DeleteKnowledgeReply, err error)
 	// ExpandDescription AI 扩写商品描述
 	ExpandDescription(ctx context.Context, req *ExpandDescriptionRequest, opts ...http.CallOption) (rsp *ExpandDescriptionReply, err error)
 	// GenerateBannerCopy AI 生成 Banner 文案
@@ -275,6 +352,10 @@ type AgentHTTPClient interface {
 	GenerateSummary(ctx context.Context, req *GenerateSummaryRequest, opts ...http.CallOption) (rsp *GenerateSummaryReply, err error)
 	// GetChatHistory 获取聊天历史
 	GetChatHistory(ctx context.Context, req *GetChatHistoryRequest, opts ...http.CallOption) (rsp *GetChatHistoryReply, err error)
+	// ListKnowledge 列出知识库文档
+	ListKnowledge(ctx context.Context, req *ListKnowledgeRequest, opts ...http.CallOption) (rsp *ListKnowledgeReply, err error)
+	// SearchKnowledge 搜索知识库
+	SearchKnowledge(ctx context.Context, req *SearchKnowledgeRequest, opts ...http.CallOption) (rsp *SearchKnowledgeReply, err error)
 	// SuggestQuestions AI 推荐快捷提问
 	SuggestQuestions(ctx context.Context, req *SuggestQuestionsRequest, opts ...http.CallOption) (rsp *SuggestQuestionsReply, err error)
 }
@@ -307,6 +388,20 @@ func (c *AgentHTTPClientImpl) ClearChatHistory(ctx context.Context, in *ClearCha
 	pattern := "/admin/v1/agent/chat/clear"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAgentClearChatHistory))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// DeleteKnowledge 删除知识库文档
+func (c *AgentHTTPClientImpl) DeleteKnowledge(ctx context.Context, in *DeleteKnowledgeRequest, opts ...http.CallOption) (*DeleteKnowledgeReply, error) {
+	var out DeleteKnowledgeReply
+	pattern := "/admin/v1/agent/knowledge/delete"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAgentDeleteKnowledge))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
@@ -393,6 +488,34 @@ func (c *AgentHTTPClientImpl) GetChatHistory(ctx context.Context, in *GetChatHis
 	opts = append(opts, http.Operation(OperationAgentGetChatHistory))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ListKnowledge 列出知识库文档
+func (c *AgentHTTPClientImpl) ListKnowledge(ctx context.Context, in *ListKnowledgeRequest, opts ...http.CallOption) (*ListKnowledgeReply, error) {
+	var out ListKnowledgeReply
+	pattern := "/admin/v1/agent/knowledge/list"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAgentListKnowledge))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// SearchKnowledge 搜索知识库
+func (c *AgentHTTPClientImpl) SearchKnowledge(ctx context.Context, in *SearchKnowledgeRequest, opts ...http.CallOption) (*SearchKnowledgeReply, error) {
+	var out SearchKnowledgeReply
+	pattern := "/admin/v1/agent/knowledge/search"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAgentSearchKnowledge))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

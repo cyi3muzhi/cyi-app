@@ -1171,6 +1171,180 @@ func (x *DeleteKnowledgeReply) GetSuccess() bool {
 	return false
 }
 
+// ListKnowledgeRequest 列出知识库文档请求
+type ListKnowledgeRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 来源过滤（空则全部）
+	Source        string `protobuf:"bytes,1,opt,name=source,proto3" json:"source,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListKnowledgeRequest) Reset() {
+	*x = ListKnowledgeRequest{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListKnowledgeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListKnowledgeRequest) ProtoMessage() {}
+
+func (x *ListKnowledgeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListKnowledgeRequest.ProtoReflect.Descriptor instead.
+func (*ListKnowledgeRequest) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ListKnowledgeRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+// KnowledgeDocInfo 文档信息
+type KnowledgeDocInfo struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 文档唯一标识
+	DocId string `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
+	// 来源
+	Source string `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	// 文档标题
+	Title string `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	// 分块数量
+	ChunkCount int32 `protobuf:"varint,4,opt,name=chunk_count,json=chunkCount,proto3" json:"chunk_count,omitempty"`
+	// 自定义标签
+	Tags          map[string]string `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *KnowledgeDocInfo) Reset() {
+	*x = KnowledgeDocInfo{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KnowledgeDocInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KnowledgeDocInfo) ProtoMessage() {}
+
+func (x *KnowledgeDocInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KnowledgeDocInfo.ProtoReflect.Descriptor instead.
+func (*KnowledgeDocInfo) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *KnowledgeDocInfo) GetDocId() string {
+	if x != nil {
+		return x.DocId
+	}
+	return ""
+}
+
+func (x *KnowledgeDocInfo) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *KnowledgeDocInfo) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *KnowledgeDocInfo) GetChunkCount() int32 {
+	if x != nil {
+		return x.ChunkCount
+	}
+	return 0
+}
+
+func (x *KnowledgeDocInfo) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+// ListKnowledgeReply 列出知识库文档响应
+type ListKnowledgeReply struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 文档列表
+	Docs          []*KnowledgeDocInfo `protobuf:"bytes,1,rep,name=docs,proto3" json:"docs,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListKnowledgeReply) Reset() {
+	*x = ListKnowledgeReply{}
+	mi := &file_api_blades_v1_blades_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListKnowledgeReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListKnowledgeReply) ProtoMessage() {}
+
+func (x *ListKnowledgeReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_blades_v1_blades_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListKnowledgeReply.ProtoReflect.Descriptor instead.
+func (*ListKnowledgeReply) Descriptor() ([]byte, []int) {
+	return file_api_blades_v1_blades_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *ListKnowledgeReply) GetDocs() []*KnowledgeDocInfo {
+	if x != nil {
+		return x.Docs
+	}
+	return nil
+}
+
 var File_api_blades_v1_blades_proto protoreflect.FileDescriptor
 
 const file_api_blades_v1_blades_proto_rawDesc = "" +
@@ -1254,7 +1428,21 @@ const file_api_blades_v1_blades_proto_rawDesc = "" +
 	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12\x16\n" +
 	"\x06source\x18\x02 \x01(\tR\x06source\"0\n" +
 	"\x14DeleteKnowledgeReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xca\x05\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\".\n" +
+	"\x14ListKnowledgeRequest\x12\x16\n" +
+	"\x06source\x18\x01 \x01(\tR\x06source\"\xf0\x01\n" +
+	"\x10KnowledgeDocInfo\x12\x15\n" +
+	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12\x16\n" +
+	"\x06source\x18\x02 \x01(\tR\x06source\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12\x1f\n" +
+	"\vchunk_count\x18\x04 \x01(\x05R\n" +
+	"chunkCount\x12=\n" +
+	"\x04tags\x18\x05 \x03(\v2).api.blades.v1.KnowledgeDocInfo.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"I\n" +
+	"\x12ListKnowledgeReply\x123\n" +
+	"\x04docs\x18\x01 \x03(\v2\x1f.api.blades.v1.KnowledgeDocInfoR\x04docs2\xa3\x06\n" +
 	"\x06Blades\x12<\n" +
 	"\x04Chat\x12\x1a.api.blades.v1.ChatRequest\x1a\x18.api.blades.v1.ChatReply\x12O\n" +
 	"\n" +
@@ -1263,7 +1451,8 @@ const file_api_blades_v1_blades_proto_rawDesc = "" +
 	"\x10ClearChatHistory\x12&.api.blades.v1.ClearChatHistoryRequest\x1a$.api.blades.v1.ClearChatHistoryReply\x12_\n" +
 	"\x0fUploadKnowledge\x12%.api.blades.v1.UploadKnowledgeRequest\x1a#.api.blades.v1.UploadKnowledgeReply(\x01\x12]\n" +
 	"\x0fSearchKnowledge\x12%.api.blades.v1.SearchKnowledgeRequest\x1a#.api.blades.v1.SearchKnowledgeReply\x12]\n" +
-	"\x0fDeleteKnowledge\x12%.api.blades.v1.DeleteKnowledgeRequest\x1a#.api.blades.v1.DeleteKnowledgeReply\x12T\n" +
+	"\x0fDeleteKnowledge\x12%.api.blades.v1.DeleteKnowledgeRequest\x1a#.api.blades.v1.DeleteKnowledgeReply\x12W\n" +
+	"\rListKnowledge\x12#.api.blades.v1.ListKnowledgeRequest\x1a!.api.blades.v1.ListKnowledgeReply\x12T\n" +
 	"\fGenerateText\x12\".api.blades.v1.GenerateTextRequest\x1a .api.blades.v1.GenerateTextReplyB+\n" +
 	"\rapi.blades.v1P\x01Z\x18cyi-app/api/blades/v1;v1b\x06proto3"
 
@@ -1279,7 +1468,7 @@ func file_api_blades_v1_blades_proto_rawDescGZIP() []byte {
 	return file_api_blades_v1_blades_proto_rawDescData
 }
 
-var file_api_blades_v1_blades_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_api_blades_v1_blades_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_api_blades_v1_blades_proto_goTypes = []any{
 	(*GenerateTextRequest)(nil),     // 0: api.blades.v1.GenerateTextRequest
 	(*GenerateTextReply)(nil),       // 1: api.blades.v1.GenerateTextReply
@@ -1300,36 +1489,44 @@ var file_api_blades_v1_blades_proto_goTypes = []any{
 	(*SearchKnowledgeReply)(nil),    // 16: api.blades.v1.SearchKnowledgeReply
 	(*DeleteKnowledgeRequest)(nil),  // 17: api.blades.v1.DeleteKnowledgeRequest
 	(*DeleteKnowledgeReply)(nil),    // 18: api.blades.v1.DeleteKnowledgeReply
-	nil,                             // 19: api.blades.v1.KnowledgeMeta.TagsEntry
-	nil,                             // 20: api.blades.v1.KnowledgeChunk.TagsEntry
+	(*ListKnowledgeRequest)(nil),    // 19: api.blades.v1.ListKnowledgeRequest
+	(*KnowledgeDocInfo)(nil),        // 20: api.blades.v1.KnowledgeDocInfo
+	(*ListKnowledgeReply)(nil),      // 21: api.blades.v1.ListKnowledgeReply
+	nil,                             // 22: api.blades.v1.KnowledgeMeta.TagsEntry
+	nil,                             // 23: api.blades.v1.KnowledgeChunk.TagsEntry
+	nil,                             // 24: api.blades.v1.KnowledgeDocInfo.TagsEntry
 }
 var file_api_blades_v1_blades_proto_depIdxs = []int32{
 	7,  // 0: api.blades.v1.GetChatHistoryReply.messages:type_name -> api.blades.v1.HistoryMessage
 	12, // 1: api.blades.v1.UploadKnowledgeRequest.meta:type_name -> api.blades.v1.KnowledgeMeta
-	19, // 2: api.blades.v1.KnowledgeMeta.tags:type_name -> api.blades.v1.KnowledgeMeta.TagsEntry
-	20, // 3: api.blades.v1.KnowledgeChunk.tags:type_name -> api.blades.v1.KnowledgeChunk.TagsEntry
+	22, // 2: api.blades.v1.KnowledgeMeta.tags:type_name -> api.blades.v1.KnowledgeMeta.TagsEntry
+	23, // 3: api.blades.v1.KnowledgeChunk.tags:type_name -> api.blades.v1.KnowledgeChunk.TagsEntry
 	15, // 4: api.blades.v1.SearchKnowledgeReply.chunks:type_name -> api.blades.v1.KnowledgeChunk
-	2,  // 5: api.blades.v1.Blades.Chat:input_type -> api.blades.v1.ChatRequest
-	4,  // 6: api.blades.v1.Blades.ChatStream:input_type -> api.blades.v1.ChatStreamRequest
-	6,  // 7: api.blades.v1.Blades.GetChatHistory:input_type -> api.blades.v1.GetChatHistoryRequest
-	9,  // 8: api.blades.v1.Blades.ClearChatHistory:input_type -> api.blades.v1.ClearChatHistoryRequest
-	11, // 9: api.blades.v1.Blades.UploadKnowledge:input_type -> api.blades.v1.UploadKnowledgeRequest
-	14, // 10: api.blades.v1.Blades.SearchKnowledge:input_type -> api.blades.v1.SearchKnowledgeRequest
-	17, // 11: api.blades.v1.Blades.DeleteKnowledge:input_type -> api.blades.v1.DeleteKnowledgeRequest
-	0,  // 12: api.blades.v1.Blades.GenerateText:input_type -> api.blades.v1.GenerateTextRequest
-	3,  // 13: api.blades.v1.Blades.Chat:output_type -> api.blades.v1.ChatReply
-	5,  // 14: api.blades.v1.Blades.ChatStream:output_type -> api.blades.v1.ChatChunkReply
-	8,  // 15: api.blades.v1.Blades.GetChatHistory:output_type -> api.blades.v1.GetChatHistoryReply
-	10, // 16: api.blades.v1.Blades.ClearChatHistory:output_type -> api.blades.v1.ClearChatHistoryReply
-	13, // 17: api.blades.v1.Blades.UploadKnowledge:output_type -> api.blades.v1.UploadKnowledgeReply
-	16, // 18: api.blades.v1.Blades.SearchKnowledge:output_type -> api.blades.v1.SearchKnowledgeReply
-	18, // 19: api.blades.v1.Blades.DeleteKnowledge:output_type -> api.blades.v1.DeleteKnowledgeReply
-	1,  // 20: api.blades.v1.Blades.GenerateText:output_type -> api.blades.v1.GenerateTextReply
-	13, // [13:21] is the sub-list for method output_type
-	5,  // [5:13] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	24, // 5: api.blades.v1.KnowledgeDocInfo.tags:type_name -> api.blades.v1.KnowledgeDocInfo.TagsEntry
+	20, // 6: api.blades.v1.ListKnowledgeReply.docs:type_name -> api.blades.v1.KnowledgeDocInfo
+	2,  // 7: api.blades.v1.Blades.Chat:input_type -> api.blades.v1.ChatRequest
+	4,  // 8: api.blades.v1.Blades.ChatStream:input_type -> api.blades.v1.ChatStreamRequest
+	6,  // 9: api.blades.v1.Blades.GetChatHistory:input_type -> api.blades.v1.GetChatHistoryRequest
+	9,  // 10: api.blades.v1.Blades.ClearChatHistory:input_type -> api.blades.v1.ClearChatHistoryRequest
+	11, // 11: api.blades.v1.Blades.UploadKnowledge:input_type -> api.blades.v1.UploadKnowledgeRequest
+	14, // 12: api.blades.v1.Blades.SearchKnowledge:input_type -> api.blades.v1.SearchKnowledgeRequest
+	17, // 13: api.blades.v1.Blades.DeleteKnowledge:input_type -> api.blades.v1.DeleteKnowledgeRequest
+	19, // 14: api.blades.v1.Blades.ListKnowledge:input_type -> api.blades.v1.ListKnowledgeRequest
+	0,  // 15: api.blades.v1.Blades.GenerateText:input_type -> api.blades.v1.GenerateTextRequest
+	3,  // 16: api.blades.v1.Blades.Chat:output_type -> api.blades.v1.ChatReply
+	5,  // 17: api.blades.v1.Blades.ChatStream:output_type -> api.blades.v1.ChatChunkReply
+	8,  // 18: api.blades.v1.Blades.GetChatHistory:output_type -> api.blades.v1.GetChatHistoryReply
+	10, // 19: api.blades.v1.Blades.ClearChatHistory:output_type -> api.blades.v1.ClearChatHistoryReply
+	13, // 20: api.blades.v1.Blades.UploadKnowledge:output_type -> api.blades.v1.UploadKnowledgeReply
+	16, // 21: api.blades.v1.Blades.SearchKnowledge:output_type -> api.blades.v1.SearchKnowledgeReply
+	18, // 22: api.blades.v1.Blades.DeleteKnowledge:output_type -> api.blades.v1.DeleteKnowledgeReply
+	21, // 23: api.blades.v1.Blades.ListKnowledge:output_type -> api.blades.v1.ListKnowledgeReply
+	1,  // 24: api.blades.v1.Blades.GenerateText:output_type -> api.blades.v1.GenerateTextReply
+	16, // [16:25] is the sub-list for method output_type
+	7,  // [7:16] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_api_blades_v1_blades_proto_init() }
@@ -1347,7 +1544,7 @@ func file_api_blades_v1_blades_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_blades_v1_blades_proto_rawDesc), len(file_api_blades_v1_blades_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   21,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

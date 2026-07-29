@@ -80,8 +80,8 @@
                 <span class="typing-dot"></span>
                 <span class="typing-dot"></span>
               </div>
-              <div v-else-if="msg.role === 'assistant' && msg.content" class="message-text" v-html="formatMessage(msg.content)"></div>
-              <span v-else class="message-text">{{ msg.content }}</span>
+              <div v-else-if="msg.role === 'assistant' && msg.content" class="message-text markdown-body" v-html="formatMessage(msg.content)"></div>
+              <span v-else class="message-text user-text">{{ msg.content }}</span>
             </div>
             <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
           </div>
@@ -225,7 +225,12 @@ function scrollToBottom() {
 }
 
 function formatMessage(content: string): string {
-  return marked.parse(content) as string
+  try {
+    return marked.parse(content) as string
+  } catch {
+    // 流式渲染时内容可能不完整，解析失败则原样返回
+    return content
+  }
 }
 
 function formatTime(timestamp?: number): string {
@@ -787,8 +792,61 @@ function handleScroll() {
 }
 
 .message-text {
-  white-space: pre-wrap;
+  white-space: normal;
   word-break: break-word;
+  line-height: 1.6;
+}
+
+/* Markdown 段落 */
+.message-text p {
+  margin: 6px 0;
+}
+
+.message-text p:first-child {
+  margin-top: 0;
+}
+
+.message-text p:last-child {
+  margin-bottom: 0;
+}
+
+/* Markdown 标题 */
+.message-text h1,
+.message-text h2,
+.message-text h3,
+.message-text h4,
+.message-text h5,
+.message-text h6 {
+  margin: 12px 0 6px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.message-text h1 { font-size: 1.25rem; }
+.message-text h2 { font-size: 1.125rem; }
+.message-text h3 { font-size: 1rem; }
+.message-text h4 { font-size: 0.9375rem; }
+
+/* Markdown 分隔线 */
+.message-text hr {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 12px 0;
+}
+
+/* Markdown 引用块 */
+.message-text blockquote {
+  border-left: 3px solid #c7d2fe;
+  padding: 4px 12px;
+  margin: 8px 0;
+  background: #f8fafc;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* 用户消息（纯文本）保留换行 */
+.message-text.user-text {
+  white-space: pre-wrap;
 }
 
 /* Markdown 表格样式 */
@@ -799,17 +857,18 @@ function handleScroll() {
   margin: 8px 0;
   border-radius: 8px;
   overflow: hidden;
+  border: 1px solid #e2e8f0;
 }
 
 .message-text th,
 .message-text td {
   padding: 8px 12px;
   text-align: left;
-  border-bottom: 1px solid #f1f5f9;
+  border: 1px solid #e2e8f0;
 }
 
 .message-text th {
-  background: #f8fafc;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   font-weight: 600;
   color: #334155;
   font-size: 0.75rem;
@@ -820,12 +879,12 @@ function handleScroll() {
   color: #475569;
 }
 
-.message-text tr:last-child td {
-  border-bottom: none;
+.message-text tr:nth-child(even) td {
+  background: #fafbfc;
 }
 
 .message-text tr:hover td {
-  background: #fafbfc;
+  background: #f0f4ff;
 }
 
 /* Markdown 列表样式 */

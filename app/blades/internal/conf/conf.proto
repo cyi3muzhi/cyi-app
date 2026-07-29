@@ -86,8 +86,10 @@ message Blades {
 
 // Embedding 配置
 message EmbeddingConfig {
-    string model = 1; // 模型名称，默认 deepseek-embedding
-    int32 dimension = 2; // 向量维度，默认 768
+    string model = 1; // 模型名称，默认 BAAI/bge-large-zh-v1.5
+    int32 dimension = 2; // 向量维度，默认 1024
+    string api_key = 3; // Embedding 专用 API Key（为空则使用 blades.api_key）
+    string api_endpoint = 4; // Embedding 专用 API 地址（为空则使用 https://api.siliconflow.cn/v1）
 }
 
 // RAG 配置

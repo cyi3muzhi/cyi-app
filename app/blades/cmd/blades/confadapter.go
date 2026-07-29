@@ -16,8 +16,10 @@ func provideBladesConfig(cfg *conf.Blades) *biz.BladesConfig {
 	}
 	if cfg.Embedding != nil {
 		bc.Embedding = &biz.EmbeddingConfigBiz{
-			Model:     cfg.Embedding.Model,
-			Dimension: int(cfg.Embedding.Dimension),
+			Model:       cfg.Embedding.Model,
+			Dimension:   int(cfg.Embedding.Dimension),
+			ApiKey:      cfg.Embedding.ApiKey,
+			ApiEndpoint: cfg.Embedding.ApiEndpoint,
 		}
 	}
 	if cfg.Rag != nil {

@@ -10,8 +10,10 @@ type BladesConfig struct {
 
 // EmbeddingConfigBiz Embedding 业务配置
 type EmbeddingConfigBiz struct {
-	Model     string
-	Dimension int
+	Model       string
+	Dimension   int
+	ApiKey      string // Embedding 专用 API Key（为空则使用 BladesConfig.ApiKey）
+	ApiEndpoint string // Embedding 专用 API 地址（为空则使用硅基流动默认地址）
 }
 
 // RAGConfigBiz RAG 业务配置

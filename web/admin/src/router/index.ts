@@ -112,6 +112,12 @@ const routes: RouteRecordRaw[] = [
         name: 'Settings',
         component: () => import('../views/settings/SettingsView.vue'),
         meta: { title: '系统设置' }
+      },
+      {
+        path: 'knowledge',
+        name: 'Knowledge',
+        component: () => import('../views/knowledge/KnowledgeView.vue'),
+        meta: { title: '知识库管理' }
       }
     ]
   }

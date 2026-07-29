@@ -28,6 +28,9 @@ const (
 	Agent_SuggestQuestions_FullMethodName    = "/api.cin.admin.v1.Agent/SuggestQuestions"
 	Agent_GetChatHistory_FullMethodName      = "/api.cin.admin.v1.Agent/GetChatHistory"
 	Agent_ClearChatHistory_FullMethodName    = "/api.cin.admin.v1.Agent/ClearChatHistory"
+	Agent_ListKnowledge_FullMethodName       = "/api.cin.admin.v1.Agent/ListKnowledge"
+	Agent_DeleteKnowledge_FullMethodName     = "/api.cin.admin.v1.Agent/DeleteKnowledge"
+	Agent_SearchKnowledge_FullMethodName     = "/api.cin.admin.v1.Agent/SearchKnowledge"
 )
 
 // AgentClient is the client API for Agent service.
@@ -54,6 +57,12 @@ type AgentClient interface {
 	GetChatHistory(ctx context.Context, in *GetChatHistoryRequest, opts ...grpc.CallOption) (*GetChatHistoryReply, error)
 	// 清除聊天历史
 	ClearChatHistory(ctx context.Context, in *ClearChatHistoryRequest, opts ...grpc.CallOption) (*ClearChatHistoryReply, error)
+	// 列出知识库文档
+	ListKnowledge(ctx context.Context, in *ListKnowledgeRequest, opts ...grpc.CallOption) (*ListKnowledgeReply, error)
+	// 删除知识库文档
+	DeleteKnowledge(ctx context.Context, in *DeleteKnowledgeRequest, opts ...grpc.CallOption) (*DeleteKnowledgeReply, error)
+	// 搜索知识库
+	SearchKnowledge(ctx context.Context, in *SearchKnowledgeRequest, opts ...grpc.CallOption) (*SearchKnowledgeReply, error)
 }
 
 type agentClient struct {
@@ -154,6 +163,36 @@ func (c *agentClient) ClearChatHistory(ctx context.Context, in *ClearChatHistory
 	return out, nil
 }
 
+func (c *agentClient) ListKnowledge(ctx context.Context, in *ListKnowledgeRequest, opts ...grpc.CallOption) (*ListKnowledgeReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListKnowledgeReply)
+	err := c.cc.Invoke(ctx, Agent_ListKnowledge_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *agentClient) DeleteKnowledge(ctx context.Context, in *DeleteKnowledgeRequest, opts ...grpc.CallOption) (*DeleteKnowledgeReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteKnowledgeReply)
+	err := c.cc.Invoke(ctx, Agent_DeleteKnowledge_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *agentClient) SearchKnowledge(ctx context.Context, in *SearchKnowledgeRequest, opts ...grpc.CallOption) (*SearchKnowledgeReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SearchKnowledgeReply)
+	err := c.cc.Invoke(ctx, Agent_SearchKnowledge_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentServer is the server API for Agent service.
 // All implementations must embed UnimplementedAgentServer
 // for forward compatibility.
@@ -178,6 +217,12 @@ type AgentServer interface {
 	GetChatHistory(context.Context, *GetChatHistoryRequest) (*GetChatHistoryReply, error)
 	// 清除聊天历史
 	ClearChatHistory(context.Context, *ClearChatHistoryRequest) (*ClearChatHistoryReply, error)
+	// 列出知识库文档
+	ListKnowledge(context.Context, *ListKnowledgeRequest) (*ListKnowledgeReply, error)
+	// 删除知识库文档
+	DeleteKnowledge(context.Context, *DeleteKnowledgeRequest) (*DeleteKnowledgeReply, error)
+	// 搜索知识库
+	SearchKnowledge(context.Context, *SearchKnowledgeRequest) (*SearchKnowledgeReply, error)
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -214,6 +259,15 @@ func (UnimplementedAgentServer) GetChatHistory(context.Context, *GetChatHistoryR
 }
 func (UnimplementedAgentServer) ClearChatHistory(context.Context, *ClearChatHistoryRequest) (*ClearChatHistoryReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClearChatHistory not implemented")
+}
+func (UnimplementedAgentServer) ListKnowledge(context.Context, *ListKnowledgeRequest) (*ListKnowledgeReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListKnowledge not implemented")
+}
+func (UnimplementedAgentServer) DeleteKnowledge(context.Context, *DeleteKnowledgeRequest) (*DeleteKnowledgeReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteKnowledge not implemented")
+}
+func (UnimplementedAgentServer) SearchKnowledge(context.Context, *SearchKnowledgeRequest) (*SearchKnowledgeReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchKnowledge not implemented")
 }
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
 func (UnimplementedAgentServer) testEmbeddedByValue()               {}
@@ -398,6 +452,60 @@ func _Agent_ClearChatHistory_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Agent_ListKnowledge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListKnowledgeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).ListKnowledge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Agent_ListKnowledge_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).ListKnowledge(ctx, req.(*ListKnowledgeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Agent_DeleteKnowledge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteKnowledgeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).DeleteKnowledge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Agent_DeleteKnowledge_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).DeleteKnowledge(ctx, req.(*DeleteKnowledgeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Agent_SearchKnowledge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchKnowledgeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).SearchKnowledge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Agent_SearchKnowledge_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).SearchKnowledge(ctx, req.(*SearchKnowledgeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Agent_ServiceDesc is the grpc.ServiceDesc for Agent service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -440,6 +548,18 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ClearChatHistory",
 			Handler:    _Agent_ClearChatHistory_Handler,
+		},
+		{
+			MethodName: "ListKnowledge",
+			Handler:    _Agent_ListKnowledge_Handler,
+		},
+		{
+			MethodName: "DeleteKnowledge",
+			Handler:    _Agent_DeleteKnowledge_Handler,
+		},
+		{
+			MethodName: "SearchKnowledge",
+			Handler:    _Agent_SearchKnowledge_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

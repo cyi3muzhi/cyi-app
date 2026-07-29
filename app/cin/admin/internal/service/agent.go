@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	adminv1 "cyi-app/api/cin/admin/v1"
 	"cyi-app/app/cin/admin/internal/biz"
@@ -501,6 +502,71 @@ func (s *AdminService) ClearChatHistory(ctx context.Context, req *adminv1.ClearC
 		return nil, err
 	}
 	return &adminv1.ClearChatHistoryReply{Success: true}, nil
+}
+
+// === 知识库管理接口实现 ===
+
+// ListKnowledge 列出知识库文档（proto 接口实现）
+func (s *AdminService) ListKnowledge(ctx context.Context, req *adminv1.ListKnowledgeRequest) (*adminv1.ListKnowledgeReply, error) {
+	docs, err := s.agentUC.ListKnowledge(ctx, req.Source)
+	if err != nil {
+		return nil, err
+	}
+
+	pbDocs := make([]*adminv1.AdminKnowledgeDocInfo, 0, len(docs))
+	for _, d := range docs {
+		pbDocs = append(pbDocs, &adminv1.AdminKnowledgeDocInfo{
+			DocId:      d.DocID,
+			Source:     d.Source,
+			Title:      d.Title,
+			ChunkCount: int32(d.ChunkCount),
+			Tags:       d.Tags,
+		})
+	}
+	return &adminv1.ListKnowledgeReply{Docs: pbDocs}, nil
+}
+
+// DeleteKnowledge 删除知识库文档（proto 接口实现）
+func (s *AdminService) DeleteKnowledge(ctx context.Context, req *adminv1.DeleteKnowledgeRequest) (*adminv1.DeleteKnowledgeReply, error) {
+	if err := s.agentUC.DeleteKnowledge(ctx, req.DocId, req.Source); err != nil {
+		return nil, err
+	}
+	return &adminv1.DeleteKnowledgeReply{Success: true}, nil
+}
+
+// SearchKnowledge 搜索知识库（proto 接口实现）
+func (s *AdminService) SearchKnowledge(ctx context.Context, req *adminv1.SearchKnowledgeRequest) (*adminv1.SearchKnowledgeReply, error) {
+	topK := int(req.TopK)
+	if topK <= 0 {
+		topK = 5
+	}
+	results, err := s.agentUC.SearchKnowledge(ctx, req.Query, req.Source, topK)
+	if err != nil {
+		return nil, err
+	}
+
+	chunks := make([]*adminv1.AdminKnowledgeChunk, 0, len(results))
+	for _, r := range results {
+		chunks = append(chunks, &adminv1.AdminKnowledgeChunk{
+			DocId:   r.DocID,
+			Title:   r.Title,
+			Content: r.Content,
+			Score:   r.Score,
+		})
+	}
+	return &adminv1.SearchKnowledgeReply{Chunks: chunks}, nil
+}
+
+// UploadKnowledgeFile 上传知识库文件（由 server/http.go 中手动注册的 HTTP 路由调用）
+func (s *AdminService) UploadKnowledgeFile(ctx context.Context, filename, source, title, contentType string, content []byte, tags map[string]string) (string, int, error) {
+	// 生成文档 ID
+	docID := fmt.Sprintf("doc_%d", time.Now().UnixNano())
+
+	chunkCount, err := s.agentUC.UploadKnowledge(ctx, docID, source, title, contentType, content, tags)
+	if err != nil {
+		return "", 0, err
+	}
+	return docID, chunkCount, nil
 }
 
 // 编译期接口实现检查

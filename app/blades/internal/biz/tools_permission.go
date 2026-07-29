@@ -15,7 +15,7 @@ import (
 func RegisterPermissionTool(r *ToolRegistry, roleClient userRpc.AdminRoleClient) {
 	t, _ := tools.NewFunc("query_user_permissions", "查询当前登录用户的角色和完整权限列表。当用户问'我有什么权限'、'我能做什么'时调用此工具",
 		func(ctx context.Context, _ struct{}) (string, error) {
-			role, _ := ctx.Value(roleContextKey).(string)
+			role := GetRole(ctx)
 			if role == "" {
 				return "", fmt.Errorf("无法获取当前用户角色信息")
 			}
@@ -65,7 +65,7 @@ func RegisterPermissionTool(r *ToolRegistry, roleClient userRpc.AdminRoleClient)
 			Module string `json:"module"`
 			Action string `json:"action"`
 		}) (string, error) {
-			role, _ := ctx.Value(roleContextKey).(string)
+			role := GetRole(ctx)
 			if role == "" {
 				return "", fmt.Errorf("无法获取当前用户角色信息")
 			}

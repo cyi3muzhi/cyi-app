@@ -20,15 +20,17 @@ type EmbeddingClient struct {
 }
 
 // NewEmbeddingClient 创建 Embedding 客户端
+// apiKey: Embedding 专用 API Key；若调用方传入空串，需在调用前用 blades.api_key 兜底
+// apiEndpoint: Embedding 专用 API 地址；为空则使用硅基流动默认地址
 func NewEmbeddingClient(apiKey, apiEndpoint, model string, dimension int) *EmbeddingClient {
 	if apiEndpoint == "" {
-		apiEndpoint = "https://api.deepseek.com/v1"
+		apiEndpoint = "https://api.siliconflow.cn/v1"
 	}
 	if model == "" {
-		model = "deepseek-embedding"
+		model = "BAAI/bge-large-zh-v1.5"
 	}
 	if dimension <= 0 {
-		dimension = 768
+		dimension = 1024
 	}
 	return &EmbeddingClient{
 		apiKey:      apiKey,

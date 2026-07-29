@@ -5,12 +5,27 @@ import (
 	"fmt"
 )
 
+// ragRetrieveKeywords 触发 RAG 检索的关键词列表
+var ragRetrieveKeywords = []string{"规则", "政策", "说明", "指南", "流程", "怎么", "如何",
+	"什么", "啥", "什么意思", "规定", "退", "保修", "运费", "发货", "尺码", "售后",
+	"优惠券", "会员", "积分", "等级"}
+
 // VectorStore 向量存储接口（由 data 层实现）
 type VectorStore interface {
 	CreateIndex(ctx context.Context) error
 	Store(ctx context.Context, doc *KnowledgeDoc) error
 	Search(ctx context.Context, source string, queryVec []float32, topK int) ([]*SearchResult, error)
 	DeleteDoc(ctx context.Context, docID string, source string) error
+	ListDocuments(ctx context.Context, source string) ([]*DocInfo, error)
+}
+
+// DocInfo 文档信息（用于列表展示）
+type DocInfo struct {
+	DocID      string            `json:"doc_id"`
+	Source     string            `json:"source"`
+	Title      string            `json:"title"`
+	ChunkCount int               `json:"chunk_count"`
+	Tags       map[string]string `json:"tags"`
 }
 
 // KnowledgeDoc 知识文档块
@@ -24,12 +39,13 @@ type KnowledgeDoc struct {
 	Embedding []float32         `json:"-"`
 }
 
-// SearchResult 搜索结果
+// SearchResult 检索结果
 type SearchResult struct {
 	DocID   string            `json:"doc_id"`
 	Title   string            `json:"title"`
 	Content string            `json:"content"`
 	Score   float64           `json:"score"`
+	Source  string            `json:"source"`
 	Tags    map[string]string `json:"tags"`
 }
 
@@ -134,10 +150,7 @@ func (e *RAGEngine) ShouldRetrieve(message string) bool {
 	if e.config != nil && e.config.AlwaysRetrieve {
 		return true
 	}
-	keywords := []string{"规则", "政策", "说明", "指南", "流程", "怎么", "如何",
-		"什么", "啥", "什么意思", "规定", "退", "保修", "运费", "发货", "尺码", "售后",
-		"优惠券", "会员", "积分", "等级"}
-	for _, kw := range keywords {
+	for _, kw := range ragRetrieveKeywords {
 		if stringsContains(message, kw) {
 			return true
 		}

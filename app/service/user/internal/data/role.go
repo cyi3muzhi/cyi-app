@@ -75,6 +75,11 @@ var permModules = []biz.PermModule{
 		{Key: "view", Label: "查看 Banner"}, {Key: "add", Label: "添加 Banner"},
 		{Key: "edit", Label: "编辑 Banner"}, {Key: "delete", Label: "删除 Banner"},
 	}},
+	{Key: "agent", Title: "AI 智能助手", Items: []biz.PermItem{
+		{Key: "knowledge", Label: "知识库管理"},
+		{Key: "chat", Label: "AI 对话"},
+		{Key: "generate", Label: "AI 生成"},
+	}},
 }
 
 // ListRoles 获取所有角色

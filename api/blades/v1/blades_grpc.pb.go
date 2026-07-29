@@ -26,6 +26,7 @@ const (
 	Blades_UploadKnowledge_FullMethodName  = "/api.blades.v1.Blades/UploadKnowledge"
 	Blades_SearchKnowledge_FullMethodName  = "/api.blades.v1.Blades/SearchKnowledge"
 	Blades_DeleteKnowledge_FullMethodName  = "/api.blades.v1.Blades/DeleteKnowledge"
+	Blades_ListKnowledge_FullMethodName    = "/api.blades.v1.Blades/ListKnowledge"
 	Blades_GenerateText_FullMethodName     = "/api.blades.v1.Blades/GenerateText"
 )
 
@@ -51,6 +52,8 @@ type BladesClient interface {
 	SearchKnowledge(ctx context.Context, in *SearchKnowledgeRequest, opts ...grpc.CallOption) (*SearchKnowledgeReply, error)
 	// DeleteKnowledge 删除知识库文档
 	DeleteKnowledge(ctx context.Context, in *DeleteKnowledgeRequest, opts ...grpc.CallOption) (*DeleteKnowledgeReply, error)
+	// ListKnowledge 列出知识库文档
+	ListKnowledge(ctx context.Context, in *ListKnowledgeRequest, opts ...grpc.CallOption) (*ListKnowledgeReply, error)
 	// GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
 	GenerateText(ctx context.Context, in *GenerateTextRequest, opts ...grpc.CallOption) (*GenerateTextReply, error)
 }
@@ -145,6 +148,16 @@ func (c *bladesClient) DeleteKnowledge(ctx context.Context, in *DeleteKnowledgeR
 	return out, nil
 }
 
+func (c *bladesClient) ListKnowledge(ctx context.Context, in *ListKnowledgeRequest, opts ...grpc.CallOption) (*ListKnowledgeReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListKnowledgeReply)
+	err := c.cc.Invoke(ctx, Blades_ListKnowledge_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *bladesClient) GenerateText(ctx context.Context, in *GenerateTextRequest, opts ...grpc.CallOption) (*GenerateTextReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GenerateTextReply)
@@ -177,6 +190,8 @@ type BladesServer interface {
 	SearchKnowledge(context.Context, *SearchKnowledgeRequest) (*SearchKnowledgeReply, error)
 	// DeleteKnowledge 删除知识库文档
 	DeleteKnowledge(context.Context, *DeleteKnowledgeRequest) (*DeleteKnowledgeReply, error)
+	// ListKnowledge 列出知识库文档
+	ListKnowledge(context.Context, *ListKnowledgeRequest) (*ListKnowledgeReply, error)
 	// GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
 	GenerateText(context.Context, *GenerateTextRequest) (*GenerateTextReply, error)
 	mustEmbedUnimplementedBladesServer()
@@ -209,6 +224,9 @@ func (UnimplementedBladesServer) SearchKnowledge(context.Context, *SearchKnowled
 }
 func (UnimplementedBladesServer) DeleteKnowledge(context.Context, *DeleteKnowledgeRequest) (*DeleteKnowledgeReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteKnowledge not implemented")
+}
+func (UnimplementedBladesServer) ListKnowledge(context.Context, *ListKnowledgeRequest) (*ListKnowledgeReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListKnowledge not implemented")
 }
 func (UnimplementedBladesServer) GenerateText(context.Context, *GenerateTextRequest) (*GenerateTextReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateText not implemented")
@@ -342,6 +360,24 @@ func _Blades_DeleteKnowledge_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Blades_ListKnowledge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListKnowledgeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BladesServer).ListKnowledge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Blades_ListKnowledge_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BladesServer).ListKnowledge(ctx, req.(*ListKnowledgeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Blades_GenerateText_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GenerateTextRequest)
 	if err := dec(in); err != nil {
@@ -386,6 +422,10 @@ var Blades_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteKnowledge",
 			Handler:    _Blades_DeleteKnowledge_Handler,
+		},
+		{
+			MethodName: "ListKnowledge",
+			Handler:    _Blades_ListKnowledge_Handler,
 		},
 		{
 			MethodName: "GenerateText",

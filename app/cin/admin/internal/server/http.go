@@ -40,6 +40,8 @@ func NewHTTPServer(s *ts.HttpServer, adminService *service.AdminService, ac *con
 	adminv1.RegisterAgentHTTPServer(s.HttpServer, adminService)
 	// 注册 SSE 流式聊天路由（proto 不支持流式，手动注册）
 	registerAgentSSEServer(s.HttpServer, adminService, ac)
+	// 注册知识库文件上传路由（proto 不支持 multipart，手动注册）
+	registerKnowledgeUploadServer(s.HttpServer, adminService, ac)
 	return s.HttpServer
 }
 
@@ -149,4 +151,105 @@ func newJWTAuthMiddleware(ac *conf.Auth) middleware.Middleware {
 	}, jwtmiddleware.WithSigningMethod(jwtv5.SigningMethodHS256), jwtmiddleware.WithClaims(func() jwtv5.Claims {
 		return &mid.UserClaims{}
 	}))
+}
+
+// registerKnowledgeUploadServer 注册知识库文件上传路由（multipart form 解析，手动注册）
+func registerKnowledgeUploadServer(s *kratosHttp.Server, adminService *service.AdminService, ac *conf.Auth) {
+	authMw := []middleware.Middleware{newJWTAuthMiddleware(ac)}
+
+	// POST /admin/v1/agent/knowledge/upload 知识库文件上传
+	s.HandleFunc("/admin/v1/agent/knowledge/upload", withMiddlewares(authMw, func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		if r.Method != nethttp.MethodPost {
+			nethttp.Error(w, "Method not allowed", nethttp.StatusMethodNotAllowed)
+			return
+		}
+
+		// 限制上传大小（50MB）
+		r.Body = nethttp.MaxBytesReader(w, r.Body, 50<<20)
+
+		// 解析 multipart form
+		if err := r.ParseMultipartForm(32 << 20); err != nil {
+			nethttp.Error(w, "文件大小超出限制或解析失败", nethttp.StatusBadRequest)
+			return
+		}
+
+		// 获取上传文件
+		file, header, err := r.FormFile("file")
+		if err != nil {
+			nethttp.Error(w, "未找到上传文件", nethttp.StatusBadRequest)
+			return
+		}
+		defer file.Close()
+
+		// 读取文件内容
+		content, err := io.ReadAll(file)
+		if err != nil {
+			nethttp.Error(w, "读取文件内容失败", nethttp.StatusInternalServerError)
+			return
+		}
+
+		// 获取表单参数
+		source := r.FormValue("source")
+		if source == "" {
+			source = "admin"
+		}
+		title := r.FormValue("title")
+		if title == "" {
+			title = header.Filename
+		}
+		contentType := r.FormValue("content_type")
+		if contentType == "" {
+			contentType = detectContentType(header.Filename)
+		}
+
+		// 解析可选的 tags 参数（JSON 格式）
+		tags := make(map[string]string)
+		if tagsStr := r.FormValue("tags"); tagsStr != "" {
+			json.Unmarshal([]byte(tagsStr), &tags)
+		}
+
+		// 调用 service 层上传
+		docID, chunkCount, err := adminService.UploadKnowledgeFile(r.Context(), header.Filename, source, title, contentType, content, tags)
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(nethttp.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"code":    500,
+				"message": err.Error(),
+			})
+			return
+		}
+
+		// 返回成功响应
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code": 0,
+			"data": map[string]interface{}{
+				"doc_id":      docID,
+				"chunk_count": chunkCount,
+				"title":       title,
+			},
+		})
+	}))
+}
+
+// detectContentType 根据文件扩展名推断内容类型
+func detectContentType(filename string) string {
+	ext := strings.ToLower(filename)
+	switch {
+	case strings.HasSuffix(ext, ".pdf"):
+		return "pdf"
+	case strings.HasSuffix(ext, ".docx") || strings.HasSuffix(ext, ".doc"):
+		return "docx"
+	case strings.HasSuffix(ext, ".txt"):
+		return "txt"
+	case strings.HasSuffix(ext, ".md") || strings.HasSuffix(ext, ".markdown"):
+		return "markdown"
+	case strings.HasSuffix(ext, ".json"):
+		return "json"
+	case strings.HasSuffix(ext, ".html"):
+		return "html"
+	default:
+		return "unknown"
+	}
 }

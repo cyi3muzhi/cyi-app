@@ -103,7 +103,7 @@ type cacheEntry struct {
 	createdAt time.Time
 }
 
-const agentCacheTTL = 3 * time.Minute
+const agentCacheTTL = 15 * time.Minute
 
 // AgentFactory Agent 工厂，按 source+role 管理不同端的 Agent
 type AgentFactory struct {

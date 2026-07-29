@@ -31,7 +31,7 @@ func ProviderVectorStoreDimension(cfg *conf.Blades) int {
 	if cfg != nil && cfg.Embedding != nil && cfg.Embedding.Dimension > 0 {
 		return int(cfg.Embedding.Dimension)
 	}
-	return 768
+	return 1024
 }
 
 // NewRedisClient .

@@ -151,6 +151,27 @@ func (s *BladesService) DeleteKnowledge(ctx context.Context, req *pb.DeleteKnowl
 	return &pb.DeleteKnowledgeReply{Success: true}, nil
 }
 
+// ListKnowledge 列出知识库文档
+func (s *BladesService) ListKnowledge(ctx context.Context, req *pb.ListKnowledgeRequest) (*pb.ListKnowledgeReply, error) {
+	docs, err := s.knowledgeUC.ListDocuments(ctx, req.Source)
+	if err != nil {
+		s.log.Error("ListKnowledge failed: %v", err)
+		return nil, err
+	}
+
+	pbDocs := make([]*pb.KnowledgeDocInfo, 0, len(docs))
+	for _, d := range docs {
+		pbDocs = append(pbDocs, &pb.KnowledgeDocInfo{
+			DocId:      d.DocID,
+			Source:     d.Source,
+			Title:      d.Title,
+			ChunkCount: int32(d.ChunkCount),
+			Tags:       d.Tags,
+		})
+	}
+	return &pb.ListKnowledgeReply{Docs: pbDocs}, nil
+}
+
 // GenerateText 生成文本（不保存聊天历史）
 func (s *BladesService) GenerateText(ctx context.Context, req *pb.GenerateTextRequest) (*pb.GenerateTextReply, error) {
 	text, err := s.agentUC.GenerateText(ctx, req.Prompt)

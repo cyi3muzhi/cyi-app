@@ -152,6 +152,63 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.GenerateSummaryReply'
+    /admin/v1/agent/knowledge/delete:
+        post:
+            tags:
+                - Agent
+            description: 删除知识库文档
+            operationId: Agent_DeleteKnowledge
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.DeleteKnowledgeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.DeleteKnowledgeReply'
+    /admin/v1/agent/knowledge/list:
+        get:
+            tags:
+                - Agent
+            description: 列出知识库文档
+            operationId: Agent_ListKnowledge
+            parameters:
+                - name: source
+                  in: query
+                  description: 来源过滤（空则全部）
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ListKnowledgeReply'
+    /admin/v1/agent/knowledge/search:
+        post:
+            tags:
+                - Agent
+            description: 搜索知识库
+            operationId: Agent_SearchKnowledge
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.SearchKnowledgeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.SearchKnowledgeReply'
     /admin/v1/agent/suggest-questions:
         post:
             tags:
@@ -2045,6 +2102,45 @@ components:
                 lastLogin:
                     type: string
             description: 管理员信息
+        api.cin.admin.v1.AdminKnowledgeChunk:
+            type: object
+            properties:
+                docId:
+                    type: string
+                    description: 文档 ID
+                title:
+                    type: string
+                    description: 标题
+                content:
+                    type: string
+                    description: 匹配内容
+                score:
+                    type: number
+                    description: 匹配得分
+                    format: float
+            description: AdminKnowledgeChunk 知识库搜索结果片段
+        api.cin.admin.v1.AdminKnowledgeDocInfo:
+            type: object
+            properties:
+                docId:
+                    type: string
+                    description: 文档唯一标识
+                source:
+                    type: string
+                    description: 来源
+                title:
+                    type: string
+                    description: 文档标题
+                chunkCount:
+                    type: integer
+                    description: 分块数量
+                    format: int32
+                tags:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    description: 自定义标签
+            description: AdminKnowledgeDocInfo 文档信息
         api.cin.admin.v1.BannerCopyOption:
             type: object
             properties:
@@ -2479,6 +2575,23 @@ components:
             properties:
                 success:
                     type: boolean
+        api.cin.admin.v1.DeleteKnowledgeReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                    description: 是否成功
+            description: DeleteKnowledgeReply 删除知识库文档响应
+        api.cin.admin.v1.DeleteKnowledgeRequest:
+            type: object
+            properties:
+                docId:
+                    type: string
+                    description: 文档 ID
+                source:
+                    type: string
+                    description: 来源
+            description: DeleteKnowledgeRequest 删除知识库文档请求
         api.cin.admin.v1.DeleteProductReply:
             type: object
             properties:
@@ -2865,6 +2978,15 @@ components:
                 total:
                     type: integer
                     format: int32
+        api.cin.admin.v1.ListKnowledgeReply:
+            type: object
+            properties:
+                docs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.AdminKnowledgeDocInfo'
+                    description: 文档列表
+            description: ListKnowledgeReply 列出知识库文档响应
         api.cin.admin.v1.ListOrderReply:
             type: object
             properties:
@@ -3116,6 +3238,29 @@ components:
                 data:
                     type: string
                     format: bytes
+        api.cin.admin.v1.SearchKnowledgeReply:
+            type: object
+            properties:
+                chunks:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.AdminKnowledgeChunk'
+                    description: 匹配的文档片段
+            description: SearchKnowledgeReply 搜索知识库响应
+        api.cin.admin.v1.SearchKnowledgeRequest:
+            type: object
+            properties:
+                query:
+                    type: string
+                    description: 搜索关键词
+                source:
+                    type: string
+                    description: 来源过滤
+                topK:
+                    type: integer
+                    description: 返回数量上限
+                    format: int32
+            description: SearchKnowledgeRequest 搜索知识库请求
         api.cin.admin.v1.ShipOrderReply:
             type: object
             properties:

@@ -1050,6 +1050,464 @@ func (x *ClearChatHistoryReply) GetSuccess() bool {
 	return false
 }
 
+// ListKnowledgeRequest 列出知识库文档请求
+type ListKnowledgeRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 来源过滤（空则全部）
+	Source        string `protobuf:"bytes,1,opt,name=source,proto3" json:"source,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListKnowledgeRequest) Reset() {
+	*x = ListKnowledgeRequest{}
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListKnowledgeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListKnowledgeRequest) ProtoMessage() {}
+
+func (x *ListKnowledgeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListKnowledgeRequest.ProtoReflect.Descriptor instead.
+func (*ListKnowledgeRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_agent_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *ListKnowledgeRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+// AdminKnowledgeDocInfo 文档信息
+type AdminKnowledgeDocInfo struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 文档唯一标识
+	DocId string `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
+	// 来源
+	Source string `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	// 文档标题
+	Title string `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	// 分块数量
+	ChunkCount int32 `protobuf:"varint,4,opt,name=chunk_count,json=chunkCount,proto3" json:"chunk_count,omitempty"`
+	// 自定义标签
+	Tags          map[string]string `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminKnowledgeDocInfo) Reset() {
+	*x = AdminKnowledgeDocInfo{}
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminKnowledgeDocInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminKnowledgeDocInfo) ProtoMessage() {}
+
+func (x *AdminKnowledgeDocInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminKnowledgeDocInfo.ProtoReflect.Descriptor instead.
+func (*AdminKnowledgeDocInfo) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_agent_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *AdminKnowledgeDocInfo) GetDocId() string {
+	if x != nil {
+		return x.DocId
+	}
+	return ""
+}
+
+func (x *AdminKnowledgeDocInfo) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *AdminKnowledgeDocInfo) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *AdminKnowledgeDocInfo) GetChunkCount() int32 {
+	if x != nil {
+		return x.ChunkCount
+	}
+	return 0
+}
+
+func (x *AdminKnowledgeDocInfo) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+// ListKnowledgeReply 列出知识库文档响应
+type ListKnowledgeReply struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 文档列表
+	Docs          []*AdminKnowledgeDocInfo `protobuf:"bytes,1,rep,name=docs,proto3" json:"docs,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListKnowledgeReply) Reset() {
+	*x = ListKnowledgeReply{}
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListKnowledgeReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListKnowledgeReply) ProtoMessage() {}
+
+func (x *ListKnowledgeReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListKnowledgeReply.ProtoReflect.Descriptor instead.
+func (*ListKnowledgeReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_agent_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *ListKnowledgeReply) GetDocs() []*AdminKnowledgeDocInfo {
+	if x != nil {
+		return x.Docs
+	}
+	return nil
+}
+
+// DeleteKnowledgeRequest 删除知识库文档请求
+type DeleteKnowledgeRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 文档 ID
+	DocId string `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
+	// 来源
+	Source        string `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteKnowledgeRequest) Reset() {
+	*x = DeleteKnowledgeRequest{}
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteKnowledgeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteKnowledgeRequest) ProtoMessage() {}
+
+func (x *DeleteKnowledgeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteKnowledgeRequest.ProtoReflect.Descriptor instead.
+func (*DeleteKnowledgeRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_agent_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *DeleteKnowledgeRequest) GetDocId() string {
+	if x != nil {
+		return x.DocId
+	}
+	return ""
+}
+
+func (x *DeleteKnowledgeRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+// DeleteKnowledgeReply 删除知识库文档响应
+type DeleteKnowledgeReply struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteKnowledgeReply) Reset() {
+	*x = DeleteKnowledgeReply{}
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteKnowledgeReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteKnowledgeReply) ProtoMessage() {}
+
+func (x *DeleteKnowledgeReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteKnowledgeReply.ProtoReflect.Descriptor instead.
+func (*DeleteKnowledgeReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_agent_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *DeleteKnowledgeReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+// SearchKnowledgeRequest 搜索知识库请求
+type SearchKnowledgeRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 搜索关键词
+	Query string `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
+	// 来源过滤
+	Source string `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	// 返回数量上限
+	TopK          int32 `protobuf:"varint,3,opt,name=top_k,json=topK,proto3" json:"top_k,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchKnowledgeRequest) Reset() {
+	*x = SearchKnowledgeRequest{}
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchKnowledgeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchKnowledgeRequest) ProtoMessage() {}
+
+func (x *SearchKnowledgeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchKnowledgeRequest.ProtoReflect.Descriptor instead.
+func (*SearchKnowledgeRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_agent_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *SearchKnowledgeRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *SearchKnowledgeRequest) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *SearchKnowledgeRequest) GetTopK() int32 {
+	if x != nil {
+		return x.TopK
+	}
+	return 0
+}
+
+// AdminKnowledgeChunk 知识库搜索结果片段
+type AdminKnowledgeChunk struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 文档 ID
+	DocId string `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
+	// 标题
+	Title string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	// 匹配内容
+	Content string `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	// 匹配得分
+	Score         float32 `protobuf:"fixed32,4,opt,name=score,proto3" json:"score,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminKnowledgeChunk) Reset() {
+	*x = AdminKnowledgeChunk{}
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminKnowledgeChunk) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminKnowledgeChunk) ProtoMessage() {}
+
+func (x *AdminKnowledgeChunk) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminKnowledgeChunk.ProtoReflect.Descriptor instead.
+func (*AdminKnowledgeChunk) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_agent_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *AdminKnowledgeChunk) GetDocId() string {
+	if x != nil {
+		return x.DocId
+	}
+	return ""
+}
+
+func (x *AdminKnowledgeChunk) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *AdminKnowledgeChunk) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *AdminKnowledgeChunk) GetScore() float32 {
+	if x != nil {
+		return x.Score
+	}
+	return 0
+}
+
+// SearchKnowledgeReply 搜索知识库响应
+type SearchKnowledgeReply struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 匹配的文档片段
+	Chunks        []*AdminKnowledgeChunk `protobuf:"bytes,1,rep,name=chunks,proto3" json:"chunks,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchKnowledgeReply) Reset() {
+	*x = SearchKnowledgeReply{}
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchKnowledgeReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchKnowledgeReply) ProtoMessage() {}
+
+func (x *SearchKnowledgeReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_agent_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchKnowledgeReply.ProtoReflect.Descriptor instead.
+func (*SearchKnowledgeReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_agent_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *SearchKnowledgeReply) GetChunks() []*AdminKnowledgeChunk {
+	if x != nil {
+		return x.Chunks
+	}
+	return nil
+}
+
 var File_api_cin_admin_v1_agent_proto protoreflect.FileDescriptor
 
 const file_api_cin_admin_v1_agent_proto_rawDesc = "" +
@@ -1111,8 +1569,37 @@ const file_api_cin_admin_v1_agent_proto_rawDesc = "" +
 	"\ahistory\x18\x01 \x03(\v2 .api.cin.admin.v1.HistoryMessageR\ahistory\"\x19\n" +
 	"\x17ClearChatHistoryRequest\"1\n" +
 	"\x15ClearChatHistoryReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xa3\n" +
-	"\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\".\n" +
+	"\x14ListKnowledgeRequest\x12\x16\n" +
+	"\x06source\x18\x01 \x01(\tR\x06source\"\xfd\x01\n" +
+	"\x15AdminKnowledgeDocInfo\x12\x15\n" +
+	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12\x16\n" +
+	"\x06source\x18\x02 \x01(\tR\x06source\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12\x1f\n" +
+	"\vchunk_count\x18\x04 \x01(\x05R\n" +
+	"chunkCount\x12E\n" +
+	"\x04tags\x18\x05 \x03(\v21.api.cin.admin.v1.AdminKnowledgeDocInfo.TagsEntryR\x04tags\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"Q\n" +
+	"\x12ListKnowledgeReply\x12;\n" +
+	"\x04docs\x18\x01 \x03(\v2'.api.cin.admin.v1.AdminKnowledgeDocInfoR\x04docs\"G\n" +
+	"\x16DeleteKnowledgeRequest\x12\x15\n" +
+	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12\x16\n" +
+	"\x06source\x18\x02 \x01(\tR\x06source\"0\n" +
+	"\x14DeleteKnowledgeReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"[\n" +
+	"\x16SearchKnowledgeRequest\x12\x14\n" +
+	"\x05query\x18\x01 \x01(\tR\x05query\x12\x16\n" +
+	"\x06source\x18\x02 \x01(\tR\x06source\x12\x13\n" +
+	"\x05top_k\x18\x03 \x01(\x05R\x04topK\"r\n" +
+	"\x13AdminKnowledgeChunk\x12\x15\n" +
+	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x18\n" +
+	"\acontent\x18\x03 \x01(\tR\acontent\x12\x14\n" +
+	"\x05score\x18\x04 \x01(\x02R\x05score\"U\n" +
+	"\x14SearchKnowledgeReply\x12=\n" +
+	"\x06chunks\x18\x01 \x03(\v2%.api.cin.admin.v1.AdminKnowledgeChunkR\x06chunks2\xd1\r\n" +
 	"\x05Agent\x12c\n" +
 	"\x04Chat\x12\x1d.api.cin.admin.v1.ChatRequest\x1a\x1b.api.cin.admin.v1.ChatReply\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/admin/v1/agent/chat\x12\xa0\x01\n" +
 	"\x13GenerateDescription\x12,.api.cin.admin.v1.GenerateDescriptionRequest\x1a*.api.cin.admin.v1.GenerateDescriptionReply\"/\x82\xd3\xe4\x93\x02):\x01*\"$/admin/v1/agent/generate-description\x12\x98\x01\n" +
@@ -1122,7 +1609,10 @@ const file_api_cin_admin_v1_agent_proto_rawDesc = "" +
 	"\x0fGenerateSummary\x12(.api.cin.admin.v1.GenerateSummaryRequest\x1a&.api.cin.admin.v1.GenerateSummaryReply\"+\x82\xd3\xe4\x93\x02%:\x01*\" /admin/v1/agent/generate-summary\x12\x94\x01\n" +
 	"\x10SuggestQuestions\x12).api.cin.admin.v1.SuggestQuestionsRequest\x1a'.api.cin.admin.v1.SuggestQuestionsReply\",\x82\xd3\xe4\x93\x02&:\x01*\"!/admin/v1/agent/suggest-questions\x12\x86\x01\n" +
 	"\x0eGetChatHistory\x12'.api.cin.admin.v1.GetChatHistoryRequest\x1a%.api.cin.admin.v1.GetChatHistoryReply\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/admin/v1/agent/chat/history\x12\x8d\x01\n" +
-	"\x10ClearChatHistory\x12).api.cin.admin.v1.ClearChatHistoryRequest\x1a'.api.cin.admin.v1.ClearChatHistoryReply\"%\x82\xd3\xe4\x93\x02\x1f:\x01*\"\x1a/admin/v1/agent/chat/clearB6\n" +
+	"\x10ClearChatHistory\x12).api.cin.admin.v1.ClearChatHistoryRequest\x1a'.api.cin.admin.v1.ClearChatHistoryReply\"%\x82\xd3\xe4\x93\x02\x1f:\x01*\"\x1a/admin/v1/agent/chat/clear\x12\x85\x01\n" +
+	"\rListKnowledge\x12&.api.cin.admin.v1.ListKnowledgeRequest\x1a$.api.cin.admin.v1.ListKnowledgeReply\"&\x82\xd3\xe4\x93\x02 \x12\x1e/admin/v1/agent/knowledge/list\x12\x90\x01\n" +
+	"\x0fDeleteKnowledge\x12(.api.cin.admin.v1.DeleteKnowledgeRequest\x1a&.api.cin.admin.v1.DeleteKnowledgeReply\"+\x82\xd3\xe4\x93\x02%:\x01*\" /admin/v1/agent/knowledge/delete\x12\x90\x01\n" +
+	"\x0fSearchKnowledge\x12(.api.cin.admin.v1.SearchKnowledgeRequest\x1a&.api.cin.admin.v1.SearchKnowledgeReply\"+\x82\xd3\xe4\x93\x02%:\x01*\" /admin/v1/agent/knowledge/searchB6\n" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (
@@ -1137,7 +1627,7 @@ func file_api_cin_admin_v1_agent_proto_rawDescGZIP() []byte {
 	return file_api_cin_admin_v1_agent_proto_rawDescData
 }
 
-var file_api_cin_admin_v1_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_api_cin_admin_v1_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
 var file_api_cin_admin_v1_agent_proto_goTypes = []any{
 	(*ChatRequest)(nil),                // 0: api.cin.admin.v1.ChatRequest
 	(*ChatReply)(nil),                  // 1: api.cin.admin.v1.ChatReply
@@ -1160,34 +1650,52 @@ var file_api_cin_admin_v1_agent_proto_goTypes = []any{
 	(*GetChatHistoryReply)(nil),        // 18: api.cin.admin.v1.GetChatHistoryReply
 	(*ClearChatHistoryRequest)(nil),    // 19: api.cin.admin.v1.ClearChatHistoryRequest
 	(*ClearChatHistoryReply)(nil),      // 20: api.cin.admin.v1.ClearChatHistoryReply
+	(*ListKnowledgeRequest)(nil),       // 21: api.cin.admin.v1.ListKnowledgeRequest
+	(*AdminKnowledgeDocInfo)(nil),      // 22: api.cin.admin.v1.AdminKnowledgeDocInfo
+	(*ListKnowledgeReply)(nil),         // 23: api.cin.admin.v1.ListKnowledgeReply
+	(*DeleteKnowledgeRequest)(nil),     // 24: api.cin.admin.v1.DeleteKnowledgeRequest
+	(*DeleteKnowledgeReply)(nil),       // 25: api.cin.admin.v1.DeleteKnowledgeReply
+	(*SearchKnowledgeRequest)(nil),     // 26: api.cin.admin.v1.SearchKnowledgeRequest
+	(*AdminKnowledgeChunk)(nil),        // 27: api.cin.admin.v1.AdminKnowledgeChunk
+	(*SearchKnowledgeReply)(nil),       // 28: api.cin.admin.v1.SearchKnowledgeReply
+	nil,                                // 29: api.cin.admin.v1.AdminKnowledgeDocInfo.TagsEntry
 }
 var file_api_cin_admin_v1_agent_proto_depIdxs = []int32{
 	7,  // 0: api.cin.admin.v1.GenerateBannerCopyReply.options:type_name -> api.cin.admin.v1.BannerCopyOption
 	14, // 1: api.cin.admin.v1.SuggestQuestionsReply.questions:type_name -> api.cin.admin.v1.SuggestQuestion
 	17, // 2: api.cin.admin.v1.GetChatHistoryReply.history:type_name -> api.cin.admin.v1.HistoryMessage
-	0,  // 3: api.cin.admin.v1.Agent.Chat:input_type -> api.cin.admin.v1.ChatRequest
-	2,  // 4: api.cin.admin.v1.Agent.GenerateDescription:input_type -> api.cin.admin.v1.GenerateDescriptionRequest
-	4,  // 5: api.cin.admin.v1.Agent.ExpandDescription:input_type -> api.cin.admin.v1.ExpandDescriptionRequest
-	6,  // 6: api.cin.admin.v1.Agent.GenerateBannerCopy:input_type -> api.cin.admin.v1.GenerateBannerCopyRequest
-	9,  // 7: api.cin.admin.v1.Agent.GenerateCategorySEO:input_type -> api.cin.admin.v1.GenerateCategorySEORequest
-	11, // 8: api.cin.admin.v1.Agent.GenerateSummary:input_type -> api.cin.admin.v1.GenerateSummaryRequest
-	13, // 9: api.cin.admin.v1.Agent.SuggestQuestions:input_type -> api.cin.admin.v1.SuggestQuestionsRequest
-	16, // 10: api.cin.admin.v1.Agent.GetChatHistory:input_type -> api.cin.admin.v1.GetChatHistoryRequest
-	19, // 11: api.cin.admin.v1.Agent.ClearChatHistory:input_type -> api.cin.admin.v1.ClearChatHistoryRequest
-	1,  // 12: api.cin.admin.v1.Agent.Chat:output_type -> api.cin.admin.v1.ChatReply
-	3,  // 13: api.cin.admin.v1.Agent.GenerateDescription:output_type -> api.cin.admin.v1.GenerateDescriptionReply
-	5,  // 14: api.cin.admin.v1.Agent.ExpandDescription:output_type -> api.cin.admin.v1.ExpandDescriptionReply
-	8,  // 15: api.cin.admin.v1.Agent.GenerateBannerCopy:output_type -> api.cin.admin.v1.GenerateBannerCopyReply
-	10, // 16: api.cin.admin.v1.Agent.GenerateCategorySEO:output_type -> api.cin.admin.v1.GenerateCategorySEOReply
-	12, // 17: api.cin.admin.v1.Agent.GenerateSummary:output_type -> api.cin.admin.v1.GenerateSummaryReply
-	15, // 18: api.cin.admin.v1.Agent.SuggestQuestions:output_type -> api.cin.admin.v1.SuggestQuestionsReply
-	18, // 19: api.cin.admin.v1.Agent.GetChatHistory:output_type -> api.cin.admin.v1.GetChatHistoryReply
-	20, // 20: api.cin.admin.v1.Agent.ClearChatHistory:output_type -> api.cin.admin.v1.ClearChatHistoryReply
-	12, // [12:21] is the sub-list for method output_type
-	3,  // [3:12] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	29, // 3: api.cin.admin.v1.AdminKnowledgeDocInfo.tags:type_name -> api.cin.admin.v1.AdminKnowledgeDocInfo.TagsEntry
+	22, // 4: api.cin.admin.v1.ListKnowledgeReply.docs:type_name -> api.cin.admin.v1.AdminKnowledgeDocInfo
+	27, // 5: api.cin.admin.v1.SearchKnowledgeReply.chunks:type_name -> api.cin.admin.v1.AdminKnowledgeChunk
+	0,  // 6: api.cin.admin.v1.Agent.Chat:input_type -> api.cin.admin.v1.ChatRequest
+	2,  // 7: api.cin.admin.v1.Agent.GenerateDescription:input_type -> api.cin.admin.v1.GenerateDescriptionRequest
+	4,  // 8: api.cin.admin.v1.Agent.ExpandDescription:input_type -> api.cin.admin.v1.ExpandDescriptionRequest
+	6,  // 9: api.cin.admin.v1.Agent.GenerateBannerCopy:input_type -> api.cin.admin.v1.GenerateBannerCopyRequest
+	9,  // 10: api.cin.admin.v1.Agent.GenerateCategorySEO:input_type -> api.cin.admin.v1.GenerateCategorySEORequest
+	11, // 11: api.cin.admin.v1.Agent.GenerateSummary:input_type -> api.cin.admin.v1.GenerateSummaryRequest
+	13, // 12: api.cin.admin.v1.Agent.SuggestQuestions:input_type -> api.cin.admin.v1.SuggestQuestionsRequest
+	16, // 13: api.cin.admin.v1.Agent.GetChatHistory:input_type -> api.cin.admin.v1.GetChatHistoryRequest
+	19, // 14: api.cin.admin.v1.Agent.ClearChatHistory:input_type -> api.cin.admin.v1.ClearChatHistoryRequest
+	21, // 15: api.cin.admin.v1.Agent.ListKnowledge:input_type -> api.cin.admin.v1.ListKnowledgeRequest
+	24, // 16: api.cin.admin.v1.Agent.DeleteKnowledge:input_type -> api.cin.admin.v1.DeleteKnowledgeRequest
+	26, // 17: api.cin.admin.v1.Agent.SearchKnowledge:input_type -> api.cin.admin.v1.SearchKnowledgeRequest
+	1,  // 18: api.cin.admin.v1.Agent.Chat:output_type -> api.cin.admin.v1.ChatReply
+	3,  // 19: api.cin.admin.v1.Agent.GenerateDescription:output_type -> api.cin.admin.v1.GenerateDescriptionReply
+	5,  // 20: api.cin.admin.v1.Agent.ExpandDescription:output_type -> api.cin.admin.v1.ExpandDescriptionReply
+	8,  // 21: api.cin.admin.v1.Agent.GenerateBannerCopy:output_type -> api.cin.admin.v1.GenerateBannerCopyReply
+	10, // 22: api.cin.admin.v1.Agent.GenerateCategorySEO:output_type -> api.cin.admin.v1.GenerateCategorySEOReply
+	12, // 23: api.cin.admin.v1.Agent.GenerateSummary:output_type -> api.cin.admin.v1.GenerateSummaryReply
+	15, // 24: api.cin.admin.v1.Agent.SuggestQuestions:output_type -> api.cin.admin.v1.SuggestQuestionsReply
+	18, // 25: api.cin.admin.v1.Agent.GetChatHistory:output_type -> api.cin.admin.v1.GetChatHistoryReply
+	20, // 26: api.cin.admin.v1.Agent.ClearChatHistory:output_type -> api.cin.admin.v1.ClearChatHistoryReply
+	23, // 27: api.cin.admin.v1.Agent.ListKnowledge:output_type -> api.cin.admin.v1.ListKnowledgeReply
+	25, // 28: api.cin.admin.v1.Agent.DeleteKnowledge:output_type -> api.cin.admin.v1.DeleteKnowledgeReply
+	28, // 29: api.cin.admin.v1.Agent.SearchKnowledge:output_type -> api.cin.admin.v1.SearchKnowledgeReply
+	18, // [18:30] is the sub-list for method output_type
+	6,  // [6:18] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_api_cin_admin_v1_agent_proto_init() }
@@ -1201,7 +1709,7 @@ func file_api_cin_admin_v1_agent_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_agent_proto_rawDesc), len(file_api_cin_admin_v1_agent_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   21,
+			NumMessages:   30,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

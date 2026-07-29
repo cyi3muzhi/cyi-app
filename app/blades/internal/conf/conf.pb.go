@@ -531,8 +531,10 @@ func (x *Blades) GetKnowledge() *KnowledgeConfig {
 // Embedding 配置
 type EmbeddingConfig struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Model         string                 `protobuf:"bytes,1,opt,name=model,proto3" json:"model,omitempty"`          // 模型名称，默认 deepseek-embedding
-	Dimension     int32                  `protobuf:"varint,2,opt,name=dimension,proto3" json:"dimension,omitempty"` // 向量维度，默认 768
+	Model         string                 `protobuf:"bytes,1,opt,name=model,proto3" json:"model,omitempty"`                                // 模型名称，默认 BAAI/bge-large-zh-v1.5
+	Dimension     int32                  `protobuf:"varint,2,opt,name=dimension,proto3" json:"dimension,omitempty"`                       // 向量维度，默认 1024
+	ApiKey        string                 `protobuf:"bytes,3,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`                // Embedding 专用 API Key（为空则使用 blades.api_key）
+	ApiEndpoint   string                 `protobuf:"bytes,4,opt,name=api_endpoint,json=apiEndpoint,proto3" json:"api_endpoint,omitempty"` // Embedding 专用 API 地址（为空则使用 https://api.siliconflow.cn/v1）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -579,6 +581,20 @@ func (x *EmbeddingConfig) GetDimension() int32 {
 		return x.Dimension
 	}
 	return 0
+}
+
+func (x *EmbeddingConfig) GetApiKey() string {
+	if x != nil {
+		return x.ApiKey
+	}
+	return ""
+}
+
+func (x *EmbeddingConfig) GetApiEndpoint() string {
+	if x != nil {
+		return x.ApiEndpoint
+	}
+	return ""
 }
 
 // RAG 配置
@@ -1053,10 +1069,12 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\vtemperature\x18\x04 \x01(\x02R\vtemperature\x129\n" +
 	"\tembedding\x18\x05 \x01(\v2\x1b.kratos.api.EmbeddingConfigR\tembedding\x12'\n" +
 	"\x03rag\x18\x06 \x01(\v2\x15.kratos.api.RAGConfigR\x03rag\x129\n" +
-	"\tknowledge\x18\a \x01(\v2\x1b.kratos.api.KnowledgeConfigR\tknowledge\"E\n" +
+	"\tknowledge\x18\a \x01(\v2\x1b.kratos.api.KnowledgeConfigR\tknowledge\"\x81\x01\n" +
 	"\x0fEmbeddingConfig\x12\x14\n" +
 	"\x05model\x18\x01 \x01(\tR\x05model\x12\x1c\n" +
-	"\tdimension\x18\x02 \x01(\x05R\tdimension\"\x8d\x01\n" +
+	"\tdimension\x18\x02 \x01(\x05R\tdimension\x12\x17\n" +
+	"\aapi_key\x18\x03 \x01(\tR\x06apiKey\x12!\n" +
+	"\fapi_endpoint\x18\x04 \x01(\tR\vapiEndpoint\"\x8d\x01\n" +
 	"\tRAGConfig\x12\x13\n" +
 	"\x05top_k\x18\x01 \x01(\x05R\x04topK\x12\x1d\n" +
 	"\n" +

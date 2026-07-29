@@ -29,6 +29,12 @@ const (
 	roleContextKey   contextKey = "role"
 )
 
+// rateEntry 速率限制条目
+type rateEntry struct {
+	mu       sync.Mutex
+	lastTime time.Time
+}
+
 // AgentUseCase 智能体用例（组合 AgentFactory + 会话管理）
 type AgentUseCase struct {
 	factory      *AgentFactory
@@ -36,6 +42,8 @@ type AgentUseCase struct {
 	sessionStore *pkgblades.SessionStore // 公共会话存储
 	localStor    sync.Map                // 偏好存储（Redis 不可用时 fallback）
 	log          *log.Helper
+	sessionMu    sync.Map // 每用户会话互斥锁，key 为 source:userID
+	rateLimit    sync.Map // 速率限制，key 为 source:userID
 }
 
 // NewAgentUseCase 创建 AgentUseCase
@@ -81,7 +89,9 @@ func (uc *AgentUseCase) loadPreferences(ctx context.Context, source string, user
 	if uc.rdb != nil {
 		data, err := uc.rdb.Get(ctx, key).Bytes()
 		if err == nil {
-			json.Unmarshal(data, &prefs)
+			if e := json.Unmarshal(data, &prefs); e != nil {
+				uc.log.Warnf("unmarshal preference failed: %v", e)
+			}
 		}
 	} else if val, ok := uc.localStor.Load(key); ok {
 		prefs = val.(map[string]string)
@@ -106,7 +116,9 @@ func (uc *AgentUseCase) savePreference(ctx context.Context, source string, userI
 	if uc.rdb != nil {
 		data, err := uc.rdb.Get(ctx, key).Bytes()
 		if err == nil {
-			json.Unmarshal(data, &prefs)
+			if e := json.Unmarshal(data, &prefs); e != nil {
+				uc.log.Warnf("unmarshal preference failed: %v", e)
+			}
 		}
 	} else if val, ok := uc.localStor.Load(key); ok {
 		prefs = val.(map[string]string)
@@ -130,8 +142,27 @@ func sessionKey(source string, userID int64) string {
 	return source + ":" + strconv.FormatInt(userID, 10)
 }
 
+// checkRateLimit 检查用户请求是否超过速率限制（每秒最多 10 次）
+func (uc *AgentUseCase) checkRateLimit(userID int64, source string) error {
+	key := fmt.Sprintf("%s:%d", source, userID)
+	val, _ := uc.rateLimit.LoadOrStore(key, &rateEntry{})
+	entry := val.(*rateEntry)
+	entry.mu.Lock()
+	defer entry.mu.Unlock()
+	now := time.Now()
+	if now.Sub(entry.lastTime) < time.Second/10 {
+		return fmt.Errorf("rate limit exceeded")
+	}
+	entry.lastTime = now
+	return nil
+}
+
 // Chat 非流式聊天
 func (uc *AgentUseCase) Chat(ctx context.Context, userID int64, source, role, message string, enableRAG bool) (string, error) {
+	if err := uc.checkRateLimit(userID, source); err != nil {
+		return "", err
+	}
+
 	inst, err := uc.factory.GetOrCreate(ctx, source, role)
 	if err != nil {
 		return "", fmt.Errorf("get agent failed: %w", err)
@@ -150,21 +181,33 @@ func (uc *AgentUseCase) Chat(ctx context.Context, userID int64, source, role, me
 	}
 
 	// 将 userID/source/role 放入 context，供工具函数使用
-	ctx = context.WithValue(ctx, userIDContextKey, userID)
-	ctx = context.WithValue(ctx, sourceContextKey, source)
-	ctx = context.WithValue(ctx, roleContextKey, role)
+	ctx = WithUserID(ctx, userID)
+	ctx = WithSource(ctx, source)
+	ctx = WithRole(ctx, role)
 
 	response, err := inst.Chat(ctx, message, enableRAG, historyMessages, instruction)
 	if err != nil {
 		return "", err
 	}
 
+	// 加锁保护并发会话写入
+	muKey := key
+	mu := &sync.Mutex{}
+	if actual, loaded := uc.sessionMu.LoadOrStore(muKey, mu); loaded {
+		mu = actual.(*sync.Mutex)
+	}
+	mu.Lock()
 	uc.sessionStore.SaveHistory(ctx, key, message, response)
+	mu.Unlock()
 	return response, nil
 }
 
 // ChatStream 流式聊天
 func (uc *AgentUseCase) ChatStream(ctx context.Context, userID int64, source, role, message string, enableRAG bool, chunkCb func(string, bool)) error {
+	if err := uc.checkRateLimit(userID, source); err != nil {
+		return err
+	}
+
 	inst, err := uc.factory.GetOrCreate(ctx, source, role)
 	if err != nil {
 		return fmt.Errorf("get agent failed: %w", err)
@@ -184,9 +227,9 @@ func (uc *AgentUseCase) ChatStream(ctx context.Context, userID int64, source, ro
 	}
 
 	// 将 userID/source/role 放入 context，供工具函数使用
-	ctx = context.WithValue(ctx, userIDContextKey, userID)
-	ctx = context.WithValue(ctx, sourceContextKey, source)
-	ctx = context.WithValue(ctx, roleContextKey, role)
+	ctx = WithUserID(ctx, userID)
+	ctx = WithSource(ctx, source)
+	ctx = WithRole(ctx, role)
 
 	var fullResponse string
 	err = inst.ChatStream(ctx, message, enableRAG, historyMessages, instruction, func(chunk string, done bool) {
@@ -194,11 +237,18 @@ func (uc *AgentUseCase) ChatStream(ctx context.Context, userID int64, source, ro
 		chunkCb(chunk, done)
 	})
 	if err != nil {
-		chunkCb("", true)
 		return err
 	}
 
+	// 加锁保护并发会话写入
+	muKey := key
+	mu := &sync.Mutex{}
+	if actual, loaded := uc.sessionMu.LoadOrStore(muKey, mu); loaded {
+		mu = actual.(*sync.Mutex)
+	}
+	mu.Lock()
 	uc.sessionStore.SaveHistory(ctx, key, message, fullResponse)
+	mu.Unlock()
 	return nil
 }
 
@@ -210,7 +260,16 @@ func (uc *AgentUseCase) ClearHistory(ctx context.Context, userID int64, source s
 
 // GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
 func (uc *AgentUseCase) GenerateText(ctx context.Context, prompt string) (string, error) {
-	inst, err := uc.factory.GetOrCreate(ctx, "admin", "super_admin")
+	// 优先从 context 提取角色和来源，如果拿不到则使用默认值
+	role := GetRole(ctx)
+	source := GetSource(ctx)
+	if role == "" {
+		role = "super_admin"
+	}
+	if source == "" {
+		source = "admin"
+	}
+	inst, err := uc.factory.GetOrCreate(ctx, source, role)
 	if err != nil {
 		return "", fmt.Errorf("get agent failed: %w", err)
 	}

@@ -13,12 +13,13 @@ import (
 	"cyi-app/app/blades/internal/server"
 	"cyi-app/app/blades/internal/service"
 	"cyi-app/pkg/kratos/server/middleware"
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"go.opentelemetry.io/otel/sdk/trace"
 	trace2 "go.opentelemetry.io/otel/trace"
+)
 
+import (
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -34,14 +35,14 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	embeddingClient := biz.ProviderEmbeddingClient(bladesConfig)
 	int2 := data.ProviderVectorStoreDimension(blades)
 	vectorStore := data.NewVectorStore(universalClient, int2)
-	ragConfig := biz.ProviderRAGConfig(bladesConfig)
-	ragEngine := biz.NewRAGEngine(embeddingClient, vectorStore, ragConfig)
+	ragConfigBiz := biz.ProviderRAGConfig(bladesConfig)
+	ragEngine := biz.NewRAGEngine(embeddingClient, vectorStore, ragConfigBiz)
 	discovery := server.NewDiscovery(registry)
 	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	stockClient := data.NewStockServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
-	adminRoleClient := data.NewAdminRoleClient(discovery, confServer, auth, traceTracerProvider, meter)
 	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	adminRoleClient := data.NewAdminRoleClient(discovery, confServer, auth, traceTracerProvider, meter)
 	toolRegistry := biz.InitToolRegistry(productClient, stockClient, userClient, orderClient, ragEngine, universalClient, adminRoleClient)
 	agentFactory := biz.NewAgentFactory(bladesConfig, ragEngine, toolRegistry, adminRoleClient, logger)
 	agentUseCase := biz.NewAgentUseCase(universalClient, agentFactory, logger)

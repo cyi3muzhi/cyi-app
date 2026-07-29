@@ -25,6 +25,8 @@ service Blades {
   rpc SearchKnowledge (SearchKnowledgeRequest) returns (SearchKnowledgeReply);
   // DeleteKnowledge 删除知识库文档
   rpc DeleteKnowledge (DeleteKnowledgeRequest) returns (DeleteKnowledgeReply);
+  // ListKnowledge 列出知识库文档
+  rpc ListKnowledge (ListKnowledgeRequest) returns (ListKnowledgeReply);
   // GenerateText 生成文本（不保存聊天历史），用于 AI 辅助编写等场景
   rpc GenerateText (GenerateTextRequest) returns (GenerateTextReply);
 }
@@ -198,4 +200,30 @@ message DeleteKnowledgeRequest {
 message DeleteKnowledgeReply {
   // 是否删除成功
   bool success = 1;
+}
+
+// ListKnowledgeRequest 列出知识库文档请求
+message ListKnowledgeRequest {
+  // 来源过滤（空则全部）
+  string source = 1;
+}
+
+// KnowledgeDocInfo 文档信息
+message KnowledgeDocInfo {
+  // 文档唯一标识
+  string doc_id = 1;
+  // 来源
+  string source = 2;
+  // 文档标题
+  string title = 3;
+  // 分块数量
+  int32 chunk_count = 4;
+  // 自定义标签
+  map<string, string> tags = 5;
+}
+
+// ListKnowledgeReply 列出知识库文档响应
+message ListKnowledgeReply {
+  // 文档列表
+  repeated KnowledgeDocInfo docs = 1;
 }

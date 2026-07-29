@@ -21,8 +21,8 @@ func RegisterPreferenceTool(r *ToolRegistry, rdb redis.UniversalClient) {
 			}
 
 			// 从 context 获取用户信息
-			userID, _ := ctx.Value(userIDContextKey).(int64)
-			source, _ := ctx.Value(sourceContextKey).(string)
+			userID := GetUserID(ctx)
+			source := GetSource(ctx)
 			if userID == 0 || source == "" {
 				return "", fmt.Errorf("无法获取用户身份信息")
 			}
