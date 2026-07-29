@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
+	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/blades/internal/conf"
 	pkgblades "cyi-app/pkg/blades"
 
@@ -12,6 +14,21 @@ import (
 	"github.com/go-kratos/blades/tools"
 	"github.com/go-kratos/kratos/v2/log"
 )
+
+// toolPerm 工具所需的模块权限
+type toolPerm struct {
+	module string
+	action string
+}
+
+// toolModulePerms 工具名 → 所需最小模块权限（模块 key 与 user 服务 permModules 一致）
+var toolModulePerms = map[string]toolPerm{
+	"search_products":    {"products", "view"},
+	"get_product_detail": {"products", "view"},
+	"query_orders":       {"orders", "view"},
+	"query_order_detail": {"orders", "view"},
+	"query_users":        {"users", "view"},
+}
 
 // AgentInstance 一个 Agent 实例（对应一个端）
 type AgentInstance struct {
@@ -24,7 +41,7 @@ type AgentInstance struct {
 }
 
 // Chat 发送消息（非流式）
-func (inst *AgentInstance) Chat(ctx context.Context, message string, enableRAG bool) (string, error) {
+func (inst *AgentInstance) Chat(ctx context.Context, message string, enableRAG bool, history []*blades.Message, instruction *blades.Message) (string, error) {
 	if enableRAG && inst.rag != nil && inst.rag.ShouldRetrieve(message) {
 		contextStr, err := inst.rag.Retrieve(ctx, inst.knowledgeTag, message, 0)
 		if err == nil && contextStr != "" {
@@ -32,7 +49,9 @@ func (inst *AgentInstance) Chat(ctx context.Context, message string, enableRAG b
 		}
 	}
 	invocation := &blades.Invocation{
-		Message: blades.UserMessage(message),
+		Message:     blades.UserMessage(message),
+		History:     history,
+		Instruction: instruction,
 	}
 	stream := inst.agent.Run(ctx, invocation)
 	var response string
@@ -48,7 +67,7 @@ func (inst *AgentInstance) Chat(ctx context.Context, message string, enableRAG b
 }
 
 // ChatStream 流式聊天
-func (inst *AgentInstance) ChatStream(ctx context.Context, message string, enableRAG bool, chunkCb func(string, bool)) error {
+func (inst *AgentInstance) ChatStream(ctx context.Context, message string, enableRAG bool, history []*blades.Message, instruction *blades.Message, chunkCb func(string, bool)) error {
 	if enableRAG && inst.rag != nil && inst.rag.ShouldRetrieve(message) {
 		contextStr, err := inst.rag.Retrieve(ctx, inst.knowledgeTag, message, 0)
 		if err == nil && contextStr != "" {
@@ -56,8 +75,10 @@ func (inst *AgentInstance) ChatStream(ctx context.Context, message string, enabl
 		}
 	}
 	invocation := &blades.Invocation{
-		Message:    blades.UserMessage(message),
-		Streamable: true,
+		Message:     blades.UserMessage(message),
+		Streamable:  true,
+		History:     history,
+		Instruction: instruction,
 	}
 	stream := inst.agent.Run(ctx, invocation)
 	var fullResponse string
@@ -76,52 +97,64 @@ func (inst *AgentInstance) ChatStream(ctx context.Context, message string, enabl
 	return nil
 }
 
-// AgentFactory Agent 工厂，按 source 管理不同端的 Agent
+// cacheEntry 带 TTL 的缓存条目
+type cacheEntry struct {
+	inst      *AgentInstance
+	createdAt time.Time
+}
+
+const agentCacheTTL = 3 * time.Minute
+
+// AgentFactory Agent 工厂，按 source+role 管理不同端的 Agent
 type AgentFactory struct {
-	mu     sync.RWMutex
-	cache  map[string]*AgentInstance
-	cfg    *conf.Blades
-	rag    *RAGEngine
-	reg    *ToolRegistry
-	logger log.Logger
+	mu         sync.RWMutex
+	cache      map[string]*cacheEntry
+	cfg        *conf.Blades
+	rag        *RAGEngine
+	reg        *ToolRegistry
+	roleClient userRpc.AdminRoleClient
+	logger     log.Logger
 }
 
 // NewAgentFactory 创建 Agent 工厂
-func NewAgentFactory(cfg *conf.Blades, rag *RAGEngine, reg *ToolRegistry, logger log.Logger) *AgentFactory {
+func NewAgentFactory(cfg *conf.Blades, rag *RAGEngine, reg *ToolRegistry, rc userRpc.AdminRoleClient, logger log.Logger) *AgentFactory {
 	return &AgentFactory{
-		cache:  make(map[string]*AgentInstance),
-		cfg:    cfg,
-		rag:    rag,
-		reg:    reg,
-		logger: logger,
+		cache:      make(map[string]*cacheEntry),
+		cfg:        cfg,
+		rag:        rag,
+		reg:        reg,
+		roleClient: rc,
+		logger:     logger,
 	}
 }
 
-// GetOrCreate 获取或创建 Agent 实例
-func (f *AgentFactory) GetOrCreate(ctx context.Context, source string) (*AgentInstance, error) {
+// GetOrCreate 获取或创建 Agent 实例（按 source+role 缓存，3分钟 TTL）
+func (f *AgentFactory) GetOrCreate(ctx context.Context, source, role string) (*AgentInstance, error) {
+	cacheKey := source + ":" + role
 	f.mu.RLock()
-	inst, ok := f.cache[source]
+	entry, ok := f.cache[cacheKey]
 	f.mu.RUnlock()
-	if ok {
-		return inst, nil
+	if ok && time.Since(entry.createdAt) < agentCacheTTL {
+		return entry.inst, nil
 	}
 
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	if inst, ok := f.cache[source]; ok {
-		return inst, nil
+	// 双检：可能刚被其他协程更新
+	if entry, ok := f.cache[cacheKey]; ok && time.Since(entry.createdAt) < agentCacheTTL {
+		return entry.inst, nil
 	}
 
-	inst, err := f.createAgent(ctx, source)
+	inst, err := f.createAgent(ctx, source, role)
 	if err != nil {
 		return nil, err
 	}
-	f.cache[source] = inst
+	f.cache[cacheKey] = &cacheEntry{inst: inst, createdAt: time.Now()}
 	return inst, nil
 }
 
-func (f *AgentFactory) createAgent(ctx context.Context, source string) (*AgentInstance, error) {
+func (f *AgentFactory) createAgent(ctx context.Context, source, role string) (*AgentInstance, error) {
 	prompt, knowledgeTag := f.getSourceConfig(source)
 
 	opts := []blades.AgentOption{
@@ -133,10 +166,15 @@ func (f *AgentFactory) createAgent(ctx context.Context, source string) (*AgentIn
 		)),
 	}
 
-	// 从注册中心获取工具列表
+	// 从注册中心获取工具列表，按角色过滤
 	var agentTools []tools.Tool
-	for _, item := range f.reg.GetTools() {
-		if t, ok := item.(tools.Tool); ok {
+	allowedTools := f.getAllowedTools(ctx, source, role)
+	allowed := make(map[string]bool, len(allowedTools))
+	for _, name := range allowedTools {
+		allowed[name] = true
+	}
+	for _, t := range f.reg.GetTools() {
+		if allowed[t.Name()] {
 			agentTools = append(agentTools, t)
 		}
 	}
@@ -144,9 +182,15 @@ func (f *AgentFactory) createAgent(ctx context.Context, source string) (*AgentIn
 		opts = append(opts, blades.WithTools(agentTools...))
 	}
 
+	// 添加中间件
+	opts = append(opts, blades.WithMiddleware(
+		AgentRecovery(f.logger),
+		AgentLogging(f.logger),
+	))
+
 	agent, err := blades.NewAgent(f.cfg.Model, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("create agent for %s failed: %w", source, err)
+		return nil, fmt.Errorf("create agent for %s:%s failed: %w", source, role, err)
 	}
 
 	return &AgentInstance{
@@ -159,15 +203,43 @@ func (f *AgentFactory) createAgent(ctx context.Context, source string) (*AgentIn
 	}, nil
 }
 
-func (f *AgentFactory) getToolNamesForSource(source string) []string {
-	switch source {
-	case "admin":
-		return []string{"query_orders", "query_order_detail", "search_products", "get_product_detail", "query_users", "search_knowledge"}
-	case "user":
-		return []string{"search_products", "get_product_detail", "search_knowledge"}
-	default:
-		return []string{"search_knowledge"}
+// getAllowedTools 调 user 服务查角色的模块权限，返回该角色可用的工具列表
+func (f *AgentFactory) getAllowedTools(ctx context.Context, source, role string) []string {
+	// 通用工具（所有角色都有）
+	common := []string{"search_knowledge", "save_user_preference", "query_user_permissions", "check_user_permission"}
+
+	if source != "admin" {
+		return common
 	}
+
+	if f.roleClient == nil {
+		return common
+	}
+
+	// 查角色的模块权限
+	resp, err := f.roleClient.GetRolePermissions(ctx, &userRpc.GetRolePermissionsRequest{Role: role})
+	if err != nil || resp == nil {
+		return common
+	}
+
+	// 构建模块→操作映射
+	modPerms := make(map[string]map[string]bool)
+	for mod, pv := range resp.Permissions {
+		if pv != nil {
+			modPerms[mod] = pv.Values
+		}
+	}
+
+	// 检查每个工具有无对应模块权限
+	var tools_ []string
+	for name, perm := range toolModulePerms {
+		if actions, ok := modPerms[perm.module]; ok {
+			if actions[perm.action] {
+				tools_ = append(tools_, name)
+			}
+		}
+	}
+	return append(common, tools_...)
 }
 
 func (f *AgentFactory) getSourceConfig(source string) (prompt, knowledgeTag string) {
@@ -177,11 +249,17 @@ func (f *AgentFactory) getSourceConfig(source string) (prompt, knowledgeTag stri
 
 当用户询问数据（如"有多少商品"、"昨天订单多少"、"总用户数"）时，你必须使用工具来获取实时数据，不要编造答案。
 
+用户可能会告诉你他们的偏好（如昵称、称呼方式等），当用户设置偏好时，请使用 save_user_preference 工具保存。
+
+当用户询问权限相关问题（如"我有什么权限"、"我能做什么"、"我可以创建商品吗"）时，使用 query_user_permissions 或 check_user_permission 工具查询。
+
 规则：
 1. 用户问数据 → 立即使用对应的工具查询
 2. 工具返回结果后，用简洁的语言告诉用户
 3. 如果工具查询失败，请告知用户暂时无法查询
-4. 请用友好的语气简洁回答问题`, "admin"
+4. 当用户告诉你关于他们自己的信息（如昵称、称呼）时，使用 save_user_preference 工具保存
+5. 用户问权限 → 使用权限查询工具
+6. 请用友好的语气简洁回答问题`, "admin"
 	case "user":
 		return `你是商城购物助手，帮助用户解答购物问题。
 你可以帮用户搜索商品、查询商品详情、查找平台规则和指南。

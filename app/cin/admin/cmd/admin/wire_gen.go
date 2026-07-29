@@ -45,6 +45,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 		return nil, nil, err
 	}
 	client := data.NewRedisClient(confData)
+	universalClient := data.ProvideUniversalClient(client)
 	asynqClient := data.NewAsynqClient(confData, logger)
 	dataData, cleanup, err := data.NewData(productClient, categoryClient, adminUserClient, orderClient, userClient, couponServiceClient, bladesClient, rustFSClient, client, asynqClient, logger)
 	if err != nil {
@@ -79,7 +80,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	server2 := server.NewGRPCServer(grpcServer, adminService)
 	tokenValidator := data.NewTokenValidator(client)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth, tokenValidator, enforcerProvider)
-	server3 := server.NewHTTPServer(httpServer, adminService, auth)
+	server3 := server.NewHTTPServer(httpServer, adminService, auth, universalClient)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, server2, server3, registrar)
 	return app, func() {

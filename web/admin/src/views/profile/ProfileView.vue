@@ -212,6 +212,39 @@
         </div>
       </div>
     </el-card>
+
+    <!-- 偏好设置 -->
+    <el-card class="section-card" shadow="never">
+      <template #header>
+        <div class="section-title-row">
+          <div class="section-title-left">
+            <el-icon class="section-icon"><Setting /></el-icon>
+            <span>偏好设置</span>
+          </div>
+          <div>
+            <el-button type="primary" size="small" @click="savePreferences" :loading="prefSaving">保存偏好</el-button>
+          </div>
+        </div>
+      </template>
+      <p class="pref-note">这些偏好设置会被 AI 助手记住，即使清空对话历史也不会丢失。</p>
+      <div class="pref-list">
+        <div class="pref-item" v-for="(value, key, index) in preferenceList" :key="index">
+          <div class="pref-item-left">
+            <el-input v-model="preferenceList[key]" :placeholder="'请输入' + key" size="small" style="width: 300px">
+              <template #prepend>{{ key }}</template>
+            </el-input>
+            <el-button type="danger" size="small" circle @click="removePreference(key)">
+              <el-icon><Delete /></el-icon>
+            </el-button>
+          </div>
+        </div>
+      </div>
+      <div class="pref-add">
+        <el-input v-model="newPrefKey" placeholder="偏好名称（如：称呼）" size="small" style="width: 150px; margin-right: 8px" />
+        <el-input v-model="newPrefValue" placeholder="偏好值（如：小汐）" size="small" style="width: 200px; margin-right: 8px" />
+        <el-button size="small" @click="addPreference">添加</el-button>
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -224,13 +257,14 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Message, Iphone, Clock, Timer,
-  EditPen, Lock, UserFilled, Check
+  EditPen, Lock, UserFilled, Check, Setting, Delete
 } from '@element-plus/icons-vue'
 import { useAppStore } from '../../store/app'
 import { getAdminInfo, changeAvatar, updateAdminInfo } from '../../api/auth'
 import { getRoleNameMap } from '../../api/staff'
 import { getMyPermissions } from '../../api/auth'
 import { listAllPermissions } from '../../api/role'
+import request from '../../api'
 
 /** 角色名称映射 */
 const roleNameMap = ref<Record<string, string>>({})
@@ -305,8 +339,55 @@ async function loadAdminInfo() {
   }
 }
 
+/** 偏好设置 */
+const preferenceList = reactive<Record<string, string>>({})
+const prefSaving = ref(false)
+const newPrefKey = ref('')
+const newPrefValue = ref('')
+
+/** 加载偏好 */
+async function loadPreferences() {
+  try {
+    const data = await request.get('/admin/v1/preferences')
+    Object.keys(preferenceList).forEach(k => delete preferenceList[k])
+    Object.assign(preferenceList, data)
+  } catch {
+    // 忽略
+  }
+}
+
+/** 保存偏好 */
+async function savePreferences() {
+  prefSaving.value = true
+  try {
+    await request.put('/admin/v1/preferences', { ...preferenceList })
+    ElMessage.success('偏好设置已保存')
+  } catch {
+    ElMessage.error('保存失败')
+  } finally {
+    prefSaving.value = false
+  }
+}
+
+/** 添加偏好 */
+function addPreference() {
+  if (!newPrefKey.value || !newPrefValue.value) {
+    ElMessage.warning('请填写偏好名称和值')
+    return
+  }
+  preferenceList[newPrefKey.value] = newPrefValue.value
+  newPrefKey.value = ''
+  newPrefValue.value = ''
+}
+
+/** 删除偏好 */
+function removePreference(key: string) {
+  delete preferenceList[key]
+}
+
 onMounted(async () => {
   loadAdminInfo()
+  loadPreferences()
   // 加载角色显示名称映射
   try {
     const res = await getRoleNameMap()
@@ -814,6 +895,38 @@ function handleViewActivity() {
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--shop-border);
+}
+
+/* 偏好设置 */
+.pref-note {
+  font-size: 0.8125rem;
+  color: var(--shop-muted-foreground);
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--shop-border);
+}
+
+.pref-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.pref-item {
+  display: flex;
+  align-items: center;
+}
+
+.pref-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pref-add {
+  display: flex;
+  align-items: center;
 }
 
 .perm-grid {

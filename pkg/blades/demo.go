@@ -3,12 +3,13 @@ package blades
 import (
 	"context"
 	"fmt"
+	"os"
 )
 
 // DeepSeekDemo 运行DeepSeek模型的演示
 func DeepSeekDemo() error {
 	// 使用提供的DeepSeek API密钥
-	apiKey := "sk-9563c2ca6c3e44cd9c51b8faf5dd82e3"
+	apiKey := os.Getenv("DEEPSEEK_API_KEY")
 	if apiKey == "" {
 		return fmt.Errorf("DeepSeek API key not provided")
 	}

@@ -29,7 +29,7 @@ func NewBladesService(agentUC *biz.AgentUseCase, knowledgeUC *biz.KnowledgeUseCa
 
 // Chat 非流式聊天
 func (s *BladesService) Chat(ctx context.Context, req *pb.ChatRequest) (*pb.ChatReply, error) {
-	response, err := s.agentUC.Chat(ctx, req.UserId, req.Source, req.Message, req.EnableRag)
+	response, err := s.agentUC.Chat(ctx, req.UserId, req.Source, req.Role, req.Message, req.EnableRag)
 	if err != nil {
 		s.log.Error("Chat failed: %v", err)
 		return nil, err
@@ -39,7 +39,7 @@ func (s *BladesService) Chat(ctx context.Context, req *pb.ChatRequest) (*pb.Chat
 
 // ChatStream 流式聊天（服务端流式）
 func (s *BladesService) ChatStream(req *pb.ChatStreamRequest, stream pb.Blades_ChatStreamServer) error {
-	err := s.agentUC.ChatStream(stream.Context(), req.UserId, req.Source, req.Message, req.EnableRag,
+	err := s.agentUC.ChatStream(stream.Context(), req.UserId, req.Source, req.Role, req.Message, req.EnableRag,
 		func(chunk string, done bool) {
 			resp := &pb.ChatChunkReply{Chunk: chunk, Done: done}
 			if err := stream.Send(resp); err != nil && err != io.EOF {

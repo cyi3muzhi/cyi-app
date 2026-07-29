@@ -58,6 +58,26 @@ func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Au
 	return userRpc.NewUserClient(conn)
 }
 
+// NewAdminRoleClient 创建角色权限管理 gRPC 客户端（与 user 服务同连接）
+func NewAdminRoleClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) userRpc.AdminRoleClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.USER_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			ServiceKey:     auth.ServiceKey[grpc.USER_SERVICE],
+			Meter:          metric,
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.USER_SERVICE, err))
+	}
+	return userRpc.NewAdminRoleClient(conn)
+}
+
 // NewOrderServiceClient 创建订单服务 gRPC 客户端
 func NewOrderServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) orderRpc.OrderClient {
 	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(

@@ -13,13 +13,12 @@ import (
 	"cyi-app/app/blades/internal/server"
 	"cyi-app/app/blades/internal/service"
 	"cyi-app/pkg/kratos/server/middleware"
+
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"go.opentelemetry.io/otel/sdk/trace"
 	trace2 "go.opentelemetry.io/otel/trace"
-)
 
-import (
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -39,9 +38,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	discovery := server.NewDiscovery(registry)
 	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	adminRoleClient := data.NewAdminRoleClient(discovery, confServer, auth, traceTracerProvider, meter)
 	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
-	toolRegistry := biz.InitToolRegistry(productClient, userClient, orderClient, ragEngine)
-	agentFactory := biz.NewAgentFactory(blades, ragEngine, toolRegistry, logger)
+	toolRegistry := biz.InitToolRegistry(productClient, userClient, orderClient, ragEngine, universalClient, adminRoleClient)
+	agentFactory := biz.NewAgentFactory(blades, ragEngine, toolRegistry, adminRoleClient, logger)
 	agentUseCase := biz.NewAgentUseCase(blades, universalClient, agentFactory, logger)
 	knowledgeUseCase := biz.NewKnowledgeUseCase(ragEngine, universalClient, logger)
 	bladesService := service.NewBladesService(agentUseCase, knowledgeUseCase, logger)

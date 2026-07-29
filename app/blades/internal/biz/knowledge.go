@@ -59,7 +59,17 @@ func (uc *KnowledgeUseCase) SearchKnowledge(ctx context.Context, source, query s
 	if contextStr == "" {
 		return nil, nil
 	}
-	return nil, nil
+	// contextStr 是纯文本格式，这里转为 SearchResult 便于 gRPC 传输
+	// 通过 RAG 引擎重新检索获取结构化结果
+	queryVec, err := uc.rag.embedder.Embed(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("embed query failed: %w", err)
+	}
+	results, err := uc.rag.vectorDB.Search(ctx, source, queryVec, topK)
+	if err != nil {
+		return nil, fmt.Errorf("vector search failed: %w", err)
+	}
+	return results, nil
 }
 
 // DeleteDocument 删除文档

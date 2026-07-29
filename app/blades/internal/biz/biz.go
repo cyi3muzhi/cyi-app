@@ -6,11 +6,11 @@ import (
 	userRpc "cyi-app/api/service/user/v1"
 
 	"github.com/google/wire"
+	"github.com/redis/go-redis/v9"
 )
 
 // ProviderSet is biz providers.
 var ProviderSet = wire.NewSet(
-	NewBladesUseCase,
 	NewAgentUseCase,
 	NewAgentFactory,
 	NewRAGEngine,
@@ -32,11 +32,15 @@ func InitToolRegistry(
 	uc userRpc.UserClient,
 	oc orderRpc.OrderClient,
 	rag *RAGEngine,
+	rdb redis.UniversalClient,
+	roleClient userRpc.AdminRoleClient,
 ) *ToolRegistry {
 	r := NewToolRegistry()
 	RegisterOrderTools(r, oc)
 	RegisterProductTools(r, pc)
 	RegisterUserTools(r, uc)
 	RegisterKnowledgeTools(r, rag)
+	RegisterPreferenceTool(r, rdb)
+	RegisterPermissionTool(r, roleClient)
 	return r
 }

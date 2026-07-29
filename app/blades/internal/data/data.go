@@ -18,7 +18,6 @@ import (
 
 // ProviderSet is data providers.
 var ProviderSet = wire.NewSet(
-	NewBladesRepo,
 	NewData,
 	NewRedisClient,
 	ProvideUniversalClient,
@@ -27,6 +26,7 @@ var ProviderSet = wire.NewSet(
 	wire.Bind(new(biz.VectorStore), new(*VectorStore)),
 	NewProductServiceClient,
 	NewUserServiceClient,
+	NewAdminRoleClient,
 	NewOrderServiceClient,
 )
 
@@ -75,7 +75,7 @@ func NewRedisClient(c *conf.Data, logger log.Logger) *redis.Client {
 	defer cancelFunc()
 	err := client.Ping(timeout).Err()
 	if err != nil {
-		return nil
+		log.NewHelper(logger).Warnf("redis ping failed (addr=%s): %v, will retry on each operation", c.Redis.Addr, err)
 	}
 	return client
 }
