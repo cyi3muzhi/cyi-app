@@ -162,7 +162,7 @@ func (m *DeepSeekModel) Generate(ctx context.Context, req *blades.ModelRequest) 
 	// 构建初始消息列表
 	messages := m.buildMessages(req)
 
-	for round := 0; round < 3; round++ {
+	for round := 0; round < 10; round++ {
 		// 构建请求体
 		requestBody := map[string]interface{}{
 			"model":       m.model,
@@ -254,7 +254,7 @@ func (m *DeepSeekModel) NewStreaming(ctx context.Context, req *blades.ModelReque
 		// 构建初始消息列表
 		messages := m.buildMessages(req)
 
-		for round := 0; round < 3; round++ {
+		for round := 0; round < 10; round++ {
 			// 构建请求体
 			requestBody := map[string]interface{}{
 				"model":       m.model,

@@ -25,6 +25,7 @@ var ProviderSet = wire.NewSet(
 	ProviderVectorStoreDimension,
 	wire.Bind(new(biz.VectorStore), new(*VectorStore)),
 	NewProductServiceClient,
+	NewStockServiceClient,
 	NewUserServiceClient,
 	NewAdminRoleClient,
 	NewOrderServiceClient,

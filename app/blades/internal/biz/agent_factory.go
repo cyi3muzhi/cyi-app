@@ -25,6 +25,7 @@ type toolPerm struct {
 var toolModulePerms = map[string]toolPerm{
 	"search_products":    {"products", "view"},
 	"get_product_detail": {"products", "view"},
+	"query_stock":        {"products", "view"},
 	"query_orders":       {"orders", "view"},
 	"query_order_detail": {"orders", "view"},
 	"query_users":        {"users", "view"},
@@ -252,6 +253,12 @@ func (f *AgentFactory) getSourceConfig(source string) (prompt, knowledgeTag stri
 用户可能会告诉你他们的偏好（如昵称、称呼方式等），当用户设置偏好时，请使用 save_user_preference 工具保存。
 
 当用户询问权限相关问题（如"我有什么权限"、"我能做什么"、"我可以创建商品吗"）时，使用 query_user_permissions 或 check_user_permission 工具查询。
+
+当用户询问商品库存（如"还有多少库存"、"还剩多少"、"有没有货"）时：
+1. 先使用 get_product_detail 工具查询商品详细信息，获取 SKU 列表（每个 SKU 都有唯一的 SKU ID）
+2. 从 SKU 列表中找出目标规格对应的 SKU ID
+3. 使用 query_stock 工具传入 SKU ID 查询实时库存
+4. 将结果告知用户
 
 规则：
 1. 用户问数据 → 立即使用对应的工具查询

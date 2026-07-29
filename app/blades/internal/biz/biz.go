@@ -29,6 +29,7 @@ func NewTextSplitterConfig() TextSplitterConfig {
 // InitToolRegistry 创建工具注册中心并注册所有工具
 func InitToolRegistry(
 	pc productRpc.ProductClient,
+	sc productRpc.StockClient,
 	uc userRpc.UserClient,
 	oc orderRpc.OrderClient,
 	rag *RAGEngine,
@@ -38,6 +39,7 @@ func InitToolRegistry(
 	r := NewToolRegistry()
 	RegisterOrderTools(r, oc)
 	RegisterProductTools(r, pc)
+	RegisterStockTools(r, sc, pc)
 	RegisterUserTools(r, uc)
 	RegisterKnowledgeTools(r, rag)
 	RegisterPreferenceTool(r, rdb)

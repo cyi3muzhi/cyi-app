@@ -41,7 +41,7 @@ func RegisterProductTools(r *ToolRegistry, client productRpc.ProductClient) {
 		})
 	r.Add(t1)
 
-	t2, _ := tools.NewFunc("get_product_detail", "查询单个商品的详细信息",
+	t2, _ := tools.NewFunc("get_product_detail", "查询单个商品的详细信息，包含所有规格组和每个SKU的详细信息（含SKU编号）。当用户想查看商品规格、价格、库存或询问具体某个规格组合时使用此工具",
 		func(ctx context.Context, input struct {
 			ProductID int64 `json:"product_id"`
 		}) (string, error) {
@@ -49,10 +49,13 @@ func RegisterProductTools(r *ToolRegistry, client productRpc.ProductClient) {
 			if err != nil {
 				return "", err
 			}
-			result := fmt.Sprintf("商品: %s\n价格: ￥%.2f\n", reply.Product.Name, float64(reply.Product.Price)/100)
-			if len(reply.Product.Specs) > 0 {
-				result += "规格:\n"
-				for _, spec := range reply.Product.Specs {
+			p := reply.Product
+			result := fmt.Sprintf("商品ID: %d\n商品: %s\n价格: ￥%.2f\n", p.ProductId, p.Name, float64(p.Price)/100)
+
+			// 输出规格组
+			if len(p.Specs) > 0 {
+				result += "规格组:\n"
+				for _, spec := range p.Specs {
 					vals := ""
 					for i, v := range spec.Values {
 						if i > 0 {
@@ -63,6 +66,34 @@ func RegisterProductTools(r *ToolRegistry, client productRpc.ProductClient) {
 					result += fmt.Sprintf("  - %s: %s\n", spec.Name, vals)
 				}
 			}
+
+			// 输出 SKU 列表（含 SKU ID）
+			if len(p.Skus) > 0 {
+				result += "SKU列表:\n"
+				for _, sku := range p.Skus {
+					result += fmt.Sprintf("  - SKU ID: %d", sku.Id)
+					if sku.SkuCode != "" {
+						result += fmt.Sprintf(" (编码: %s)", sku.SkuCode)
+					}
+					// 拼接规格描述
+					specDesc := ""
+					for k, v := range sku.Spec {
+						if specDesc != "" {
+							specDesc += " "
+						}
+						specDesc += fmt.Sprintf("%s: %s", k, v)
+					}
+					if specDesc != "" {
+						result += fmt.Sprintf(" | 规格: %s", specDesc)
+					}
+					result += fmt.Sprintf(" | 价格: ￥%.2f | 库存: %d", float64(sku.Price)/100, sku.Stock)
+					if sku.Sales > 0 {
+						result += fmt.Sprintf(" | 销量: %d", sku.Sales)
+					}
+					result += "\n"
+				}
+			}
+
 			return result, nil
 		})
 	r.Add(t2)

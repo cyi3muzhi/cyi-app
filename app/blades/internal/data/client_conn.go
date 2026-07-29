@@ -38,6 +38,26 @@ func NewProductServiceClient(r registry.Discovery, conf *conf.Server, auth *conf
 	return productRpc.NewProductClient(conn)
 }
 
+// NewStockServiceClient 创建库存服务 gRPC 客户端（与 product 服务同连接）
+func NewStockServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) productRpc.StockClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.PRODUCT_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			ServiceKey:     auth.ServiceKey[grpc.PRODUCT_SERVICE],
+			Meter:          metric,
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.PRODUCT_SERVICE, err))
+	}
+	return productRpc.NewStockClient(conn)
+}
+
 // NewUserServiceClient 创建用户服务 gRPC 客户端
 func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) userRpc.UserClient {
 	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
