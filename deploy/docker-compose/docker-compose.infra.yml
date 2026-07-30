@@ -82,27 +82,27 @@ services:
     networks:
       - cyi-network
 
-  # RabbitMQ服务 - 用于消息队列
-  rabbitmq:
-    image: rabbitmq:4.3.0-management
-    container_name: rabbitmq
-    restart: always
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    ports:
-      - "${RABBITMQ_PORT}:5672"      # AMQP协议端口（应用连接）
-      - "${RABBITMQ_MANAGEMENT_PORT}:15672"  # Web管理界面端口
-    environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-admin}      # 默认用户名
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-admin}  # 默认密码
-      - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_VHOST:-/}        # 默认虚拟主机
-    healthcheck:
-      test: rabbitmq-diagnostics -q ping
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks:
-      - cyi-network
+  # RabbitMQ服务 - 用于消息队列（暂不部署，需要时取消注释）
+  # rabbitmq:
+  #   image: rabbitmq:4.3.0-management
+  #   container_name: rabbitmq
+  #   restart: always
+  #   volumes:
+  #     - rabbitmq_data:/var/lib/rabbitmq
+  #   ports:
+  #     - "${RABBITMQ_PORT}:5672"      # AMQP协议端口（应用连接）
+  #     - "${RABBITMQ_MANAGEMENT_PORT}:15672"  # Web管理界面端口
+  #   environment:
+  #     - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-admin}      # 默认用户名
+  #     - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-admin}  # 默认密码
+  #     - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_VHOST:-/}        # 默认虚拟主机
+  #   healthcheck:
+  #     test: rabbitmq-diagnostics -q ping
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #   networks:
+  #     - cyi-network
 
   # NATS服务 - 用于事件驱动消息总线
   nats:
@@ -188,85 +188,86 @@ services:
     networks:
       - cyi-network
 
+  # ============ ELK 日志系统（暂不部署，使用 Jaeger 即可）============
   # Elasticsearch 服务
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
-    container_name: elasticsearch
-    environment:
-      - node.name=elasticsearch
-      - cluster.name=cyi-app-cluster
-      - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
-      - ELASTIC_PASSWORD=changeme
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
-    ports:
-      - "${ELASTICSEARCH_PORT}:9200"
-      - "${ELASTICSEARCH_TRANSPORT_PORT}:9300"
-    healthcheck:
-      test: curl -s http://localhost:9200/_cluster/health | grep -v 'status":"red"'
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    networks:
-      - cyi-network
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+  #   container_name: elasticsearch
+  #   environment:
+  #     - node.name=elasticsearch
+  #     - cluster.name=cyi-app-cluster
+  #     - discovery.type=single-node
+  #     - ES_JAVA_OPTS=-Xms1g -Xmx1g
+  #     - ELASTIC_PASSWORD=changeme
+  #   volumes:
+  #     - es_data:/usr/share/elasticsearch/data
+  #   ports:
+  #     - "${ELASTICSEARCH_PORT}:9200"
+  #     - "${ELASTICSEARCH_TRANSPORT_PORT}:9300"
+  #   healthcheck:
+  #     test: curl -s http://localhost:9200/_cluster/health | grep -v 'status":"red"'
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #   networks:
+  #     - cyi-network
 
   # Logstash 服务
-  logstash:
-    image: docker.elastic.co/logstash/logstash:7.17.10
-    container_name: logstash
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    volumes:
-      - logstash_config:/usr/share/logstash/config
-      - ./logstash/pipeline:/usr/share/logstash/pipeline
-    ports:
-      - "${LOGSTASH_BEATS_PORT}:5044"  # Filebeat 输入端口
-      - "${LOGSTASH_API_PORT}:9600"  # Logstash API 端口
-    environment:
-      - LS_JAVA_OPTS=-Xms512m -Xmx512m
-    networks:
-      - cyi-network
+  # logstash:
+  #   image: docker.elastic.co/logstash/logstash:7.17.10
+  #   container_name: logstash
+  #   depends_on:
+  #     elasticsearch:
+  #       condition: service_healthy
+  #   volumes:
+  #     - logstash_config:/usr/share/logstash/config
+  #     - ./logstash/pipeline:/usr/share/logstash/pipeline
+  #   ports:
+  #     - "${LOGSTASH_BEATS_PORT}:5044"  # Filebeat 输入端口
+  #     - "${LOGSTASH_API_PORT}:9600"  # Logstash API 端口
+  #   environment:
+  #     - LS_JAVA_OPTS=-Xms512m -Xmx512m
+  #   networks:
+  #     - cyi-network
 
   # Kibana 服务
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.17.10
-    container_name: kibana
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    volumes:
-      - kibana_config:/usr/share/kibana/config
-    ports:
-      - "${KIBANA_PORT}:5601"
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=elastic
-      - ELASTICSEARCH_PASSWORD=changeme
-    networks:
-      - cyi-network
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:7.17.10
+  #   container_name: kibana
+  #   depends_on:
+  #     elasticsearch:
+  #       condition: service_healthy
+  #   volumes:
+  #     - kibana_config:/usr/share/kibana/config
+  #   ports:
+  #     - "${KIBANA_PORT}:5601"
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+  #     - ELASTICSEARCH_USERNAME=elastic
+  #     - ELASTICSEARCH_PASSWORD=changeme
+  #   networks:
+  #     - cyi-network
 
   # Filebeat 服务 - 用于日志收集
-  filebeat:
-    image: docker.elastic.co/beats/filebeat:7.17.10
-    container_name: filebeat
-    volumes:
-      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro  # 用于收集 Docker 容器日志
-      - ../logs/user-service:/logs/user-service:ro
-      - ../logs/interface-service:/logs/interface-service:ro
-      - ../logs/task-service:/logs/task-service:ro
-      - ../logs/job-service:/logs/job-service:ro
-      - filebeat_data:/usr/share/filebeat/data
-    environment:
-      - ENVIRONMENT=development  # 设置环境变量
-    networks:
-      - cyi-network
-    command: filebeat -e -strict.perms=false
-    depends_on:
-      - logstash
-    restart: always
+  # filebeat:
+  #   image: docker.elastic.co/beats/filebeat:7.17.10
+  #   container_name: filebeat
+  #   volumes:
+  #     - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro  # 用于收集 Docker 容器日志
+  #     - ../logs/user-service:/logs/user-service:ro
+  #     - ../logs/interface-service:/logs/interface-service:ro
+  #     - ../logs/task-service:/logs/task-service:ro
+  #     - ../logs/job-service:/logs/job-service:ro
+  #     - filebeat_data:/usr/share/filebeat/data
+  #   environment:
+  #     - ENVIRONMENT=development  # 设置环境变量
+  #   networks:
+  #     - cyi-network
+  #   command: filebeat -e -strict.perms=false
+  #   depends_on:
+  #     - logstash
+  #   restart: always
 
   # Prometheus 服务 - 用于监控数据采集
   prometheus:
