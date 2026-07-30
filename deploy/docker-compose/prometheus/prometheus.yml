@@ -45,6 +45,42 @@ scrape_configs:
       - targets: ['service-task:8000']
     metrics_path: '/metrics'
 
+  # 监控 Blades 服务
+  - job_name: 'blades-service'
+    static_configs:
+      - targets: ['service-blades:8000']
+    metrics_path: '/metrics'
+
+  # 监控 Admin BFF 服务
+  - job_name: 'admin-service'
+    static_configs:
+      - targets: ['service-admin:8000']
+    metrics_path: '/metrics'
+
+  # 监控 Order 订单服务
+  - job_name: 'order-service'
+    static_configs:
+      - targets: ['service-order:9000']
+    metrics_path: '/metrics'
+
+  # 监控 Product 商品服务
+  - job_name: 'product-service'
+    static_configs:
+      - targets: ['service-product:9000']
+    metrics_path: '/metrics'
+
+  # 监控 Marketing 营销服务
+  - job_name: 'marketing-service'
+    static_configs:
+      - targets: ['service-marketing:9000']
+    metrics_path: '/metrics'
+
+  # 监控 NATS 消费者服务
+  - job_name: 'nats-consumer'
+    static_configs:
+      - targets: ['service-nats-consumer:8000']
+    metrics_path: '/metrics'
+
   # 监控 NATS（通过 NATS Exporter）
   - job_name: 'nats'
     static_configs:

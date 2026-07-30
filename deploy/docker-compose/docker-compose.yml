@@ -320,6 +320,24 @@ services:
     networks:
       - cyi-network
 
+  # Admin BFF 服务 - 管理后台 API
+  service-admin:
+    image: cyi3muz/cin-admin:0.1.0
+    container_name: service-admin
+    restart: always
+    ports:
+        - "${ADMIN_HTTP_PORT}:8000"  # HTTP 端口
+        - "${ADMIN_GRPC_PORT}:9000"  # gRPC 端口
+    environment:
+      - CONSUL_ADDR=consul:8500
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/cin/admin
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - redis
+    networks:
+      - cyi-network
+
      # Blade 服务 - 技术微服务
   service-blades:
     # 使用本地生成的镜像
@@ -338,6 +356,91 @@ services:
     depends_on:
       - consul
       - jaeger
+      - mysql
+      - redis
+    networks:
+      - cyi-network
+
+  # Order 订单服务
+  service-order:
+    image: cyi3muz/service-order:0.1.0
+    container_name: service-order
+    restart: always
+    ports:
+      - "${ORDER_GRPC_PORT:-9101}:9000"  # gRPC 端口
+    volumes:
+      - ../logs/order-service:/app/logs
+    environment:
+      - CONSUL_ADDR=consul:8500
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/service/order
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - mysql
+      - redis
+      - nats
+    networks:
+      - cyi-network
+
+  # Product 商品服务
+  service-product:
+    image: cyi3muz/service-product:0.1.0
+    container_name: service-product
+    restart: always
+    ports:
+      - "${PRODUCT_GRPC_PORT:-9102}:9000"  # gRPC 端口
+    volumes:
+      - ../logs/product-service:/app/logs
+    environment:
+      - CONSUL_ADDR=consul:8500
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/service/product
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - mysql
+      - redis
+      - nats
+    networks:
+      - cyi-network
+
+  # Marketing 营销服务
+  service-marketing:
+    image: cyi3muz/service-marketing:0.1.0
+    container_name: service-marketing
+    restart: always
+    ports:
+      - "${MARKETING_GRPC_PORT:-9103}:9000"  # gRPC 端口
+    volumes:
+      - ../logs/marketing-service:/app/logs
+    environment:
+      - CONSUL_ADDR=consul:8500
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/service/marketing
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - mysql
+      - redis
+    networks:
+      - cyi-network
+
+  # NATS 消费者服务
+  service-nats-consumer:
+    image: cyi3muz/nats-consumer:0.1.0
+    container_name: service-nats-consumer
+    restart: always
+    volumes:
+      - ../logs/nats-consumer:/app/logs
+    environment:
+      - CONSUL_ADDR=consul:8500
+      - CONSUL_PATHS=/develop/common,/develop/cyi-app/nats
+      - SERVICE_ENV=dev
+    depends_on:
+      - consul
+      - jaeger
+      - nats
       - mysql
       - redis
     networks:

@@ -34,6 +34,10 @@ on:
           - admin
           - interface
           - user
+          - order
+          - product
+          - marketing
+          - nats
           - job
           - task
           - frontend
@@ -51,6 +55,10 @@ jobs:
       admin: ${{ steps.detect.outputs.admin }}
       interface: ${{ steps.detect.outputs.interface }}
       user: ${{ steps.detect.outputs.user }}
+      order: ${{ steps.detect.outputs.order }}
+      product: ${{ steps.detect.outputs.product }}
+      marketing: ${{ steps.detect.outputs.marketing }}
+      nats_consumer: ${{ steps.detect.outputs.nats_consumer }}
       job: ${{ steps.detect.outputs.job }}
       task: ${{ steps.detect.outputs.task }}
       frontend_admin: ${{ steps.detect.outputs.frontend_admin }}
@@ -81,6 +89,10 @@ jobs:
               echo "admin=true" >> $GITHUB_OUTPUT
               echo "interface=true" >> $GITHUB_OUTPUT
               echo "user=true" >> $GITHUB_OUTPUT
+              echo "order=true" >> $GITHUB_OUTPUT
+              echo "product=true" >> $GITHUB_OUTPUT
+              echo "marketing=true" >> $GITHUB_OUTPUT
+              echo "nats_consumer=true" >> $GITHUB_OUTPUT
               echo "job=true" >> $GITHUB_OUTPUT
               echo "task=true" >> $GITHUB_OUTPUT
               echo "frontend_admin=true" >> $GITHUB_OUTPUT
@@ -93,6 +105,10 @@ jobs:
                 admin)         echo "admin=true" >> $GITHUB_OUTPUT ;;
                 interface)     echo "interface=true" >> $GITHUB_OUTPUT ;;
                 user)          echo "user=true" >> $GITHUB_OUTPUT ;;
+                order)         echo "order=true" >> $GITHUB_OUTPUT ;;
+                product)       echo "product=true" >> $GITHUB_OUTPUT ;;
+                marketing)     echo "marketing=true" >> $GITHUB_OUTPUT ;;
+                nats)          echo "nats_consumer=true" >> $GITHUB_OUTPUT ;;
                 job)           echo "job=true" >> $GITHUB_OUTPUT ;;
                 task)          echo "task=true" >> $GITHUB_OUTPUT ;;
                 frontend)      echo "frontend_admin=true" >> $GITHUB_OUTPUT
@@ -113,6 +129,10 @@ jobs:
             echo "admin=true" >> $GITHUB_OUTPUT
             echo "interface=true" >> $GITHUB_OUTPUT
             echo "user=true" >> $GITHUB_OUTPUT
+            echo "order=true" >> $GITHUB_OUTPUT
+            echo "product=true" >> $GITHUB_OUTPUT
+            echo "marketing=true" >> $GITHUB_OUTPUT
+            echo "nats_consumer=true" >> $GITHUB_OUTPUT
             echo "job=true" >> $GITHUB_OUTPUT
             echo "task=true" >> $GITHUB_OUTPUT
             echo "frontend_admin=true" >> $GITHUB_OUTPUT
@@ -140,6 +160,10 @@ jobs:
           check_change 'app/cin/admin/|api/cin/admin/'        admin
           check_change 'app/cin/interface/|api/cin/interface/' interface
           check_change 'app/service/user/|api/service/user/'  user
+          check_change 'app/service/order/|api/service/order/' order
+          check_change 'app/service/product/|api/service/product/' product
+          check_change 'app/service/marketing/|api/service/marketing/' marketing
+          check_change 'app/nats/'                              nats_consumer
           check_change 'app/job/|api/job/'                    job
           check_change 'app/task/|api/task/'                  task
           check_change 'web/admin/'                           frontend_admin
@@ -230,6 +254,34 @@ jobs:
           cd app/task && make docker
           docker save cyi3muz/task:0.1.0 -o ../../artifacts/task.tar
           echo "✅ task 镜像构建完成"
+
+      - name: Build order image
+        if: needs.detect-changes.outputs.order == 'true'
+        run: |
+          cd app/service/order && make docker
+          docker save cyi3muz/service-order:0.1.0 -o ../../../artifacts/order.tar
+          echo "✅ order 镜像构建完成"
+
+      - name: Build product image
+        if: needs.detect-changes.outputs.product == 'true'
+        run: |
+          cd app/service/product && make docker
+          docker save cyi3muz/service-product:0.1.0 -o ../../../artifacts/product.tar
+          echo "✅ product 镜像构建完成"
+
+      - name: Build marketing image
+        if: needs.detect-changes.outputs.marketing == 'true'
+        run: |
+          cd app/service/marketing && make docker
+          docker save cyi3muz/service-marketing:0.1.0 -o ../../../artifacts/marketing.tar
+          echo "✅ marketing 镜像构建完成"
+
+      - name: Build nats-consumer image
+        if: needs.detect-changes.outputs.nats_consumer == 'true'
+        run: |
+          cd app/nats && make docker 2>/dev/null || ( cd ../.. && docker build -f deploy/build/Dockerfile --build-arg APP_RELATIVE_PATH=nats --build-arg APP_NAME=nats -t cyi3muz/nats-consumer:0.1.0 . )
+          docker save cyi3muz/nats-consumer:0.1.0 -o artifacts/nats-consumer.tar
+          echo "✅ nats-consumer 镜像构建完成"
 
       # ---------- 构建前端 ----------
       - name: Build admin frontend
@@ -346,6 +398,30 @@ jobs:
           docker load -i /tmp/deploy-artifacts/task.tar
           echo "✅ task 镜像已加载"
 
+      - name: Load order image
+        if: needs.detect-changes.outputs.order == 'true'
+        run: |
+          docker load -i /tmp/deploy-artifacts/order.tar
+          echo "✅ order 镜像已加载"
+
+      - name: Load product image
+        if: needs.detect-changes.outputs.product == 'true'
+        run: |
+          docker load -i /tmp/deploy-artifacts/product.tar
+          echo "✅ product 镜像已加载"
+
+      - name: Load marketing image
+        if: needs.detect-changes.outputs.marketing == 'true'
+        run: |
+          docker load -i /tmp/deploy-artifacts/marketing.tar
+          echo "✅ marketing 镜像已加载"
+
+      - name: Load nats-consumer image
+        if: needs.detect-changes.outputs.nats_consumer == 'true'
+        run: |
+          docker load -i /tmp/deploy-artifacts/nats-consumer.tar
+          echo "✅ nats-consumer 镜像已加载"
+
       # ---------- 部署前端 ----------
       - name: Deploy admin frontend
         if: needs.detect-changes.outputs.frontend_admin == 'true'
@@ -400,6 +476,26 @@ jobs:
           if [ "${{ needs.detect-changes.outputs.task }}" == "true" ]; then
             docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-task
             RESTARTED="$RESTARTED service-task"
+          fi
+
+          if [ "${{ needs.detect-changes.outputs.order }}" == "true" ]; then
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-order
+            RESTARTED="$RESTARTED service-order"
+          fi
+
+          if [ "${{ needs.detect-changes.outputs.product }}" == "true" ]; then
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-product
+            RESTARTED="$RESTARTED service-product"
+          fi
+
+          if [ "${{ needs.detect-changes.outputs.marketing }}" == "true" ]; then
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-marketing
+            RESTARTED="$RESTARTED service-marketing"
+          fi
+
+          if [ "${{ needs.detect-changes.outputs.nats_consumer }}" == "true" ]; then
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-nats-consumer
+            RESTARTED="$RESTARTED service-nats-consumer"
           fi
 
           if [ "${{ needs.detect-changes.outputs.frontend_admin }}" == "true" ] || [ "${{ needs.detect-changes.outputs.frontend_mall }}" == "true" ]; then
