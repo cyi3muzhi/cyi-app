@@ -304,6 +304,26 @@ jobs:
           tar -czf artifacts/frontend-mall.tar.gz -C web/cyi-mall dist
           echo "✅ 用户端商城前端构建完成"
 
+      # ---------- 同步部署配置文件到 artifact ----------
+      - name: Sync deploy configs to artifacts
+        run: |
+          mkdir -p artifacts/deploy/docker-compose
+          mkdir -p artifacts/deploy/nginx
+          # 根目录配置
+          cp deploy/docker-compose/docker-compose.yml artifacts/deploy/docker-compose/
+          cp deploy/docker-compose/docker-compose.infra.yml artifacts/deploy/docker-compose/
+          cp deploy/docker-compose/docker-compose.app.yml artifacts/deploy/docker-compose/
+          cp deploy/docker-compose/.env artifacts/deploy/docker-compose/ 2>/dev/null || true
+          cp deploy/nginx/cyi-app.conf artifacts/deploy/nginx/ 2>/dev/null || true
+          # prometheus 子目录
+          cp -r deploy/docker-compose/prometheus artifacts/deploy/docker-compose/ 2>/dev/null || true
+          # logstash 子目录
+          cp -r deploy/docker-compose/logstash artifacts/deploy/docker-compose/ 2>/dev/null || true
+          # filebeat
+          cp deploy/docker-compose/filebeat.yml artifacts/deploy/docker-compose/ 2>/dev/null || true
+          echo "✅ 部署配置已同步到 artifact"
+          find artifacts/ -type f | head -30
+
       # ---------- 上传 artifact ----------
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -340,6 +360,8 @@ jobs:
         run: |
           PROJECT_DIR="$HOME/cyi-app"
           mkdir -p "$PROJECT_DIR/deploy/docker-compose"
+          mkdir -p "$PROJECT_DIR/deploy/docker-compose/prometheus"
+          mkdir -p "$PROJECT_DIR/deploy/docker-compose/logstash"
           mkdir -p "$PROJECT_DIR/deploy/nginx"
           mkdir -p "$PROJECT_DIR/web/admin/dist"
           mkdir -p "$PROJECT_DIR/web/cyi-mall/dist"
@@ -348,15 +370,37 @@ jobs:
       - name: Sync deploy configs
         run: |
           PROJECT_DIR="$HOME/cyi-app"
-          cp /tmp/deploy-artifacts/docker-compose.infra.yml "$PROJECT_DIR/deploy/docker-compose/" 2>/dev/null || echo "⚠️ infra.yml 不存在"
-          cp /tmp/deploy-artifacts/docker-compose.app.yml   "$PROJECT_DIR/deploy/docker-compose/" 2>/dev/null || echo "⚠️ app.yml 不存在"
-          cp /tmp/deploy-artifacts/cyi-app.conf             "$PROJECT_DIR/deploy/nginx/" 2>/dev/null || echo "⚠️ nginx 配置不存在"
+          ARTIFACT_DIR="/tmp/deploy-artifacts"
+
+          # docker-compose 文件
+          cp "$ARTIFACT_DIR/deploy/docker-compose/docker-compose.infra.yml" "$PROJECT_DIR/deploy/docker-compose/" 2>/dev/null || echo "⚠️ infra.yml 不存在"
+          cp "$ARTIFACT_DIR/deploy/docker-compose/docker-compose.app.yml" "$PROJECT_DIR/deploy/docker-compose/" 2>/dev/null || echo "⚠️ app.yml 不存在"
+          cp "$ARTIFACT_DIR/deploy/docker-compose/docker-compose.yml" "$PROJECT_DIR/deploy/docker-compose/" 2>/dev/null || true
+
+          # nginx 配置
+          cp "$ARTIFACT_DIR/deploy/nginx/cyi-app.conf" "$PROJECT_DIR/deploy/nginx/" 2>/dev/null || echo "⚠️ nginx 配置不存在"
+
+          # prometheus 子目录
+          if [ -d "$ARTIFACT_DIR/deploy/docker-compose/prometheus" ]; then
+            cp -r "$ARTIFACT_DIR/deploy/docker-compose/prometheus" "$PROJECT_DIR/deploy/docker-compose/"
+            echo "✅ prometheus 配置已同步"
+          fi
+
+          # logstash 子目录
+          if [ -d "$ARTIFACT_DIR/deploy/docker-compose/logstash" ]; then
+            cp -r "$ARTIFACT_DIR/deploy/docker-compose/logstash" "$PROJECT_DIR/deploy/docker-compose/"
+            echo "✅ logstash 配置已同步"
+          fi
+
+          # filebeat
+          cp "$ARTIFACT_DIR/deploy/docker-compose/filebeat.yml" "$PROJECT_DIR/deploy/docker-compose/" 2>/dev/null || true
+
           # .env 如果不存在就创建默认的
-          if [ -f /tmp/deploy-artifacts/.env ]; then
-            cp /tmp/deploy-artifacts/.env "$PROJECT_DIR/deploy/docker-compose/"
+          if [ -f "$ARTIFACT_DIR/deploy/docker-compose/.env" ]; then
+            cp "$ARTIFACT_DIR/deploy/docker-compose/.env" "$PROJECT_DIR/deploy/docker-compose/"
           else
             echo "创建默认 .env"
-            printf 'INTERFACE_HTTP_PORT=8010\nINTERFACE_GRPC_PORT=9010\nTASK_PORT=10100\nJOB_PORT=10200\nUSER_GRPC_PORT=9100\nBLADES_HTTP_PORT=30800\nBLADES_GRPC_PORT=30900\nADMIN_HTTP_PORT=8080\nADMIN_GRPC_PORT=9090\nCONSUL_PORT=8500\nREDIS_PORT=6379\nMYSQL_PORT=3306\nTIDB_PORT=4000\nPD_PORT=2379\nTIKV_PORT=20160\nJAEGER_UI_PORT=16686\nJAEGER_HTTP_PORT=14268\nJAEGER_GRPC_PORT=14250\nJAEGER_THRIFT_BINARY_PORT=6831\nJAEGER_THRIFT_COMPACT_PORT=6832\nJAEGER_OTLP_GRPC_PORT=4318\nJAEGER_OTLP_HTTP_PORT=4317\nRUSTFS_WEB_PORT=9000\nRUSTFS_API_PORT=9001\nELASTICSEARCH_PORT=9200\nELASTICSEARCH_TRANSPORT_PORT=9300\nLOGSTASH_BEATS_PORT=5044\nLOGSTASH_API_PORT=9600\nKIBANA_PORT=5601\nPROMETHEUS_PORT=9090\nGRAFANA_PORT=3000\nRABBITMQ_PORT=5672\nRABBITMQ_MANAGEMENT_PORT=15672\nRABBITMQ_USER=admin\nRABBITMQ_PASSWORD=admin\nRABBITMQ_VHOST=/\nNATS_PORT=4222\nNATS_HTTP_PORT=8222\nNATS_EXPORTER_PORT=7777\nNATS_NUI_PORT=9092\n' > "$PROJECT_DIR/deploy/docker-compose/.env"
+            printf 'INTERFACE_HTTP_PORT=8010\nINTERFACE_GRPC_PORT=9010\nTASK_PORT=10100\nJOB_PORT=10200\nUSER_GRPC_PORT=9100\nORDER_GRPC_PORT=9101\nPRODUCT_GRPC_PORT=9102\nMARKETING_GRPC_PORT=9103\nBLADES_HTTP_PORT=30800\nBLADES_GRPC_PORT=30900\nADMIN_HTTP_PORT=8080\nADMIN_GRPC_PORT=9090\nNGINX_HTTP_PORT=80\nCONSUL_PORT=8500\nREDIS_PORT=6379\nMYSQL_PORT=3306\nJAEGER_UI_PORT=16686\nJAEGER_HTTP_PORT=14268\nJAEGER_GRPC_PORT=14250\nJAEGER_THRIFT_BINARY_PORT=6831\nJAEGER_THRIFT_COMPACT_PORT=6832\nJAEGER_OTLP_GRPC_PORT=4318\nJAEGER_OTLP_HTTP_PORT=4317\nRUSTFS_WEB_PORT=9000\nRUSTFS_API_PORT=9001\nELASTICSEARCH_PORT=9200\nELASTICSEARCH_TRANSPORT_PORT=9300\nLOGSTASH_BEATS_PORT=5044\nLOGSTASH_API_PORT=9600\nKIBANA_PORT=5601\nPROMETHEUS_PORT=9090\nGRAFANA_PORT=3000\nRABBITMQ_PORT=5672\nRABBITMQ_MANAGEMENT_PORT=15672\nRABBITMQ_USER=admin\nRABBITMQ_PASSWORD=admin\nRABBITMQ_VHOST=/\nNATS_PORT=4222\nNATS_HTTP_PORT=8222\nNATS_EXPORTER_PORT=7777\nNATS_NUI_PORT=9092\n' > "$PROJECT_DIR/deploy/docker-compose/.env"
           fi
           echo "✅ 配置文件已同步"
           ls -la "$PROJECT_DIR/deploy/docker-compose/"
