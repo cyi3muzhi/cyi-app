@@ -359,7 +359,9 @@ jobs:
       - name: Prepare directories
         run: |
           PROJECT_DIR="$HOME/cyi-app"
-          mkdir -p "$PROJECT_DIR/deploy/docker-compose"
+          # 清理可能冲突的旧文件（防止文件/目录冲突）
+          rm -f "$PROJECT_DIR/deploy/docker-compose/prometheus" 2>/dev/null || true
+          # 创建必要目录
           mkdir -p "$PROJECT_DIR/deploy/docker-compose/prometheus"
           mkdir -p "$PROJECT_DIR/deploy/docker-compose/logstash"
           mkdir -p "$PROJECT_DIR/deploy/nginx"
@@ -382,13 +384,17 @@ jobs:
 
           # prometheus 子目录
           if [ -d "$ARTIFACT_DIR/deploy/docker-compose/prometheus" ]; then
-            cp -r "$ARTIFACT_DIR/deploy/docker-compose/prometheus" "$PROJECT_DIR/deploy/docker-compose/"
+            rm -rf "$PROJECT_DIR/deploy/docker-compose/prometheus" 2>/dev/null || true
+            mkdir -p "$PROJECT_DIR/deploy/docker-compose/prometheus"
+            cp -r "$ARTIFACT_DIR/deploy/docker-compose/prometheus/"* "$PROJECT_DIR/deploy/docker-compose/prometheus/" 2>/dev/null || cp -r "$ARTIFACT_DIR/deploy/docker-compose/prometheus" "$PROJECT_DIR/deploy/docker-compose/"
             echo "✅ prometheus 配置已同步"
           fi
 
           # logstash 子目录
           if [ -d "$ARTIFACT_DIR/deploy/docker-compose/logstash" ]; then
-            cp -r "$ARTIFACT_DIR/deploy/docker-compose/logstash" "$PROJECT_DIR/deploy/docker-compose/"
+            rm -rf "$PROJECT_DIR/deploy/docker-compose/logstash" 2>/dev/null || true
+            mkdir -p "$PROJECT_DIR/deploy/docker-compose/logstash"
+            cp -r "$ARTIFACT_DIR/deploy/docker-compose/logstash/"* "$PROJECT_DIR/deploy/docker-compose/logstash/" 2>/dev/null || cp -r "$ARTIFACT_DIR/deploy/docker-compose/logstash" "$PROJECT_DIR/deploy/docker-compose/"
             echo "✅ logstash 配置已同步"
           fi
 
@@ -542,8 +548,25 @@ jobs:
             RESTARTED="$RESTARTED service-nats-consumer"
           fi
 
+          # Nginx 在任何应用服务部署时都要确保运行
           if [ "${{ needs.detect-changes.outputs.frontend_admin }}" == "true" ] || [ "${{ needs.detect-changes.outputs.frontend_mall }}" == "true" ]; then
-            docker compose -f docker-compose.app.yml --env-file .env restart nginx 2>/dev/null || true
+            # 前端变了：restart nginx
+            docker compose -f docker-compose.app.yml --env-file .env restart nginx 2>/dev/null || \
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps nginx
+            RESTARTED="$RESTARTED nginx"
+          elif [ "${{ needs.detect-changes.outputs.blades }}" == "true" ] || \
+               [ "${{ needs.detect-changes.outputs.admin }}" == "true" ] || \
+               [ "${{ needs.detect-changes.outputs.interface }}" == "true" ] || \
+               [ "${{ needs.detect-changes.outputs.user }}" == "true" ] || \
+               [ "${{ needs.detect-changes.outputs.order }}" == "true" ] || \
+               [ "${{ needs.detect-changes.outputs.product }}" == "true" ] || \
+               [ "${{ needs.detect-changes.outputs.marketing }}" == "true" ] || \
+               [ "${{ needs.detect-changes.outputs.nats_consumer }}" == "true" ] || \
+               [ "${{ needs.detect-changes.outputs.job }}" == "true" ] || \
+               [ "${{ needs.detect-changes.outputs.task }}" == "true" ] || \
+               [ "${{ needs.detect-changes.outputs.force_all }}" == "true" ]; then
+            # 后端服务变了：确保 nginx 在运行
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps nginx 2>/dev/null || true
             RESTARTED="$RESTARTED nginx"
           fi
 
