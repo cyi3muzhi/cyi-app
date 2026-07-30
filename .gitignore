@@ -41,6 +41,7 @@ study/
 logs/
 .trae/
 tools/
+__debug_bin*
 
 *__
 .agents/

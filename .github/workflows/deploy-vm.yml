@@ -1,26 +1,149 @@
-name: Deploy to Local VM
+name: Deploy to VM
+
+# ====================================================================
+# CI/CD 方案：GitHub Actions 云端编译 + artifact 传递 + 虚拟机运行
+#
+# 流程：
+#   1. 云端检测哪些服务代码变了
+#   2. 云端构建变更的 Docker 镜像 + 前端 dist
+#   3. 打包成 artifact 上传
+#   4. 虚拟机上的 self-hosted runner 下载 artifact
+#   5. docker load 加载镜像 + 解压前端 + docker compose up
+#
+# 优点：
+#   - 虚拟机不装 Node.js、Go，只要有 Docker 就行
+#   - 不走 Docker Hub，通过 artifact 传递镜像
+#   - 增量部署，只构建变更的服务
+#
+# 前置条件：
+#   1. 虚拟机能访问 GitHub（已验证 ✅）
+#   2. 虚拟机已安装 Docker（已验证 ✅）
+#   3. 虚拟机上已注册 Self-hosted Runner（标签 [self-hosted, linux, vm]）
+# ====================================================================
 
 on:
   push:
-    branches: [ main, test, develop ]
+    branches: [ main, develop ]
     paths:
       - 'app/**'
       - 'api/**'
+      - 'pkg/**'
       - 'web/admin/**'
-      - 'deploy/docker-compose/**'
-      - 'Dockerfile'
+      - 'web/cyi-mall/**'
+      - 'deploy/**'
       - 'go.mod'
       - 'go.sum'
   workflow_dispatch:
     inputs:
       service:
-        description: '要部署的服务 (all / admin / user / frontend)'
-        required: true
-        default: 'all'
+        description: '要部署的服务（留空=自动检测，填写=强制部署指定服务）'
+        required: false
+        default: ''
+        type: choice
+        options:
+          - ''
+          - all
+          - blades
+          - admin
+          - interface
+          - user
+          - job
+          - task
+          - frontend
+
+# 同一分支的新推送会取消旧的部署
+concurrency:
+  group: deploy-vm-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  # ======================== 构建 ========================
+  # ======================== 检测变更的服务 ========================
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      blades: ${{ steps.detect.outputs.blades }}
+      admin: ${{ steps.detect.outputs.admin }}
+      interface: ${{ steps.detect.outputs.interface }}
+      user: ${{ steps.detect.outputs.user }}
+      job: ${{ steps.detect.outputs.job }}
+      task: ${{ steps.detect.outputs.task }}
+      frontend_admin: ${{ steps.detect.outputs.frontend_admin }}
+      frontend_mall: ${{ steps.detect.outputs.frontend_mall }}
+      has_changes: ${{ steps.detect.outputs.has_changes }}
+      force_all: ${{ steps.detect.outputs.force_all }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed services
+        id: detect
+        run: |
+          # 手动触发指定服务
+          if [ -n "${{ github.event.inputs.service }}" ]; then
+            SVC="${{ github.event.inputs.service }}"
+            echo "手动部署: $SVC"
+            if [ "$SVC" == "all" ]; then
+              echo "force_all=true" >> $GITHUB_OUTPUT
+              echo "blades=true" >> $GITHUB_OUTPUT
+              echo "admin=true" >> $GITHUB_OUTPUT
+              echo "interface=true" >> $GITHUB_OUTPUT
+              echo "user=true" >> $GITHUB_OUTPUT
+              echo "job=true" >> $GITHUB_OUTPUT
+              echo "task=true" >> $GITHUB_OUTPUT
+              echo "frontend_admin=true" >> $GITHUB_OUTPUT
+              echo "frontend_mall=true" >> $GITHUB_OUTPUT
+            else
+              case "$SVC" in
+                blades)        echo "blades=true" >> $GITHUB_OUTPUT ;;
+                admin)         echo "admin=true" >> $GITHUB_OUTPUT ;;
+                interface)     echo "interface=true" >> $GITHUB_OUTPUT ;;
+                user)          echo "user=true" >> $GITHUB_OUTPUT ;;
+                job)           echo "job=true" >> $GITHUB_OUTPUT ;;
+                task)          echo "task=true" >> $GITHUB_OUTPUT ;;
+                frontend)      echo "frontend_admin=true" >> $GITHUB_OUTPUT
+                               echo "frontend_mall=true" >> $GITHUB_OUTPUT ;;
+              esac
+            fi
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # 自动检测变更
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+          echo "变更文件:"
+          echo "$CHANGED_FILES"
+
+          check_change() {
+            local pattern="$1"
+            local var_name="$2"
+            if echo "$CHANGED_FILES" | grep -qE "$pattern"; then
+              echo "$var_name=true" >> $GITHUB_OUTPUT
+              echo "  ✅ $var_name 有变更"
+            else
+              echo "$var_name=false" >> $GITHUB_OUTPUT
+            fi
+          }
+
+          check_change 'app/blades/|api/blades/'              blades
+          check_change 'app/cin/admin/|api/cin/admin/'        admin
+          check_change 'app/cin/interface/|api/cin/interface/' interface
+          check_change 'app/service/user/|api/service/user/'  user
+          check_change 'app/job/|api/job/'                    job
+          check_change 'app/task/|api/task/'                  task
+          check_change 'web/admin/'                           frontend_admin
+          check_change 'web/cyi-mall/'                        frontend_mall
+
+          if echo "$CHANGED_FILES" | grep -qE 'app/|api/|pkg/|web/|deploy/|go\.mod|go\.sum'; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+  # ======================== 云端构建 ========================
   build:
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,106 +158,265 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Go dependencies
-        run: go mod tidy
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build services
-        run: make build
+      # ---------- 同步部署配置文件 ----------
+      - name: Pack deploy configs
+        run: |
+          mkdir -p artifacts
+          # 打包 docker-compose 配置
+          cp deploy/docker-compose/docker-compose.infra.yml artifacts/
+          cp deploy/docker-compose/docker-compose.app.yml artifacts/
+          cp deploy/docker-compose/.env artifacts/
+          cp deploy/nginx/cyi-app.conf artifacts/
 
-      # - name: Run tests
-      #   run: go test ./app/...
+      # ---------- 构建后端 Docker 镜像 ----------
+      - name: Build blades image
+        if: needs.detect-changes.outputs.blades == 'true'
+        run: |
+          cd app/blades && make docker
+          docker save cyi3muz/blades:0.1.0 -o ../../artifacts/blades.tar
+          echo "✅ blades 镜像构建完成"
 
-      - name: Build frontend
+      - name: Build admin image
+        if: needs.detect-changes.outputs.admin == 'true'
+        run: |
+          cd app/cin/admin && make docker
+          docker save cyi3muz/cin-admin:0.1.0 -o ../../artifacts/admin.tar
+          echo "✅ admin 镜像构建完成"
+
+      - name: Build interface image
+        if: needs.detect-changes.outputs.interface == 'true'
+        run: |
+          cd app/cin/interface && make docker
+          docker save cyi3muz/cin-interface:0.1.0 -o ../../artifacts/interface.tar
+          echo "✅ interface 镜像构建完成"
+
+      - name: Build user image
+        if: needs.detect-changes.outputs.user == 'true'
+        run: |
+          cd app/service/user && make docker
+          docker save cyi3muz/service-user:0.1.0 -o ../../artifacts/user.tar
+          echo "✅ user 镜像构建完成"
+
+      - name: Build job image
+        if: needs.detect-changes.outputs.job == 'true'
+        run: |
+          cd app/job && make docker
+          docker save cyi3muz/job:0.1.0 -o ../../artifacts/job.tar
+          echo "✅ job 镜像构建完成"
+
+      - name: Build task image
+        if: needs.detect-changes.outputs.task == 'true'
+        run: |
+          cd app/task && make docker
+          docker save cyi3muz/task:0.1.0 -o ../../artifacts/task.tar
+          echo "✅ task 镜像构建完成"
+
+      # ---------- 构建前端 ----------
+      - name: Build admin frontend
+        if: needs.detect-changes.outputs.frontend_admin == 'true'
         run: |
           cd web/admin
           npm install
           npm run build
+          cd ../..
+          tar -czf artifacts/frontend-admin.tar.gz -C web/admin dist
+          echo "✅ 管理后台前端构建完成"
 
-      - name: Upload artifacts
+      - name: Build mall frontend
+        if: needs.detect-changes.outputs.frontend_mall == 'true'
+        run: |
+          cd web/cyi-mall
+          npm install
+          npm run build
+          cd ../..
+          tar -czf artifacts/frontend-mall.tar.gz -C web/cyi-mall dist
+          echo "✅ 用户端商城前端构建完成"
+
+      # ---------- 上传 artifact ----------
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
-          path: |
-            bin/
-            web/admin/dist/
+          name: deploy-artifacts
+          path: artifacts/
+          retention-days: 1  # 1天后自动清理，节省空间
 
-  # ======================== 构建 Docker 镜像 ========================
-  docker-build:
-    needs: [build]
-    runs-on: ubuntu-latest
+  # ======================== 虚拟机部署 ========================
+  deploy:
+    needs: [build, detect-changes]
+    runs-on: [self-hosted, linux, vm]  # 虚拟机上的 runner
     steps:
-      - uses: actions/checkout@v4
-
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
-          path: .
+          name: deploy-artifacts
+          path: /tmp/deploy-artifacts
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build user service image
+      - name: Show deployment info
         run: |
-          docker build -f deploy/build/Dockerfile \
-            --build-arg APP_RELATIVE_PATH=service/user \
-            --build-arg APP_NAME=user \
-            -t cyi3muz/service-user:latest .
+          echo "=========================================="
+          echo "  开始部署到虚拟机"
+          echo "  分支: ${{ github.ref_name }}"
+          echo "  提交: ${{ github.sha }}"
+          echo "=========================================="
+          echo "构建产物："
+          ls -lh /tmp/deploy-artifacts/
+          echo "=========================================="
 
-      - name: Build admin BFF image
+      # ---------- 准备目录 ----------
+      - name: Prepare directories
         run: |
-          docker build -f deploy/build/Dockerfile \
-            --build-arg APP_RELATIVE_PATH=cin/admin \
-            --build-arg APP_NAME=admin \
-            -t cyi3muz/cin-admin:latest .
+          PROJECT_DIR="$HOME/cyi-app"
+          mkdir -p "$PROJECT_DIR/deploy/docker-compose"
+          mkdir -p "$PROJECT_DIR/deploy/nginx"
+          mkdir -p "$PROJECT_DIR/web/admin"
+          mkdir -p "$PROJECT_DIR/web/cyi-mall"
 
-      - name: Save Docker images
+      # ---------- 同步部署配置 ----------
+      - name: Sync deploy configs
         run: |
-          docker save cyi3muz/service-user:latest cyi3muz/cin-admin:latest -o images.tar
+          PROJECT_DIR="$HOME/cyi-app"
+          cp /tmp/deploy-artifacts/docker-compose.infra.yml "$PROJECT_DIR/deploy/docker-compose/"
+          cp /tmp/deploy-artifacts/docker-compose.app.yml   "$PROJECT_DIR/deploy/docker-compose/"
+          cp /tmp/deploy-artifacts/.env                     "$PROJECT_DIR/deploy/docker-compose/"
+          cp /tmp/deploy-artifacts/cyi-app.conf             "$PROJECT_DIR/deploy/nginx/"
+          echo "✅ 配置文件已同步"
 
-      - name: Upload Docker images
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-images
-          path: images.tar
-
-  # ======================== 部署到 VM ========================
-  deploy:
-    needs: [docker-build]
-    runs-on: [self-hosted, linux, vm]  # 需要在 VM 上注册 Runner 并打上 vm 标签
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download Docker images
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-images
-          path: /tmp/deploy
-
-      - name: Load and restart services
+      # ---------- 加载 Docker 镜像 ----------
+      - name: Load blades image
+        if: needs.detect-changes.outputs.blades == 'true'
         run: |
-          cd /tmp/deploy
+          docker load -i /tmp/deploy-artifacts/blades.tar
+          echo "✅ blades 镜像已加载"
 
-          # 加载镜像
-          docker load -i images.tar
-
-          # 进入部署目录
-          cd ~/cyi-app/deploy/docker-compose
-
-          # 重启 user 服务
-          docker compose -f docker-compose.app.yml -p cyi-app up -d --no-deps service-user
-
-          # 重启 admin 服务
-          docker compose -f docker-compose.app.yml -p cyi-app up -d --no-deps service-admin
-
-      - name: Deploy frontend
+      - name: Load admin image
+        if: needs.detect-changes.outputs.admin == 'true'
         run: |
-          # 下载前端构建产物
-          cd /tmp/deploy
+          docker load -i /tmp/deploy-artifacts/admin.tar
+          echo "✅ admin 镜像已加载"
 
-          # 复制到 Nginx 目录
-          sudo cp -r dist/* /var/www/admin/
-          sudo chown -R www-data:www-data /var/www/admin/
-          sudo nginx -s reload
+      - name: Load interface image
+        if: needs.detect-changes.outputs.interface == 'true'
+        run: |
+          docker load -i /tmp/deploy-artifacts/interface.tar
+          echo "✅ interface 镜像已加载"
+
+      - name: Load user image
+        if: needs.detect-changes.outputs.user == 'true'
+        run: |
+          docker load -i /tmp/deploy-artifacts/user.tar
+          echo "✅ user 镜像已加载"
+
+      - name: Load job image
+        if: needs.detect-changes.outputs.job == 'true'
+        run: |
+          docker load -i /tmp/deploy-artifacts/job.tar
+          echo "✅ job 镜像已加载"
+
+      - name: Load task image
+        if: needs.detect-changes.outputs.task == 'true'
+        run: |
+          docker load -i /tmp/deploy-artifacts/task.tar
+          echo "✅ task 镜像已加载"
+
+      # ---------- 部署前端 ----------
+      - name: Deploy admin frontend
+        if: needs.detect-changes.outputs.frontend_admin == 'true'
+        run: |
+          PROJECT_DIR="$HOME/cyi-app"
+          cd "$PROJECT_DIR/web/admin"
+          rm -rf dist
+          tar xzf /tmp/deploy-artifacts/frontend-admin.tar.gz
+          echo "✅ 管理后台前端已部署"
+
+      - name: Deploy mall frontend
+        if: needs.detect-changes.outputs.frontend_mall == 'true'
+        run: |
+          PROJECT_DIR="$HOME/cyi-app"
+          cd "$PROJECT_DIR/web/cyi-mall"
+          rm -rf dist
+          tar xzf /tmp/deploy-artifacts/frontend-mall.tar.gz
+          echo "✅ 用户端商城前端已部署"
+
+      # ---------- 重启服务 ----------
+      - name: Restart changed backend services
+        run: |
+          PROJECT_DIR="$HOME/cyi-app"
+          cd "$PROJECT_DIR/deploy/docker-compose"
+
+          # 逐个重启变更的服务
+          RESTARTED=""
+
+          if [ "${{ needs.detect-changes.outputs.blades }}" == "true" ]; then
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-blades
+            RESTARTED="$RESTARTED service-blades"
+          fi
+
+          if [ "${{ needs.detect-changes.outputs.admin }}" == "true" ]; then
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-admin
+            RESTARTED="$RESTARTED service-admin"
+          fi
+
+          if [ "${{ needs.detect-changes.outputs.interface }}" == "true" ]; then
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-interface
+            RESTARTED="$RESTARTED service-interface"
+          fi
+
+          if [ "${{ needs.detect-changes.outputs.user }}" == "true" ]; then
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-user
+            RESTARTED="$RESTARTED service-user"
+          fi
+
+          if [ "${{ needs.detect-changes.outputs.job }}" == "true" ]; then
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-job
+            RESTARTED="$RESTARTED service-job"
+          fi
+
+          if [ "${{ needs.detect-changes.outputs.task }}" == "true" ]; then
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-task
+            RESTARTED="$RESTARTED service-task"
+          fi
+
+          # 如果前端有变更，重启 nginx 容器加载新文件
+          if [ "${{ needs.detect-changes.outputs.frontend_admin }}" == "true" ] || [ "${{ needs.detect-changes.outputs.frontend_mall }}" == "true" ]; then
+            docker compose -f docker-compose.app.yml --env-file .env restart nginx 2>/dev/null || true
+            RESTARTED="$RESTARTED nginx"
+          fi
+
+          echo "已重启的服务:$RESTARTED"
+
+      # ---------- 清理临时文件 ----------
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -rf /tmp/deploy-artifacts
+          echo "✅ 临时文件已清理"
+
+      # ---------- 验证部署 ----------
+      - name: Verify deployment
+        if: always()
+        run: |
+          PROJECT_DIR="$HOME/cyi-app"
+          cd "$PROJECT_DIR/deploy/docker-compose"
+          echo ""
+          echo "=========================================="
+          echo "  服务状态"
+          echo "=========================================="
+          echo "--- 基础设施 ---"
+          docker compose -f docker-compose.infra.yml --env-file .env ps 2>/dev/null || echo "⚠️ 无法获取基础设施状态"
+          echo ""
+          echo "--- 应用服务 ---"
+          docker compose -f docker-compose.app.yml --env-file .env ps 2>/dev/null || echo "⚠️ 无法获取应用服务状态"
+          echo "=========================================="
+
+      # ---------- 失败通知 ----------
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ 部署失败！请检查上方日志"
+          echo "常见问题："
+          echo "  1. Docker 构建失败 → 检查代码能否编译通过"
+          echo "  2. 服务启动失败 → 检查 Consul 配置、依赖服务是否正常"
+          echo "  3. artifact 下载失败 → 检查虚拟机网络、磁盘空间"
