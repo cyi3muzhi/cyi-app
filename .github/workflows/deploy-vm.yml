@@ -81,9 +81,15 @@ jobs:
       - name: Detect changed services
         id: detect
         run: |
-          # 手动触发指定服务
-          if [ -n "${{ github.event.inputs.service }}" ]; then
+          # 判断触发方式，获取指定服务
+          SVC=""
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             SVC="${{ github.event.inputs.service }}"
+          fi
+          echo "触发方式: ${{ github.event_name }}, 指定服务: '$SVC'"
+
+          # 手动触发指定服务
+          if [ -n "$SVC" ]; then
             echo "手动部署: $SVC"
             if [ "$SVC" == "all" ]; then
               echo "force_all=true" >> $GITHUB_OUTPUT
