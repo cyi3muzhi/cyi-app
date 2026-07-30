@@ -169,11 +169,42 @@ jobs:
       - name: Pack deploy configs
         run: |
           mkdir -p artifacts
-          # 打包 docker-compose 配置
           cp deploy/docker-compose/docker-compose.infra.yml artifacts/
           cp deploy/docker-compose/docker-compose.app.yml artifacts/
-          cp deploy/docker-compose/.env artifacts/
           cp deploy/nginx/cyi-app.conf artifacts/
+          # .env 如果存在就复制，不存在就创建默认的
+          if [ -f deploy/docker-compose/.env ]; then
+            cp deploy/docker-compose/.env artifacts/
+          else
+            echo ".env 不存在，创建默认配置"
+            cat > artifacts/.env << 'EOF'
+INTERFACE_HTTP_PORT=8010
+INTERFACE_GRPC_PORT=9010
+TASK_PORT=10100
+JOB_PORT=10200
+USER_GRPC_PORT=9100
+BLADES_HTTP_PORT=30800
+BLADES_GRPC_PORT=30900
+ADMIN_HTTP_PORT=8080
+ADMIN_GRPC_PORT=9090
+CONSUL_PORT=8500
+REDIS_PORT=6379
+MYSQL_PORT=3306
+JAEGER_UI_PORT=16686
+JAEGER_HTTP_PORT=14268
+PROMETHEUS_PORT=9090
+GRAFANA_PORT=3000
+RABBITMQ_PORT=5672
+RABBITMQ_MANAGEMENT_PORT=15672
+RABBITMQ_USER=admin
+RABBITMQ_PASSWORD=admin
+RABBITMQ_VHOST=/
+NATS_PORT=4222
+NATS_HTTP_PORT=8222
+ELASTICSEARCH_PORT=9200
+KIBANA_PORT=5601
+EOF
+          fi
 
       # ---------- 构建后端 Docker 镜像 ----------
       - name: Build blades image
@@ -282,9 +313,11 @@ jobs:
       - name: Sync deploy configs
         run: |
           PROJECT_DIR="$HOME/cyi-app"
+          mkdir -p "$PROJECT_DIR/deploy/docker-compose"
+          mkdir -p "$PROJECT_DIR/deploy/nginx"
           cp /tmp/deploy-artifacts/docker-compose.infra.yml "$PROJECT_DIR/deploy/docker-compose/"
           cp /tmp/deploy-artifacts/docker-compose.app.yml   "$PROJECT_DIR/deploy/docker-compose/"
-          cp /tmp/deploy-artifacts/.env                     "$PROJECT_DIR/deploy/docker-compose/"
+          cp /tmp/deploy-artifacts/.env                     "$PROJECT_DIR/deploy/docker-compose/" 2>/dev/null || echo "⚠️  .env 不存在，跳过"
           cp /tmp/deploy-artifacts/cyi-app.conf             "$PROJECT_DIR/deploy/nginx/"
           echo "✅ 配置文件已同步"
 
