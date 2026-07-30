@@ -10,29 +10,15 @@ name: Deploy to VM
 #   4. 虚拟机上的 self-hosted runner 下载 artifact
 #   5. docker load 加载镜像 + 解压前端 + docker compose up
 #
-# 优点：
-#   - 虚拟机不装 Node.js、Go，只要有 Docker 就行
-#   - 不走 Docker Hub，通过 artifact 传递镜像
-#   - 增量部署，只构建变更的服务
-#
 # 前置条件：
-#   1. 虚拟机能访问 GitHub（已验证 ✅）
-#   2. 虚拟机已安装 Docker（已验证 ✅）
+#   1. 虚拟机能访问 GitHub
+#   2. 虚拟机已安装 Docker
 #   3. 虚拟机上已注册 Self-hosted Runner（标签 [self-hosted, linux, vm]）
 # ====================================================================
 
 on:
   push:
     branches: [ main, develop ]
-    paths:
-      - 'app/**'
-      - 'api/**'
-      - 'pkg/**'
-      - 'web/admin/**'
-      - 'web/cyi-mall/**'
-      - 'deploy/**'
-      - 'go.mod'
-      - 'go.sum'
   workflow_dispatch:
     inputs:
       service:
@@ -52,7 +38,6 @@ on:
           - task
           - frontend
 
-# 同一分支的新推送会取消旧的部署
 concurrency:
   group: deploy-vm-${{ github.ref }}
   cancel-in-progress: true
@@ -81,7 +66,6 @@ jobs:
       - name: Detect changed services
         id: detect
         run: |
-          # 判断触发方式，获取指定服务
           SVC=""
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             SVC="${{ github.event.inputs.service }}"
@@ -119,9 +103,26 @@ jobs:
             exit 0
           fi
 
-          # 自动检测变更
+          # 自动检测变更（push 触发）
+          echo "自动检测模式：对比最近两次提交"
           CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
-          echo "变更文件:"
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "无法获取变更文件（可能是首次提交），强制全量部署"
+            echo "force_all=true" >> $GITHUB_OUTPUT
+            echo "blades=true" >> $GITHUB_OUTPUT
+            echo "admin=true" >> $GITHUB_OUTPUT
+            echo "interface=true" >> $GITHUB_OUTPUT
+            echo "user=true" >> $GITHUB_OUTPUT
+            echo "job=true" >> $GITHUB_OUTPUT
+            echo "task=true" >> $GITHUB_OUTPUT
+            echo "frontend_admin=true" >> $GITHUB_OUTPUT
+            echo "frontend_mall=true" >> $GITHUB_OUTPUT
+            echo "infra=true" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "变更文件列表:"
           echo "$CHANGED_FILES"
 
           check_change() {
@@ -178,39 +179,14 @@ jobs:
           cp deploy/docker-compose/docker-compose.infra.yml artifacts/
           cp deploy/docker-compose/docker-compose.app.yml artifacts/
           cp deploy/nginx/cyi-app.conf artifacts/
-          # .env 如果存在就复制，不存在就创建默认的
           if [ -f deploy/docker-compose/.env ]; then
             cp deploy/docker-compose/.env artifacts/
           else
-            echo ".env 不存在，创建默认配置"
-            cat > artifacts/.env << 'EOF'
-INTERFACE_HTTP_PORT=8010
-INTERFACE_GRPC_PORT=9010
-TASK_PORT=10100
-JOB_PORT=10200
-USER_GRPC_PORT=9100
-BLADES_HTTP_PORT=30800
-BLADES_GRPC_PORT=30900
-ADMIN_HTTP_PORT=8080
-ADMIN_GRPC_PORT=9090
-CONSUL_PORT=8500
-REDIS_PORT=6379
-MYSQL_PORT=3306
-JAEGER_UI_PORT=16686
-JAEGER_HTTP_PORT=14268
-PROMETHEUS_PORT=9090
-GRAFANA_PORT=3000
-RABBITMQ_PORT=5672
-RABBITMQ_MANAGEMENT_PORT=15672
-RABBITMQ_USER=admin
-RABBITMQ_PASSWORD=admin
-RABBITMQ_VHOST=/
-NATS_PORT=4222
-NATS_HTTP_PORT=8222
-ELASTICSEARCH_PORT=9200
-KIBANA_PORT=5601
-EOF
+            echo "创建默认 .env"
+            printf 'INTERFACE_HTTP_PORT=8010\nINTERFACE_GRPC_PORT=9010\nTASK_PORT=10100\nJOB_PORT=10200\nUSER_GRPC_PORT=9100\nBLADES_HTTP_PORT=30800\nBLADES_GRPC_PORT=30900\nADMIN_HTTP_PORT=8080\nADMIN_GRPC_PORT=9090\nCONSUL_PORT=8500\nREDIS_PORT=6379\nMYSQL_PORT=3306\nJAEGER_UI_PORT=16686\nJAEGER_HTTP_PORT=14268\nPROMETHEUS_PORT=9090\nGRAFANA_PORT=3000\nRABBITMQ_PORT=5672\nRABBITMQ_MANAGEMENT_PORT=15672\nRABBITMQ_USER=admin\nRABBITMQ_PASSWORD=admin\nRABBITMQ_VHOST=/\nNATS_PORT=4222\nNATS_HTTP_PORT=8222\nELASTICSEARCH_PORT=9200\nKIBANA_PORT=5601\n' > artifacts/.env
           fi
+          echo "✅ 部署配置已打包"
+          ls -la artifacts/
 
       # ---------- 构建后端 Docker 镜像 ----------
       - name: Build blades image
@@ -282,12 +258,13 @@ EOF
         with:
           name: deploy-artifacts
           path: artifacts/
-          retention-days: 1  # 1天后自动清理，节省空间
+          retention-days: 1
 
   # ======================== 虚拟机部署 ========================
   deploy:
     needs: [build, detect-changes]
-    runs-on: [self-hosted, linux, vm]  # 虚拟机上的 runner
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    runs-on: [self-hosted, linux, vm]
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -319,12 +296,14 @@ EOF
       - name: Sync deploy configs
         run: |
           PROJECT_DIR="$HOME/cyi-app"
-          mkdir -p "$PROJECT_DIR/deploy/docker-compose"
-          mkdir -p "$PROJECT_DIR/deploy/nginx"
           cp /tmp/deploy-artifacts/docker-compose.infra.yml "$PROJECT_DIR/deploy/docker-compose/"
           cp /tmp/deploy-artifacts/docker-compose.app.yml   "$PROJECT_DIR/deploy/docker-compose/"
-          cp /tmp/deploy-artifacts/.env                     "$PROJECT_DIR/deploy/docker-compose/" 2>/dev/null || echo "⚠️  .env 不存在，跳过"
-          cp /tmp/deploy-artifacts/cyi-app.conf             "$PROJECT_DIR/deploy/nginx/"
+          if [ -f /tmp/deploy-artifacts/.env ]; then
+            cp /tmp/deploy-artifacts/.env "$PROJECT_DIR/deploy/docker-compose/"
+          fi
+          if [ -f /tmp/deploy-artifacts/cyi-app.conf ]; then
+            cp /tmp/deploy-artifacts/cyi-app.conf "$PROJECT_DIR/deploy/nginx/"
+          fi
           echo "✅ 配置文件已同步"
 
       # ---------- 加载 Docker 镜像 ----------
@@ -384,12 +363,10 @@ EOF
           echo "✅ 用户端商城前端已部署"
 
       # ---------- 重启服务 ----------
-      - name: Restart changed backend services
+      - name: Restart changed services
         run: |
           PROJECT_DIR="$HOME/cyi-app"
           cd "$PROJECT_DIR/deploy/docker-compose"
-
-          # 逐个重启变更的服务
           RESTARTED=""
 
           if [ "${{ needs.detect-changes.outputs.blades }}" == "true" ]; then
@@ -422,51 +399,37 @@ EOF
             RESTARTED="$RESTARTED service-task"
           fi
 
-          # 如果前端有变更，重启 nginx 容器加载新文件
           if [ "${{ needs.detect-changes.outputs.frontend_admin }}" == "true" ] || [ "${{ needs.detect-changes.outputs.frontend_mall }}" == "true" ]; then
             docker compose -f docker-compose.app.yml --env-file .env restart nginx 2>/dev/null || true
             RESTARTED="$RESTARTED nginx"
           fi
 
-          # 如果是基础设施，启动基础设施
           if [ "${{ needs.detect-changes.outputs.infra }}" == "true" ]; then
             echo "启动基础设施..."
             docker compose -f docker-compose.infra.yml --env-file .env up -d
-            echo "基础设施已启动"
+            RESTARTED="$RESTARTED infra"
           fi
 
-          echo "已重启的服务:$RESTARTED"
+          if [ -z "$RESTARTED" ]; then
+            echo "⚠️ 没有需要重启的服务"
+          else
+            echo "✅ 已重启服务:$RESTARTED"
+          fi
 
-      # ---------- 清理临时文件 ----------
-      - name: Cleanup
+      # ---------- 清理和验证 ----------
+      - name: Cleanup and verify
         if: always()
         run: |
           rm -rf /tmp/deploy-artifacts
-          echo "✅ 临时文件已清理"
-
-      # ---------- 验证部署 ----------
-      - name: Verify deployment
-        if: always()
-        run: |
-          PROJECT_DIR="$HOME/cyi-app"
-          cd "$PROJECT_DIR/deploy/docker-compose"
+          echo "临时文件已清理"
           echo ""
           echo "=========================================="
           echo "  服务状态"
           echo "=========================================="
+          cd "$HOME/cyi-app/deploy/docker-compose" 2>/dev/null || exit 0
           echo "--- 基础设施 ---"
           docker compose -f docker-compose.infra.yml --env-file .env ps 2>/dev/null || echo "⚠️ 无法获取基础设施状态"
           echo ""
           echo "--- 应用服务 ---"
           docker compose -f docker-compose.app.yml --env-file .env ps 2>/dev/null || echo "⚠️ 无法获取应用服务状态"
           echo "=========================================="
-
-      # ---------- 失败通知 ----------
-      - name: Notify on failure
-        if: failure()
-        run: |
-          echo "❌ 部署失败！请检查上方日志"
-          echo "常见问题："
-          echo "  1. Docker 构建失败 → 检查代码能否编译通过"
-          echo "  2. 服务启动失败 → 检查 Consul 配置、依赖服务是否正常"
-          echo "  3. artifact 下载失败 → 检查虚拟机网络、磁盘空间"
