@@ -43,6 +43,7 @@ on:
         options:
           - ''
           - all
+          - infra
           - blades
           - admin
           - interface
@@ -69,6 +70,7 @@ jobs:
       task: ${{ steps.detect.outputs.task }}
       frontend_admin: ${{ steps.detect.outputs.frontend_admin }}
       frontend_mall: ${{ steps.detect.outputs.frontend_mall }}
+      infra: ${{ steps.detect.outputs.infra }}
       has_changes: ${{ steps.detect.outputs.has_changes }}
       force_all: ${{ steps.detect.outputs.force_all }}
     steps:
@@ -93,8 +95,10 @@ jobs:
               echo "task=true" >> $GITHUB_OUTPUT
               echo "frontend_admin=true" >> $GITHUB_OUTPUT
               echo "frontend_mall=true" >> $GITHUB_OUTPUT
+              echo "infra=true" >> $GITHUB_OUTPUT
             else
               case "$SVC" in
+                infra)         echo "infra=true" >> $GITHUB_OUTPUT ;;
                 blades)        echo "blades=true" >> $GITHUB_OUTPUT ;;
                 admin)         echo "admin=true" >> $GITHUB_OUTPUT ;;
                 interface)     echo "interface=true" >> $GITHUB_OUTPUT ;;
@@ -383,6 +387,13 @@ jobs:
           if [ "${{ needs.detect-changes.outputs.frontend_admin }}" == "true" ] || [ "${{ needs.detect-changes.outputs.frontend_mall }}" == "true" ]; then
             docker compose -f docker-compose.app.yml --env-file .env restart nginx 2>/dev/null || true
             RESTARTED="$RESTARTED nginx"
+          fi
+
+          # 如果是基础设施，启动基础设施
+          if [ "${{ needs.detect-changes.outputs.infra }}" == "true" ]; then
+            echo "启动基础设施..."
+            docker compose -f docker-compose.infra.yml --env-file .env up -d
+            echo "基础设施已启动"
           fi
 
           echo "已重启的服务:$RESTARTED"
