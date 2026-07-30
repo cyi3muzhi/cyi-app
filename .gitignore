@@ -32,6 +32,12 @@ Thumbs.db
 *.log
 bin/
 
+# TypeScript build cache
+*.tsbuildinfo
+
+# Frontend build output
+dist/
+
 # Develop tools
 .vscode/
 .idea/

@@ -288,7 +288,8 @@ jobs:
         if: needs.detect-changes.outputs.frontend_admin == 'true'
         run: |
           cd web/admin
-          npm install
+          rm -rf dist tsconfig.tsbuildinfo node_modules
+          npm ci
           npm run build
           cd ../..
           tar -czf artifacts/frontend-admin.tar.gz -C web/admin dist
@@ -298,7 +299,8 @@ jobs:
         if: needs.detect-changes.outputs.frontend_mall == 'true'
         run: |
           cd web/cyi-mall
-          npm install
+          rm -rf dist tsconfig.tsbuildinfo node_modules
+          npm ci
           npm run build
           cd ../..
           tar -czf artifacts/frontend-mall.tar.gz -C web/cyi-mall dist
