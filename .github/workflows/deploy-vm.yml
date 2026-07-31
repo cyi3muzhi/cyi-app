@@ -181,6 +181,25 @@ jobs:
     if: needs.detect-changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     steps:
+      # ---------- 先清理磁盘，防止 Runner 因磁盘满崩溃 ----------
+      - name: Clean disk space
+        run: |
+          echo "===== 清理前 ====="
+          df -h /
+          echo ""
+          echo "清理 Docker 全部无用资源..."
+          docker system prune -a --volumes -f 2>/dev/null || true
+          docker builder prune -af 2>/dev/null || true
+          echo "清理 apt 缓存..."
+          sudo apt-get clean 2>/dev/null || true
+          echo "清理 Go 缓存..."
+          go clean -cache -testcache -modcache 2>/dev/null || true
+          echo "清理临时文件..."
+          sudo rm -rf /tmp/* 2>/dev/null || true
+          echo ""
+          echo "===== 清理后 ====="
+          df -h /
+
       - uses: actions/checkout@v4
 
       - name: Set up Go
@@ -195,22 +214,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      # ---------- 清理磁盘空间 ----------
-      - name: Clean disk space
-        run: |
-          echo "磁盘使用情况："
-          df -h /
-          echo ""
-          echo "清理 Docker 未使用的资源..."
-          docker system prune -af 2>/dev/null || true
-          echo "清理完成"
-          df -h /
-          echo ""
-          echo "清理 Go 构建缓存..."
-          go clean -cache -testcache 2>/dev/null || true
-          echo "清理完成"
-          df -h /
 
       # ---------- 同步部署配置文件 ----------
       - name: Pack deploy configs
