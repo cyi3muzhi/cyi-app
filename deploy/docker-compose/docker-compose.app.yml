@@ -1,26 +1,27 @@
-# 外部基础设施服务（由 docker-compose.infra.yml 管理）
-# 使用 external: true 让 Docker Compose 解析依赖时能找到这些服务
-consul:
-  image: hashicorp/consul:1.22
-  external: true
-
-mysql:
-  image: mysql:8.0
-  external: true
-
-redis:
-  image: redis/redis-stack-server:7.2.0-v10
-  external: true
-
-nats:
-  image: nats:2.11
-  external: true
-
-jaeger:
-  image: jaegertracing/all-in-one:1.49
-  external: true
-
 services:
+  # ============ 外部基础设施服务（由 docker-compose.infra.yml 管理）============
+  # 使用 external: true 让 Docker Compose 解析依赖时能找到这些已存在的服务
+  consul:
+    image: hashicorp/consul:1.22
+    external: true
+
+  mysql:
+    image: mysql:8.0
+    external: true
+
+  redis:
+    image: redis/redis-stack-server:7.2.0-v10
+    external: true
+
+  nats:
+    image: nats:2.11
+    external: true
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.49
+    external: true
+
+  # ============ 业务微服务 ============
   # Interface 服务 - 业务微服务
   service-interface:
     # 使用本地生成的镜像
