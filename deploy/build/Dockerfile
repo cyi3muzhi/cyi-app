@@ -1,26 +1,26 @@
-FROM golang:1.25 AS builder
+FROM golang:1.25-alpine AS builder
 
 ARG APP_RELATIVE_PATH
+
+RUN apk add --no-cache make git
+
+COPY go.mod go.sum* ./
+RUN go mod download 2>/dev/null || true
 
 COPY . /src
 WORKDIR /src/app/${APP_RELATIVE_PATH}
 
-RUN GOPROXY=https://goproxy.cn make build
+RUN CGO_ENABLED=0 GOPROXY=https://goproxy.cn make build
 
-FROM debian:stable-slim
+FROM alpine:3.20
 
 ARG APP_RELATIVE_PATH
 ARG APP_NAME
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-		ca-certificates  \
-        netbase \
-        && rm -rf /var/lib/apt/lists/ \
-        && apt-get autoremove -y && apt-get autoclean -y
+RUN apk add --no-cache ca-certificates tzdata
 
 # 设置时区为上海
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-RUN echo "Asia/Shanghai" > /etc/timezone
 
 COPY --from=builder /src/app/${APP_RELATIVE_PATH}/bin /app
 

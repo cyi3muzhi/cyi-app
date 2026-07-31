@@ -196,6 +196,22 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # ---------- 清理磁盘空间 ----------
+      - name: Clean disk space
+        run: |
+          echo "磁盘使用情况："
+          df -h /
+          echo ""
+          echo "清理 Docker 未使用的资源..."
+          docker system prune -af 2>/dev/null || true
+          echo "清理完成"
+          df -h /
+          echo ""
+          echo "清理 Go 构建缓存..."
+          go clean -cache -testcache 2>/dev/null || true
+          echo "清理完成"
+          df -h /
+
       # ---------- 同步部署配置文件 ----------
       - name: Pack deploy configs
         run: |
