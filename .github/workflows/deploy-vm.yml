@@ -302,11 +302,20 @@ jobs:
       - name: Package all artifacts
         run: |
           mkdir -p /tmp/deploy-artifacts
+          found=0
           for f in /tmp/*.tar.gz; do
             if [ -f "$f" ]; then
               cp "$f" /tmp/deploy-artifacts/
+              found=1
             fi
           done
+          # 如果没有任何 tar.gz（比如只改了 nginx 配置，没有构建任何服务）
+          # 放一个占位文件，保证 artifact 至少有一个文件（否则 upload-artifact@v4 会报错：artifact not found）
+          if [ "$found" -eq 0 ]; then
+            echo "⚠️  没有检测到需要构建的服务，只修改了配置文件"
+            echo "placeholder" > /tmp/deploy-artifacts/.placeholder
+            echo "deploy_mode=config-only" > /tmp/deploy-artifacts/.deploy_mode
+          fi
           echo "产物清单:"
           ls -lh /tmp/deploy-artifacts/
           echo ""
