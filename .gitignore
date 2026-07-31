@@ -44,7 +44,10 @@ dist/
 *.swp
 study/
 *.exe
-logs/
+logs/          # 根目录运行日志
+deploy/logs/   # 部署目录下的运行日志（冗余保护）
+!web/**/logs/  # 前端代码里的 logs 组件目录不忽略
+!**/src/**/logs/  # src 下的 logs 代码目录不忽略
 .trae/
 tools/
 __debug_bin*
