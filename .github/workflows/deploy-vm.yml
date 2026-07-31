@@ -1,19 +1,23 @@
 name: Deploy to VM
 
 # ====================================================================
-# CI/CD 方案：GitHub Actions 云端编译 + artifact 传递 + 虚拟机运行
+# CI/CD 方案：检测变更 + Self-hosted Runner 本机构建/部署
 #
 # 流程：
-#   1. 云端检测哪些服务代码变了
-#   2. 云端构建变更的 Docker 镜像 + 前端 dist
-#   3. 打包成 artifact 上传
-#   4. 虚拟机上的 self-hosted runner 下载 artifact
-#   5. docker load 加载镜像 + 解压前端 + docker compose up
+#   1. 云端检测哪些服务代码变了（很轻量，几秒完成）
+#   2. 在你的虚拟机(self-hosted runner)上：
+#      - 直接构建变更的 Docker 镜像（不需要传文件，本机直接做）
+#      - 直接构建前端 dist 到本地项目目录
+#      - 同步部署配置文件
+#      - 启动基础设施 + 重启变更服务
+#
+# 优势：完全没有 GitHub→VM 的跨网络 artifact 传输（之前下载 10 分钟→0秒）
 #
 # 前置条件：
 #   1. 虚拟机能访问 GitHub
-#   2. 虚拟机已安装 Docker
+#   2. 虚拟机已安装：Docker、Go 1.25、Node.js 20
 #   3. 虚拟机上已注册 Self-hosted Runner（标签 [self-hosted, linux, vm]）
+#   4. 项目代码在 $HOME/cyi-app 下（consul 配置、docker compose 等在那）
 # ====================================================================
 
 on:
@@ -47,7 +51,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ======================== 检测变更的服务 ========================
+  # ======================== 检测变更的服务（轻量，云端跑）========================
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
@@ -175,230 +179,45 @@ jobs:
             echo "has_changes=false" >> $GITHUB_OUTPUT
           fi
 
-  # ======================== 云端构建 ========================
-  build:
+  # ======================== 构建 + 部署（全部在虚拟机上本机执行）========================
+  deploy:
     needs: [detect-changes]
     if: needs.detect-changes.outputs.has_changes == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vm]
+    env:
+      PROJECT_DIR: ${{ format('{0}/cyi-app', env.HOME) }}
     steps:
-      # ---------- 先清理磁盘，防止 Runner 因磁盘满崩溃 ----------
+      # ---------- 清理磁盘（防止磁盘满导致 Runner 崩溃）----------
       - name: Clean disk space
         run: |
           echo "===== 清理前 ====="
           df -h /
           echo ""
-          echo "清理 Docker 全部无用资源..."
-          docker system prune -a --volumes -f 2>/dev/null || true
-          echo "清理 apt 缓存..."
-          sudo apt-get clean 2>/dev/null || true
+          echo "清理 Docker 无用资源..."
+          docker system prune -f 2>/dev/null || true
+          docker builder prune -f 2>/dev/null || true
           echo "清理 Go 缓存..."
-          go clean -cache -testcache -modcache 2>/dev/null || true
-          echo "清理临时文件..."
-          sudo rm -rf /tmp/* 2>/dev/null || true
+          go clean -cache 2>/dev/null || true
           echo ""
           echo "===== 清理后 ====="
           df -h /
 
       - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.25.0'
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # ---------- 同步部署配置文件 ----------
-      - name: Pack deploy configs
-        run: |
-          mkdir -p artifacts
-          cp deploy/docker-compose/docker-compose.infra.yml artifacts/
-          cp deploy/docker-compose/docker-compose.app.yml artifacts/
-          cp deploy/nginx/cyi-app.conf artifacts/
-          if [ -f deploy/docker-compose/.env ]; then
-            cp deploy/docker-compose/.env artifacts/
-          else
-            echo "创建默认 .env"
-            printf 'INTERFACE_HTTP_PORT=8010\nINTERFACE_GRPC_PORT=9010\nTASK_PORT=10100\nJOB_PORT=10200\nUSER_GRPC_PORT=9100\nBLADES_HTTP_PORT=30800\nBLADES_GRPC_PORT=30900\nADMIN_HTTP_PORT=8080\nADMIN_GRPC_PORT=9090\nCONSUL_PORT=8500\nREDIS_PORT=6379\nMYSQL_PORT=3306\nJAEGER_UI_PORT=16686\nJAEGER_HTTP_PORT=14268\nPROMETHEUS_PORT=9090\nGRAFANA_PORT=3000\nRABBITMQ_PORT=5672\nRABBITMQ_MANAGEMENT_PORT=15672\nRABBITMQ_USER=admin\nRABBITMQ_PASSWORD=admin\nRABBITMQ_VHOST=/\nNATS_PORT=4222\nNATS_HTTP_PORT=8222\nELASTICSEARCH_PORT=9200\nKIBANA_PORT=5601\n' > artifacts/.env
-          fi
-          echo "✅ 部署配置已打包"
-          ls -la artifacts/
-
-      # ---------- 构建后端 Docker 镜像 ----------
-      - name: Build blades image
-        if: needs.detect-changes.outputs.blades == 'true'
-        run: |
-          cd app/blades && make docker
-          docker save cyi3muz/blades:0.1.0 | gzip > $GITHUB_WORKSPACE/artifacts/blades.tar.gz
-          docker rmi cyi3muz/blades:0.1.0 2>/dev/null || true
-          docker builder prune -af 2>/dev/null || true
-          echo "✅ blades 镜像构建完成"
-
-      - name: Build admin image
-        if: needs.detect-changes.outputs.admin == 'true'
-        run: |
-          cd app/cin/admin && make docker
-          docker save cyi3muz/cin-admin:0.1.0 | gzip > $GITHUB_WORKSPACE/artifacts/admin.tar.gz
-          docker rmi cyi3muz/cin-admin:0.1.0 2>/dev/null || true
-          docker builder prune -af 2>/dev/null || true
-          echo "✅ admin 镜像构建完成"
-
-      - name: Build interface image
-        if: needs.detect-changes.outputs.interface == 'true'
-        run: |
-          cd app/cin/interface && make docker
-          docker save cyi3muz/cin-interface:0.1.0 | gzip > $GITHUB_WORKSPACE/artifacts/interface.tar.gz
-          docker rmi cyi3muz/cin-interface:0.1.0 2>/dev/null || true
-          docker builder prune -af 2>/dev/null || true
-          echo "✅ interface 镜像构建完成"
-
-      - name: Build user image
-        if: needs.detect-changes.outputs.user == 'true'
-        run: |
-          cd app/service/user && make docker
-          docker save cyi3muz/service-user:0.1.0 | gzip > $GITHUB_WORKSPACE/artifacts/user.tar.gz
-          docker rmi cyi3muz/service-user:0.1.0 2>/dev/null || true
-          docker builder prune -af 2>/dev/null || true
-          echo "✅ user 镜像构建完成"
-
-      - name: Build job image
-        if: needs.detect-changes.outputs.job == 'true'
-        run: |
-          cd app/job && make docker
-          docker save cyi3muz/job:0.1.0 | gzip > $GITHUB_WORKSPACE/artifacts/job.tar.gz
-          docker rmi cyi3muz/job:0.1.0 2>/dev/null || true
-          docker builder prune -af 2>/dev/null || true
-          echo "✅ job 镜像构建完成"
-
-      - name: Build task image
-        if: needs.detect-changes.outputs.task == 'true'
-        run: |
-          cd app/task && make docker
-          docker save cyi3muz/task:0.1.0 | gzip > $GITHUB_WORKSPACE/artifacts/task.tar.gz
-          docker rmi cyi3muz/task:0.1.0 2>/dev/null || true
-          docker builder prune -af 2>/dev/null || true
-          echo "✅ task 镜像构建完成"
-
-      - name: Build order image
-        if: needs.detect-changes.outputs.order == 'true'
-        run: |
-          cd app/service/order && make docker
-          docker save cyi3muz/service-order:0.1.0 | gzip > $GITHUB_WORKSPACE/artifacts/order.tar.gz
-          docker rmi cyi3muz/service-order:0.1.0 2>/dev/null || true
-          docker builder prune -af 2>/dev/null || true
-          echo "✅ order 镜像构建完成"
-
-      - name: Build product image
-        if: needs.detect-changes.outputs.product == 'true'
-        run: |
-          cd app/service/product && make docker
-          docker save cyi3muz/service-product:0.1.0 | gzip > $GITHUB_WORKSPACE/artifacts/product.tar.gz
-          docker rmi cyi3muz/service-product:0.1.0 2>/dev/null || true
-          docker builder prune -af 2>/dev/null || true
-          echo "✅ product 镜像构建完成"
-
-      - name: Build marketing image
-        if: needs.detect-changes.outputs.marketing == 'true'
-        run: |
-          cd app/service/marketing && make docker
-          docker save cyi3muz/service-marketing:0.1.0 | gzip > $GITHUB_WORKSPACE/artifacts/marketing.tar.gz
-          docker rmi cyi3muz/service-marketing:0.1.0 2>/dev/null || true
-          docker builder prune -af 2>/dev/null || true
-          echo "✅ marketing 镜像构建完成"
-
-      - name: Build nats-consumer image
-        if: needs.detect-changes.outputs.nats_consumer == 'true'
-        run: |
-          cd app/nats && DOCKER_IMAGE_NAME=nats-consumer make docker
-          docker save cyi3muz/nats-consumer:0.1.0 | gzip > $GITHUB_WORKSPACE/artifacts/nats-consumer.tar.gz
-          docker rmi cyi3muz/nats-consumer:0.1.0 2>/dev/null || true
-          docker builder prune -af 2>/dev/null || true
-          echo "✅ nats-consumer 镜像构建完成"
-
-      # ---------- 构建前端 ----------
-      - name: Build admin frontend
-        if: needs.detect-changes.outputs.frontend_admin == 'true'
-        run: |
-          cd web/admin
-          rm -rf dist tsconfig.tsbuildinfo node_modules
-          npm ci
-          npm run build
-          cd ../..
-          tar -czf artifacts/frontend-admin.tar.gz -C web/admin dist
-          echo "✅ 管理后台前端构建完成"
-
-      - name: Build mall frontend
-        if: needs.detect-changes.outputs.frontend_mall == 'true'
-        run: |
-          cd web/cyi-mall
-          rm -rf dist tsconfig.tsbuildinfo node_modules
-          npm ci
-          npm run build
-          cd ../..
-          tar -czf artifacts/frontend-mall.tar.gz -C web/cyi-mall dist
-          echo "✅ 用户端商城前端构建完成"
-
-      # ---------- 同步部署配置文件到 artifact ----------
-      - name: Sync deploy configs to artifacts
-        run: |
-          mkdir -p artifacts/deploy/docker-compose
-          mkdir -p artifacts/deploy/nginx
-          # 根目录配置
-          cp deploy/docker-compose/docker-compose.yml artifacts/deploy/docker-compose/
-          cp deploy/docker-compose/docker-compose.infra.yml artifacts/deploy/docker-compose/
-          cp deploy/docker-compose/docker-compose.app.yml artifacts/deploy/docker-compose/
-          cp deploy/docker-compose/.env artifacts/deploy/docker-compose/ 2>/dev/null || true
-          cp deploy/nginx/cyi-app.conf artifacts/deploy/nginx/ 2>/dev/null || true
-          # prometheus 子目录
-          cp -r deploy/docker-compose/prometheus artifacts/deploy/docker-compose/ 2>/dev/null || true
-          # logstash 子目录
-          cp -r deploy/docker-compose/logstash artifacts/deploy/docker-compose/ 2>/dev/null || true
-          # filebeat
-          cp deploy/docker-compose/filebeat.yml artifacts/deploy/docker-compose/ 2>/dev/null || true
-          echo "✅ 部署配置已同步到 artifact"
-          find artifacts/ -type f | head -30
-
-      # ---------- 上传 artifact ----------
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: deploy-artifacts
-          path: artifacts/
-          retention-days: 1
-
-  # ======================== 虚拟机部署 ========================
-  deploy:
-    needs: [build, detect-changes]
-    if: needs.detect-changes.outputs.has_changes == 'true'
-    runs-on: [self-hosted, linux, vm]
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: deploy-artifacts
-          path: /tmp/deploy-artifacts
-
+      # ---------- 部署信息 ----------
       - name: Show deployment info
         run: |
           echo "=========================================="
-          echo "  开始部署到虚拟机"
+          echo "  开始部署（在虚拟机本机构建+部署）"
           echo "  分支: ${{ github.ref_name }}"
           echo "  提交: ${{ github.sha }}"
-          echo "=========================================="
-          echo "构建产物："
-          ls -lh /tmp/deploy-artifacts/
+          echo "  工作区: $(pwd)"
+          echo "  部署目录: $PROJECT_DIR"
           echo "=========================================="
 
       # ---------- 准备目录 ----------
       - name: Prepare directories
         run: |
-          PROJECT_DIR="$HOME/cyi-app"
           # 清理可能冲突的旧文件（防止文件/目录冲突）
           rm -f "$PROJECT_DIR/deploy/docker-compose/prometheus" 2>/dev/null || true
           # 创建必要目录
@@ -407,136 +226,151 @@ jobs:
           mkdir -p "$PROJECT_DIR/deploy/nginx"
           mkdir -p "$PROJECT_DIR/web/admin/dist"
           mkdir -p "$PROJECT_DIR/web/cyi-mall/dist"
+          mkdir -p "$PROJECT_DIR/logs"
 
-      # ---------- 同步部署配置 ----------
+      # ---------- 同步部署配置（从 runner workspace 复制到部署目录）----------
       - name: Sync deploy configs
         run: |
-          PROJECT_DIR="$HOME/cyi-app"
-          ARTIFACT_DIR="/tmp/deploy-artifacts"
+          SRC="$GITHUB_WORKSPACE/deploy"
+          DST="$PROJECT_DIR/deploy"
+          echo "从 $SRC 同步部署配置到 $DST"
 
-          # docker-compose 文件
-          cp "$ARTIFACT_DIR/deploy/docker-compose/docker-compose.infra.yml" "$PROJECT_DIR/deploy/docker-compose/" 2>/dev/null || echo "⚠️ infra.yml 不存在"
-          cp "$ARTIFACT_DIR/deploy/docker-compose/docker-compose.app.yml" "$PROJECT_DIR/deploy/docker-compose/" 2>/dev/null || echo "⚠️ app.yml 不存在"
-          cp "$ARTIFACT_DIR/deploy/docker-compose/docker-compose.yml" "$PROJECT_DIR/deploy/docker-compose/" 2>/dev/null || true
+          # docker-compose 主文件
+          cp -f "$SRC/docker-compose/docker-compose.infra.yml" "$DST/docker-compose/"
+          cp -f "$SRC/docker-compose/docker-compose.app.yml" "$DST/docker-compose/"
+          cp -f "$SRC/docker-compose/docker-compose.yml" "$DST/docker-compose/" 2>/dev/null || true
+          cp -f "$SRC/docker-compose/filebeat.yml" "$DST/docker-compose/" 2>/dev/null || true
+
+          # .env
+          if [ -f "$SRC/docker-compose/.env" ]; then
+            cp -f "$SRC/docker-compose/.env" "$DST/docker-compose/"
+          else
+            echo "创建默认 .env"
+            printf 'INTERFACE_HTTP_PORT=8010\nINTERFACE_GRPC_PORT=9010\nTASK_PORT=10100\nJOB_PORT=10200\nUSER_GRPC_PORT=9100\nORDER_GRPC_PORT=9101\nPRODUCT_GRPC_PORT=9102\nMARKETING_GRPC_PORT=9103\nBLADES_HTTP_PORT=30800\nBLADES_GRPC_PORT=30900\nADMIN_HTTP_PORT=8080\nADMIN_GRPC_PORT=9090\nNGINX_HTTP_PORT=80\nCONSUL_PORT=8500\nREDIS_PORT=6379\nMYSQL_PORT=3306\nJAEGER_UI_PORT=16686\nJAEGER_HTTP_PORT=14268\nJAEGER_GRPC_PORT=14250\nJAEGER_THRIFT_BINARY_PORT=6831\nJAEGER_THRIFT_COMPACT_PORT=6832\nJAEGER_OTLP_GRPC_PORT=4318\nJAEGER_OTLP_HTTP_PORT=4317\nRUSTFS_WEB_PORT=9000\nRUSTFS_API_PORT=9001\nELASTICSEARCH_PORT=9200\nELASTICSEARCH_TRANSPORT_PORT=9300\nLOGSTASH_BEATS_PORT=5044\nLOGSTASH_API_PORT=9600\nKIBANA_PORT=5601\nPROMETHEUS_PORT=9090\nGRAFANA_PORT=3000\nRABBITMQ_PORT=5672\nRABBITMQ_MANAGEMENT_PORT=15672\nRABBITMQ_USER=admin\nRABBITMQ_PASSWORD=admin\nRABBITMQ_VHOST=/\nNATS_PORT=4222\nNATS_HTTP_PORT=8222\nNATS_EXPORTER_PORT=7777\nNATS_NUI_PORT=9092\n' > "$DST/docker-compose/.env"
+          fi
 
           # nginx 配置
-          cp "$ARTIFACT_DIR/deploy/nginx/cyi-app.conf" "$PROJECT_DIR/deploy/nginx/" 2>/dev/null || echo "⚠️ nginx 配置不存在"
+          if [ -f "$SRC/nginx/cyi-app.conf" ]; then
+            cp -f "$SRC/nginx/cyi-app.conf" "$DST/nginx/"
+            echo "✅ nginx 配置已同步"
+          fi
 
           # prometheus 子目录
-          if [ -d "$ARTIFACT_DIR/deploy/docker-compose/prometheus" ]; then
-            rm -rf "$PROJECT_DIR/deploy/docker-compose/prometheus" 2>/dev/null || true
-            mkdir -p "$PROJECT_DIR/deploy/docker-compose/prometheus"
-            cp -r "$ARTIFACT_DIR/deploy/docker-compose/prometheus/"* "$PROJECT_DIR/deploy/docker-compose/prometheus/" 2>/dev/null || cp -r "$ARTIFACT_DIR/deploy/docker-compose/prometheus" "$PROJECT_DIR/deploy/docker-compose/"
+          if [ -d "$SRC/docker-compose/prometheus" ]; then
+            rm -rf "$DST/docker-compose/prometheus"
+            mkdir -p "$DST/docker-compose/prometheus"
+            cp -r "$SRC/docker-compose/prometheus/"* "$DST/docker-compose/prometheus/"
             echo "✅ prometheus 配置已同步"
           fi
 
           # logstash 子目录
-          if [ -d "$ARTIFACT_DIR/deploy/docker-compose/logstash" ]; then
-            rm -rf "$PROJECT_DIR/deploy/docker-compose/logstash" 2>/dev/null || true
-            mkdir -p "$PROJECT_DIR/deploy/docker-compose/logstash"
-            cp -r "$ARTIFACT_DIR/deploy/docker-compose/logstash/"* "$PROJECT_DIR/deploy/docker-compose/logstash/" 2>/dev/null || cp -r "$ARTIFACT_DIR/deploy/docker-compose/logstash" "$PROJECT_DIR/deploy/docker-compose/"
+          if [ -d "$SRC/docker-compose/logstash" ]; then
+            rm -rf "$DST/docker-compose/logstash"
+            mkdir -p "$DST/docker-compose/logstash"
+            cp -r "$SRC/docker-compose/logstash/"* "$DST/docker-compose/logstash/"
             echo "✅ logstash 配置已同步"
           fi
 
-          # filebeat
-          cp "$ARTIFACT_DIR/deploy/docker-compose/filebeat.yml" "$PROJECT_DIR/deploy/docker-compose/" 2>/dev/null || true
-
-          # .env 如果不存在就创建默认的
-          if [ -f "$ARTIFACT_DIR/deploy/docker-compose/.env" ]; then
-            cp "$ARTIFACT_DIR/deploy/docker-compose/.env" "$PROJECT_DIR/deploy/docker-compose/"
-          else
-            echo "创建默认 .env"
-            printf 'INTERFACE_HTTP_PORT=8010\nINTERFACE_GRPC_PORT=9010\nTASK_PORT=10100\nJOB_PORT=10200\nUSER_GRPC_PORT=9100\nORDER_GRPC_PORT=9101\nPRODUCT_GRPC_PORT=9102\nMARKETING_GRPC_PORT=9103\nBLADES_HTTP_PORT=30800\nBLADES_GRPC_PORT=30900\nADMIN_HTTP_PORT=8080\nADMIN_GRPC_PORT=9090\nNGINX_HTTP_PORT=80\nCONSUL_PORT=8500\nREDIS_PORT=6379\nMYSQL_PORT=3306\nJAEGER_UI_PORT=16686\nJAEGER_HTTP_PORT=14268\nJAEGER_GRPC_PORT=14250\nJAEGER_THRIFT_BINARY_PORT=6831\nJAEGER_THRIFT_COMPACT_PORT=6832\nJAEGER_OTLP_GRPC_PORT=4318\nJAEGER_OTLP_HTTP_PORT=4317\nRUSTFS_WEB_PORT=9000\nRUSTFS_API_PORT=9001\nELASTICSEARCH_PORT=9200\nELASTICSEARCH_TRANSPORT_PORT=9300\nLOGSTASH_BEATS_PORT=5044\nLOGSTASH_API_PORT=9600\nKIBANA_PORT=5601\nPROMETHEUS_PORT=9090\nGRAFANA_PORT=3000\nRABBITMQ_PORT=5672\nRABBITMQ_MANAGEMENT_PORT=15672\nRABBITMQ_USER=admin\nRABBITMQ_PASSWORD=admin\nRABBITMQ_VHOST=/\nNATS_PORT=4222\nNATS_HTTP_PORT=8222\nNATS_EXPORTER_PORT=7777\nNATS_NUI_PORT=9092\n' > "$PROJECT_DIR/deploy/docker-compose/.env"
-          fi
           echo "✅ 配置文件已同步"
-          ls -la "$PROJECT_DIR/deploy/docker-compose/"
+          ls -la "$DST/docker-compose/"
 
-      # ---------- 加载 Docker 镜像 ----------
-      - name: Load blades image
+      # ---------- 构建后端 Docker 镜像（本机直接构建，不需要 save/load）----------
+      - name: Build blades image
         if: needs.detect-changes.outputs.blades == 'true'
         run: |
-          docker load < /tmp/deploy-artifacts/blades.tar.gz
-          echo "✅ blades 镜像已加载"
+          cd app/blades && make docker
+          echo "✅ blades 镜像构建完成"
 
-      - name: Load admin image
+      - name: Build admin image
         if: needs.detect-changes.outputs.admin == 'true'
         run: |
-          docker load < /tmp/deploy-artifacts/admin.tar.gz
-          echo "✅ admin 镜像已加载"
+          cd app/cin/admin && make docker
+          echo "✅ admin 镜像构建完成"
 
-      - name: Load interface image
+      - name: Build interface image
         if: needs.detect-changes.outputs.interface == 'true'
         run: |
-          docker load < /tmp/deploy-artifacts/interface.tar.gz
-          echo "✅ interface 镜像已加载"
+          cd app/cin/interface && make docker
+          echo "✅ interface 镜像构建完成"
 
-      - name: Load user image
+      - name: Build user image
         if: needs.detect-changes.outputs.user == 'true'
         run: |
-          docker load < /tmp/deploy-artifacts/user.tar.gz
-          echo "✅ user 镜像已加载"
+          cd app/service/user && make docker
+          echo "✅ user 镜像构建完成"
 
-      - name: Load job image
+      - name: Build job image
         if: needs.detect-changes.outputs.job == 'true'
         run: |
-          docker load < /tmp/deploy-artifacts/job.tar.gz
-          echo "✅ job 镜像已加载"
+          cd app/job && make docker
+          echo "✅ job 镜像构建完成"
 
-      - name: Load task image
+      - name: Build task image
         if: needs.detect-changes.outputs.task == 'true'
         run: |
-          docker load < /tmp/deploy-artifacts/task.tar.gz
-          echo "✅ task 镜像已加载"
+          cd app/task && make docker
+          echo "✅ task 镜像构建完成"
 
-      - name: Load order image
+      - name: Build order image
         if: needs.detect-changes.outputs.order == 'true'
         run: |
-          docker load < /tmp/deploy-artifacts/order.tar.gz
-          echo "✅ order 镜像已加载"
+          cd app/service/order && make docker
+          echo "✅ order 镜像构建完成"
 
-      - name: Load product image
+      - name: Build product image
         if: needs.detect-changes.outputs.product == 'true'
         run: |
-          docker load < /tmp/deploy-artifacts/product.tar.gz
-          echo "✅ product 镜像已加载"
+          cd app/service/product && make docker
+          echo "✅ product 镜像构建完成"
 
-      - name: Load marketing image
+      - name: Build marketing image
         if: needs.detect-changes.outputs.marketing == 'true'
         run: |
-          docker load < /tmp/deploy-artifacts/marketing.tar.gz
-          echo "✅ marketing 镜像已加载"
+          cd app/service/marketing && make docker
+          echo "✅ marketing 镜像构建完成"
 
-      - name: Load nats-consumer image
+      - name: Build nats-consumer image
         if: needs.detect-changes.outputs.nats_consumer == 'true'
         run: |
-          docker load < /tmp/deploy-artifacts/nats-consumer.tar.gz
-          echo "✅ nats-consumer 镜像已加载"
+          cd app/nats && DOCKER_IMAGE_NAME=nats-consumer make docker
+          echo "✅ nats-consumer 镜像构建完成"
 
-      # ---------- 部署前端 ----------
-      - name: Deploy admin frontend
+      # ---------- 构建前端（直接在工作区 build，然后 dist 复制到部署目录）----------
+      - name: Build admin frontend
         if: needs.detect-changes.outputs.frontend_admin == 'true'
         run: |
-          PROJECT_DIR="$HOME/cyi-app"
-          cd "$PROJECT_DIR/web/admin"
-          rm -rf dist
-          tar xzf /tmp/deploy-artifacts/frontend-admin.tar.gz
-          echo "✅ 管理后台前端已部署"
+          cd web/admin
+          echo "清理旧构建产物..."
+          rm -rf dist tsconfig.tsbuildinfo
+          echo "安装依赖..."
+          npm ci
+          echo "开始构建..."
+          npm run build
+          echo "同步 dist 到部署目录..."
+          rm -rf "$PROJECT_DIR/web/admin/dist"
+          cp -r dist "$PROJECT_DIR/web/admin/"
+          echo "✅ 管理后台前端构建+部署完成"
 
-      - name: Deploy mall frontend
+      - name: Build mall frontend
         if: needs.detect-changes.outputs.frontend_mall == 'true'
         run: |
-          PROJECT_DIR="$HOME/cyi-app"
-          cd "$PROJECT_DIR/web/cyi-mall"
-          rm -rf dist
-          tar xzf /tmp/deploy-artifacts/frontend-mall.tar.gz
-          echo "✅ 用户端商城前端已部署"
+          cd web/cyi-mall
+          echo "清理旧构建产物..."
+          rm -rf dist tsconfig.tsbuildinfo
+          echo "安装依赖..."
+          npm ci
+          echo "开始构建..."
+          npm run build
+          echo "同步 dist 到部署目录..."
+          rm -rf "$PROJECT_DIR/web/cyi-mall/dist"
+          cp -r dist "$PROJECT_DIR/web/cyi-mall/"
+          echo "✅ 用户端商城前端构建+部署完成"
 
-      # ---------- 确保基础设施先启动（创建网络） ----------
+      # ---------- 确保基础设施先启动（创建共享网络）----------
       - name: Ensure infrastructure running
         run: |
-          PROJECT_DIR="$HOME/cyi-app"
           cd "$PROJECT_DIR/deploy/docker-compose"
-          # 清理可能存在的旧网络（无正确标签）
+          # 清理可能存在的旧网络（无正确标签导致compose不识别）
           docker network rm cyi-network 2>/dev/null || true
           echo "确保基础设施正在运行..."
           docker compose -f docker-compose.infra.yml --env-file .env up -d
@@ -545,78 +379,47 @@ jobs:
       # ---------- 重启应用服务 ----------
       - name: Restart changed services
         run: |
-          PROJECT_DIR="$HOME/cyi-app"
           cd "$PROJECT_DIR/deploy/docker-compose"
           RESTARTED=""
 
-          if [ "${{ needs.detect-changes.outputs.blades }}" == "true" ]; then
-            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-blades
-            RESTARTED="$RESTARTED service-blades"
-          fi
+          restart_svc() {
+            local name="$1"
+            echo "启动/重启 $name ..."
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps "service-$name"
+            RESTARTED="$RESTARTED service-$name"
+          }
 
-          if [ "${{ needs.detect-changes.outputs.admin }}" == "true" ]; then
-            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-admin
-            RESTARTED="$RESTARTED service-admin"
-          fi
-
-          if [ "${{ needs.detect-changes.outputs.interface }}" == "true" ]; then
-            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-interface
-            RESTARTED="$RESTARTED service-interface"
-          fi
-
-          if [ "${{ needs.detect-changes.outputs.user }}" == "true" ]; then
-            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-user
-            RESTARTED="$RESTARTED service-user"
-          fi
-
-          if [ "${{ needs.detect-changes.outputs.job }}" == "true" ]; then
-            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-job
-            RESTARTED="$RESTARTED service-job"
-          fi
-
-          if [ "${{ needs.detect-changes.outputs.task }}" == "true" ]; then
-            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-task
-            RESTARTED="$RESTARTED service-task"
-          fi
-
-          if [ "${{ needs.detect-changes.outputs.order }}" == "true" ]; then
-            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-order
-            RESTARTED="$RESTARTED service-order"
-          fi
-
-          if [ "${{ needs.detect-changes.outputs.product }}" == "true" ]; then
-            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-product
-            RESTARTED="$RESTARTED service-product"
-          fi
-
-          if [ "${{ needs.detect-changes.outputs.marketing }}" == "true" ]; then
-            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-marketing
-            RESTARTED="$RESTARTED service-marketing"
-          fi
-
+          if [ "${{ needs.detect-changes.outputs.blades }}" == "true" ];        then restart_svc blades; fi
+          if [ "${{ needs.detect-changes.outputs.admin }}" == "true" ];         then restart_svc admin; fi
+          if [ "${{ needs.detect-changes.outputs.interface }}" == "true" ];     then restart_svc interface; fi
+          if [ "${{ needs.detect-changes.outputs.user }}" == "true" ];          then restart_svc user; fi
+          if [ "${{ needs.detect-changes.outputs.job }}" == "true" ];           then restart_svc job; fi
+          if [ "${{ needs.detect-changes.outputs.task }}" == "true" ];          then restart_svc task; fi
+          if [ "${{ needs.detect-changes.outputs.order }}" == "true" ];         then restart_svc order; fi
+          if [ "${{ needs.detect-changes.outputs.product }}" == "true" ];       then restart_svc product; fi
+          if [ "${{ needs.detect-changes.outputs.marketing }}" == "true" ];     then restart_svc marketing; fi
           if [ "${{ needs.detect-changes.outputs.nats_consumer }}" == "true" ]; then
+            echo "启动/重启 service-nats-consumer ..."
             docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-nats-consumer
             RESTARTED="$RESTARTED service-nats-consumer"
           fi
 
-          # Nginx 在任何应用服务部署时都要确保运行
+          # Nginx：前端变了 restart；任何后端服务变了确保 nginx 在运行
           if [ "${{ needs.detect-changes.outputs.frontend_admin }}" == "true" ] || [ "${{ needs.detect-changes.outputs.frontend_mall }}" == "true" ]; then
-            # 前端变了：restart nginx
             docker compose -f docker-compose.app.yml --env-file .env restart nginx 2>/dev/null || \
             docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps nginx
             RESTARTED="$RESTARTED nginx"
-          elif [ "${{ needs.detect-changes.outputs.blades }}" == "true" ] || \
-               [ "${{ needs.detect-changes.outputs.admin }}" == "true" ] || \
-               [ "${{ needs.detect-changes.outputs.interface }}" == "true" ] || \
-               [ "${{ needs.detect-changes.outputs.user }}" == "true" ] || \
-               [ "${{ needs.detect-changes.outputs.order }}" == "true" ] || \
-               [ "${{ needs.detect-changes.outputs.product }}" == "true" ] || \
-               [ "${{ needs.detect-changes.outputs.marketing }}" == "true" ] || \
-               [ "${{ needs.detect-changes.outputs.nats_consumer }}" == "true" ] || \
-               [ "${{ needs.detect-changes.outputs.job }}" == "true" ] || \
-               [ "${{ needs.detect-changes.outputs.task }}" == "true" ] || \
-               [ "${{ needs.detect-changes.outputs.force_all }}" == "true" ]; then
-            # 后端服务变了：确保 nginx 在运行
+          elif [ "${{ needs.detect-changes.outputs.force_all }}" == "true" ] ||
+               [ "${{ needs.detect-changes.outputs.blades }}" == "true" ] ||
+               [ "${{ needs.detect-changes.outputs.admin }}" == "true" ] ||
+               [ "${{ needs.detect-changes.outputs.interface }}" == "true" ] ||
+               [ "${{ needs.detect-changes.outputs.user }}" == "true" ] ||
+               [ "${{ needs.detect-changes.outputs.order }}" == "true" ] ||
+               [ "${{ needs.detect-changes.outputs.product }}" == "true" ] ||
+               [ "${{ needs.detect-changes.outputs.marketing }}" == "true" ] ||
+               [ "${{ needs.detect-changes.outputs.nats_consumer }}" == "true" ] ||
+               [ "${{ needs.detect-changes.outputs.job }}" == "true" ] ||
+               [ "${{ needs.detect-changes.outputs.task }}" == "true" ]; then
             docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps nginx 2>/dev/null || true
             RESTARTED="$RESTARTED nginx"
           fi
@@ -627,20 +430,18 @@ jobs:
             echo "✅ 已重启服务:$RESTARTED"
           fi
 
-      # ---------- 清理和验证 ----------
-      - name: Cleanup and verify
+      # ---------- 验证：显示服务状态 ----------
+      - name: Verify deployment status
         if: always()
         run: |
-          rm -rf /tmp/deploy-artifacts
-          echo "临时文件已清理"
           echo ""
           echo "=========================================="
-          echo "  服务状态"
+          echo "  最终服务状态"
           echo "=========================================="
-          cd "$HOME/cyi-app/deploy/docker-compose" 2>/dev/null || exit 0
+          cd "$PROJECT_DIR/deploy/docker-compose"
           echo "--- 基础设施 ---"
-          docker compose -f docker-compose.infra.yml --env-file .env ps 2>/dev/null || echo "⚠️ 无法获取基础设施状态"
+          docker compose -f docker-compose.infra.yml --env-file .env ps
           echo ""
           echo "--- 应用服务 ---"
-          docker compose -f docker-compose.app.yml --env-file .env ps 2>/dev/null || echo "⚠️ 无法获取应用服务状态"
+          docker compose -f docker-compose.app.yml --env-file .env ps
           echo "=========================================="
