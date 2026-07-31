@@ -189,23 +189,24 @@ jobs:
     needs: [detect-changes]
     if: needs.detect-changes.outputs.has_changes == 'true'
     runs-on: [self-hosted, linux, vm]
-    env:
-      PROJECT_DIR: ${{ format('{0}/cyi-app', env.HOME) }}
     steps:
+      # ---------- 设置环境变量 ----------
+      - name: Set up environment
+        run: |
+          PROJECT_DIR="$HOME/cyi-app"
+          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
+          echo "部署目录: $PROJECT_DIR"
+          df -h /
+
       # ---------- 清理磁盘（防止磁盘满导致 Runner 崩溃）----------
       - name: Clean disk space
         run: |
-          echo "===== 清理前 ====="
-          df -h /
-          echo ""
           echo "清理 Docker 无用资源..."
           docker system prune -f 2>/dev/null || true
           docker builder prune -f 2>/dev/null || true
           echo "清理 Go 缓存..."
           go clean -cache 2>/dev/null || true
-          echo ""
-          echo "===== 清理后 ====="
-          df -h /
+          echo "✅ 清理完成"
 
       - uses: actions/checkout@v4
 
