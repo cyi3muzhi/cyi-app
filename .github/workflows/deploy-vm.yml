@@ -234,6 +234,7 @@ jobs:
         run: |
           cd app/blades && make docker
           docker save cyi3muz/blades:0.1.0 -o $GITHUB_WORKSPACE/artifacts/blades.tar
+          docker rmi cyi3muz/blades:0.1.0 2>/dev/null || true
           echo "✅ blades 镜像构建完成"
 
       - name: Build admin image
@@ -241,6 +242,7 @@ jobs:
         run: |
           cd app/cin/admin && make docker
           docker save cyi3muz/cin-admin:0.1.0 -o $GITHUB_WORKSPACE/artifacts/admin.tar
+          docker rmi cyi3muz/cin-admin:0.1.0 2>/dev/null || true
           echo "✅ admin 镜像构建完成"
 
       - name: Build interface image
@@ -248,6 +250,7 @@ jobs:
         run: |
           cd app/cin/interface && make docker
           docker save cyi3muz/cin-interface:0.1.0 -o $GITHUB_WORKSPACE/artifacts/interface.tar
+          docker rmi cyi3muz/cin-interface:0.1.0 2>/dev/null || true
           echo "✅ interface 镜像构建完成"
 
       - name: Build user image
@@ -255,6 +258,7 @@ jobs:
         run: |
           cd app/service/user && make docker
           docker save cyi3muz/service-user:0.1.0 -o $GITHUB_WORKSPACE/artifacts/user.tar
+          docker rmi cyi3muz/service-user:0.1.0 2>/dev/null || true
           echo "✅ user 镜像构建完成"
 
       - name: Build job image
@@ -262,6 +266,7 @@ jobs:
         run: |
           cd app/job && make docker
           docker save cyi3muz/job:0.1.0 -o $GITHUB_WORKSPACE/artifacts/job.tar
+          docker rmi cyi3muz/job:0.1.0 2>/dev/null || true
           echo "✅ job 镜像构建完成"
 
       - name: Build task image
@@ -269,6 +274,7 @@ jobs:
         run: |
           cd app/task && make docker
           docker save cyi3muz/task:0.1.0 -o $GITHUB_WORKSPACE/artifacts/task.tar
+          docker rmi cyi3muz/task:0.1.0 2>/dev/null || true
           echo "✅ task 镜像构建完成"
 
       - name: Build order image
@@ -276,6 +282,7 @@ jobs:
         run: |
           cd app/service/order && make docker
           docker save cyi3muz/service-order:0.1.0 -o $GITHUB_WORKSPACE/artifacts/order.tar
+          docker rmi cyi3muz/service-order:0.1.0 2>/dev/null || true
           echo "✅ order 镜像构建完成"
 
       - name: Build product image
@@ -283,6 +290,7 @@ jobs:
         run: |
           cd app/service/product && make docker
           docker save cyi3muz/service-product:0.1.0 -o $GITHUB_WORKSPACE/artifacts/product.tar
+          docker rmi cyi3muz/service-product:0.1.0 2>/dev/null || true
           echo "✅ product 镜像构建完成"
 
       - name: Build marketing image
@@ -290,6 +298,7 @@ jobs:
         run: |
           cd app/service/marketing && make docker
           docker save cyi3muz/service-marketing:0.1.0 -o $GITHUB_WORKSPACE/artifacts/marketing.tar
+          docker rmi cyi3muz/service-marketing:0.1.0 2>/dev/null || true
           echo "✅ marketing 镜像构建完成"
 
       - name: Build nats-consumer image
@@ -297,6 +306,7 @@ jobs:
         run: |
           cd app/nats && make docker 2>/dev/null || ( cd $GITHUB_WORKSPACE && docker build -f deploy/build/Dockerfile --build-arg APP_RELATIVE_PATH=nats --build-arg APP_NAME=nats -t cyi3muz/nats-consumer:0.1.0 . )
           docker save cyi3muz/nats-consumer:0.1.0 -o $GITHUB_WORKSPACE/artifacts/nats-consumer.tar
+          docker rmi cyi3muz/nats-consumer:0.1.0 2>/dev/null || true
           echo "✅ nats-consumer 镜像构建完成"
 
       # ---------- 构建前端 ----------
