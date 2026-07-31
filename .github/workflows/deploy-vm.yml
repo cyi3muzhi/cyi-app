@@ -217,70 +217,70 @@ jobs:
         if: needs.detect-changes.outputs.blades == 'true'
         run: |
           cd app/blades && make docker
-          docker save cyi3muz/blades:0.1.0 -o ../../artifacts/blades.tar
+          docker save cyi3muz/blades:0.1.0 -o $GITHUB_WORKSPACE/artifacts/blades.tar
           echo "✅ blades 镜像构建完成"
 
       - name: Build admin image
         if: needs.detect-changes.outputs.admin == 'true'
         run: |
           cd app/cin/admin && make docker
-          docker save cyi3muz/cin-admin:0.1.0 -o ../../artifacts/admin.tar
+          docker save cyi3muz/cin-admin:0.1.0 -o $GITHUB_WORKSPACE/artifacts/admin.tar
           echo "✅ admin 镜像构建完成"
 
       - name: Build interface image
         if: needs.detect-changes.outputs.interface == 'true'
         run: |
           cd app/cin/interface && make docker
-          docker save cyi3muz/cin-interface:0.1.0 -o ../../artifacts/interface.tar
+          docker save cyi3muz/cin-interface:0.1.0 -o $GITHUB_WORKSPACE/artifacts/interface.tar
           echo "✅ interface 镜像构建完成"
 
       - name: Build user image
         if: needs.detect-changes.outputs.user == 'true'
         run: |
           cd app/service/user && make docker
-          docker save cyi3muz/service-user:0.1.0 -o ../../artifacts/user.tar
+          docker save cyi3muz/service-user:0.1.0 -o $GITHUB_WORKSPACE/artifacts/user.tar
           echo "✅ user 镜像构建完成"
 
       - name: Build job image
         if: needs.detect-changes.outputs.job == 'true'
         run: |
           cd app/job && make docker
-          docker save cyi3muz/job:0.1.0 -o ../../artifacts/job.tar
+          docker save cyi3muz/job:0.1.0 -o $GITHUB_WORKSPACE/artifacts/job.tar
           echo "✅ job 镜像构建完成"
 
       - name: Build task image
         if: needs.detect-changes.outputs.task == 'true'
         run: |
           cd app/task && make docker
-          docker save cyi3muz/task:0.1.0 -o ../../artifacts/task.tar
+          docker save cyi3muz/task:0.1.0 -o $GITHUB_WORKSPACE/artifacts/task.tar
           echo "✅ task 镜像构建完成"
 
       - name: Build order image
         if: needs.detect-changes.outputs.order == 'true'
         run: |
           cd app/service/order && make docker
-          docker save cyi3muz/service-order:0.1.0 -o ../../../artifacts/order.tar
+          docker save cyi3muz/service-order:0.1.0 -o $GITHUB_WORKSPACE/artifacts/order.tar
           echo "✅ order 镜像构建完成"
 
       - name: Build product image
         if: needs.detect-changes.outputs.product == 'true'
         run: |
           cd app/service/product && make docker
-          docker save cyi3muz/service-product:0.1.0 -o ../../../artifacts/product.tar
+          docker save cyi3muz/service-product:0.1.0 -o $GITHUB_WORKSPACE/artifacts/product.tar
           echo "✅ product 镜像构建完成"
 
       - name: Build marketing image
         if: needs.detect-changes.outputs.marketing == 'true'
         run: |
           cd app/service/marketing && make docker
-          docker save cyi3muz/service-marketing:0.1.0 -o ../../../artifacts/marketing.tar
+          docker save cyi3muz/service-marketing:0.1.0 -o $GITHUB_WORKSPACE/artifacts/marketing.tar
           echo "✅ marketing 镜像构建完成"
 
       - name: Build nats-consumer image
         if: needs.detect-changes.outputs.nats_consumer == 'true'
         run: |
-          cd app/nats && make docker 2>/dev/null || ( cd ../.. && docker build -f deploy/build/Dockerfile --build-arg APP_RELATIVE_PATH=nats --build-arg APP_NAME=nats -t cyi3muz/nats-consumer:0.1.0 . )
-          docker save cyi3muz/nats-consumer:0.1.0 -o artifacts/nats-consumer.tar
+          cd app/nats && make docker 2>/dev/null || ( cd $GITHUB_WORKSPACE && docker build -f deploy/build/Dockerfile --build-arg APP_RELATIVE_PATH=nats --build-arg APP_NAME=nats -t cyi3muz/nats-consumer:0.1.0 . )
+          docker save cyi3muz/nats-consumer:0.1.0 -o $GITHUB_WORKSPACE/artifacts/nats-consumer.tar
           echo "✅ nats-consumer 镜像构建完成"
 
       # ---------- 构建前端 ----------
