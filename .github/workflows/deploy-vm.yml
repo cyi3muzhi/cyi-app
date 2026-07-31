@@ -316,7 +316,7 @@ jobs:
       - name: Build nats-consumer image
         if: needs.detect-changes.outputs.nats_consumer == 'true'
         run: |
-          cd app/nats && make docker 2>/dev/null || ( cd $GITHUB_WORKSPACE && docker build -f deploy/build/Dockerfile --build-arg APP_RELATIVE_PATH=nats --build-arg APP_NAME=nats -t cyi3muz/nats-consumer:0.1.0 . )
+          cd app/nats && DOCKER_IMAGE_NAME=nats-consumer make docker
           docker save cyi3muz/nats-consumer:0.1.0 -o $GITHUB_WORKSPACE/artifacts/nats-consumer.tar
           docker rmi cyi3muz/nats-consumer:0.1.0 2>/dev/null || true
           docker builder prune -af 2>/dev/null || true
