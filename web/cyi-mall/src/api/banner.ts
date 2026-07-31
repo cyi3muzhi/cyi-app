@@ -17,6 +17,11 @@ export interface BannerItem {
   template?: string
   /** 文字颜色 */
   text_color?: string
+  // 兼容驼峰命名（后端可能返回驼峰或下划线两种格式）
+  sortOrder?: number
+  bgColor?: string
+  btnText?: string
+  textColor?: string
 }
 
 /** 获取 Banner 列表（只返回启用的） */
