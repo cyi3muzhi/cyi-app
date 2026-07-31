@@ -10,6 +10,7 @@ import (
 )
 
 // ensureBucket 检查 OSS bucket 是否存在，不存在则创建
+// 同时确保 bucket 为公开读（允许匿名 GET 对象）
 // 该模式在 upload/product/auth/export 等多个 repo 中重复出现，抽取为公共方法
 func (d *Data) ensureBucket(ctx context.Context, bucketName string) error {
 	exists, err := d.oss.BucketExists(ctx, bucketName)
@@ -21,6 +22,12 @@ func (d *Data) ensureBucket(ctx context.Context, bucketName string) error {
 			return fmt.Errorf("创建存储桶失败: %w", err)
 		}
 	}
+	// 无论新建还是已存在，都设置一次公开读 policy（幂等操作）
+	// 这样旧 bucket 也能通过 Nginx /oss/ 代理匿名访问
+	if err := d.oss.SetBucketPublicRead(ctx, bucketName); err != nil {
+		// policy 设置失败不阻断主流程，只记日志（可能是权限问题或已设置）
+		fmt.Printf("warning: 设置 bucket %s 公开读 policy 失败: %v\n", bucketName, err)
+	}
 	return nil
 }
 
@@ -30,16 +37,20 @@ func (d *Data) ensureAdminBucket(ctx context.Context) error {
 	return d.ensureBucket(ctx, string(rustfs.AdminServiceBucket))
 }
 
-// resolvePresignedURL 解析图片路径为可访问的 presigned URL
+// resolvePresignedURL 解析图片路径为可访问的公开 URL
 // 支持两种输入格式：
-//   - "bucketName/objectKey"（OSS 内部路径）：直接生成 presigned URL
+//   - "bucketName/objectKey"（OSS 内部路径）：生成公开访问 URL
 //   - "http(s)://..."（完整 URL）：尝试从 URL 路径中提取 bucket/objectKey 再转换，失败则原样返回
 //   - 空字符串或已是完整 URL（无法解析路径）：原样返回
 //
-// presigned URL 的 host 来自 public_endpoint 配置
-// 部署时 public_endpoint 设为 https://admin.cyi.dev/oss，通过 Nginx 代理访问 RustFS
-// Nginx 代理时必须保持 Host=rustfs:9000，否则签名验证失败
+// 使用 GetPublicURL 生成不带签名的 URL，通过 Nginx /oss/ 代理访问 RustFS
+// 优势：
+//  1. 避免 presigned URL 经过 Nginx 代理后路径变化导致签名验证失败
+//  2. URL 更简洁，不会暴露签名信息
+//  3. 需要将 bucket 设为公开读（通过 RustFS 控制台或 API 设置 bucket policy）
 func (d *Data) resolvePresignedURL(ctx context.Context, imageURL string, expiry int) string {
+	_ = expiry // 公开 URL 不需要 expiry，保留参数兼容现有调用
+
 	if imageURL == "" || strings.HasPrefix(imageURL, "data:image") {
 		return imageURL
 	}
@@ -47,7 +58,7 @@ func (d *Data) resolvePresignedURL(ctx context.Context, imageURL string, expiry 
 	var bucketName, objectKey string
 
 	if strings.HasPrefix(imageURL, "http") {
-		// 已是完整 URL，尝试解析路径提取 bucket/objectKey 后生成 presigned URL
+		// 已是完整 URL，尝试解析路径提取 bucket/objectKey 后生成公开 URL
 		parsedURL, err := url.Parse(imageURL)
 		if err != nil || parsedURL.Path == "" {
 			return imageURL
@@ -67,9 +78,5 @@ func (d *Data) resolvePresignedURL(ctx context.Context, imageURL string, expiry 
 		bucketName, objectKey = parts[0], parts[1]
 	}
 
-	presigned, err := d.oss.GetPresignedURL(ctx, bucketName, objectKey, expiry)
-	if err != nil {
-		return imageURL
-	}
-	return presigned
+	return d.oss.GetPublicURL(bucketName, objectKey)
 }

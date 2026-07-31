@@ -67,7 +67,29 @@ func (r *RustFSClient) GetPublicEndpoint() string {
 }
 
 func (r *RustFSClient) CreateBucket(ctx context.Context, bucketName string) error {
-	return r.client.Bucket().Create(ctx, bucketName)
+	if err := r.client.Bucket().Create(ctx, bucketName); err != nil {
+		return err
+	}
+	// 设置 bucket 为公开读（匿名用户可 GET 对象）
+	// 这样前端通过 Nginx /oss/ 代理访问时不需要 presigned 签名
+	return r.SetBucketPublicRead(ctx, bucketName)
+}
+
+// SetBucketPublicRead 设置 bucket 为公开读
+// 通过设置 S3 bucket policy 允许匿名用户执行 s3:GetObject
+func (r *RustFSClient) SetBucketPublicRead(ctx context.Context, bucketName string) error {
+	policy := fmt.Sprintf(`{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {"AWS": ["*"]},
+      "Action": ["s3:GetObject"],
+      "Resource": ["arn:aws:s3:::%s/*"]
+    }
+  ]
+}`, bucketName)
+	return r.client.Bucket().SetPolicy(ctx, bucketName, policy)
 }
 
 func (r *RustFSClient) DeleteBucket(ctx context.Context, bucketName string) error {

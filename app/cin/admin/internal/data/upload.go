@@ -60,11 +60,8 @@ func (r *UploadRepo) GetUploadToken(ctx context.Context, filename, directory str
 		return "", "", "", fmt.Errorf("生成上传凭证失败: %w", err)
 	}
 
-	// 生成预签名 GET URL（30天有效期，供公开访问）
-	publicURL, err = r.data.oss.GetPresignedURL(ctx, bucketName, objectKey, 3600*24*30)
-	if err != nil {
-		return "", "", "", fmt.Errorf("生成公开访问URL失败: %w", err)
-	}
+	// 生成公开访问 URL（通过 Nginx /oss/ 代理访问，不需要 presigned 签名）
+	publicURL = r.data.oss.GetPublicURL(bucketName, objectKey)
 
 	return uploadURL, objectKey, publicURL, nil
 }

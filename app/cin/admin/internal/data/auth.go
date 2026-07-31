@@ -126,14 +126,9 @@ func (r *authRepo) UpdateAvatar(ctx context.Context, adminID int64, avatarBase64
 		return "", fmt.Errorf("保存头像路径失败: %w", err)
 	}
 
-	// 返回 presigned URL（publicEndpoint 通过环境变量配置为 https://admin.cyi.dev/oss）
-	// Nginx 代理 /oss/ 到 rustfs:9000，并保持 Host=rustfs:9000 让签名验证通过
-	presignedURL, err := r.data.oss.GetPresignedURL(ctx, bucketName, objectKey, 3600*24*30)
-	if err != nil {
-		return "", fmt.Errorf("生成预签名URL失败: %w", err)
-	}
-
-	return presignedURL, nil
+	// 返回公开访问 URL（通过 Nginx /oss/ 代理访问，不需要 presigned 签名）
+	// publicEndpoint 通过环境变量配置为 https://admin.cyi.dev/oss
+	return r.data.oss.GetPublicURL(bucketName, objectKey), nil
 }
 
 // saveAvatarToDB 保存头像 URL 到数据库（通过 gRPC 调用 user service）
