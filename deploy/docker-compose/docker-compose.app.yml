@@ -113,6 +113,7 @@ services:
       - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/service/order
       - SERVICE_ENV=dev
+      - NATS_URL=nats://nats:4222
     networks:
       - cyi-network
 
@@ -129,6 +130,7 @@ services:
       - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/service/product
       - SERVICE_ENV=dev
+      - NATS_URL=nats://nats:4222
     networks:
       - cyi-network
 

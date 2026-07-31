@@ -6,6 +6,7 @@ import (
 	"cyi-app/app/service/product/internal/conf"
 	productNats "cyi-app/app/service/product/internal/nats"
 	consul "cyi-app/pkg/kratos/config"
+	"os"
 
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
@@ -58,8 +59,13 @@ func NewRegistrar(conf *conf.Registry) registry.Registrar {
 }
 
 // NewNATSConn 创建NATS连接
+// 优先从环境变量 NATS_URL 读取地址，默认使用 localhost（本地开发）
 func NewNATSConn() *nats.Conn {
-	conn, err := nats.Connect("nats://localhost:4222")
+	natsURL := os.Getenv("NATS_URL")
+	if natsURL == "" {
+		natsURL = "nats://localhost:4222"
+	}
+	conn, err := nats.Connect(natsURL)
 	if err != nil {
 		panic(err)
 	}
