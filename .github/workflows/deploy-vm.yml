@@ -196,6 +196,12 @@ jobs:
           PROJECT_DIR="$HOME/cyi-app"
           echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
           echo "部署目录: $PROJECT_DIR"
+          echo ""
+          echo "配置 git 网络容错..."
+          git config --global http.lowSpeedLimit 0
+          git config --global http.lowSpeedTime 999999
+          git config --global http.postBuffer 524288000
+          echo "✅ git 网络容忍已配置"
           df -h /
 
       # ---------- 清理磁盘（防止磁盘满导致 Runner 崩溃）----------
@@ -208,7 +214,63 @@ jobs:
           go clean -cache 2>/dev/null || true
           echo "✅ 清理完成"
 
-      - uses: actions/checkout@v4
+      # ---------- 拉取代码（自定义 clone，支持网络容错 + 镜像 fallback）----------
+      - name: Clone repository
+        run: |
+          REPO_URL="https://github.com/${{ github.repository }}.git"
+          MIRROR_URL="https://ghproxy.com/${REPO_URL}"
+          BRANCH="${{ github.ref_name }}"
+          CLONE_DIR="${GITHUB_WORKSPACE}"
+
+          echo "目标仓库: $REPO_URL"
+          echo "分支: $BRANCH"
+          echo "克隆目录: $CLONE_DIR"
+
+          # 清理旧工作区
+          rm -rf "$CLONE_DIR"/* 2>/dev/null || true
+
+          # 尝试直接 clone（最多 3 次）
+          SUCCESS=false
+          for i in 1 2 3; do
+            echo ""
+            echo "🔄 尝试第 $i 次直接克隆..."
+            if git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$CLONE_DIR" 2>&1; then
+              echo "✅ 直接克隆成功"
+              SUCCESS=true
+              break
+            fi
+            echo "⚠️ 第 $i 次失败，等待 5 秒..."
+            rm -rf "$CLONE_DIR"/* 2>/dev/null || true
+            sleep 5
+          done
+
+          # 直接 clone 失败，尝试镜像
+          if [ "$SUCCESS" != "true" ]; then
+            echo ""
+            echo "🔄 直接克隆失败，尝试通过 ghproxy.com 镜像..."
+            for i in 1 2 3; do
+              echo "🔄 镜像克隆尝试 $i/3..."
+              if git clone --depth 1 --branch "$BRANCH" "$MIRROR_URL" "$CLONE_DIR" 2>&1; then
+                echo "✅ 镜像克隆成功"
+                SUCCESS=true
+                break
+              fi
+              echo "⚠️ 镜像克隆第 $i 次失败"
+              rm -rf "$CLONE_DIR"/* 2>/dev/null || true
+              sleep 5
+            done
+          fi
+
+          if [ "$SUCCESS" != "true" ]; then
+            echo "❌ 克隆全部失败"
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ 代码已就绪"
+          cd "$CLONE_DIR"
+          git log --oneline -1
+          ls -la
 
       # ---------- 部署信息 ----------
       - name: Show deployment info
