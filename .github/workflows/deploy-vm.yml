@@ -26,12 +26,12 @@ on:
   workflow_dispatch:
     inputs:
       service:
-        description: '要部署的服务（留空=自动检测，填写=强制部署指定服务）'
+        description: '要部署的服务（auto=自动检测变更，其他=强制部署指定服务）'
         required: false
-        default: ''
+        default: 'auto'
         type: choice
         options:
-          - ''
+          - auto
           - all
           - infra
           - blades
@@ -83,6 +83,11 @@ jobs:
             SVC="${{ github.event.inputs.service }}"
           fi
           echo "触发方式: ${{ github.event_name }}, 指定服务: '$SVC'"
+
+          # auto 或空：走自动检测；其他：强制部署指定服务
+          if [ -z "$SVC" ] || [ "$SVC" == "auto" ]; then
+            SVC=""
+          fi
 
           # 手动触发指定服务
           if [ -n "$SVC" ]; then
