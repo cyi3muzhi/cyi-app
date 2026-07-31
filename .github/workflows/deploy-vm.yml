@@ -185,14 +185,14 @@ jobs:
         if: needs.detect-changes.outputs.admin == 'true'
         run: |
           cd app/cin/admin && make docker
-          docker save cyi3muz/admin:0.1.0 | gzip > /tmp/admin.tar.gz
+          docker save cyi3muz/cin-admin:0.1.0 | gzip > /tmp/admin.tar.gz
           echo "✅ admin 构建完成"
 
       - name: Build and save interface
         if: needs.detect-changes.outputs.interface == 'true'
         run: |
           cd app/cin/interface && make docker
-          docker save cyi3muz/interface:0.1.0 | gzip > /tmp/interface.tar.gz
+          docker save cyi3muz/cin-interface:0.1.0 | gzip > /tmp/interface.tar.gz
           echo "✅ interface 构建完成"
 
       - name: Build and save user
@@ -243,6 +243,25 @@ jobs:
           cd app/task && make docker
           docker save cyi3muz/task:0.1.0 | gzip > /tmp/task.tar.gz
           echo "✅ task 构建完成"
+
+      # ---------- 验证所有镜像 ----------
+      - name: Verify Docker images
+        run: |
+          echo "===== 已构建的 Docker 镜像 ====="
+          docker images | grep cyi3muz || echo "无 cyi3muz 镜像"
+          echo ""
+          echo "===== 验证需要的镜像 ====="
+          for img in cyi3muz/blades:0.1.0 cyi3muz/cin-admin:0.1.0 \
+                     cyi3muz/cin-interface:0.1.0 cyi3muz/service-user:0.1.0 \
+                     cyi3muz/service-order:0.1.0 cyi3muz/service-product:0.1.0 \
+                     cyi3muz/service-marketing:0.1.0 cyi3muz/nats-consumer:0.1.0 \
+                     cyi3muz/job:0.1.0 cyi3muz/task:0.1.0; do
+            if docker image inspect "$img" > /dev/null 2>&1; then
+              echo "✅ $img"
+            else
+              echo "❌ $img 不存在！"
+            fi
+          done
 
       # ---------- 构建前端 ----------
       - name: Build admin frontend
