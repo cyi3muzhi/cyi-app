@@ -537,8 +537,8 @@ jobs:
         run: |
           PROJECT_DIR="$HOME/cyi-app"
           cd "$PROJECT_DIR/deploy/docker-compose"
-          echo "确保网络存在..."
-          docker network create cyi-network 2>/dev/null || true
+          # 清理可能存在的旧网络（无正确标签）
+          docker network rm cyi-network 2>/dev/null || true
           echo "确保基础设施正在运行..."
           docker compose -f docker-compose.infra.yml --env-file .env up -d
           echo "✅ 基础设施已就绪"
