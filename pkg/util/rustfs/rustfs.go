@@ -136,6 +136,9 @@ func (r *RustFSClient) DeleteObject(ctx context.Context, bucketName, objectKey s
 // presigned URL 的 host 来自 publicEndpoint 配置
 // 部署时 publicEndpoint 设为 https://admin.cyi.dev/oss，通过 Nginx 代理访问 RustFS
 // Nginx 代理时必须保持 Host=rustfs:9000，否则签名验证失败
+//
+// 注意：presigned URL 生成时用的是 endpoint（如 http://rustfs:9000）
+// 替换 publicEndpoint 时要处理协议前缀，避免出现 http://https://... 这种错误
 func (r *RustFSClient) GetPresignedURL(ctx context.Context, bucketName, objectKey string, expiry int) (string, error) {
 	presignedURL, _, err := r.client.Object().PresignGet(ctx, bucketName, objectKey, time.Duration(expiry)*time.Second, nil)
 	if err != nil {
@@ -143,7 +146,15 @@ func (r *RustFSClient) GetPresignedURL(ctx context.Context, bucketName, objectKe
 	}
 
 	urlStr := presignedURL.String()
+	// 如果 publicEndpoint 和 endpoint 不同，替换 endpoint 为 publicEndpoint
+	// 需要同时替换协议+host，避免出现 http://https://... 的错误
 	if r.endpoint != r.publicEndpoint {
+		// presigned URL 格式：http://rustfs:9000/bucket/key?signature=...
+		// endpoint 格式：rustfs:9000（不含协议）
+		// 替换 "http://rustfs:9000" 为 publicEndpoint（如 https://admin.cyi.dev/oss）
+		urlStr = strings.Replace(urlStr, "http://"+r.endpoint, r.publicEndpoint, 1)
+		urlStr = strings.Replace(urlStr, "https://"+r.endpoint, r.publicEndpoint, 1)
+		// 兜底：如果 endpoint 本身含协议，直接替换
 		urlStr = strings.Replace(urlStr, r.endpoint, r.publicEndpoint, 1)
 	}
 
@@ -174,7 +185,10 @@ func (r *RustFSClient) GetPresignedPutURL(ctx context.Context, bucketName, objec
 	}
 
 	urlStr := presignedURL.String()
+	// 替换 endpoint 为 publicEndpoint，处理协议前缀避免 http://https://...
 	if r.endpoint != r.publicEndpoint {
+		urlStr = strings.Replace(urlStr, "http://"+r.endpoint, r.publicEndpoint, 1)
+		urlStr = strings.Replace(urlStr, "https://"+r.endpoint, r.publicEndpoint, 1)
 		urlStr = strings.Replace(urlStr, r.endpoint, r.publicEndpoint, 1)
 	}
 
