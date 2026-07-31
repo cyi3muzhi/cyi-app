@@ -35,6 +35,10 @@ func (d *Data) ensureAdminBucket(ctx context.Context) error {
 //   - "bucketName/objectKey"（OSS 内部路径）：直接生成 presigned URL
 //   - "http(s)://..."（完整 URL）：尝试从 URL 路径中提取 bucket/objectKey 再转换，失败则原样返回
 //   - 空字符串或已是完整 URL（无法解析路径）：原样返回
+//
+// presigned URL 的 host 来自 public_endpoint 配置
+// 部署时 public_endpoint 设为 https://admin.cyi.dev/oss，通过 Nginx 代理访问 RustFS
+// Nginx 代理时必须保持 Host=rustfs:9000，否则签名验证失败
 func (d *Data) resolvePresignedURL(ctx context.Context, imageURL string, expiry int) string {
 	if imageURL == "" || strings.HasPrefix(imageURL, "data:image") {
 		return imageURL

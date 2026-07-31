@@ -132,6 +132,10 @@ func (r *RustFSClient) DeleteObject(ctx context.Context, bucketName, objectKey s
 	return r.client.Object().Delete(ctx, bucketName, objectKey)
 }
 
+// GetPresignedURL 生成预签名下载 URL（带签名验证，私有 bucket 用）
+// presigned URL 的 host 来自 publicEndpoint 配置
+// 部署时 publicEndpoint 设为 https://admin.cyi.dev/oss，通过 Nginx 代理访问 RustFS
+// Nginx 代理时必须保持 Host=rustfs:9000，否则签名验证失败
 func (r *RustFSClient) GetPresignedURL(ctx context.Context, bucketName, objectKey string, expiry int) (string, error) {
 	presignedURL, _, err := r.client.Object().PresignGet(ctx, bucketName, objectKey, time.Duration(expiry)*time.Second, nil)
 	if err != nil {
@@ -146,7 +150,23 @@ func (r *RustFSClient) GetPresignedURL(ctx context.Context, bucketName, objectKe
 	return urlStr, nil
 }
 
-// GetPresignedPutURL 生成预签名 PUT URL，前端可直接上传文件到 OSS
+// GetPublicURL 生成公开访问 URL（不带签名，公开 bucket 用）
+// 返回格式：{publicEndpoint}/{bucketName}/{objectKey}
+// 适用于通过 Nginx 反向代理访问 OSS 的场景（避免签名 host 不匹配问题）
+func (r *RustFSClient) GetPublicURL(bucketName, objectKey string) string {
+	// 规范化 endpoint，去掉协议前缀和末尾斜杠
+	endpoint := r.publicEndpoint
+	endpoint = strings.TrimPrefix(strings.TrimPrefix(endpoint, "http://"), "https://")
+	endpoint = strings.TrimSuffix(endpoint, "/")
+
+	// 如果 publicEndpoint 已包含协议，直接用；否则补 http://
+	if strings.HasPrefix(r.publicEndpoint, "http://") || strings.HasPrefix(r.publicEndpoint, "https://") {
+		return fmt.Sprintf("%s/%s/%s", r.publicEndpoint, bucketName, objectKey)
+	}
+	return fmt.Sprintf("http://%s/%s/%s", endpoint, bucketName, objectKey)
+}
+
+// GetPresignedPutURL 生成预签名上传 PUT URL，前端可直接上传文件到 OSS
 func (r *RustFSClient) GetPresignedPutURL(ctx context.Context, bucketName, objectKey string, expiry int) (string, error) {
 	presignedURL, _, err := r.client.Object().PresignPut(ctx, bucketName, objectKey, time.Duration(expiry)*time.Second, url.Values{})
 	if err != nil {

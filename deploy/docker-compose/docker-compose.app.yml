@@ -97,6 +97,8 @@ services:
       - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/cin/admin
       - SERVICE_ENV=dev
+      # OSS 公开访问端点，走 Nginx /oss/ 代理（HTTPS + 不暴露 9000 端口）
+      - OSS_PUBLIC_ENDPOINT=https://admin.cyi.dev/oss
     networks:
       - cyi-network
 

@@ -3,13 +3,14 @@ package data
 import (
 	"context"
 	"fmt"
+	"os"
 
-	adminv1 "cyi-app/api/cin/admin/v1"
 	bladesRpc "cyi-app/api/blades/v1"
+	adminv1 "cyi-app/api/cin/admin/v1"
+	marketingRpc "cyi-app/api/service/marketing/v1"
 	orderRpc "cyi-app/api/service/order/v1"
 	productRpc "cyi-app/api/service/product/v1"
 	userRpc "cyi-app/api/service/user/v1"
-	marketingRpc "cyi-app/api/service/marketing/v1"
 	"cyi-app/app/cin/admin/internal/conf"
 	"cyi-app/pkg/util/rustfs"
 
@@ -82,10 +83,16 @@ func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, auc user
 }
 
 // NewOssClient 创建 OSS 客户端
+// PublicEndpoint 支持通过环境变量 OSS_PUBLIC_ENDPOINT 覆盖（部署环境用）
+// 例如：OSS_PUBLIC_ENDPOINT=https://admin.cyi.dev/oss 走 Nginx 代理
 func NewOssClient(cfg *conf.Data) (*rustfs.RustFSClient, error) {
+	publicEndpoint := cfg.Oss.PublicEndpoint
+	if env := os.Getenv("OSS_PUBLIC_ENDPOINT"); env != "" {
+		publicEndpoint = env
+	}
 	return rustfs.NewRustFSClient(&rustfs.Config{
 		Endpoint:       cfg.Oss.Endpoint,
-		PublicEndpoint: cfg.Oss.PublicEndpoint,
+		PublicEndpoint: publicEndpoint,
 		AccessKey:      cfg.Oss.AccessKey,
 		SecretKey:      cfg.Oss.SecretKey,
 	})
