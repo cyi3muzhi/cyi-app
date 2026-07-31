@@ -4,13 +4,14 @@ ARG APP_RELATIVE_PATH
 
 RUN apk add --no-cache make git
 
+# 先复制依赖清单，利用 Docker 层缓存加速重复构建
 COPY go.mod go.sum* ./
 RUN go mod download 2>/dev/null || true
 
 COPY . /src
 WORKDIR /src/app/${APP_RELATIVE_PATH}
 
-RUN CGO_ENABLED=0 GOPROXY=https://goproxy.cn make build
+RUN CGO_ENABLED=0 GOPROXY=off make build
 
 FROM alpine:3.20
 
