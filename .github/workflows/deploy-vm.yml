@@ -270,8 +270,16 @@ jobs:
           cd web/admin
           npm ci
           npm run build
+          # 确保 dist 目录不为空
+          if [ ! -d dist ] || [ -z "$(ls -A dist 2>/dev/null)" ]; then
+            echo "❌ admin dist 目录为空，构建可能失败"
+            exit 1
+          fi
           tar czf /tmp/frontend-admin.tar.gz -C dist .
-          echo "✅ admin 前端构建完成"
+          # 验证生成的文件有效
+          gzip -t /tmp/frontend-admin.tar.gz
+          SIZE=$(stat -c%s /tmp/frontend-admin.tar.gz 2>/dev/null || stat -f%z /tmp/frontend-admin.tar.gz 2>/dev/null)
+          echo "✅ admin 前端构建完成 (大小: ${SIZE} bytes)"
 
       - name: Build mall frontend
         if: needs.detect-changes.outputs.frontend_mall == 'true'
@@ -279,8 +287,16 @@ jobs:
           cd web/cyi-mall
           npm ci
           npm run build
+          # 确保 dist 目录不为空
+          if [ ! -d dist ] || [ -z "$(ls -A dist 2>/dev/null)" ]; then
+            echo "❌ mall dist 目录为空，构建可能失败"
+            exit 1
+          fi
           tar czf /tmp/frontend-mall.tar.gz -C dist .
-          echo "✅ mall 前端构建完成"
+          # 验证生成的文件有效
+          gzip -t /tmp/frontend-mall.tar.gz
+          SIZE=$(stat -c%s /tmp/frontend-mall.tar.gz 2>/dev/null || stat -f%z /tmp/frontend-mall.tar.gz 2>/dev/null)
+          echo "✅ mall 前端构建完成 (大小: ${SIZE} bytes)"
 
       # ---------- 合并所有产物 ----------
       - name: Package all artifacts
@@ -349,7 +365,7 @@ jobs:
                      /tmp/deploy-artifacts/job.tar.gz /tmp/deploy-artifacts/task.tar.gz; do
             if [ -f "$img" ] && [ -s "$img" ] && gzip -t "$img" 2>/dev/null; then
               echo "加载 $(basename $img .tar.gz) ..."
-              zcat "$img" | docker load
+              gunzip -c "$img" | docker load
             else
               echo "跳过 $(basename $img)（不存在/为空/无效）"
             fi
@@ -361,26 +377,30 @@ jobs:
         if: needs.detect-changes.outputs.frontend_admin == 'true'
         run: |
           SRC="/tmp/deploy-artifacts/frontend-admin.tar.gz"
-          DEST="$HOME/cyi-app/web/admin"
+          DEST="$HOME/cyi-app/web/admin/dist"
           if [ -f "$SRC" ] && [ -s "$SRC" ] && gzip -t "$SRC" 2>/dev/null; then
-            mkdir -p "$DEST/dist"
-            zcat "$SRC" | tar xz -C "$DEST/dist"
-            echo "✅ admin 前端已部署"
+            rm -rf "$DEST"
+            mkdir -p "$DEST"
+            tar -xzf "$SRC" -C "$DEST"
+            echo "✅ admin 前端已部署到 $DEST"
+            ls -la "$DEST" | head -10
           else
-            echo "⚠️ frontend-admin.tar.gz 无效，跳过"
+            echo "⚠️ frontend-admin.tar.gz 无效或不存在，跳过"
           fi
 
       - name: Deploy frontend mall
         if: needs.detect-changes.outputs.frontend_mall == 'true'
         run: |
           SRC="/tmp/deploy-artifacts/frontend-mall.tar.gz"
-          DEST="$HOME/cyi-app/web/cyi-mall"
+          DEST="$HOME/cyi-app/web/cyi-mall/dist"
           if [ -f "$SRC" ] && [ -s "$SRC" ] && gzip -t "$SRC" 2>/dev/null; then
-            mkdir -p "$DEST/dist"
-            zcat "$SRC" | tar xz -C "$DEST/dist"
-            echo "✅ mall 前端已部署"
+            rm -rf "$DEST"
+            mkdir -p "$DEST"
+            tar -xzf "$SRC" -C "$DEST"
+            echo "✅ mall 前端已部署到 $DEST"
+            ls -la "$DEST" | head -10
           else
-            echo "⚠️ frontend-mall.tar.gz 无效，跳过"
+            echo "⚠️ frontend-mall.tar.gz 无效或不存在，跳过"
           fi
 
       # ---------- 启动基础设施 ----------
