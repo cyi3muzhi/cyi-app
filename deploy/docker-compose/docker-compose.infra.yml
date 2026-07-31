@@ -332,3 +332,4 @@ services:
 networks:
   cyi-network:
     driver: bridge
+    name: cyi-network

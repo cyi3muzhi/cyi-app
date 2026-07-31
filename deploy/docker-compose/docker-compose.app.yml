@@ -182,3 +182,4 @@ services:
 networks:
   cyi-network:
     external: true
+    name: cyi-network
