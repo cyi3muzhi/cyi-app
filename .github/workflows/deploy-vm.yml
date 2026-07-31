@@ -532,7 +532,16 @@ jobs:
           tar xzf /tmp/deploy-artifacts/frontend-mall.tar.gz
           echo "✅ 用户端商城前端已部署"
 
-      # ---------- 重启服务 ----------
+      # ---------- 确保基础设施先启动（创建网络） ----------
+      - name: Ensure infrastructure running
+        run: |
+          PROJECT_DIR="$HOME/cyi-app"
+          cd "$PROJECT_DIR/deploy/docker-compose"
+          echo "确保基础设施正在运行..."
+          docker compose -f docker-compose.infra.yml --env-file .env up -d
+          echo "✅ 基础设施已就绪"
+
+      # ---------- 重启应用服务 ----------
       - name: Restart changed services
         run: |
           PROJECT_DIR="$HOME/cyi-app"
@@ -609,12 +618,6 @@ jobs:
             # 后端服务变了：确保 nginx 在运行
             docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps nginx 2>/dev/null || true
             RESTARTED="$RESTARTED nginx"
-          fi
-
-          if [ "${{ needs.detect-changes.outputs.infra }}" == "true" ]; then
-            echo "启动基础设施..."
-            docker compose -f docker-compose.infra.yml --env-file .env up -d
-            RESTARTED="$RESTARTED infra"
           fi
 
           if [ -z "$RESTARTED" ]; then
