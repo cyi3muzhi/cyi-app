@@ -266,11 +266,18 @@ jobs:
       # ---------- 打包部署配置 ----------
       - name: Package deploy configs
         run: |
-          tar czf /tmp/deploy-configs.tar.gz \
-            deploy/docker-compose/ \
-            deploy/nginx/ \
-            2>/dev/null || true
-          echo "✅ 部署配置已打包"
+          DIRS_TO_PACK=""
+          [ -d "deploy/docker-compose" ] && DIRS_TO_PACK="$DIRS_TO_PACK deploy/docker-compose/"
+          [ -d "deploy/nginx" ] && DIRS_TO_PACK="$DIRS_TO_PACK deploy/nginx/"
+          
+          if [ -n "$DIRS_TO_PACK" ]; then
+            tar czf /tmp/deploy-configs.tar.gz $DIRS_TO_PACK
+            echo "✅ 部署配置已打包: $DIRS_TO_PACK"
+          else
+            # 创建一个空的但有效的 gzip 文件（用空 tar）
+            tar czf /tmp/deploy-configs.tar.gz --files-from /dev/null
+            echo "⚠️ 无部署配置目录，创建空包"
+          fi
 
       # ---------- 合并所有产物 ----------
       - name: Package all artifacts
@@ -319,21 +326,31 @@ jobs:
         run: |
           DST="$HOME/cyi-app/deploy"
           mkdir -p "$DST/docker-compose" "$DST/nginx"
-          # 从 artifact 解压部署配置
-          zcat /tmp/deploy-artifacts/deploy-configs.tar.gz | tar xz -C /tmp/deploy-artifacts/
-          SRC="/tmp/deploy-artifacts/deploy"
-          if [ -d "$SRC" ]; then
-            cp -f "$SRC/docker-compose/docker-compose.infra.yml" "$DST/docker-compose/" 2>/dev/null || true
-            cp -f "$SRC/docker-compose/docker-compose.app.yml" "$DST/docker-compose/" 2>/dev/null || true
-            cp -f "$SRC/docker-compose/.env" "$DST/docker-compose/" 2>/dev/null || true
-            cp -f "$SRC/nginx/cyi-app.conf" "$DST/nginx/" 2>/dev/null || true
-            if [ -d "$SRC/docker-compose/prometheus" ]; then
-              rm -rf "$DST/docker-compose/prometheus"
-              cp -r "$SRC/docker-compose/prometheus" "$DST/docker-compose/"
+          
+          CONFIGS_FILE="/tmp/deploy-artifacts/deploy-configs.tar.gz"
+          
+          if [ -f "$CONFIGS_FILE" ] && [ -s "$CONFIGS_FILE" ]; then
+            # 检查是否为有效的 gzip 文件
+            if gzip -t "$CONFIGS_FILE" 2>/dev/null; then
+              mkdir -p /tmp/deploy-configs-extract
+              zcat "$CONFIGS_FILE" | tar xz -C /tmp/deploy-configs-extract/
+              SRC="/tmp/deploy-configs-extract/deploy"
+              if [ -d "$SRC" ]; then
+                [ -f "$SRC/docker-compose/docker-compose.infra.yml" ] && cp -f "$SRC/docker-compose/docker-compose.infra.yml" "$DST/docker-compose/"
+                [ -f "$SRC/docker-compose/docker-compose.app.yml" ] && cp -f "$SRC/docker-compose/docker-compose.app.yml" "$DST/docker-compose/"
+                [ -f "$SRC/docker-compose/.env" ] && cp -f "$SRC/docker-compose/.env" "$DST/docker-compose/"
+                [ -f "$SRC/nginx/cyi-app.conf" ] && cp -f "$SRC/nginx/cyi-app.conf" "$DST/nginx/"
+                [ -d "$SRC/docker-compose/prometheus" ] && rm -rf "$DST/docker-compose/prometheus" && cp -r "$SRC/docker-compose/prometheus" "$DST/docker-compose/"
+                echo "✅ 配置已从 artifact 同步"
+              else
+                echo "⚠️ 解压后无 deploy 目录（可能是空包），跳过"
+              fi
+            else
+              echo "⚠️ deploy-configs.tar.gz 不是有效的 gzip 文件，跳过"
+              ls -la "$CONFIGS_FILE"
             fi
-            echo "✅ 配置已从 artifact 同步"
           else
-            echo "⚠️ artifact 中无部署配置，跳过"
+            echo "⚠️ deploy-configs.tar.gz 不存在或为空，跳过配置同步"
           fi
 
       # ---------- 加载 Docker 镜像 ----------
@@ -344,47 +361,41 @@ jobs:
                      /tmp/deploy-artifacts/order.tar.gz /tmp/deploy-artifacts/product.tar.gz \
                      /tmp/deploy-artifacts/marketing.tar.gz /tmp/deploy-artifacts/nats-consumer.tar.gz \
                      /tmp/deploy-artifacts/job.tar.gz /tmp/deploy-artifacts/task.tar.gz; do
-            if [ -f "$img" ]; then
+            if [ -f "$img" ] && [ -s "$img" ] && gzip -t "$img" 2>/dev/null; then
               echo "加载 $(basename $img .tar.gz) ..."
               zcat "$img" | docker load
+            else
+              echo "跳过 $(basename $img)（不存在/为空/无效）"
             fi
           done
-          echo "✅ 所有镜像已加载"
+          echo "✅ 镜像加载完成"
 
       # ---------- 部署前端 ----------
       - name: Deploy frontend admin
         if: needs.detect-changes.outputs.frontend_admin == 'true'
         run: |
+          SRC="/tmp/deploy-artifacts/frontend-admin.tar.gz"
           DEST="$HOME/cyi-app/web/admin"
-          mkdir -p "$DEST/dist"
-          zcat /tmp/deploy-artifacts/frontend-admin.tar.gz | tar xz -C "$DEST/dist"
-          echo "✅ admin 前端已部署"
+          if [ -f "$SRC" ] && [ -s "$SRC" ] && gzip -t "$SRC" 2>/dev/null; then
+            mkdir -p "$DEST/dist"
+            zcat "$SRC" | tar xz -C "$DEST/dist"
+            echo "✅ admin 前端已部署"
+          else
+            echo "⚠️ frontend-admin.tar.gz 无效，跳过"
+          fi
 
       - name: Deploy frontend mall
         if: needs.detect-changes.outputs.frontend_mall == 'true'
         run: |
+          SRC="/tmp/deploy-artifacts/frontend-mall.tar.gz"
           DEST="$HOME/cyi-app/web/cyi-mall"
-          mkdir -p "$DEST/dist"
-          zcat /tmp/deploy-artifacts/frontend-mall.tar.gz | tar xz -C "$DEST/dist"
-          echo "✅ mall 前端已部署"
-
-      # ---------- 同步部署配置 ----------
-      - name: Sync deploy configs
-        run: |
-          DST="$HOME/cyi-app/deploy"
-          mkdir -p "$DST/docker-compose" "$DST/nginx"
-          zcat /tmp/deploy-artifacts/deploy-configs.tar.gz | tar xz -C /tmp/deploy-artifacts/
-          # 从工作区（已 checkout）同步配置
-          SRC="$GITHUB_WORKSPACE/deploy"
-          cp -f "$SRC/docker-compose/docker-compose.infra.yml" "$DST/docker-compose/"
-          cp -f "$SRC/docker-compose/docker-compose.app.yml" "$DST/docker-compose/"
-          cp -f "$SRC/docker-compose/.env" "$DST/docker-compose/" 2>/dev/null || true
-          cp -f "$SRC/nginx/cyi-app.conf" "$DST/nginx/" 2>/dev/null || true
-          if [ -d "$SRC/docker-compose/prometheus" ]; then
-            rm -rf "$DST/docker-compose/prometheus"
-            cp -r "$SRC/docker-compose/prometheus" "$DST/docker-compose/"
+          if [ -f "$SRC" ] && [ -s "$SRC" ] && gzip -t "$SRC" 2>/dev/null; then
+            mkdir -p "$DEST/dist"
+            zcat "$SRC" | tar xz -C "$DEST/dist"
+            echo "✅ mall 前端已部署"
+          else
+            echo "⚠️ frontend-mall.tar.gz 无效，跳过"
           fi
-          echo "✅ 配置已同步"
 
       # ---------- 启动基础设施 ----------
       - name: Ensure infrastructure
