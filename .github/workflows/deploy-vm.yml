@@ -301,8 +301,6 @@ jobs:
     if: needs.detect-changes.outputs.has_changes == 'true'
     runs-on: [self-hosted, linux, vm]
     steps:
-      - uses: actions/checkout@v4
-
       # ---------- 下载 artifact ----------
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -315,6 +313,28 @@ jobs:
           echo "下载的产物:"
           ls -lh /tmp/deploy-artifacts/
           du -sh /tmp/deploy-artifacts/
+
+      # ---------- 同步部署配置（从 artifact 解压）----------
+      - name: Sync deploy configs
+        run: |
+          DST="$HOME/cyi-app/deploy"
+          mkdir -p "$DST/docker-compose" "$DST/nginx"
+          # 从 artifact 解压部署配置
+          zcat /tmp/deploy-artifacts/deploy-configs.tar.gz | tar xz -C /tmp/deploy-artifacts/
+          SRC="/tmp/deploy-artifacts/deploy"
+          if [ -d "$SRC" ]; then
+            cp -f "$SRC/docker-compose/docker-compose.infra.yml" "$DST/docker-compose/" 2>/dev/null || true
+            cp -f "$SRC/docker-compose/docker-compose.app.yml" "$DST/docker-compose/" 2>/dev/null || true
+            cp -f "$SRC/docker-compose/.env" "$DST/docker-compose/" 2>/dev/null || true
+            cp -f "$SRC/nginx/cyi-app.conf" "$DST/nginx/" 2>/dev/null || true
+            if [ -d "$SRC/docker-compose/prometheus" ]; then
+              rm -rf "$DST/docker-compose/prometheus"
+              cp -r "$SRC/docker-compose/prometheus" "$DST/docker-compose/"
+            fi
+            echo "✅ 配置已从 artifact 同步"
+          else
+            echo "⚠️ artifact 中无部署配置，跳过"
+          fi
 
       # ---------- 加载 Docker 镜像 ----------
       - name: Load Docker images
