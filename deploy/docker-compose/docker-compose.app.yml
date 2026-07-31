@@ -1,30 +1,10 @@
+# 应用层微服务配置
+# 注意：基础设施（Consul/MySQL/Redis/NATS/Jaeger）由 docker-compose.infra.yml 管理
+#       这里不声明它们为外部服务（Docker Compose 不支持 external: true for services）
+#       服务发现通过 Consul DNS 实现，网络共享通过 external: true 网络实现
 services:
-  # ============ 外部基础设施服务（由 docker-compose.infra.yml 管理）============
-  # 使用 external: true 让 Docker Compose 解析依赖时能找到这些已存在的服务
-  consul:
-    image: hashicorp/consul:1.22
-    external: true
-
-  mysql:
-    image: mysql:8.0
-    external: true
-
-  redis:
-    image: redis/redis-stack-server:7.2.0-v10
-    external: true
-
-  nats:
-    image: nats:2.11
-    external: true
-
-  jaeger:
-    image: jaegertracing/all-in-one:1.49
-    external: true
-
-  # ============ 业务微服务 ============
   # Interface 服务 - 业务微服务
   service-interface:
-    # 使用本地生成的镜像
     image: cyi3muz/cin-interface:0.1.0
     container_name: service-cin-interface
     restart: always
@@ -34,100 +14,74 @@ services:
     volumes:
       - ../logs/interface-service:/app/logs
     environment:
-      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/cin/interface
       - SERVICE_ENV=dev
-    depends_on:
-      - consul
-      - redis
-      - jaeger
     networks:
       - cyi-network
 
   # task 任务服务
   service-task:
-    # 使用本地生成的镜像
     image: cyi3muz/task:0.1.0
     container_name: service-task
     restart: always
     ports:
-      - "${TASK_PORT}:8000"  # gRPC 端口
+      - "${TASK_PORT}:8000"
     volumes:
       - ../logs/task-service:/app/logs
     environment:
-      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/task
       - SERVICE_ENV=dev
-    depends_on:
-      - consul
-      - jaeger
-      - redis
     networks:
       - cyi-network
 
   # job 任务服务
   service-job:
-    # 使用本地生成的镜像
     image: cyi3muz/job:0.1.0
     container_name: service-job
     restart: always
     ports:
-      - "${JOB_PORT}:8000"  # HTTP 端口
+      - "${JOB_PORT}:8000"
     volumes:
       - ../logs/job-service:/app/logs
     environment:
-      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/job
       - SERVICE_ENV=dev
-    depends_on:
-      - consul
-      - jaeger
-      - redis
     networks:
       - cyi-network
 
   # User 服务 - 技术微服务
   service-user:
-    # 使用本地生成的镜像
     image: cyi3muz/service-user:0.1.0
     container_name: service-user
     restart: always
     ports:
-      - "${USER_GRPC_PORT}:9000"  # gRPC 端口
+      - "${USER_GRPC_PORT}:9000"
     volumes:
       - ../logs/user-service:/app/logs
     environment:
-      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/service/user
       - SERVICE_ENV=dev
-    depends_on:
-      - consul
-      - jaeger
-      - mysql
-      - redis
     networks:
       - cyi-network
 
   # Blade 服务 - 技术微服务
   service-blades:
-    # 使用本地生成的镜像
     image: cyi3muz/blades:0.1.0
     container_name: service-blades
     restart: always
     ports:
-      - "${BLADES_HTTP_PORT}:8000"  # HTTP 端口
-      - "${BLADES_GRPC_PORT}:9000"  # gRPC 端口
+      - "${BLADES_HTTP_PORT}:8000"
+      - "${BLADES_GRPC_PORT}:9000"
     volumes:
       - ../logs/blades-service:/app/logs
     environment:
-      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
+      - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/blades
       - SERVICE_ENV=dev
-    depends_on:
-      - consul
-      - jaeger
-      - mysql
-      - redis
     networks:
       - cyi-network
 
@@ -137,15 +91,12 @@ services:
     container_name: service-admin
     restart: always
     ports:
-      - "${ADMIN_HTTP_PORT}:8000"  # HTTP 端口
-      - "${ADMIN_GRPC_PORT}:9000"  # gRPC 端口
+      - "${ADMIN_HTTP_PORT}:8000"
+      - "${ADMIN_GRPC_PORT}:9000"
     environment:
       - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/cin/admin
       - SERVICE_ENV=dev
-    depends_on:
-      - consul
-      - redis
     networks:
       - cyi-network
 
@@ -155,19 +106,13 @@ services:
     container_name: service-order
     restart: always
     ports:
-      - "${ORDER_GRPC_PORT:-9101}:9000"  # gRPC 端口
+      - "${ORDER_GRPC_PORT:-9101}:9000"
     volumes:
       - ../logs/order-service:/app/logs
     environment:
       - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/service/order
       - SERVICE_ENV=dev
-    depends_on:
-      - consul
-      - jaeger
-      - mysql
-      - redis
-      - nats
     networks:
       - cyi-network
 
@@ -177,19 +122,13 @@ services:
     container_name: service-product
     restart: always
     ports:
-      - "${PRODUCT_GRPC_PORT:-9102}:9000"  # gRPC 端口
+      - "${PRODUCT_GRPC_PORT:-9102}:9000"
     volumes:
       - ../logs/product-service:/app/logs
     environment:
       - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/service/product
       - SERVICE_ENV=dev
-    depends_on:
-      - consul
-      - jaeger
-      - mysql
-      - redis
-      - nats
     networks:
       - cyi-network
 
@@ -199,18 +138,13 @@ services:
     container_name: service-marketing
     restart: always
     ports:
-      - "${MARKETING_GRPC_PORT:-9103}:9000"  # gRPC 端口
+      - "${MARKETING_GRPC_PORT:-9103}:9000"
     volumes:
       - ../logs/marketing-service:/app/logs
     environment:
       - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/service/marketing
       - SERVICE_ENV=dev
-    depends_on:
-      - consul
-      - jaeger
-      - mysql
-      - redis
     networks:
       - cyi-network
 
@@ -225,12 +159,6 @@ services:
       - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/nats
       - SERVICE_ENV=dev
-    depends_on:
-      - consul
-      - jaeger
-      - nats
-      - mysql
-      - redis
     networks:
       - cyi-network
 
@@ -240,11 +168,9 @@ services:
     container_name: nginx
     restart: always
     ports:
-      - "${NGINX_HTTP_PORT:-80}:80"  # HTTP 端口（默认80）
+      - "${NGINX_HTTP_PORT:-80}:80"
     volumes:
-      # Nginx 配置文件
       - ../nginx/cyi-app.conf:/etc/nginx/conf.d/cyi-app.conf:ro
-      # 前端静态文件（构建后挂载进来）
       - ../../web/admin/dist:/usr/share/nginx/html/admin:ro
       - ../../web/cyi-mall/dist:/usr/share/nginx/html/mall:ro
     depends_on:
