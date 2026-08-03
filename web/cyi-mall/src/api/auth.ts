@@ -13,8 +13,10 @@ interface LoginResult {
 }
 
 interface RegisterParams {
-  username: string
+  username: string   // 手机号作为登录账号
   password: string
+  nickname: string
+  phone: string
 }
 
 /** 登录 */

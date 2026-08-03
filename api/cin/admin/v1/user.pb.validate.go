@@ -305,19 +305,27 @@ func (m *UserItem) validate(all bool) error {
 
 	// no validation rules for Id
 
-	// no validation rules for Name
+	// no validation rules for Username
+
+	// no validation rules for Nickname
 
 	// no validation rules for Phone
 
+	// no validation rules for Email
+
+	// no validation rules for Avatar
+
+	// no validation rules for Gender
+
 	// no validation rules for Level
 
-	// no validation rules for RegTime
+	// no validation rules for LastLoginAt
 
-	// no validation rules for Amount
-
-	// no validation rules for Orders
+	// no validation rules for RegisterSource
 
 	// no validation rules for Status
+
+	// no validation rules for CreatedAt
 
 	if len(errors) > 0 {
 		return UserItemMultiError(errors)
@@ -657,10 +665,10 @@ func (m *CreateUserRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetName()); l < 1 || l > 24 {
+	if l := utf8.RuneCountInString(m.GetUsername()); l < 2 || l > 32 {
 		err := CreateUserRequestValidationError{
-			field:  "Name",
-			reason: "value length must be between 1 and 24 runes, inclusive",
+			field:  "Username",
+			reason: "value length must be between 2 and 32 runes, inclusive",
 		}
 		if !all {
 			return err
@@ -669,6 +677,8 @@ func (m *CreateUserRequest) validate(all bool) error {
 	}
 
 	// no validation rules for Phone
+
+	// no validation rules for Email
 
 	if utf8.RuneCountInString(m.GetPassword()) < 6 {
 		err := CreateUserRequestValidationError{
@@ -680,6 +690,10 @@ func (m *CreateUserRequest) validate(all bool) error {
 		}
 		errors = append(errors, err)
 	}
+
+	// no validation rules for Nickname
+
+	// no validation rules for RegisterSource
 
 	if len(errors) > 0 {
 		return CreateUserRequestMultiError(errors)
@@ -896,9 +910,15 @@ func (m *UpdateUserRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for Name
+	// no validation rules for Nickname
 
 	// no validation rules for Phone
+
+	// no validation rules for Email
+
+	// no validation rules for Gender
+
+	// no validation rules for Birthday
 
 	// no validation rules for Level
 

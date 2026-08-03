@@ -25,6 +25,9 @@ const (
 	User_DeleteUser_FullMethodName        = "/api.service.user.v1.User/DeleteUser"
 	User_GetUser_FullMethodName           = "/api.service.user.v1.User/GetUser"
 	User_ListUser_FullMethodName          = "/api.service.user.v1.User/ListUser"
+	User_ToggleUserStatus_FullMethodName  = "/api.service.user.v1.User/ToggleUserStatus"
+	User_GetUserStats_FullMethodName      = "/api.service.user.v1.User/GetUserStats"
+	User_UpdateUserAvatar_FullMethodName  = "/api.service.user.v1.User/UpdateUserAvatar"
 	User_CheckUserExist_FullMethodName    = "/api.service.user.v1.User/CheckUserExist"
 	User_GetUserByUsername_FullMethodName = "/api.service.user.v1.User/GetUserByUsername"
 	User_VerifyPassword_FullMethodName    = "/api.service.user.v1.User/VerifyPassword"
@@ -36,22 +39,37 @@ const (
 // UserClient is the client API for User service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// User 用户服务
+// 同时服务用户端（注册/登录/资料）和管理后台（列表/统计/冻结）
 type UserClient interface {
+	// 创建用户
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserReply, error)
+	// 更新用户资料
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserReply, error)
+	// 删除用户（软删除）
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserReply, error)
+	// 获取用户详情
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserReply, error)
+	// 用户列表（支持分页/关键字/状态/等级筛选）
 	ListUser(ctx context.Context, in *ListUserRequest, opts ...grpc.CallOption) (*ListUserReply, error)
+	// 冻结/解冻用户
+	ToggleUserStatus(ctx context.Context, in *ToggleUserStatusRequest, opts ...grpc.CallOption) (*ToggleUserStatusReply, error)
+	// 用户统计数据
+	GetUserStats(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetUserStatsReply, error)
+	// 单独更新头像
+	UpdateUserAvatar(ctx context.Context, in *UpdateUserAvatarRequest, opts ...grpc.CallOption) (*UpdateUserAvatarReply, error)
 	// 校验账号是否存在
 	CheckUserExist(ctx context.Context, in *CheckUserExistRequest, opts ...grpc.CallOption) (*CheckUserExistReply, error)
+	// 根据用户名获取用户
 	GetUserByUsername(ctx context.Context, in *GetUserByUsernameReq, opts ...grpc.CallOption) (*GetUserByUsernameReply, error)
-	// 校验密码是否正确
+	// 校验密码
 	VerifyPassword(ctx context.Context, in *VerifyPasswordRequest, opts ...grpc.CallOption) (*VerifyPasswordReply, error)
-	// 统计用户数量
+	// 统计用户数量（兼容老接口）
 	UserCount(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserCountReply, error)
-	// 注册用户
+	// 注册
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterReply, error)
-	// 登录用户
+	// 登录
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error)
 }
 
@@ -107,6 +125,36 @@ func (c *userClient) ListUser(ctx context.Context, in *ListUserRequest, opts ...
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListUserReply)
 	err := c.cc.Invoke(ctx, User_ListUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) ToggleUserStatus(ctx context.Context, in *ToggleUserStatusRequest, opts ...grpc.CallOption) (*ToggleUserStatusReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ToggleUserStatusReply)
+	err := c.cc.Invoke(ctx, User_ToggleUserStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) GetUserStats(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetUserStatsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserStatsReply)
+	err := c.cc.Invoke(ctx, User_GetUserStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) UpdateUserAvatar(ctx context.Context, in *UpdateUserAvatarRequest, opts ...grpc.CallOption) (*UpdateUserAvatarReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateUserAvatarReply)
+	err := c.cc.Invoke(ctx, User_UpdateUserAvatar_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -176,22 +224,37 @@ func (c *userClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.C
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility.
+//
+// User 用户服务
+// 同时服务用户端（注册/登录/资料）和管理后台（列表/统计/冻结）
 type UserServer interface {
+	// 创建用户
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserReply, error)
+	// 更新用户资料
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserReply, error)
+	// 删除用户（软删除）
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserReply, error)
+	// 获取用户详情
 	GetUser(context.Context, *GetUserRequest) (*GetUserReply, error)
+	// 用户列表（支持分页/关键字/状态/等级筛选）
 	ListUser(context.Context, *ListUserRequest) (*ListUserReply, error)
+	// 冻结/解冻用户
+	ToggleUserStatus(context.Context, *ToggleUserStatusRequest) (*ToggleUserStatusReply, error)
+	// 用户统计数据
+	GetUserStats(context.Context, *emptypb.Empty) (*GetUserStatsReply, error)
+	// 单独更新头像
+	UpdateUserAvatar(context.Context, *UpdateUserAvatarRequest) (*UpdateUserAvatarReply, error)
 	// 校验账号是否存在
 	CheckUserExist(context.Context, *CheckUserExistRequest) (*CheckUserExistReply, error)
+	// 根据用户名获取用户
 	GetUserByUsername(context.Context, *GetUserByUsernameReq) (*GetUserByUsernameReply, error)
-	// 校验密码是否正确
+	// 校验密码
 	VerifyPassword(context.Context, *VerifyPasswordRequest) (*VerifyPasswordReply, error)
-	// 统计用户数量
+	// 统计用户数量（兼容老接口）
 	UserCount(context.Context, *emptypb.Empty) (*UserCountReply, error)
-	// 注册用户
+	// 注册
 	Register(context.Context, *RegisterRequest) (*RegisterReply, error)
-	// 登录用户
+	// 登录
 	Login(context.Context, *LoginRequest) (*LoginReply, error)
 	mustEmbedUnimplementedUserServer()
 }
@@ -217,6 +280,15 @@ func (UnimplementedUserServer) GetUser(context.Context, *GetUserRequest) (*GetUs
 }
 func (UnimplementedUserServer) ListUser(context.Context, *ListUserRequest) (*ListUserReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUser not implemented")
+}
+func (UnimplementedUserServer) ToggleUserStatus(context.Context, *ToggleUserStatusRequest) (*ToggleUserStatusReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ToggleUserStatus not implemented")
+}
+func (UnimplementedUserServer) GetUserStats(context.Context, *emptypb.Empty) (*GetUserStatsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserStats not implemented")
+}
+func (UnimplementedUserServer) UpdateUserAvatar(context.Context, *UpdateUserAvatarRequest) (*UpdateUserAvatarReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserAvatar not implemented")
 }
 func (UnimplementedUserServer) CheckUserExist(context.Context, *CheckUserExistRequest) (*CheckUserExistReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckUserExist not implemented")
@@ -343,6 +415,60 @@ func _User_ListUser_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServer).ListUser(ctx, req.(*ListUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_ToggleUserStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ToggleUserStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).ToggleUserStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_ToggleUserStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).ToggleUserStatus(ctx, req.(*ToggleUserStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_GetUserStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).GetUserStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_GetUserStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).GetUserStats(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_UpdateUserAvatar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserAvatarRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).UpdateUserAvatar(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_UpdateUserAvatar_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).UpdateUserAvatar(ctx, req.(*UpdateUserAvatarRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -481,6 +607,18 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListUser",
 			Handler:    _User_ListUser_Handler,
+		},
+		{
+			MethodName: "ToggleUserStatus",
+			Handler:    _User_ToggleUserStatus_Handler,
+		},
+		{
+			MethodName: "GetUserStats",
+			Handler:    _User_GetUserStats_Handler,
+		},
+		{
+			MethodName: "UpdateUserAvatar",
+			Handler:    _User_UpdateUserAvatar_Handler,
 		},
 		{
 			MethodName: "CheckUserExist",

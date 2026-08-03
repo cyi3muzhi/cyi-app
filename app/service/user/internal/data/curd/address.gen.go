@@ -109,7 +109,7 @@ func (a addressDo) QueryAddress(userID int) (result []*models.Address, err error
 
 	var generateSQL strings.Builder
 	params["userID"] = userID
-	generateSQL.WriteString("查询用户地址 SELECT * FROM address WHERE user_id=@userID ")
+	generateSQL.WriteString("SELECT * FROM address WHERE user_id=@userID ")
 
 	var executeSQL *gorm.DB
 	if len(params) > 0 {

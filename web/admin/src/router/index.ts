@@ -60,6 +60,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '用户管理' }
       },
       {
+        path: 'members',
+        name: 'Members',
+        component: () => import('../views/users/MemberListView.vue'),
+        meta: { title: '会员管理' }
+      },
+      {
         path: 'categories',
         name: 'Categories',
         component: () => import('../views/categories/CategoriesView.vue'),

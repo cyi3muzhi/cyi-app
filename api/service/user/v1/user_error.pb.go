@@ -43,21 +43,30 @@ const (
 	UserServiceErrorReason_USER_ALREADY_REGISTERED UserServiceErrorReason = 8
 	// 用户注册失败
 	UserServiceErrorReason_USER_REGISTER_FAILED UserServiceErrorReason = 9
+	// 用户已冻结
+	UserServiceErrorReason_USER_FROZEN UserServiceErrorReason = 10
+	// 更新用户失败
+	UserServiceErrorReason_UPDATE_USER_FAILED UserServiceErrorReason = 11
+	// 删除用户失败
+	UserServiceErrorReason_DELETE_USER_FAILED UserServiceErrorReason = 12
 )
 
 // Enum value maps for UserServiceErrorReason.
 var (
 	UserServiceErrorReason_name = map[int32]string{
-		0: "USER_NOT_FOUND",
-		1: "CONTENT_MISSING",
-		2: "PASSWORD_NOT_MATCH",
-		3: "USER_ALREADY_EXIST",
-		4: "USERNAME_OR_PHONE_EMPTY",
-		5: "PASSWORD_ERROR",
-		6: "PASSWORD_ENCRYPTION_FAILED",
-		7: "CREATE_USER_FAILED",
-		8: "USER_ALREADY_REGISTERED",
-		9: "USER_REGISTER_FAILED",
+		0:  "USER_NOT_FOUND",
+		1:  "CONTENT_MISSING",
+		2:  "PASSWORD_NOT_MATCH",
+		3:  "USER_ALREADY_EXIST",
+		4:  "USERNAME_OR_PHONE_EMPTY",
+		5:  "PASSWORD_ERROR",
+		6:  "PASSWORD_ENCRYPTION_FAILED",
+		7:  "CREATE_USER_FAILED",
+		8:  "USER_ALREADY_REGISTERED",
+		9:  "USER_REGISTER_FAILED",
+		10: "USER_FROZEN",
+		11: "UPDATE_USER_FAILED",
+		12: "DELETE_USER_FAILED",
 	}
 	UserServiceErrorReason_value = map[string]int32{
 		"USER_NOT_FOUND":             0,
@@ -70,6 +79,9 @@ var (
 		"CREATE_USER_FAILED":         7,
 		"USER_ALREADY_REGISTERED":    8,
 		"USER_REGISTER_FAILED":       9,
+		"USER_FROZEN":                10,
+		"UPDATE_USER_FAILED":         11,
+		"DELETE_USER_FAILED":         12,
 	}
 )
 
@@ -104,7 +116,7 @@ var File_api_service_user_v1_user_error_proto protoreflect.FileDescriptor
 
 const file_api_service_user_v1_user_error_proto_rawDesc = "" +
 	"\n" +
-	"$api/service/user/v1/user_error.proto\x12\x13api.service.user.v1\x1a\x13errors/errors.proto*\xd3\x02\n" +
+	"$api/service/user/v1/user_error.proto\x12\x13api.service.user.v1\x1a\x13errors/errors.proto*\xa6\x03\n" +
 	"\x16UserServiceErrorReason\x12\x18\n" +
 	"\x0eUSER_NOT_FOUND\x10\x00\x1a\x04\xa8E\xa6\x03\x12\x19\n" +
 	"\x0fCONTENT_MISSING\x10\x01\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
@@ -115,7 +127,11 @@ const file_api_service_user_v1_user_error_proto_rawDesc = "" +
 	"\x1aPASSWORD_ENCRYPTION_FAILED\x10\x06\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
 	"\x12CREATE_USER_FAILED\x10\a\x1a\x04\xa8E\xa6\x03\x12!\n" +
 	"\x17USER_ALREADY_REGISTERED\x10\b\x1a\x04\xa8E\xa6\x03\x12\x1e\n" +
-	"\x14USER_REGISTER_FAILED\x10\t\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
+	"\x14USER_REGISTER_FAILED\x10\t\x1a\x04\xa8E\xa6\x03\x12\x15\n" +
+	"\vUSER_FROZEN\x10\n" +
+	"\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
+	"\x12UPDATE_USER_FAILED\x10\v\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
+	"\x12DELETE_USER_FAILED\x10\f\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
 
 var (
 	file_api_service_user_v1_user_error_proto_rawDescOnce sync.Once

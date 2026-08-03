@@ -28,4 +28,10 @@ enum UserServiceErrorReason {
 	USER_ALREADY_REGISTERED = 8 [(errors.code) = 422];
 	// 用户注册失败
 	USER_REGISTER_FAILED = 9 [(errors.code) = 422];
+	// 用户已冻结
+	USER_FROZEN = 10 [(errors.code) = 422];
+	// 更新用户失败
+	UPDATE_USER_FAILED = 11 [(errors.code) = 422];
+	// 删除用户失败
+	DELETE_USER_FAILED = 12 [(errors.code) = 422];
 }

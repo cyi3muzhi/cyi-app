@@ -32,6 +32,11 @@ func (uc *UserUseCase) Register(ctx context.Context, u *User) error {
 		return fmt.Errorf("%w: check user existence failed", ErrUserRegisterFailed)
 	}
 
+	// 注册即登录：记录最近登录时间和 IP（IP 由 service 层从请求中获取后传入）
+	if u.LastLoginAt == 0 {
+		u.LastLoginAt = time.Now().Unix()
+	}
+
 	// 添加用户
 	_, err = uc.CreateUser(ctx, u)
 	if err != nil {
@@ -58,6 +63,12 @@ func (uc *UserUseCase) Login(ctx context.Context, in *User, apiKey string) (*Log
 		uc.log.Errorf("Password error: %v", err)
 		return nil, fmt.Errorf("%w: password not match", ErrPasswordError)
 	}
+
+	// 更新最近登录时间和 IP（失败仅告警，不影响登录）
+	if err := uc.repo.UpdateLastLogin(ctx, user.ID, time.Now().Unix(), in.LastLoginIP); err != nil {
+		uc.log.Warnf("Failed to update last login for user %d: %v", user.ID, err)
+	}
+
 	// generate token
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, server.UserClaims{
 		ID:       user.ID,

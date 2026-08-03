@@ -181,7 +181,7 @@
     </el-card>
 
     <!-- 上传文档对话框 -->
-    <el-dialog v-model="showUploadDialog" title="上传知识库文档" width="520px" :close-on-click-modal="false" class="upload-dialog">
+    <el-dialog v-model="showUploadDialog" title="上传知识库文档" width="520px" :close-on-click-modal="false" align-center append-to-body class="upload-dialog">
       <el-form :model="uploadForm" label-position="top" class="upload-form">
         <el-form-item label="文档标题">
           <el-input v-model="uploadForm.title" placeholder="留空则使用文件名" />
@@ -899,6 +899,19 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ===== 上传弹窗容器 ===== */
+.upload-dialog :deep(.el-dialog) {
+  max-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-dialog :deep(.el-dialog__body) {
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
 }
 
 /* ===== 响应式 ===== */

@@ -9,128 +9,189 @@ option java_package = "api.service.user.v1";
 import "google/protobuf/empty.proto";
 import "validate/validate.proto";
 
+// User 用户服务
+// 同时服务用户端（注册/登录/资料）和管理后台（列表/统计/冻结）
 service User {
+	// 创建用户
 	rpc CreateUser (CreateUserRequest) returns (CreateUserReply);
+	// 更新用户资料
 	rpc UpdateUser (UpdateUserRequest) returns (UpdateUserReply);
+	// 删除用户（软删除）
 	rpc DeleteUser (DeleteUserRequest) returns (DeleteUserReply);
+	// 获取用户详情
 	rpc GetUser (GetUserRequest) returns (GetUserReply);
+	// 用户列表（支持分页/关键字/状态/等级筛选）
 	rpc ListUser (ListUserRequest) returns (ListUserReply);
+	// 冻结/解冻用户
+	rpc ToggleUserStatus (ToggleUserStatusRequest) returns (ToggleUserStatusReply);
+	// 用户统计数据
+	rpc GetUserStats (google.protobuf.Empty) returns (GetUserStatsReply);
+	// 单独更新头像
+	rpc UpdateUserAvatar (UpdateUserAvatarRequest) returns (UpdateUserAvatarReply);
 	// 校验账号是否存在
 	rpc CheckUserExist (CheckUserExistRequest) returns (CheckUserExistReply);
+	// 根据用户名获取用户
 	rpc GetUserByUsername(GetUserByUsernameReq) returns (GetUserByUsernameReply);
-	// 校验密码是否正确
+	// 校验密码
 	rpc VerifyPassword (VerifyPasswordRequest) returns (VerifyPasswordReply);
-	// 统计用户数量
+	// 统计用户数量（兼容老接口）
 	rpc UserCount (google.protobuf.Empty) returns (UserCountReply);
-	// 注册用户
+	// 注册
 	rpc Register (RegisterRequest) returns (RegisterReply);
-	// 登录用户
+	// 登录
 	rpc Login (LoginRequest) returns (LoginReply);
 }
 
-message CreateUserRequest {
-	// 姓名
-	string name = 1;
-	// 手机号
-	string phone = 2;
-	// 密码
-	string password = 3;
-	// 用户名
-	string username = 4;
-}
-message CreateUserReply {
-	// 用户ID
+// UserInfo 用户完整信息（多处复用）
+message UserInfo {
 	int64 id = 1;
-	// 姓名
-	string name = 2;
-	// 手机号
+	string username = 2;          // 登录账号
 	string phone = 3;
-	// 用户名
-	string username = 4;
+	string email = 4;
+	string nickname = 5;          // 展示名
+	string avatar = 6;
+	int32 gender = 7;            // 0=未知 1=男 2=女
+	string birthday = 8;          // YYYY-MM-DD
+	int32 status = 9;             // 1=正常 2=冻结
+	string level = 10;            // 会员等级 regular/gold/diamond
+	int64 growth_value = 11;      // 成长值（预留）
+	int64 last_login_at = 12;    // 最近登录时间戳
+	string last_login_ip = 13;
+	string register_source = 14;  // 注册来源 web/app/wx_mini
+	int64 created_at = 15;        // 注册时间戳
+	int64 updated_at = 16;
 }
 
-message UpdateUserRequest {
-	// 用户id
+// ========== CreateUser ==========
+message CreateUserRequest {
+	string username = 1 [(validate.rules).string = {min_len: 2, max_len: 32}];
+	string phone = 2;
+	string email = 3;
+	string password = 4 [(validate.rules).string = {min_len: 6, max_len: 32}];
+	string nickname = 5;
+	string register_source = 6;
+}
+message CreateUserReply {
 	int64 id = 1;
-	// 姓名
-	string name = 2;
-	// 头像
+}
+
+// ========== UpdateUser ==========
+message UpdateUserRequest {
+	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+	string nickname = 2;
 	string avatar = 3;
+	string phone = 4;
+	string email = 5;
+	int32 gender = 6;
+	string birthday = 7;
+	string level = 8;
 }
 message UpdateUserReply {
 	bool success = 1;
 }
 
-message DeleteUserRequest {}
-message DeleteUserReply {}
+// ========== DeleteUser ==========
+message DeleteUserRequest {
+	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+message DeleteUserReply {
+	bool success = 1;
+}
 
+// ========== GetUser ==========
 message GetUserRequest {
-	int64 id = 1;
+	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 message GetUserReply {
-	int64 id = 1;
-	// 姓名
-	string name = 2;
-	// 手机号
-	string phone = 3;
-	// 用户名
-	string username = 4;
+	UserInfo user = 1;
 }
 
-message ListUserRequest {}
-message ListUserReply {}
+// ========== ListUser ==========
+message ListUserRequest {
+	int32 page = 1 [(validate.rules).int32 = {gte: 1}];
+	int32 page_size = 2 [(validate.rules).int32 = {gte: 1, lte: 100}];
+	string keyword = 3;    // 模糊匹配 username/phone/nickname/email
+	string level = 4;      // 会员等级筛选
+	int32 status = 5;      // 0=全部 1=正常 2=冻结
+}
+message ListUserReply {
+	repeated UserInfo items = 1;
+	int32 total = 2;
+}
 
+// ========== ToggleUserStatus ==========
+message ToggleUserStatusRequest {
+	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+message ToggleUserStatusReply {
+	bool success = 1;
+	int32 new_status = 2;   // 1=正常 2=冻结
+}
+
+// ========== GetUserStats ==========
+message GetUserStatsReply {
+	int64 total_users = 1;
+	int64 today_new = 2;
+	double today_new_growth = 3;
+	int64 active_users = 4;
+	int64 member_users = 5;
+	double member_ratio = 6;
+}
+
+// ========== UpdateUserAvatar ==========
+message UpdateUserAvatarRequest {
+	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+	string avatar_url = 2 [(validate.rules).string = {min_len: 1, max_len: 1024}];
+}
+message UpdateUserAvatarReply {
+	bool success = 1;
+}
+
+// ========== 兼容老接口 ==========
 message CheckUserExistRequest {
-	// 手机号
 	string phone = 1;
-	// 用户名
 	string username = 2;
 }
-message CheckUserExistReply{
+message CheckUserExistReply {
 	bool exist = 1;
 }
 
 message GetUserByUsernameReq {
-    string username = 1;
+	string username = 1;
 }
-
 message GetUserByUsernameReply {
-    int64 id = 1;
-    string username = 2;
+	int64 id = 1;
+	string username = 2;
 }
 
 message VerifyPasswordRequest {
-	// 账号
 	string username = 1;
-	// 密码
 	string password = 2;
 }
-
 message VerifyPasswordReply {
-    bool valid = 1;
+	bool valid = 1;
 }
 
 message UserCountReply {
-    int64 count = 1;
+	int64 count = 1;
 }
 
 message RegisterRequest {
-    // 用户名验证
-    string username = 1;
-    // 密码长度验证
-    string password = 2;
+	string username = 1;   // 登录账号（注册时 = 手机号）
+	string password = 2;
+	string nickname = 3;   // 展示名
+	string phone = 4;      // 手机号（与 username 相同，作为联系方式存储）
+	string client_ip = 5;  // 客户端 IP（注册即登录时记录）
 }
 message RegisterReply {
-    bool success = 1;
+	bool success = 1;
 }
 
 message LoginRequest {
-	// 用户名或手机号 可以为空
 	string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
-	// string phone = 2 [(validate.rules).string = {pattern: "^1[3-9]\\d{9}$"}];
 	string password = 3 [(validate.rules).string = {min_len: 6, max_len: 20}];
-	// API Key
 	string api_key = 4;
+	string client_ip = 5;  // 客户端 IP
 }
 message LoginReply {
 	string token = 1;

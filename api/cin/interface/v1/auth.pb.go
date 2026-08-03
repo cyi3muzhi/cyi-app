@@ -25,10 +25,12 @@ const (
 
 type LoginRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 用户名或手机号
+	// 手机号或用户名
 	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
 	// 密码
-	Password      string `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
+	Password string `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
+	// 客户端 IP（由服务端从请求头获取，前端无需传递）
+	ClientIp      string `protobuf:"bytes,5,opt,name=client_ip,json=clientIp,proto3" json:"client_ip,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -73,6 +75,13 @@ func (x *LoginRequest) GetUsername() string {
 func (x *LoginRequest) GetPassword() string {
 	if x != nil {
 		return x.Password
+	}
+	return ""
+}
+
+func (x *LoginRequest) GetClientIp() string {
+	if x != nil {
+		return x.ClientIp
 	}
 	return ""
 }
@@ -123,10 +132,16 @@ func (x *LoginReply) GetToken() string {
 
 type RegisterReq struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 用户名
+	// 登录账号（注册时 = 手机号）
 	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
 	// 密码
-	Password      string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	// 展示名
+	Nickname string `protobuf:"bytes,3,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	// 手机号（与 username 相同，作为联系方式存储）
+	Phone string `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 客户端 IP（由服务端从请求头获取，前端无需传递）
+	ClientIp      string `protobuf:"bytes,5,opt,name=client_ip,json=clientIp,proto3" json:"client_ip,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -171,6 +186,27 @@ func (x *RegisterReq) GetUsername() string {
 func (x *RegisterReq) GetPassword() string {
 	if x != nil {
 		return x.Password
+	}
+	return ""
+}
+
+func (x *RegisterReq) GetNickname() string {
+	if x != nil {
+		return x.Nickname
+	}
+	return ""
+}
+
+func (x *RegisterReq) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *RegisterReq) GetClientIp() string {
+	if x != nil {
+		return x.ClientIp
 	}
 	return ""
 }
@@ -223,16 +259,20 @@ var File_api_cin_interface_v1_auth_proto protoreflect.FileDescriptor
 
 const file_api_cin_interface_v1_auth_proto_rawDesc = "" +
 	"\n" +
-	"\x1fapi/cin/interface/v1/auth.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"l\n" +
-	"\fLoginRequest\x125\n" +
-	"\busername\x18\x01 \x01(\tB\x19\xfaB\x16r\x14\x10\x02\x18\x182\x0e^[\\w\\p{Han}]+$R\busername\x12%\n" +
-	"\bpassword\x18\x03 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18\x14R\bpassword\"\"\n" +
+	"\x1fapi/cin/interface/v1/auth.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"y\n" +
+	"\fLoginRequest\x12%\n" +
+	"\busername\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x02\x18\x18R\busername\x12%\n" +
+	"\bpassword\x18\x03 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18\x14R\bpassword\x12\x1b\n" +
+	"\tclient_ip\x18\x05 \x01(\tR\bclientIp\"\"\n" +
 	"\n" +
 	"LoginReply\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\"k\n" +
-	"\vRegisterReq\x125\n" +
-	"\busername\x18\x01 \x01(\tB\x19\xfaB\x16r\x14\x10\x02\x18\x182\x0e^[\\w\\p{Han}]+$R\busername\x12%\n" +
-	"\bpassword\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18\x14R\bpassword\")\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"\xaa\x01\n" +
+	"\vRegisterReq\x12%\n" +
+	"\busername\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x02\x18\x18R\busername\x12%\n" +
+	"\bpassword\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18\x14R\bpassword\x12\x1a\n" +
+	"\bnickname\x18\x03 \x01(\tR\bnickname\x12\x14\n" +
+	"\x05phone\x18\x04 \x01(\tR\x05phone\x12\x1b\n" +
+	"\tclient_ip\x18\x05 \x01(\tR\bclientIp\")\n" +
 	"\rRegisterReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess2\xe2\x01\n" +
 	"\x04Auth\x12h\n" +

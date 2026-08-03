@@ -53,7 +53,7 @@ service AdminUser {
   // 获取用户统计数据
   rpc GetUserStats (GetUserStatsRequest) returns (GetUserStatsReply) {
     option (google.api.http) = {
-      get: "/admin/v1/users/stats"
+      get: "/admin/v1/user-stats"
     };
   }
 }
@@ -63,7 +63,7 @@ message ListUserRequest {
   int32 page_size = 2;
   string keyword = 3;
   string level = 4;
-  string status = 5;
+  int32 status = 5;  // 0=全部 1=正常 2=冻结
 }
 
 message ListUserReply {
@@ -71,15 +71,20 @@ message ListUserReply {
   int32 total = 2;
 }
 
+// UserItem 用户列表项（不含消费金额/订单数，这些数据由 order service 聚合，后续在用户详情里展示）
 message UserItem {
   int64 id = 1;
-  string name = 2;
-  string phone = 3;
-  string level = 4;
-  string reg_time = 5;
-  int64 amount = 6;
-  int32 orders = 7;
-  string status = 8;
+  string username = 2;          // 登录账号
+  string nickname = 3;          // 展示名
+  string phone = 4;
+  string email = 5;
+  string avatar = 6;
+  int32 gender = 7;             // 0=未知 1=男 2=女
+  string level = 8;             // 会员等级 regular/gold/diamond
+  int64 last_login_at = 9;
+  string register_source = 10;
+  int32 status = 11;            // 1=正常 2=冻结
+  int64 created_at = 12;        // 注册时间戳
 }
 
 message GetUserRequest {
@@ -91,9 +96,12 @@ message GetUserReply {
 }
 
 message CreateUserRequest {
-  string name = 1 [(validate.rules).string = {min_len: 1, max_len: 24}];
+  string username = 1 [(validate.rules).string = {min_len: 2, max_len: 32}];
   string phone = 2;
-  string password = 3 [(validate.rules).string = {min_len: 6}];
+  string email = 3;
+  string password = 4 [(validate.rules).string = {min_len: 6}];
+  string nickname = 5;
+  string register_source = 6;
 }
 
 message CreateUserReply {
@@ -102,9 +110,12 @@ message CreateUserReply {
 
 message UpdateUserRequest {
   int64 id = 1 [(validate.rules).int64 = {gt: 0}];
-  string name = 2;
+  string nickname = 2;
   string phone = 3;
-  string level = 4;
+  string email = 4;
+  int32 gender = 5;
+  string birthday = 6;
+  string level = 7;
 }
 
 message UpdateUserReply {
@@ -125,7 +136,7 @@ message ToggleUserStatusRequest {
 
 message ToggleUserStatusReply {
   bool success = 1;
-  string new_status = 2;
+  int32 new_status = 2;  // 1=正常 2=冻结
 }
 
 message GetUserStatsRequest {}

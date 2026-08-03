@@ -142,14 +142,14 @@ func (a adminUser) clone(db *gorm.DB) adminUser {
 
 type adminUserDo struct{ gen.DO }
 
-// GetByUsername 根据用户名查询
+// GetByUsername
 // SELECT * FROM @@table WHERE username=@username LIMIT 1
 func (a adminUserDo) GetByUsername(username string) (result *models.AdminUser, err error) {
 	params := make(map[string]interface{}, 0)
 
 	var generateSQL strings.Builder
 	params["username"] = username
-	generateSQL.WriteString("根据用户名查询 SELECT * FROM admin_user WHERE username=@username LIMIT 1 ")
+	generateSQL.WriteString("SELECT * FROM admin_user WHERE username=@username LIMIT 1 ")
 
 	var executeSQL *gorm.DB
 	if len(params) > 0 {
@@ -161,14 +161,14 @@ func (a adminUserDo) GetByUsername(username string) (result *models.AdminUser, e
 	return
 }
 
-// GetByID 根据ID查询
+// GetByID
 // SELECT * FROM @@table WHERE id=@id LIMIT 1
 func (a adminUserDo) GetByID(id int) (result *models.AdminUser, err error) {
 	params := make(map[string]interface{}, 0)
 
 	var generateSQL strings.Builder
 	params["id"] = id
-	generateSQL.WriteString("根据ID查询 SELECT * FROM admin_user WHERE id=@id LIMIT 1 ")
+	generateSQL.WriteString("SELECT * FROM admin_user WHERE id=@id LIMIT 1 ")
 
 	var executeSQL *gorm.DB
 	if len(params) > 0 {
@@ -180,7 +180,7 @@ func (a adminUserDo) GetByID(id int) (result *models.AdminUser, err error) {
 	return
 }
 
-// CreateAdminUser 创建管理员
+// CreateAdminUser
 // INSERT INTO @@table (username,password,name,role,email,status) VALUES (@admin.Username,@admin.Password,@admin.Name,@admin.Role,@admin.Email,@admin.Status)
 func (a adminUserDo) CreateAdminUser(admin models.AdminUser) (result *models.AdminUser, err error) {
 	params := make(map[string]interface{}, 0)
@@ -192,7 +192,7 @@ func (a adminUserDo) CreateAdminUser(admin models.AdminUser) (result *models.Adm
 	params["adminRole"] = admin.Role
 	params["adminEmail"] = admin.Email
 	params["adminStatus"] = admin.Status
-	generateSQL.WriteString("创建管理员 INSERT INTO admin_user (username,password,name,role,email,status) VALUES (@adminUsername,@adminPassword,@adminName,@adminRole,@adminEmail,@adminStatus) ")
+	generateSQL.WriteString("INSERT INTO admin_user (username,password,name,role,email,status) VALUES (@adminUsername,@adminPassword,@adminName,@adminRole,@adminEmail,@adminStatus) ")
 
 	var executeSQL *gorm.DB
 	if len(params) > 0 {
@@ -204,7 +204,7 @@ func (a adminUserDo) CreateAdminUser(admin models.AdminUser) (result *models.Adm
 	return
 }
 
-// UpdateAdminUser 更新管理员
+// UpdateAdminUser
 // UPDATE @@table
 // {{set}}
 //
@@ -220,7 +220,7 @@ func (a adminUserDo) UpdateAdminUser(id int, admin models.AdminUser) (err error)
 	params := make(map[string]interface{}, 0)
 
 	var generateSQL strings.Builder
-	generateSQL.WriteString("更新管理员 UPDATE admin_user ")
+	generateSQL.WriteString("UPDATE admin_user ")
 	var setSQL0 strings.Builder
 	if admin.Name != "" {
 		params["adminName"] = admin.Name
@@ -256,7 +256,7 @@ func (a adminUserDo) UpdateAdminUser(id int, admin models.AdminUser) (err error)
 	return
 }
 
-// ListAdminUser 查询管理员列表
+// ListAdminUser
 // SELECT * FROM @@table
 // {{where}}
 //
@@ -270,7 +270,7 @@ func (a adminUserDo) ListAdminUser(keyword string) (result []*models.AdminUser, 
 	params := make(map[string]interface{}, 0)
 
 	var generateSQL strings.Builder
-	generateSQL.WriteString("查询管理员列表 SELECT * FROM admin_user ")
+	generateSQL.WriteString("SELECT * FROM admin_user ")
 	var whereSQL0 strings.Builder
 	if keyword != "" {
 		params["keyword"] = keyword
@@ -289,7 +289,7 @@ func (a adminUserDo) ListAdminUser(keyword string) (result []*models.AdminUser, 
 	return
 }
 
-// ToggleStatus 切换状态
+// ToggleStatus
 // UPDATE @@table SET status=@status WHERE id=@id
 func (a adminUserDo) ToggleStatus(id int, status int32) (err error) {
 	params := make(map[string]interface{}, 0)
@@ -297,7 +297,7 @@ func (a adminUserDo) ToggleStatus(id int, status int32) (err error) {
 	var generateSQL strings.Builder
 	params["status"] = status
 	params["id"] = id
-	generateSQL.WriteString("切换状态 UPDATE admin_user SET status=@status WHERE id=@id ")
+	generateSQL.WriteString("UPDATE admin_user SET status=@status WHERE id=@id ")
 
 	var executeSQL *gorm.DB
 	if len(params) > 0 {

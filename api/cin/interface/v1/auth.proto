@@ -28,10 +28,12 @@ service Auth {
 }
 
 message LoginRequest {
-  // 用户名或手机号
-  string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
+  // 手机号或用户名
+  string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24}];
   // 密码
   string password = 3 [(validate.rules).string = {min_len: 6, max_len: 20}];
+  // 客户端 IP（由服务端从请求头获取，前端无需传递）
+  string client_ip = 5;
 }
 
 message LoginReply {
@@ -39,10 +41,16 @@ message LoginReply {
 }
 
 message RegisterReq {
-  // 用户名
-  string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
+  // 登录账号（注册时 = 手机号）
+  string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24}];
   // 密码
   string password = 2 [(validate.rules).string = {min_len: 6, max_len: 20}];
+  // 展示名
+  string nickname = 3;
+  // 手机号（与 username 相同，作为联系方式存储）
+  string phone = 4;
+  // 客户端 IP（由服务端从请求头获取，前端无需传递）
+  string client_ip = 5;
 }
 
 message RegisterReply {

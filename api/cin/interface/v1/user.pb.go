@@ -71,7 +71,9 @@ func (x *GetUserInfoRequest) GetId() int64 {
 type GetUserInfoReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	Avatar        string                 `protobuf:"bytes,3,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	Phone         string                 `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -113,9 +115,23 @@ func (x *GetUserInfoReply) GetId() int64 {
 	return 0
 }
 
-func (x *GetUserInfoReply) GetName() string {
+func (x *GetUserInfoReply) GetNickname() string {
 	if x != nil {
-		return x.Name
+		return x.Nickname
+	}
+	return ""
+}
+
+func (x *GetUserInfoReply) GetAvatar() string {
+	if x != nil {
+		return x.Avatar
+	}
+	return ""
+}
+
+func (x *GetUserInfoReply) GetPhone() string {
+	if x != nil {
+		return x.Phone
 	}
 	return ""
 }
@@ -124,6 +140,10 @@ type GetMyInfoReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	Nickname      string                 `protobuf:"bytes,3,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	Avatar        string                 `protobuf:"bytes,4,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	Phone         string                 `protobuf:"bytes,5,opt,name=phone,proto3" json:"phone,omitempty"`
+	Gender        int32                  `protobuf:"varint,6,opt,name=gender,proto3" json:"gender,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -172,10 +192,38 @@ func (x *GetMyInfoReply) GetUsername() string {
 	return ""
 }
 
+func (x *GetMyInfoReply) GetNickname() string {
+	if x != nil {
+		return x.Nickname
+	}
+	return ""
+}
+
+func (x *GetMyInfoReply) GetAvatar() string {
+	if x != nil {
+		return x.Avatar
+	}
+	return ""
+}
+
+func (x *GetMyInfoReply) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *GetMyInfoReply) GetGender() int32 {
+	if x != nil {
+		return x.Gender
+	}
+	return 0
+}
+
 type UpdateUserInfoRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
 	Avatar        string                 `protobuf:"bytes,3,opt,name=avatar,proto3" json:"avatar,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -218,9 +266,9 @@ func (x *UpdateUserInfoRequest) GetId() int64 {
 	return 0
 }
 
-func (x *UpdateUserInfoRequest) GetName() string {
+func (x *UpdateUserInfoRequest) GetNickname() string {
 	if x != nil {
-		return x.Name
+		return x.Nickname
 	}
 	return ""
 }
@@ -282,16 +330,22 @@ const file_api_cin_interface_v1_user_proto_rawDesc = "" +
 	"\n" +
 	"\x1fapi/cin/interface/v1/user.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"$\n" +
 	"\x12GetUserInfoRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"6\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"l\n" +
 	"\x10GetUserInfoReply\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"<\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
+	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x16\n" +
+	"\x06avatar\x18\x03 \x01(\tR\x06avatar\x12\x14\n" +
+	"\x05phone\x18\x04 \x01(\tR\x05phone\"\x9e\x01\n" +
 	"\x0eGetMyInfoReply\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
-	"\busername\x18\x02 \x01(\tR\busername\"x\n" +
+	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
+	"\bnickname\x18\x03 \x01(\tR\bnickname\x12\x16\n" +
+	"\x06avatar\x18\x04 \x01(\tR\x06avatar\x12\x14\n" +
+	"\x05phone\x18\x05 \x01(\tR\x05phone\x12\x16\n" +
+	"\x06gender\x18\x06 \x01(\x05R\x06gender\"\x80\x01\n" +
 	"\x15UpdateUserInfoRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12-\n" +
-	"\x04name\x18\x02 \x01(\tB\x19\xfaB\x16r\x14\x10\x02\x18\x182\x0e^[\\w\\p{Han}]+$R\x04name\x12 \n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x125\n" +
+	"\bnickname\x18\x02 \x01(\tB\x19\xfaB\x16r\x14\x10\x02\x18\x182\x0e^[\\w\\p{Han}]+$R\bnickname\x12 \n" +
 	"\x06avatar\x18\x03 \x01(\tB\b\xfaB\x05r\x03\x88\x01\x01R\x06avatar\"/\n" +
 	"\x13UpdateUserInfoReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess2\xea\x02\n" +

@@ -371,9 +371,9 @@ func (m *UpdateUserInfoRequest) validate(all bool) error {
 
 	// no validation rules for Id
 
-	if l := utf8.RuneCountInString(m.GetName()); l < 2 || l > 24 {
+	if l := utf8.RuneCountInString(m.GetNickname()); l < 2 || l > 24 {
 		err := UpdateUserInfoRequestValidationError{
-			field:  "Name",
+			field:  "Nickname",
 			reason: "value length must be between 2 and 24 runes, inclusive",
 		}
 		if !all {
@@ -382,9 +382,9 @@ func (m *UpdateUserInfoRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if !_UpdateUserInfoRequest_Name_Pattern.MatchString(m.GetName()) {
+	if !_UpdateUserInfoRequest_Name_Pattern.MatchString(m.GetNickname()) {
 		err := UpdateUserInfoRequestValidationError{
-			field:  "Name",
+			field:  "Nickname",
 			reason: "value does not match regex pattern \"^[\\\\w\\\\p{Han}]+$\"",
 		}
 		if !all {

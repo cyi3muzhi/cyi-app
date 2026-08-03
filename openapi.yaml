@@ -1446,6 +1446,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.GetUploadTokenReply'
+    /admin/v1/user-stats:
+        get:
+            tags:
+                - AdminUser
+            description: 获取用户统计数据
+            operationId: AdminUser_GetUserStats
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetUserStatsReply'
     /admin/v1/users:
         get:
             tags:
@@ -1474,7 +1487,8 @@ paths:
                 - name: status
                   in: query
                   schema:
-                    type: string
+                    type: integer
+                    format: int32
             responses:
                 "200":
                     description: OK
@@ -1500,19 +1514,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.CreateUserReply'
-    /admin/v1/users/stats:
-        get:
-            tags:
-                - AdminUser
-            description: 获取用户统计数据
-            operationId: AdminUser_GetUserStats
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/api.cin.admin.v1.GetUserStatsReply'
     /admin/v1/users/{id}:
         get:
             tags:
@@ -2564,11 +2565,17 @@ components:
         api.cin.admin.v1.CreateUserRequest:
             type: object
             properties:
-                name:
+                username:
                     type: string
                 phone:
                     type: string
+                email:
+                    type: string
                 password:
+                    type: string
+                nickname:
+                    type: string
+                registerSource:
                     type: string
         api.cin.admin.v1.DeleteCategoryReply:
             type: object
@@ -3387,7 +3394,8 @@ components:
                 success:
                     type: boolean
                 newStatus:
-                    type: string
+                    type: integer
+                    format: int32
         api.cin.admin.v1.ToggleUserStatusRequest:
             type: object
             properties:
@@ -3652,9 +3660,16 @@ components:
             properties:
                 id:
                     type: string
-                name:
+                nickname:
                     type: string
                 phone:
+                    type: string
+                email:
+                    type: string
+                gender:
+                    type: integer
+                    format: int32
+                birthday:
                     type: string
                 level:
                     type: string
@@ -3663,21 +3678,31 @@ components:
             properties:
                 id:
                     type: string
-                name:
+                username:
+                    type: string
+                nickname:
                     type: string
                 phone:
                     type: string
-                level:
+                email:
                     type: string
-                regTime:
+                avatar:
                     type: string
-                amount:
-                    type: string
-                orders:
+                gender:
                     type: integer
                     format: int32
-                status:
+                level:
                     type: string
+                lastLoginAt:
+                    type: string
+                registerSource:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                createdAt:
+                    type: string
+            description: UserItem 用户列表项（不含消费金额/订单数，这些数据由 order service 聚合，后续在用户详情里展示）
         api.cin.interface.v1.AddCartItemReply:
             type: object
             properties:
@@ -3813,6 +3838,15 @@ components:
                     type: string
                 username:
                     type: string
+                nickname:
+                    type: string
+                avatar:
+                    type: string
+                phone:
+                    type: string
+                gender:
+                    type: integer
+                    format: int32
         api.cin.interface.v1.GetOrderReply:
             type: object
             properties:
@@ -3828,7 +3862,11 @@ components:
             properties:
                 id:
                     type: string
-                name:
+                nickname:
+                    type: string
+                avatar:
+                    type: string
+                phone:
                     type: string
         api.cin.interface.v1.ListBannersReply:
             type: object
@@ -3887,7 +3925,7 @@ components:
             properties:
                 username:
                     type: string
-                    description: 用户名或手机号
+                    description: 手机号或用户名
                 password:
                     type: string
                     description: 密码
@@ -4042,10 +4080,16 @@ components:
             properties:
                 username:
                     type: string
-                    description: 用户名
+                    description: 登录账号（注册时 = 手机号）
                 password:
                     type: string
                     description: 密码
+                nickname:
+                    type: string
+                    description: 展示名
+                phone:
+                    type: string
+                    description: 手机号（与 username 相同，作为联系方式存储）
         api.cin.interface.v1.SkuInfo:
             type: object
             properties:
@@ -4117,7 +4161,7 @@ components:
             properties:
                 id:
                     type: string
-                name:
+                nickname:
                     type: string
                 avatar:
                     type: string

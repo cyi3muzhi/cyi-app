@@ -39,17 +39,23 @@ message GetUserInfoRequest {
 
 message GetUserInfoReply {
   int64 id = 1;
-  string name = 2;
+  string nickname = 2;
+  string avatar = 3;
+  string phone = 4;
 }
 
 message GetMyInfoReply {
   int64 id = 1;
   string username = 2;
+  string nickname = 3;
+  string avatar = 4;
+  string phone = 5;
+  int32 gender = 6;
 }
 
 message UpdateUserInfoRequest {
   int64 id = 1;
-  string name = 2 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
+  string nickname = 2 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
   string avatar = 3 [(validate.rules).string = {uri: true}];
 }
 

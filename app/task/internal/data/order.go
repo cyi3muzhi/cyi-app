@@ -165,6 +165,17 @@ func (r *orderRepo) batchFillProducts(ctx context.Context, orders []*biz.ExportO
 	}
 }
 
+// userDisplay 从 GetUserReply 提取用户显示名（优先 Nickname，其次 Username）
+func userDisplay(u *userRpc.GetUserReply) string {
+	if u == nil || u.User == nil {
+		return ""
+	}
+	if u.User.Nickname != "" {
+		return u.User.Nickname
+	}
+	return u.User.Username
+}
+
 // batchGetUserNames 批量查询用户名称
 func (r *orderRepo) batchGetUserNames(ctx context.Context, userIDs []int64) map[int64]string {
 	result := make(map[int64]string, len(userIDs))
@@ -177,7 +188,7 @@ func (r *orderRepo) batchGetUserNames(ctx context.Context, userIDs []int64) map[
 			result[uid] = fmt.Sprintf("用户% d", uid)
 			continue
 		}
-		result[uid] = user.GetName()
+		result[uid] = userDisplay(user)
 	}
 	return result
 }

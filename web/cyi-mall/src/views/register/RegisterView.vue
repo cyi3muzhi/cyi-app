@@ -293,9 +293,12 @@
  * 独立页面（无 DefaultLayout），三步骤注册流程
  */
 import { ref, computed, reactive, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useShopStore } from '@/store/shop'
+import { register } from '@/api/auth'
 
 const shopStore = useShopStore()
+const route = useRoute()
 
 // ---- 步骤定义 ----
 const steps = [
@@ -309,7 +312,7 @@ const currentStep = ref(0)
 // ---- 表单数据 ----
 const form = reactive({
   nickname: '',
-  phone: '',
+  phone: (route.query.phone as string) || '',
   password: '',
   confirmPassword: '',
   showPassword: false,
@@ -510,11 +513,22 @@ async function submitVerify() {
   }
 
   verifyLoading.value = true
-  // 模拟验证
-  await new Promise(resolve => setTimeout(resolve, 1500))
-  verifyLoading.value = false
-  currentStep.value = 2
-  showToast('注册成功！', 'var(--shop-success)')
+  try {
+    // 暂时跳过验证码校验，直接调用注册 API
+    // 验证码步骤后续对接短信服务后启用
+    await register({
+      username: form.phone,      // 手机号作为登录账号
+      password: form.password,
+      nickname: form.nickname,
+      phone: form.phone,
+    })
+    currentStep.value = 2
+    showToast('注册成功！', 'var(--shop-success)')
+  } catch (e: any) {
+    errors.verifyCode = e?.message || '注册失败，请稍后重试'
+  } finally {
+    verifyLoading.value = false
+  }
 }
 
 /**

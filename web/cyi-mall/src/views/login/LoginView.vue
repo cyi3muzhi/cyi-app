@@ -69,7 +69,7 @@
                 ref="accountRef"
                 v-model="account"
                 type="text"
-                placeholder="手机号 / 邮箱"
+                placeholder="手机号"
                 autocomplete="username"
                 class="input-field"
                 :class="{ 'input-error': accountError }"
@@ -173,6 +173,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useShopStore } from '@/store/shop'
+import { login } from '@/api/auth'
 
 const router = useRouter()
 const shopStore = useShopStore()
@@ -224,7 +225,7 @@ function validateForm(): boolean {
 }
 
 /**
- * 处理表单提交 - 模拟登录请求
+ * 处理表单提交
  */
 async function handleSubmit() {
   if (!validateForm()) return
@@ -233,16 +234,21 @@ async function handleSubmit() {
   formError.value = ''
 
   try {
-    // 模拟 API 请求延迟
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    // 模拟登录成功 - 设置 mock token（实际项目应调用真实 API）
-    const mockToken = 'mock_token_' + Date.now()
-    localStorage.setItem('token', mockToken)
+    // 调用真实登录 API
+    const res = await login({ username: account.value, password: password.value })
+    localStorage.setItem('token', res.token)
     // 登录成功后跳转回原页面，没有 redirect 则去首页
     const redirect = (router.currentRoute.value.query.redirect as string) || '/'
     router.push(redirect)
-  } catch {
-    formError.value = '登录失败，请检查账号和密码'
+  } catch (e: any) {
+    // 判断是否是"用户不存在"错误，自动跳转注册页
+    const msg = e?.response?.data?.message || e?.message || ''
+    if (msg.includes('not found') || msg.includes('不存在')) {
+      // 自动跳转到注册页，带上手机号预填
+      router.push({ path: '/register', query: { phone: account.value } })
+      return
+    }
+    formError.value = msg || '登录失败，请检查账号和密码'
   } finally {
     loading.value = false
   }

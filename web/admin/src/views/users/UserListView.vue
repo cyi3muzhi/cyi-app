@@ -22,17 +22,18 @@
       <div class="filter-left">
         <el-input
           v-model="searchKeyword"
-          placeholder="搜索用户名/手机号..."
+          placeholder="搜索用户名/手机号/昵称..."
           :prefix-icon="Search"
           size="small"
-          style="width: 240px"
+          style="width: 260px"
           clearable
+          @keyup.enter="handleSearch"
         />
       </div>
       <div class="filter-right">
         <div class="filter-group">
           <span class="filter-label">会员等级:</span>
-          <el-radio-group v-model="levelFilter" size="small" @change="handleFilterChange">
+          <el-radio-group v-model="levelFilter" size="small" @change="handleSearch">
             <el-radio-button value="">全部</el-radio-button>
             <el-radio-button value="regular">普通会员</el-radio-button>
             <el-radio-button value="gold">黄金会员</el-radio-button>
@@ -41,10 +42,10 @@
         </div>
         <div class="filter-group">
           <span class="filter-label">状态:</span>
-          <el-radio-group v-model="statusFilter" size="small" @change="handleFilterChange">
-            <el-radio-button value="">全部</el-radio-button>
-            <el-radio-button value="active">正常</el-radio-button>
-            <el-radio-button value="frozen">冻结</el-radio-button>
+          <el-radio-group v-model="statusFilter" size="small" @change="handleSearch">
+            <el-radio-button :value="0">全部</el-radio-button>
+            <el-radio-button :value="1">正常</el-radio-button>
+            <el-radio-button :value="2">冻结</el-radio-button>
           </el-radio-group>
         </div>
         <el-button size="small" @click="handleExport">
@@ -55,15 +56,20 @@
     </div>
 
     <!-- 用户表格 -->
-    <el-table :data="filteredUsers" stripe style="width: 100%" size="small" v-loading="loading">
+    <el-table :data="userList" stripe style="width: 100%" size="small" v-loading="loading">
       <el-table-column label="用户" width="64">
         <template #default="{ row }">
-          <div class="user-avatar" :style="{ background: avatarColor(row.name) }">
-            {{ row.name.charAt(0) }}
+          <div class="user-avatar" :style="{ background: avatarColor(row.nickname || row.username) }">
+            {{ avatarLetter(row) }}
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="name" label="用户名" min-width="100" />
+      <el-table-column label="昵称" min-width="100">
+        <template #default="{ row }">
+          <span>{{ row.nickname || '—' }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="username" label="用户名" min-width="110" />
       <el-table-column prop="phone" label="手机号" min-width="130" />
       <el-table-column label="会员等级" min-width="100">
         <template #default="{ row }">
@@ -72,22 +78,25 @@
             size="small"
             effect="plain"
           >
-            {{ row.levelText }}
+            {{ getLevelText(row.level) }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="regTime" label="注册时间" min-width="110" />
-      <el-table-column label="消费金额" min-width="100">
+      <el-table-column label="注册时间" min-width="160">
         <template #default="{ row }">
-          <span class="amount-text">&yen;{{ row.amount.toLocaleString() }}</span>
+          {{ formatTime(row.createdAt) }}
         </template>
       </el-table-column>
-      <el-table-column prop="orders" label="订单数" width="70" align="center" />
+      <el-table-column label="最近登录" min-width="160">
+        <template #default="{ row }">
+          {{ row.lastLoginAt ? formatTime(row.lastLoginAt) : '—' }}
+        </template>
+      </el-table-column>
       <el-table-column label="状态" min-width="80">
         <template #default="{ row }">
-          <span :class="['status-indicator', row.status]">
+          <span :class="['status-indicator', statusClass(row.status)]">
             <span class="status-dot"></span>
-            {{ row.statusText }}
+            {{ getStatusText(row.status) }}
           </span>
         </template>
       </el-table-column>
@@ -99,10 +108,10 @@
           <el-button
             text
             size="small"
-            :type="row.status === 'active' ? 'danger' : 'success'"
+            :type="row.status === 1 ? 'danger' : 'success'"
             @click="handleToggleStatus(row)"
           >
-            {{ row.status === 'active' ? '冻结' : '解冻' }}
+            {{ row.status === 1 ? '冻结' : '解冻' }}
           </el-button>
           <el-button text size="small" @click="handleViewOrders(row)">
             订单
@@ -116,33 +125,68 @@
       <el-pagination
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
-        :total="filteredUsers.length"
+        :total="total"
         layout="total, prev, pager, next, jumper"
         background
         small
+        @current-change="fetchUserList"
+        @size-change="handleSizeChange"
       />
     </div>
+
+    <!-- 编辑用户弹窗 -->
+    <el-dialog v-model="showEditDialog" title="编辑用户" width="440px" align-center append-to-body>
+      <el-form :model="editForm" label-position="top" class="edit-form">
+        <el-form-item label="昵称">
+          <el-input v-model="editForm.nickname" placeholder="请输入昵称" />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="editForm.phone" placeholder="请输入手机号" />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="editForm.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="性别">
+          <el-radio-group v-model="editForm.gender">
+            <el-radio :value="0">未知</el-radio>
+            <el-radio :value="1">男</el-radio>
+            <el-radio :value="2">女</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="会员等级">
+          <el-select v-model="editForm.level" style="width: 100%">
+            <el-option label="普通会员" value="regular" />
+            <el-option label="黄金会员" value="gold" />
+            <el-option label="钻石会员" value="diamond" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEditDialog = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="submitEdit">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 /**
  * 用户管理列表页面
- * 支持搜索、会员等级筛选、状态筛选、冻结/解冻操作、导出数据
+ * 查询用户端的用户（user service），支持搜索、会员等级筛选、状态筛选、冻结/解冻操作、导出数据
  */
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Download, User, TrendCharts, Avatar, Medal } from '@element-plus/icons-vue'
-import { users, userStats } from '../../api/mock'
+import { listUser, getUserStats, toggleUserStatus, updateUser, type UserItem, type UserStatsResponse } from '../../api/user'
 
 /** 搜索关键词 */
 const searchKeyword = ref('')
 
-/** 会员等级筛选 */
+/** 会员等级筛选（空字符串=全部） */
 const levelFilter = ref('')
 
-/** 状态筛选 */
-const statusFilter = ref('')
+/** 状态筛选（0=全部 1=正常 2=冻结） */
+const statusFilter = ref(0)
 
 /** 当前页 */
 const currentPage = ref(1)
@@ -150,69 +194,126 @@ const currentPage = ref(1)
 /** 每页条数 */
 const pageSize = ref(10)
 
+/** 总数 */
+const total = ref(0)
+
 /** 加载状态 */
 const loading = ref(false)
+
+/** 提交状态 */
+const submitting = ref(false)
+
+/** 用户列表 */
+const userList = ref<UserItem[]>([])
+
+/** 用户统计数据 */
+const userStats = ref<UserStatsResponse>({
+  totalUsers: 0,
+  todayNew: 0,
+  todayNewGrowth: 0,
+  activeUsers: 0,
+  memberUsers: 0,
+  memberRatio: 0
+})
+
+/** 编辑弹窗表单 */
+const showEditDialog = ref(false)
+const editForm = ref({
+  id: 0,
+  nickname: '',
+  phone: '',
+  email: '',
+  gender: 0,
+  level: 'regular'
+})
 
 /** 用户统计卡片配置 */
 const userStatList = computed(() => [
   {
-    label: userStats.totalUsers.label,
-    displayValue: userStats.totalUsers.value.toLocaleString(),
+    label: '用户总数',
+    displayValue: userStats.value.totalUsers.toLocaleString(),
     icon: User,
     color: 'blue'
   },
   {
-    label: userStats.todayNew.label,
-    displayValue: `+${userStats.todayNew.value}`,
-    sub: userStats.todayNew.growth,
+    label: '今日新增',
+    displayValue: `+${userStats.value.todayNew}`,
+    sub: `${(userStats.value.todayNewGrowth * 100).toFixed(1)}% 增长`,
     icon: TrendCharts,
     color: 'green'
   },
   {
-    label: userStats.activeUsers.label,
-    displayValue: userStats.activeUsers.value.toLocaleString(),
-    sub: userStats.activeUsers.sub,
+    label: '活跃用户',
+    displayValue: userStats.value.activeUsers.toLocaleString(),
+    sub: '最近30天登录',
     icon: Avatar,
     color: 'orange'
   },
   {
-    label: userStats.memberUsers.label,
-    displayValue: userStats.memberUsers.value.toLocaleString(),
-    sub: userStats.memberUsers.sub,
+    label: '会员用户',
+    displayValue: userStats.value.memberUsers.toLocaleString(),
+    sub: `占比 ${(userStats.value.memberRatio * 100).toFixed(1)}%`,
     icon: Medal,
     color: 'purple'
   }
 ])
 
-/** 过滤后的用户列表 */
-const filteredUsers = computed(() => {
-  let list = [...users]
-
-  if (searchKeyword.value) {
-    const kw = searchKeyword.value.toLowerCase()
-    list = list.filter(u =>
-      u.name.toLowerCase().includes(kw) || u.phone.includes(kw)
-    )
+/**
+ * 获取用户列表
+ */
+async function fetchUserList() {
+  loading.value = true
+  try {
+    const res = await listUser({
+      page: currentPage.value,
+      pageSize: pageSize.value,
+      keyword: searchKeyword.value || undefined,
+      level: levelFilter.value || undefined,
+      status: statusFilter.value || undefined
+    })
+    userList.value = res.items
+    total.value = res.total
+  } catch (e: any) {
+    ElMessage.error('获取用户列表失败: ' + (e?.message || ''))
+  } finally {
+    loading.value = false
   }
+}
 
-  if (levelFilter.value) {
-    list = list.filter(u => u.level === levelFilter.value)
+/**
+ * 获取用户统计数据
+ */
+async function fetchUserStats() {
+  try {
+    const res = await getUserStats()
+    userStats.value = res
+  } catch (e: any) {
+    console.error('获取用户统计失败:', e)
   }
+}
 
-  if (statusFilter.value) {
-    list = list.filter(u => u.status === statusFilter.value)
-  }
+/**
+ * 搜索处理（重置到第一页）
+ */
+function handleSearch() {
+  currentPage.value = 1
+  fetchUserList()
+}
 
-  return list
-})
+/**
+ * 每页条数变更
+ */
+function handleSizeChange(size: number) {
+  pageSize.value = size
+  currentPage.value = 1
+  fetchUserList()
+}
 
 /**
  * 获取会员等级对应的 el-tag 类型
- * @param {string} level 会员等级
- * @returns {string} tag 类型
  */
-function levelTagType(level) {
-  const map = {
+function levelTagType(level: string) {
+  const map: Record<string, string> = {
     regular: 'info',
     gold: 'warning',
     diamond: 'primary'
@@ -221,73 +322,140 @@ function levelTagType(level) {
 }
 
 /**
- * 根据用户名生成头像背景色
- * @param {string} name 用户名
- * @returns {string} 颜色值
+ * 获取会员等级文本
  */
-function avatarColor(name) {
+function getLevelText(level: string) {
+  const map: Record<string, string> = {
+    regular: '普通会员',
+    gold: '黄金会员',
+    diamond: '钻石会员'
+  }
+  return map[level] || '未知'
+}
+
+/**
+ * 获取状态文本（1=正常 2=冻结）
+ */
+function getStatusText(status: number) {
+  if (status === 1) return '正常'
+  if (status === 2) return '冻结'
+  return '未知'
+}
+
+/**
+ * 获取状态样式类名
+ */
+function statusClass(status: number) {
+  return status === 1 ? 'active' : 'frozen'
+}
+
+/**
+ * 将 Unix 秒时间戳格式化为 YYYY-MM-DD HH:mm:ss
+ */
+function formatTime(ts: number) {
+  if (!ts) return '—'
+  const d = new Date(ts * 1000)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
+/**
+ * 根据名称生成头像背景色
+ */
+function avatarColor(name: string) {
   const colors = ['#4338ca', '#d97706', '#64748b', '#059669', '#dc2626', '#7c3aed', '#0891b2']
-  const idx = name.charCodeAt(0) % colors.length
+  const idx = (name?.charCodeAt(0) || 0) % colors.length
   return colors[idx]
 }
 
 /**
- * 筛选条件变更时重置页码
+ * 获取头像首字母（优先昵称，其次用户名）
  */
-function handleFilterChange() {
-  currentPage.value = 1
+function avatarLetter(row: UserItem) {
+  const name = row.nickname || row.username || ''
+  return name ? name.charAt(0).toUpperCase() : 'U'
 }
 
 /**
- * 编辑用户（模拟弹窗）
- * @param {Object} row 用户行数据
+ * 编辑用户（打开弹窗并填充表单）
  */
-function handleEdit(row) {
-  ElMessage.info(`编辑用户：${row.name}`)
+function handleEdit(row: UserItem) {
+  editForm.value = {
+    id: row.id,
+    nickname: row.nickname,
+    phone: row.phone,
+    email: row.email,
+    gender: row.gender,
+    level: row.level
+  }
+  showEditDialog.value = true
+}
+
+/**
+ * 提交编辑
+ */
+async function submitEdit() {
+  submitting.value = true
+  try {
+    await updateUser(editForm.value.id, {
+      nickname: editForm.value.nickname,
+      phone: editForm.value.phone,
+      email: editForm.value.email,
+      gender: editForm.value.gender,
+      level: editForm.value.level
+    })
+    ElMessage.success('更新成功')
+    showEditDialog.value = false
+    fetchUserList()
+  } catch (e: any) {
+    ElMessage.error('更新失败: ' + (e?.message || ''))
+  } finally {
+    submitting.value = false
+  }
 }
 
 /**
  * 切换用户冻结/解冻状态
- * @param {Object} row 用户行数据
  */
-function handleToggleStatus(row) {
-  const actionText = row.status === 'active' ? '冻结' : '解冻'
+function handleToggleStatus(row: UserItem) {
+  const actionText = row.status === 1 ? '冻结' : '解冻'
+  const displayName = row.nickname || row.username
   ElMessageBox.confirm(
-    `确定${actionText}用户「${row.name}」吗？`,
+    `确定${actionText}用户「${displayName}」吗？`,
     '操作确认',
     { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
-  ).then(() => {
-    if (row.status === 'active') {
-      row.status = 'frozen'
-      row.statusText = '冻结'
-    } else {
-      row.status = 'active'
-      row.statusText = '正常'
+  ).then(async () => {
+    try {
+      await toggleUserStatus(row.id)
+      ElMessage.success(`用户已${actionText}`)
+      fetchUserList()
+    } catch (e: any) {
+      ElMessage.error('操作失败: ' + (e?.message || ''))
     }
-    ElMessage.success(`用户已${actionText}`)
   }).catch(() => {})
 }
 
 /**
- * 查看用户订单
- * @param {Object} row 用户行数据
+ * 查看用户订单（占位，后续对接订单详情页）
  */
-function handleViewOrders(row) {
-  ElMessage.info(`查看用户 ${row.name} 的订单`)
+function handleViewOrders(row: UserItem) {
+  const displayName = row.nickname || row.username
+  ElMessage.info(`查看用户 ${displayName} 的订单`)
 }
 
 /**
- * 导出用户数据
+ * 导出用户数据为 CSV
  */
 function handleExport() {
-  const headers = ['用户名', '手机号', '会员等级', '注册时间', '消费金额', '订单数', '状态']
-  const rows = filteredUsers.value.map(u => [
-    u.name, u.phone, u.levelText, u.regTime,
-    `¥${u.amount.toFixed(2)}`, u.orders, u.statusText
+  const headers = ['昵称', '用户名', '手机号', '会员等级', '注册时间', '最近登录', '状态']
+  const rows = userList.value.map(u => [
+    u.nickname, u.username, u.phone, getLevelText(u.level),
+    formatTime(u.createdAt), u.lastLoginAt ? formatTime(u.lastLoginAt) : '—',
+    getStatusText(u.status)
   ])
 
   const csv = [headers, ...rows]
-    .map(r => r.map(c => `"${c}"`).join(','))
+    .map(r => r.map(c => `"${c ?? ''}"`).join(','))
     .join('\n')
 
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
@@ -299,6 +467,12 @@ function handleExport() {
 
   ElMessage.success('用户数据导出成功')
 }
+
+/** 页面加载时获取数据 */
+onMounted(() => {
+  fetchUserList()
+  fetchUserStats()
+})
 </script>
 
 <style scoped>
@@ -465,30 +639,21 @@ function handleExport() {
   color: var(--shop-destructive);
 }
 
-.amount-text {
-  font-weight: 600;
-}
-
 .pagination-wrap {
   display: flex;
   justify-content: center;
   padding: 20px 0 8px;
 }
 
+/* 编辑表单 */
+.edit-form :deep(.el-form-item) {
+  margin-bottom: 16px;
+}
+
 /* 表格行入场动画 */
 .el-table__body-wrapper tbody tr {
   animation: fadeSlideUp 0.3s ease both;
 }
-.el-table__body-wrapper tbody tr:nth-child(1) { animation-delay: 0.02s; }
-.el-table__body-wrapper tbody tr:nth-child(2) { animation-delay: 0.04s; }
-.el-table__body-wrapper tbody tr:nth-child(3) { animation-delay: 0.06s; }
-.el-table__body-wrapper tbody tr:nth-child(4) { animation-delay: 0.08s; }
-.el-table__body-wrapper tbody tr:nth-child(5) { animation-delay: 0.10s; }
-.el-table__body-wrapper tbody tr:nth-child(6) { animation-delay: 0.12s; }
-.el-table__body-wrapper tbody tr:nth-child(7) { animation-delay: 0.14s; }
-.el-table__body-wrapper tbody tr:nth-child(8) { animation-delay: 0.16s; }
-.el-table__body-wrapper tbody tr:nth-child(9) { animation-delay: 0.18s; }
-.el-table__body-wrapper tbody tr:nth-child(10) { animation-delay: 0.20s; }
 
 @media (max-width: 1024px) {
   .stats-grid {

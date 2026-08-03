@@ -52,7 +52,7 @@ func RegisterAdminUserHTTPServer(s *http.Server, srv AdminUserHTTPServer) {
 	r.PUT("/admin/v1/users/{id}", _AdminUser_UpdateUser0_HTTP_Handler(srv))
 	r.DELETE("/admin/v1/users/{id}", _AdminUser_DeleteUser0_HTTP_Handler(srv))
 	r.POST("/admin/v1/users/{id}/toggle_status", _AdminUser_ToggleUserStatus0_HTTP_Handler(srv))
-	r.GET("/admin/v1/users/stats", _AdminUser_GetUserStats0_HTTP_Handler(srv))
+	r.GET("/admin/v1/user-stats", _AdminUser_GetUserStats0_HTTP_Handler(srv))
 }
 
 func _AdminUser_ListUser0_HTTP_Handler(srv AdminUserHTTPServer) func(ctx http.Context) error {
@@ -279,7 +279,7 @@ func (c *AdminUserHTTPClientImpl) GetUser(ctx context.Context, in *GetUserReques
 // GetUserStats 获取用户统计数据
 func (c *AdminUserHTTPClientImpl) GetUserStats(ctx context.Context, in *GetUserStatsRequest, opts ...http.CallOption) (*GetUserStatsReply, error) {
 	var out GetUserStatsReply
-	pattern := "/admin/v1/users/stats"
+	pattern := "/admin/v1/user-stats"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAdminUserGetUserStats))
 	opts = append(opts, http.PathTemplate(pattern))

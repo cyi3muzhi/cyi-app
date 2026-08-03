@@ -30,10 +30,20 @@ func newUser(db *gorm.DB) user {
 	_user.CreateTime = field.NewInt64(tableName, "create_time")
 	_user.UpdateTime = field.NewInt64(tableName, "update_time")
 	_user.DeletedAt = field.NewField(tableName, "deleted_at")
-	_user.Name = field.NewString(tableName, "name")
-	_user.Phone = field.NewString(tableName, "phone")
-	_user.Password = field.NewString(tableName, "password")
 	_user.Username = field.NewString(tableName, "username")
+	_user.Phone = field.NewString(tableName, "phone")
+	_user.Email = field.NewString(tableName, "email")
+	_user.Password = field.NewString(tableName, "password")
+	_user.Nickname = field.NewString(tableName, "nickname")
+	_user.Avatar = field.NewString(tableName, "avatar")
+	_user.Gender = field.NewInt32(tableName, "gender")
+	_user.Birthday = field.NewString(tableName, "birthday")
+	_user.Status = field.NewInt32(tableName, "status")
+	_user.LastLoginAt = field.NewInt64(tableName, "last_login_at")
+	_user.LastLoginIP = field.NewString(tableName, "last_login_ip")
+	_user.RegisterSource = field.NewString(tableName, "register_source")
+	_user.Level = field.NewString(tableName, "level")
+	_user.GrowthValue = field.NewInt64(tableName, "growth_value")
 
 	_user.fillFieldMap()
 
@@ -43,15 +53,25 @@ func newUser(db *gorm.DB) user {
 type user struct {
 	userDo
 
-	ALL        field.Field
-	ID         field.Int64
-	CreateTime field.Int64
-	UpdateTime field.Int64
-	DeletedAt  field.Field
-	Name       field.String
-	Phone      field.String
-	Password   field.String
-	Username   field.String
+	ALL            field.Field
+	ID             field.Int64
+	CreateTime     field.Int64
+	UpdateTime     field.Int64
+	DeletedAt      field.Field
+	Username       field.String
+	Phone          field.String
+	Email          field.String
+	Password       field.String
+	Nickname       field.String
+	Avatar         field.String
+	Gender         field.Int32
+	Birthday       field.String
+	Status         field.Int32
+	LastLoginAt    field.Int64
+	LastLoginIP    field.String
+	RegisterSource field.String
+	Level          field.String
+	GrowthValue    field.Int64
 
 	fieldMap map[string]field.Expr
 }
@@ -72,10 +92,20 @@ func (u *user) updateTableName(table string) *user {
 	u.CreateTime = field.NewInt64(table, "create_time")
 	u.UpdateTime = field.NewInt64(table, "update_time")
 	u.DeletedAt = field.NewField(table, "deleted_at")
-	u.Name = field.NewString(table, "name")
-	u.Phone = field.NewString(table, "phone")
-	u.Password = field.NewString(table, "password")
 	u.Username = field.NewString(table, "username")
+	u.Phone = field.NewString(table, "phone")
+	u.Email = field.NewString(table, "email")
+	u.Password = field.NewString(table, "password")
+	u.Nickname = field.NewString(table, "nickname")
+	u.Avatar = field.NewString(table, "avatar")
+	u.Gender = field.NewInt32(table, "gender")
+	u.Birthday = field.NewString(table, "birthday")
+	u.Status = field.NewInt32(table, "status")
+	u.LastLoginAt = field.NewInt64(table, "last_login_at")
+	u.LastLoginIP = field.NewString(table, "last_login_ip")
+	u.RegisterSource = field.NewString(table, "register_source")
+	u.Level = field.NewString(table, "level")
+	u.GrowthValue = field.NewInt64(table, "growth_value")
 
 	u.fillFieldMap()
 
@@ -92,15 +122,25 @@ func (u *user) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (u *user) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 8)
+	u.fieldMap = make(map[string]field.Expr, 18)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["create_time"] = u.CreateTime
 	u.fieldMap["update_time"] = u.UpdateTime
 	u.fieldMap["deleted_at"] = u.DeletedAt
-	u.fieldMap["name"] = u.Name
-	u.fieldMap["phone"] = u.Phone
-	u.fieldMap["password"] = u.Password
 	u.fieldMap["username"] = u.Username
+	u.fieldMap["phone"] = u.Phone
+	u.fieldMap["email"] = u.Email
+	u.fieldMap["password"] = u.Password
+	u.fieldMap["nickname"] = u.Nickname
+	u.fieldMap["avatar"] = u.Avatar
+	u.fieldMap["gender"] = u.Gender
+	u.fieldMap["birthday"] = u.Birthday
+	u.fieldMap["status"] = u.Status
+	u.fieldMap["last_login_at"] = u.LastLoginAt
+	u.fieldMap["last_login_ip"] = u.LastLoginIP
+	u.fieldMap["register_source"] = u.RegisterSource
+	u.fieldMap["level"] = u.Level
+	u.fieldMap["growth_value"] = u.GrowthValue
 }
 
 func (u user) clone(db *gorm.DB) user {
@@ -110,14 +150,14 @@ func (u user) clone(db *gorm.DB) user {
 
 type userDo struct{ gen.DO }
 
-// GetByID 根据 ID 进行查询
+// GetByID
 // SELECT * FROM @@table WHERE id=@id
 func (u userDo) GetByID(id int) (result *biz.User, err error) {
 	params := make(map[string]interface{}, 0)
 
 	var generateSQL strings.Builder
 	params["id"] = id
-	generateSQL.WriteString("根据 ID 进行查询 SELECT * FROM user WHERE id=@id ")
+	generateSQL.WriteString("SELECT * FROM user WHERE id=@id ")
 
 	var executeSQL *gorm.DB
 	if len(params) > 0 {
@@ -129,14 +169,14 @@ func (u userDo) GetByID(id int) (result *biz.User, err error) {
 	return
 }
 
-// FilterWithColumn 根据列名和值进行查询
+// FilterWithColumn
 // SELECT * FROM @@table WHERE @@column=@value
 func (u userDo) FilterWithColumn(column string, value string) (result *models.User, err error) {
 	params := make(map[string]interface{}, 0)
 
 	var generateSQL strings.Builder
 	params["value"] = value
-	generateSQL.WriteString("根据列名和值进行查询 SELECT * FROM user WHERE " + u.Quote(column) + "=@value ")
+	generateSQL.WriteString("SELECT * FROM user WHERE " + u.Quote(column) + "=@value ")
 
 	var executeSQL *gorm.DB
 	if len(params) > 0 {
@@ -148,16 +188,15 @@ func (u userDo) FilterWithColumn(column string, value string) (result *models.Us
 	return
 }
 
+// QueryWith
 // SELECT * FROM @@table
 //
 //	{{if user.ID > 0}}
 //	    WHERE id=@user.ID
-//	{{else if user.Name != ""}}
-//	    WHERE username=@user.Name
-//	{{else if user.Phone != ""}}
-//	    WHERE phone=@user.Phone
 //	{{else if user.Username != ""}}
 //	    WHERE username=@user.Username
+//	{{else if user.Phone != ""}}
+//	    WHERE phone=@user.Phone
 //	{{end}}
 func (u userDo) QueryWith(user models.User) (result *models.User, err error) {
 	params := make(map[string]interface{}, 0)
@@ -167,15 +206,12 @@ func (u userDo) QueryWith(user models.User) (result *models.User, err error) {
 	if user.ID > 0 {
 		params["userID"] = user.ID
 		generateSQL.WriteString("WHERE id=@userID ")
-	} else if user.Name != "" {
-		params["userName"] = user.Name
-		generateSQL.WriteString("WHERE username=@userName ")
-	} else if user.Phone != "" {
-		params["userPhone"] = user.Phone
-		generateSQL.WriteString("WHERE phone=@userPhone ")
 	} else if user.Username != "" {
 		params["userUsername"] = user.Username
 		generateSQL.WriteString("WHERE username=@userUsername ")
+	} else if user.Phone != "" {
+		params["userPhone"] = user.Phone
+		generateSQL.WriteString("WHERE phone=@userPhone ")
 	}
 
 	var executeSQL *gorm.DB
@@ -188,18 +224,22 @@ func (u userDo) QueryWith(user models.User) (result *models.User, err error) {
 	return
 }
 
-// CreateUser 创建用户
-// INSERT INTO @@table (name, phone, password, username)
-// VALUES (@user.Name, @user.Phone, @user.Password, @user.Username)
+// CreateUser
+// INSERT INTO @@table (username, phone, email, password, nickname, register_source, level, status)
+// VALUES (@user.Username, @user.Phone, @user.Email, @user.Password, @user.Nickname, @user.RegisterSource, @user.Level, @user.Status)
 func (u userDo) CreateUser(user models.User) (result *models.User, err error) {
 	params := make(map[string]interface{}, 0)
 
 	var generateSQL strings.Builder
-	params["userName"] = user.Name
-	params["userPhone"] = user.Phone
-	params["userPassword"] = user.Password
 	params["userUsername"] = user.Username
-	generateSQL.WriteString("创建用户 INSERT INTO user (name, phone, password, username) VALUES (@userName, @userPhone, @userPassword, @userUsername) ")
+	params["userPhone"] = user.Phone
+	params["userEmail"] = user.Email
+	params["userPassword"] = user.Password
+	params["userNickname"] = user.Nickname
+	params["userRegisterSource"] = user.RegisterSource
+	params["userLevel"] = user.Level
+	params["userStatus"] = user.Status
+	generateSQL.WriteString("INSERT INTO user (username, phone, email, password, nickname, register_source, level, status) VALUES (@userUsername, @userPhone, @userEmail, @userPassword, @userNickname, @userRegisterSource, @userLevel, @userStatus) ")
 
 	var executeSQL *gorm.DB
 	if len(params) > 0 {

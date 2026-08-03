@@ -35,6 +35,7 @@ var ProviderSet = wire.NewSet(
 	NewCouponRepo,
 	NewSettingsRepo,
 	NewBannerRepo,
+	NewUserRepo,
 	NewAdminBannerClient,
 	NewProductServiceClient,
 	NewCategoryServiceClient,

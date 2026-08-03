@@ -32,41 +32,19 @@ func NewAuthUseCase(userRepo UserRepo, authConf *conf.Auth, logger log.Logger) *
 // 领域对象
 type User struct {
 	ID int64 `json:"id"`
-	// 密码
-	Password string `json:"password"`
-	// 用户名
+	// 用户名（登录账号）
 	Username string `json:"username"`
-	// 姓名
-	Name string `json:"name"`
+	// 展示名
+	Nickname string `json:"nickname"`
+	// 手机号
+	Phone string `json:"phone"`
 	// 头像URL
 	Avatar string `json:"avatar"`
+	// 性别 0=未知 1=男 2=女
+	Gender int32 `json:"gender"`
+	// 密码
+	Password string `json:"password"`
 }
-
-// func (uc *AuthUseCase) Register(ctx context.Context, in *User) error {
-
-// 	// 业务逻辑
-// 	// 查看用户是否存在
-// 	user, err := uc.userRepo.FindByUsername(ctx, in.Username)
-// 	if err == nil && user != nil && user.ID != 0 {
-// 		uc.log.Infof("User already exists: %v", user)
-// 		// 用户已存在
-// 		return v1.ErrorUserAlreadyRegistered("username already exists")
-// 	}
-
-// 	// 检查是否是其他错误（非用户不存在错误）
-// 	if err != nil && !usv1.IsUserNotFound(err) {
-// 		// 记录错误日志
-// 		uc.log.Errorf("Failed to check user existence: %v", err)
-// 		return v1.ErrorUserRegisterFailed("check user existence failed")
-// 	}
-
-// 	// 添加用户
-// 	if err := uc.userRepo.AddUser(ctx, in); err != nil {
-// 		uc.log.Errorf("Failed to add user: %v", err)
-// 		return v1.ErrorUserRegisterFailed("add user failed")
-// 	}
-// 	return nil
-// }
 
 func (uc *AuthUseCase) Login(ctx context.Context, in *User) (*v1.LoginReply, error) {
 

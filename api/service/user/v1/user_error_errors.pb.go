@@ -146,3 +146,45 @@ func IsUserRegisterFailed(err error) bool {
 func ErrorUserRegisterFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, UserServiceErrorReason_USER_REGISTER_FAILED.String(), fmt.Sprintf(format, args...))
 }
+
+// 用户已冻结
+func IsUserFrozen(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == UserServiceErrorReason_USER_FROZEN.String() && e.Code == 422
+}
+
+// 用户已冻结
+func ErrorUserFrozen(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, UserServiceErrorReason_USER_FROZEN.String(), fmt.Sprintf(format, args...))
+}
+
+// 更新用户失败
+func IsUpdateUserFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == UserServiceErrorReason_UPDATE_USER_FAILED.String() && e.Code == 422
+}
+
+// 更新用户失败
+func ErrorUpdateUserFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, UserServiceErrorReason_UPDATE_USER_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+// 删除用户失败
+func IsDeleteUserFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == UserServiceErrorReason_DELETE_USER_FAILED.String() && e.Code == 422
+}
+
+// 删除用户失败
+func ErrorDeleteUserFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, UserServiceErrorReason_DELETE_USER_FAILED.String(), fmt.Sprintf(format, args...))
+}

@@ -29,7 +29,7 @@ type ListUserRequest struct {
 	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	Keyword       string                 `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`
 	Level         string                 `protobuf:"bytes,4,opt,name=level,proto3" json:"level,omitempty"`
-	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
+	Status        int32                  `protobuf:"varint,5,opt,name=status,proto3" json:"status,omitempty"` // 0=全部 1=正常 2=冻结
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -92,11 +92,11 @@ func (x *ListUserRequest) GetLevel() string {
 	return ""
 }
 
-func (x *ListUserRequest) GetStatus() string {
+func (x *ListUserRequest) GetStatus() int32 {
 	if x != nil {
 		return x.Status
 	}
-	return ""
+	return 0
 }
 
 type ListUserReply struct {
@@ -151,18 +151,23 @@ func (x *ListUserReply) GetTotal() int32 {
 	return 0
 }
 
+// UserItem 用户列表项（不含消费金额/订单数，这些数据由 order service 聚合，后续在用户详情里展示）
 type UserItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Phone         string                 `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
-	Level         string                 `protobuf:"bytes,4,opt,name=level,proto3" json:"level,omitempty"`
-	RegTime       string                 `protobuf:"bytes,5,opt,name=reg_time,json=regTime,proto3" json:"reg_time,omitempty"`
-	Amount        int64                  `protobuf:"varint,6,opt,name=amount,proto3" json:"amount,omitempty"`
-	Orders        int32                  `protobuf:"varint,7,opt,name=orders,proto3" json:"orders,omitempty"`
-	Status        string                 `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Id             int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Username       string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"` // 登录账号
+	Nickname       string                 `protobuf:"bytes,3,opt,name=nickname,proto3" json:"nickname,omitempty"` // 展示名
+	Phone          string                 `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
+	Email          string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
+	Avatar         string                 `protobuf:"bytes,6,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	Gender         int32                  `protobuf:"varint,7,opt,name=gender,proto3" json:"gender,omitempty"` // 0=未知 1=男 2=女
+	Level          string                 `protobuf:"bytes,8,opt,name=level,proto3" json:"level,omitempty"`    // 会员等级 regular/gold/diamond
+	LastLoginAt    int64                  `protobuf:"varint,9,opt,name=last_login_at,json=lastLoginAt,proto3" json:"last_login_at,omitempty"`
+	RegisterSource string                 `protobuf:"bytes,10,opt,name=register_source,json=registerSource,proto3" json:"register_source,omitempty"`
+	Status         int32                  `protobuf:"varint,11,opt,name=status,proto3" json:"status,omitempty"`                        // 1=正常 2=冻结
+	CreatedAt      int64                  `protobuf:"varint,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"` // 注册时间戳
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *UserItem) Reset() {
@@ -202,9 +207,16 @@ func (x *UserItem) GetId() int64 {
 	return 0
 }
 
-func (x *UserItem) GetName() string {
+func (x *UserItem) GetUsername() string {
 	if x != nil {
-		return x.Name
+		return x.Username
+	}
+	return ""
+}
+
+func (x *UserItem) GetNickname() string {
+	if x != nil {
+		return x.Nickname
 	}
 	return ""
 }
@@ -216,6 +228,27 @@ func (x *UserItem) GetPhone() string {
 	return ""
 }
 
+func (x *UserItem) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *UserItem) GetAvatar() string {
+	if x != nil {
+		return x.Avatar
+	}
+	return ""
+}
+
+func (x *UserItem) GetGender() int32 {
+	if x != nil {
+		return x.Gender
+	}
+	return 0
+}
+
 func (x *UserItem) GetLevel() string {
 	if x != nil {
 		return x.Level
@@ -223,32 +256,32 @@ func (x *UserItem) GetLevel() string {
 	return ""
 }
 
-func (x *UserItem) GetRegTime() string {
+func (x *UserItem) GetLastLoginAt() int64 {
 	if x != nil {
-		return x.RegTime
+		return x.LastLoginAt
+	}
+	return 0
+}
+
+func (x *UserItem) GetRegisterSource() string {
+	if x != nil {
+		return x.RegisterSource
 	}
 	return ""
 }
 
-func (x *UserItem) GetAmount() int64 {
-	if x != nil {
-		return x.Amount
-	}
-	return 0
-}
-
-func (x *UserItem) GetOrders() int32 {
-	if x != nil {
-		return x.Orders
-	}
-	return 0
-}
-
-func (x *UserItem) GetStatus() string {
+func (x *UserItem) GetStatus() int32 {
 	if x != nil {
 		return x.Status
 	}
-	return ""
+	return 0
+}
+
+func (x *UserItem) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
 }
 
 type GetUserRequest struct {
@@ -340,12 +373,15 @@ func (x *GetUserReply) GetUser() *UserItem {
 }
 
 type CreateUserRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Phone         string                 `protobuf:"bytes,2,opt,name=phone,proto3" json:"phone,omitempty"`
-	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Username       string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	Phone          string                 `protobuf:"bytes,2,opt,name=phone,proto3" json:"phone,omitempty"`
+	Email          string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Password       string                 `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
+	Nickname       string                 `protobuf:"bytes,5,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	RegisterSource string                 `protobuf:"bytes,6,opt,name=register_source,json=registerSource,proto3" json:"register_source,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *CreateUserRequest) Reset() {
@@ -378,9 +414,9 @@ func (*CreateUserRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_user_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *CreateUserRequest) GetName() string {
+func (x *CreateUserRequest) GetUsername() string {
 	if x != nil {
-		return x.Name
+		return x.Username
 	}
 	return ""
 }
@@ -392,9 +428,30 @@ func (x *CreateUserRequest) GetPhone() string {
 	return ""
 }
 
+func (x *CreateUserRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
 func (x *CreateUserRequest) GetPassword() string {
 	if x != nil {
 		return x.Password
+	}
+	return ""
+}
+
+func (x *CreateUserRequest) GetNickname() string {
+	if x != nil {
+		return x.Nickname
+	}
+	return ""
+}
+
+func (x *CreateUserRequest) GetRegisterSource() string {
+	if x != nil {
+		return x.RegisterSource
 	}
 	return ""
 }
@@ -446,9 +503,12 @@ func (x *CreateUserReply) GetId() int64 {
 type UpdateUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
 	Phone         string                 `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
-	Level         string                 `protobuf:"bytes,4,opt,name=level,proto3" json:"level,omitempty"`
+	Email         string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
+	Gender        int32                  `protobuf:"varint,5,opt,name=gender,proto3" json:"gender,omitempty"`
+	Birthday      string                 `protobuf:"bytes,6,opt,name=birthday,proto3" json:"birthday,omitempty"`
+	Level         string                 `protobuf:"bytes,7,opt,name=level,proto3" json:"level,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -490,9 +550,9 @@ func (x *UpdateUserRequest) GetId() int64 {
 	return 0
 }
 
-func (x *UpdateUserRequest) GetName() string {
+func (x *UpdateUserRequest) GetNickname() string {
 	if x != nil {
-		return x.Name
+		return x.Nickname
 	}
 	return ""
 }
@@ -500,6 +560,27 @@ func (x *UpdateUserRequest) GetName() string {
 func (x *UpdateUserRequest) GetPhone() string {
 	if x != nil {
 		return x.Phone
+	}
+	return ""
+}
+
+func (x *UpdateUserRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *UpdateUserRequest) GetGender() int32 {
+	if x != nil {
+		return x.Gender
+	}
+	return 0
+}
+
+func (x *UpdateUserRequest) GetBirthday() string {
+	if x != nil {
+		return x.Birthday
 	}
 	return ""
 }
@@ -690,7 +771,7 @@ func (x *ToggleUserStatusRequest) GetId() int64 {
 type ToggleUserStatusReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	NewStatus     string                 `protobuf:"bytes,2,opt,name=new_status,json=newStatus,proto3" json:"new_status,omitempty"`
+	NewStatus     int32                  `protobuf:"varint,2,opt,name=new_status,json=newStatus,proto3" json:"new_status,omitempty"` // 1=正常 2=冻结
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -732,11 +813,11 @@ func (x *ToggleUserStatusReply) GetSuccess() bool {
 	return false
 }
 
-func (x *ToggleUserStatusReply) GetNewStatus() string {
+func (x *ToggleUserStatusReply) GetNewStatus() int32 {
 	if x != nil {
 		return x.NewStatus
 	}
-	return ""
+	return 0
 }
 
 type GetUserStatsRequest struct {
@@ -869,34 +950,46 @@ const file_api_cin_admin_v1_user_proto_rawDesc = "" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x18\n" +
 	"\akeyword\x18\x03 \x01(\tR\akeyword\x12\x14\n" +
 	"\x05level\x18\x04 \x01(\tR\x05level\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\tR\x06status\"W\n" +
+	"\x06status\x18\x05 \x01(\x05R\x06status\"W\n" +
 	"\rListUserReply\x120\n" +
 	"\x05items\x18\x01 \x03(\v2\x1a.api.cin.admin.v1.UserItemR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\"\xbd\x01\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\xc8\x02\n" +
 	"\bUserItem\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
-	"\x05phone\x18\x03 \x01(\tR\x05phone\x12\x14\n" +
-	"\x05level\x18\x04 \x01(\tR\x05level\x12\x19\n" +
-	"\breg_time\x18\x05 \x01(\tR\aregTime\x12\x16\n" +
-	"\x06amount\x18\x06 \x01(\x03R\x06amount\x12\x16\n" +
-	"\x06orders\x18\a \x01(\x05R\x06orders\x12\x16\n" +
-	"\x06status\x18\b \x01(\tR\x06status\")\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
+	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
+	"\bnickname\x18\x03 \x01(\tR\bnickname\x12\x14\n" +
+	"\x05phone\x18\x04 \x01(\tR\x05phone\x12\x14\n" +
+	"\x05email\x18\x05 \x01(\tR\x05email\x12\x16\n" +
+	"\x06avatar\x18\x06 \x01(\tR\x06avatar\x12\x16\n" +
+	"\x06gender\x18\a \x01(\x05R\x06gender\x12\x14\n" +
+	"\x05level\x18\b \x01(\tR\x05level\x12\"\n" +
+	"\rlast_login_at\x18\t \x01(\x03R\vlastLoginAt\x12'\n" +
+	"\x0fregister_source\x18\n" +
+	" \x01(\tR\x0eregisterSource\x12\x16\n" +
+	"\x06status\x18\v \x01(\x05R\x06status\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\f \x01(\x03R\tcreatedAt\")\n" +
 	"\x0eGetUserRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\">\n" +
 	"\fGetUserReply\x12.\n" +
-	"\x04user\x18\x01 \x01(\v2\x1a.api.cin.admin.v1.UserItemR\x04user\"m\n" +
-	"\x11CreateUserRequest\x12\x1d\n" +
-	"\x04name\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18\x18R\x04name\x12\x14\n" +
-	"\x05phone\x18\x02 \x01(\tR\x05phone\x12#\n" +
-	"\bpassword\x18\x03 \x01(\tB\a\xfaB\x04r\x02\x10\x06R\bpassword\"!\n" +
+	"\x04user\x18\x01 \x01(\v2\x1a.api.cin.admin.v1.UserItemR\x04user\"\xd0\x01\n" +
+	"\x11CreateUserRequest\x12%\n" +
+	"\busername\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x02\x18 R\busername\x12\x14\n" +
+	"\x05phone\x18\x02 \x01(\tR\x05phone\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\x12#\n" +
+	"\bpassword\x18\x04 \x01(\tB\a\xfaB\x04r\x02\x10\x06R\bpassword\x12\x1a\n" +
+	"\bnickname\x18\x05 \x01(\tR\bnickname\x12'\n" +
+	"\x0fregister_source\x18\x06 \x01(\tR\x0eregisterSource\"!\n" +
 	"\x0fCreateUserReply\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"l\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\xbe\x01\n" +
 	"\x11UpdateUserRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\x12\x1a\n" +
+	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x14\n" +
 	"\x05phone\x18\x03 \x01(\tR\x05phone\x12\x14\n" +
-	"\x05level\x18\x04 \x01(\tR\x05level\"+\n" +
+	"\x05email\x18\x04 \x01(\tR\x05email\x12\x16\n" +
+	"\x06gender\x18\x05 \x01(\x05R\x06gender\x12\x1a\n" +
+	"\bbirthday\x18\x06 \x01(\tR\bbirthday\x12\x14\n" +
+	"\x05level\x18\a \x01(\tR\x05level\"+\n" +
 	"\x0fUpdateUserReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\",\n" +
 	"\x11DeleteUserRequest\x12\x17\n" +
@@ -908,7 +1001,7 @@ const file_api_cin_admin_v1_user_proto_rawDesc = "" +
 	"\x15ToggleUserStatusReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1d\n" +
 	"\n" +
-	"new_status\x18\x02 \x01(\tR\tnewStatus\"\x15\n" +
+	"new_status\x18\x02 \x01(\x05R\tnewStatus\"\x15\n" +
 	"\x13GetUserStatsRequest\"\xe4\x01\n" +
 	"\x11GetUserStatsReply\x12\x1f\n" +
 	"\vtotal_users\x18\x01 \x01(\x03R\n" +
@@ -917,7 +1010,7 @@ const file_api_cin_admin_v1_user_proto_rawDesc = "" +
 	"\x10today_new_growth\x18\x03 \x01(\x01R\x0etodayNewGrowth\x12!\n" +
 	"\factive_users\x18\x04 \x01(\x03R\vactiveUsers\x12!\n" +
 	"\fmember_users\x18\x05 \x01(\x03R\vmemberUsers\x12!\n" +
-	"\fmember_ratio\x18\x06 \x01(\x01R\vmemberRatio2\xcf\x06\n" +
+	"\fmember_ratio\x18\x06 \x01(\x01R\vmemberRatio2\xce\x06\n" +
 	"\tAdminUser\x12g\n" +
 	"\bListUser\x12!.api.cin.admin.v1.ListUserRequest\x1a\x1f.api.cin.admin.v1.ListUserReply\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/admin/v1/users\x12i\n" +
 	"\aGetUser\x12 .api.cin.admin.v1.GetUserRequest\x1a\x1e.api.cin.admin.v1.GetUserReply\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/v1/users/{id}\x12p\n" +
@@ -927,8 +1020,8 @@ const file_api_cin_admin_v1_user_proto_rawDesc = "" +
 	"UpdateUser\x12#.api.cin.admin.v1.UpdateUserRequest\x1a!.api.cin.admin.v1.UpdateUserReply\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\x1a\x14/admin/v1/users/{id}\x12r\n" +
 	"\n" +
 	"DeleteUser\x12#.api.cin.admin.v1.DeleteUserRequest\x1a!.api.cin.admin.v1.DeleteUserReply\"\x1c\x82\xd3\xe4\x93\x02\x16*\x14/admin/v1/users/{id}\x12\x95\x01\n" +
-	"\x10ToggleUserStatus\x12).api.cin.admin.v1.ToggleUserStatusRequest\x1a'.api.cin.admin.v1.ToggleUserStatusReply\"-\x82\xd3\xe4\x93\x02':\x01*\"\"/admin/v1/users/{id}/toggle_status\x12y\n" +
-	"\fGetUserStats\x12%.api.cin.admin.v1.GetUserStatsRequest\x1a#.api.cin.admin.v1.GetUserStatsReply\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/admin/v1/users/statsB6\n" +
+	"\x10ToggleUserStatus\x12).api.cin.admin.v1.ToggleUserStatusRequest\x1a'.api.cin.admin.v1.ToggleUserStatusReply\"-\x82\xd3\xe4\x93\x02':\x01*\"\"/admin/v1/users/{id}/toggle_status\x12x\n" +
+	"\fGetUserStats\x12%.api.cin.admin.v1.GetUserStatsRequest\x1a#.api.cin.admin.v1.GetUserStatsReply\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/v1/user-statsB6\n" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (

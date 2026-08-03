@@ -5,72 +5,73 @@ import (
 	"cyi-app/pkg/util/gorm"
 )
 
+// User 用户端用户模型
+// 用户端用户与管理员语义不同：无 role/department/position 等管理属性，
+// 但需要支持管理后台的状态管理、会员等级（预留）等扩展字段。
 type User struct {
 	gorm.Model
-	Name     string `gorm:"column:name"`
-	Phone    string `gorm:"column:phone"`
-	Password string `gorm:"column:password"`
-	Username string `gorm:"column:username"`
+	// 登录与基础认证
+	Username       string `gorm:"column:username;type:varchar(32);uniqueIndex;not null;comment:登录账号"`
+	Phone          string `gorm:"column:phone;type:varchar(20);index;comment:手机号"`
+	Email          string `gorm:"column:email;type:varchar(128);index;comment:邮箱"`
+	Password       string `gorm:"column:password;type:varchar(128);not null;comment:加密后的密码"`
+
+	// 个人资料
+	Nickname string `gorm:"column:nickname;type:varchar(64);comment:展示名"`
+	Avatar   string `gorm:"column:avatar;type:varchar(512);comment:头像URL"`
+	Gender   int32  `gorm:"column:gender;type:tinyint;default:0;comment:性别 0=未知 1=男 2=女"`
+	Birthday string `gorm:"column:birthday;type:varchar(10);comment:生日YYYY-MM-DD"`
+
+	// 状态与登录信息
+	Status         int32  `gorm:"column:status;type:tinyint;default:1;index;comment:状态 1=正常 2=冻结"`
+	LastLoginAt    int64  `gorm:"column:last_login_at;type:bigint;default:0;comment:最近登录时间戳"`
+	LastLoginIP    string `gorm:"column:last_login_ip;type:varchar(45);comment:最近登录IP"`
+	RegisterSource string `gorm:"column:register_source;type:varchar(32);default:web;comment:注册来源"`
+
+	// 会员预留扩展（user 表只存等级标记，完整会员体系后续单独建表）
+	Level       string `gorm:"column:level;type:varchar(32);default:regular;index;comment:会员等级"`
+	GrowthValue int64  `gorm:"column:growth_value;type:bigint;default:0;comment:成长值"`
 }
 
+// TableName 显式指定表名（与 SingularTable:true 配合，表名为 user）
+func (User) TableName() string { return "user" }
+
+// Address 用户地址
 type Address struct {
 	gorm.Model
-	UserID int `gorm:"column:user_id"`
-	Detail string `gorm:"column:detail"`
+	UserID int    `gorm:"column:user_id;type:int;comment:关联用户ID"`
+	Detail string `gorm:"column:detail;type:varchar(255);comment:地址详情"`
 }
 
+// IUser 用户数据仓库接口（gorm gen 模板方法）
 type IUser interface {
-	// GetByID 根据 ID 进行查询
+	// GetByID
 	// SELECT * FROM @@table WHERE id=@id
 	GetByID(id int) (*biz.User, error)
 
-	// FilterWithColumn 根据列名和值进行查询
+	// FilterWithColumn
 	// SELECT * FROM @@table WHERE @@column=@value
 	FilterWithColumn(column string, value string) (User, error)
 
+	// QueryWith
 	// SELECT * FROM @@table
 	//   {{if user.ID > 0}}
 	//       WHERE id=@user.ID
-	//   {{else if user.Name != ""}}
-	//       WHERE username=@user.Name
-	//   {{else if user.Phone != ""}}
-	//       WHERE phone=@user.Phone
 	//   {{else if user.Username != ""}}
 	//       WHERE username=@user.Username
+	//   {{else if user.Phone != ""}}
+	//       WHERE phone=@user.Phone
 	//   {{end}}
 	QueryWith(user User) (User, error)
 
-	// UPDATE @@table
-	//  {{set}}
-	//    {{if user.Name != ""}} username=@user.Name, {{end}}
-	//    {{if user.Age > 0}} age=@user.Age, {{end}}
-	//    {{if user.Age >= 18}} is_adult=1 {{else}} is_adult=0 {{end}}
-	//  {{end}}
-	// WHERE id=@id
-	// Update(user biz.User, id int) error
-
-	// where("name=@name")
-	// FilterByNameAnd(name string)
-
-	// SELECT * FROM @@table
-	//  {{where}}
-	//    {{if !start.IsZero()}}
-	//      created_time > @start
-	//    {{end}}
-	//    {{if !end.IsZero()}}
-	//      AND created_time < @end
-	//    {{end}}
-	//  {{end}}
-	// FilterWithTime(start, end time.Time) ([]T, error)
-
-	// CreateUser 创建用户
-	// INSERT INTO @@table (name, phone, password, username)
-	// VALUES (@user.Name, @user.Phone, @user.Password, @user.Username)
+	// CreateUser
+	// INSERT INTO @@table (username, phone, email, password, nickname, register_source, level, status)
+	// VALUES (@user.Username, @user.Phone, @user.Email, @user.Password, @user.Nickname, @user.RegisterSource, @user.Level, @user.Status)
 	CreateUser(user User) (User, error)
 }
 
 type IAddress interface {
-	// QueryAddress 查询用户地址
+	// QueryAddress
 	// SELECT * FROM @@table WHERE user_id=@userID
 	QueryAddress(userID int) ([]Address, error)
 }

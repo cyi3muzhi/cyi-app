@@ -21,19 +21,19 @@ type AdminUser struct {
 
 // IAdminUser 管理员数据仓库接口
 type IAdminUser interface {
-	// GetByUsername 根据用户名查询
+	// GetByUsername
 	// SELECT * FROM @@table WHERE username=@username LIMIT 1
 	GetByUsername(username string) (*AdminUser, error)
 
-	// GetByID 根据ID查询
+	// GetByID
 	// SELECT * FROM @@table WHERE id=@id LIMIT 1
 	GetByID(id int) (*AdminUser, error)
 
-	// CreateAdminUser 创建管理员
+	// CreateAdminUser
 	// INSERT INTO @@table (username,password,name,role,email,status) VALUES (@admin.Username,@admin.Password,@admin.Name,@admin.Role,@admin.Email,@admin.Status)
 	CreateAdminUser(admin AdminUser) (*AdminUser, error)
 
-	// UpdateAdminUser 更新管理员
+	// UpdateAdminUser
 	// UPDATE @@table
 	//  {{set}}
 	//    {{if admin.Name != ""}} name=@admin.Name, {{end}}
@@ -45,7 +45,7 @@ type IAdminUser interface {
 	// WHERE id=@id
 	UpdateAdminUser(id int, admin AdminUser) error
 
-	// ListAdminUser 查询管理员列表
+	// ListAdminUser
 	// SELECT * FROM @@table
 	//  {{where}}
 	//    {{if keyword != ""}}
@@ -55,7 +55,7 @@ type IAdminUser interface {
 	// ORDER BY id DESC
 	ListAdminUser(keyword string) ([]*AdminUser, error)
 
-	// ToggleStatus 切换状态
+	// ToggleStatus
 	// UPDATE @@table SET status=@status WHERE id=@id
 	ToggleStatus(id int, status int32) error
 }

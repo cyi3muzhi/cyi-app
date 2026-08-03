@@ -107,9 +107,9 @@ func (r *userRepo) RemoveUser(ctx context.Context, id int64) error {
 // ModifyUser 修改用户
 func (r *userRepo) ModifyUser(ctx context.Context, u *biz.User) error {
 	_, err := r.data.uc.UpdateUser(ctx, &usV1.UpdateUserRequest{
-		Id:     u.ID,
-		Name:   u.Name,
-		Avatar: u.Avatar,
+		Id:       u.ID,
+		Nickname: u.Nickname,
+		Avatar:   u.Avatar,
 	})
 	if err != nil {
 		return err
@@ -157,8 +157,12 @@ func (r *userRepo) GetUser(ctx context.Context, id int64) (*biz.User, error) {
 			return nil, err
 		}
 		return &biz.User{
-			ID:       user.Id,
-			Username: user.Username,
+			ID:       user.User.Id,
+			Username: user.User.Username,
+			Nickname: user.User.Nickname,
+			Phone:    user.User.Phone,
+			Avatar:   user.User.Avatar,
+			Gender:   user.User.Gender,
 		}, nil
 	})
 	if err != nil {
@@ -171,6 +175,9 @@ func (r *userRepo) Register(ctx context.Context, req *v1.RegisterReq) error {
 	_, err := r.data.uc.Register(ctx, &usV1.RegisterRequest{
 		Username: req.Username,
 		Password: req.Password,
+		Nickname: req.Nickname,
+		Phone:    req.Phone,
+		ClientIp: req.ClientIp,
 	})
 	if err != nil {
 		return err
@@ -183,6 +190,7 @@ func (r *userRepo) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginRe
 		Username: req.Username,
 		Password: req.Password,
 		ApiKey:   r.key,
+		ClientIp: req.ClientIp,
 	})
 	if err != nil {
 		return nil, err
