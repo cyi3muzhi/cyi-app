@@ -32,6 +32,7 @@ export interface DistRecord {
   orderId: number
   time: string
   user: string
+  avatar?: string // 领取用户头像
   createTime: number
   validStart: string
   validEnd: string

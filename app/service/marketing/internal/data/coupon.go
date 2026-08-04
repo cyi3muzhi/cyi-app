@@ -352,9 +352,10 @@ func (r *couponRepo) ClaimCoupon(ctx context.Context, couponID, userID int64, so
 func (r *couponRepo) ListUserCoupons(ctx context.Context, userID int64, status int32, page, pageSize int32) ([]*biz.UserCouponItem, int32, error) {
 	do := curd.Q.CouponDistRecord.WithContext(ctx).Where(curd.CouponDistRecord.UserID.Eq(userID))
 
-	// 按状态筛选：0=全部 1=未使用 2=已使用 3=已过期
+	// 状态筛选：外部语义 1=未使用 2=已使用 3=已过期，与发放记录状态（0=未使用 1=已使用 2=已过期）差 1
 	if status > 0 {
-		do = do.Where(curd.CouponDistRecord.Status.Eq(status))
+		recordStatus := status - 1
+		do = do.Where(curd.CouponDistRecord.Status.Eq(recordStatus))
 	}
 
 	// 查询总数
@@ -384,6 +385,46 @@ func (r *couponRepo) ListUserCoupons(ctx context.Context, userID int64, status i
 		items = append(items, modelToUserCouponItem(record, coupon))
 	}
 
+	return items, int32(total), nil
+}
+
+// ListAvailableCoupons 查询可领取优惠券列表（上架中且启用）
+// 是否已领/剩余量由 biz 层结合用户已领数计算，这里只返回券基础信息
+func (r *couponRepo) ListAvailableCoupons(ctx context.Context, userID int64, page, pageSize int32) ([]*biz.Coupon, int32, error) {
+	do := curd.Q.Coupon.WithContext(ctx).
+		Where(curd.Coupon.Status.Eq(biz.CouponStatusActive)). // 上架中
+		Where(curd.Coupon.Enabled.Is(true))                    // 启用
+
+	total, err := do.Count()
+	if err != nil {
+		return nil, 0, err
+	}
+	offset := int((page - 1) * pageSize)
+	coupons, err := do.Offset(offset).Limit(int(pageSize)).Order(curd.Coupon.ID.Desc()).Find()
+	if err != nil {
+		return nil, 0, err
+	}
+	items := make([]*biz.Coupon, 0, len(coupons))
+	for _, c := range coupons {
+		items = append(items, &biz.Coupon{
+			ID:           c.ID,
+			Name:         c.Name,
+			Type:         c.Type,
+			Value:        c.Value,
+			MinAmount:    c.MinAmount,
+			Quantity:     c.Quantity,
+			IssuedCount:  c.IssuedCount,
+			ValidType:    c.ValidType,
+			ValidDays:    c.ValidDays,
+			ValidStart:   c.ValidStart,
+			ValidEnd:     c.ValidEnd,
+			Status:       c.Status,
+			Enabled:      c.Enabled,
+			LimitPerUser: c.LimitPerUser,
+			CreateTime:   c.CreateTime,
+			UpdateTime:   c.UpdateTime,
+		})
+	}
 	return items, int32(total), nil
 }
 

@@ -236,9 +236,16 @@ const loading = ref(true)
 const product = ref<ProductItem | null>(null)
 
 // ---- 图片画廊 ----
+// 选中 SKU 且 SKU 配置了专属图时，SKU 图作为第一张主图，后面跟商品级轮播图；
+// 未选中 SKU 或 SKU 无专属图时，保持商品级图片
 const galleryImages = computed(() => {
   if (!product.value) return []
-  return product.value.images?.length ? product.value.images : [product.value.image]
+  const base = product.value.images?.length ? product.value.images : [product.value.image]
+  const skuImg = selectedSku.value?.image
+  if (skuImg && skuImg !== product.value.image && !base.includes(skuImg)) {
+    return [skuImg, ...base]
+  }
+  return base
 })
 
 const activeThumb = ref(0)
@@ -264,6 +271,8 @@ const availableSpecs = computed(() => {
 
 function selectSpec(specName: string, value: string) {
   selectedSpecs.value[specName] = value
+  // 规格变化后回到第一张图（若该 SKU 有专属图则显示 SKU 代表图）
+  activeThumb.value = 0
 }
 
 // ---- 当前选中的 SKU ----

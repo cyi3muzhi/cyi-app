@@ -29,6 +29,28 @@
       <nav class="nav-links">
         <router-link to="/" class="nav-item" exact-active-class="nav-active">首页</router-link>
         <router-link to="/products" class="nav-item" active-class="nav-active">全部商品</router-link>
+        <!-- 商品分类下拉 -->
+        <div class="category-nav" @mouseenter="showCategoryMenu = true" @mouseleave="showCategoryMenu = false">
+          <router-link to="/products" class="nav-item category-nav-trigger" active-class="nav-active">
+            分类
+            <svg class="category-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </router-link>
+          <div v-show="showCategoryMenu" class="category-menu">
+            <router-link
+              v-for="cat in headerCategories"
+              :key="cat.id"
+              :to="{ path: '/products', query: { category: cat.id } }"
+              class="category-menu-item"
+              @click="showCategoryMenu = false"
+            >
+              <span class="category-menu-icon" v-html="renderCatIcon(cat.icon)"></span>
+              <span class="category-menu-name">{{ cat.name }}</span>
+            </router-link>
+            <div v-if="headerCategories.length === 0" class="category-menu-empty">暂无分类</div>
+          </div>
+        </div>
         <router-link to="/cart" class="nav-item cart-link">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
@@ -86,6 +108,8 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '@/store/cart'
 import { useUserStore } from '@/store/user'
 import { useShopStore } from '@/store/shop'
+import { getCategoryTree } from '@/api/product'
+import type { CategoryNode } from '@/types/product'
 
 const router = useRouter()
 const cartStore = useCartStore()
@@ -94,6 +118,11 @@ const shopStore = useShopStore()
 
 const keyword = ref('')
 const showMobileSearch = ref(false)
+
+/** 分类下拉菜单显隐 */
+const showCategoryMenu = ref(false)
+/** 头部导航分类列表（顶级分类） */
+const headerCategories = ref<CategoryNode[]>([])
 
 /** 头像加载失败标记（回退为默认人像图标） */
 const avatarFailed = ref(false)
@@ -104,7 +133,31 @@ const isLoggedIn = computed(() => userStore.isLoggedIn)
 // 挂载时加载购物车数量（登录读后端，未登录读本地）
 onMounted(() => {
   cartStore.loadCart()
+  loadHeaderCategories()
 })
+
+/** 加载头部导航分类（顶级分类，仅启用状态） */
+async function loadHeaderCategories() {
+  try {
+    const res = await getCategoryTree(0)
+    headerCategories.value = (res.items || []).filter(c => c.status)
+  } catch {
+    headerCategories.value = []
+  }
+}
+
+/**
+ * 渲染分类图标：SVG 直接输出、图片 URL 用 img、否则按 Emoji 文本展示
+ * @param icon 图标内容（SVG / 图片URL / Emoji）
+ */
+function renderCatIcon(icon: string): string {
+  if (!icon) return '📁'
+  if (icon.trim().startsWith('<svg')) return icon
+  if (/^(https?:|data:image)/.test(icon.trim())) {
+    return `<img src="${icon}" alt="分类图标" style="width:100%;height:100%;object-fit:contain;" />`
+  }
+  return icon
+}
 
 function onSearch() {
   if (keyword.value.trim()) {
@@ -204,6 +257,84 @@ function onSearch() {
 .nav-item:hover,
 .nav-active {
   color: var(--shop-primary);
+}
+
+/* ---- 分类下拉 ---- */
+.category-nav {
+  position: relative;
+}
+.category-nav-trigger {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.category-caret {
+  transition: transform 0.2s;
+}
+.category-nav:hover .category-caret {
+  transform: rotate(180deg);
+}
+.category-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 168px;
+  padding: 8px;
+  background: var(--shop-card);
+  border: 1px solid var(--shop-border);
+  border-radius: var(--shop-radius-lg);
+  box-shadow: var(--shop-shadow-xl);
+  z-index: 60;
+  animation: menuIn 0.2s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+@keyframes menuIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.category-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--shop-radius-md);
+  font-size: 0.875rem;
+  color: var(--shop-foreground);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.category-menu-item:hover {
+  background: var(--shop-primary-bg);
+  color: var(--shop-primary);
+}
+.category-menu-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.category-menu-icon svg {
+  width: 18px;
+  height: 18px;
+}
+.category-menu-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.category-menu-name {
+  flex: 1;
+}
+.category-menu-empty {
+  padding: 12px;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--shop-muted-foreground);
 }
 
 .cart-link {

@@ -31,12 +31,13 @@ func NewOrderRepo(data *Data, logger log.Logger) biz.OrderRepo {
 
 func (r *orderRepo) CreateOrder(ctx context.Context, order *biz.Order) error {
 	req := &orderV1.CreateOrderRequest{
-		UserId:    order.UserID,
-		AddressId: order.AddressID,
-		Receiver:  order.Receiver,
-		Phone:     order.Phone,
-		Address:   order.Address,
-		Freight:   order.Freight,
+		UserId:         order.UserID,
+		AddressId:      order.AddressID,
+		Receiver:       order.Receiver,
+		Phone:          order.Phone,
+		Address:        order.Address,
+		Freight:        order.Freight,
+		CouponRecordId: order.CouponRecordID, // 优惠券发放记录ID（0=不使用优惠券）
 	}
 	// 购物车结算：多商品走 items
 	if len(order.Items) > 0 {

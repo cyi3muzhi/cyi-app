@@ -118,6 +118,8 @@ app/cin/admin/
 | `CategoryUseCase` | 商品分类管理（分类树、CRUD、排序、状态、批量操作） |
 | `RoleUseCase` | 角色管理（CRUD、权限管理、权限校验） |
 | `StaffUseCase` | 员工管理（列表、创建、更新、状态切换） |
+| `CouponUseCase` | 优惠券管理（CRUD、上下架、统计、发放记录） |
+| `UserUseCase` | 用户管理（列表、详情、创建、更新、冻结/解冻、统计） |
 
 ### 认证流程
 
@@ -230,6 +232,19 @@ app/cin/admin/
 | `DeleteUser` | DELETE | `/admin/v1/user/delete` | 删除用户 |
 | `ToggleUserStatus` | PUT | `/admin/v1/user/toggle-status` | 冻结/解冻用户 |
 | `GetUserStats` | GET | `/admin/v1/user/stats` | 获取用户统计数据 |
+
+#### 优惠券接口（AdminCoupon）
+
+| 接口 | 方法 | 路径 | 说明 |
+|------|------|------|------|
+| `ListCoupon` | GET | `/admin/v1/coupons` | 优惠券列表（分页/状态/关键词/日期筛选） |
+| `GetCouponStats` | GET | `/admin/v1/coupons/stats` | 优惠券统计（总数/进行中/已发放/已过期） |
+| `GetCoupon` | GET | `/admin/v1/coupons/{coupon_id}` | 优惠券详情（含发放记录） |
+| `CreateCoupon` | POST | `/admin/v1/coupons` | 创建优惠券 |
+| `UpdateCoupon` | PUT | `/admin/v1/coupons/{coupon_id}` | 更新优惠券 |
+| `DeleteCoupon` | DELETE | `/admin/v1/coupons/{coupon_id}` | 删除优惠券 |
+| `ToggleCouponStatus` | POST | `/admin/v1/coupons/{coupon_id}/toggle` | 作废/恢复优惠券 |
+| `ListCouponRecords` | GET | `/admin/v1/coupons/{coupon_id}/records` | 发放记录（含用户昵称/头像、关联订单） |
 
 #### 角色接口（AdminRole）
 

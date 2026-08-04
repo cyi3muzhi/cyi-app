@@ -73,3 +73,61 @@ func couponItemToReply(item *biz.CouponItem) *v1.MyCouponItem {
 		CreateTime:   UnixToDateStr(item.CreateTime),
 	}
 }
+
+// ListAvailableCoupons 领券中心：可领取优惠券列表
+func (s *CinInterface) ListAvailableCoupons(ctx context.Context, req *v1.ListAvailableCouponsRequest) (*v1.ListAvailableCouponsReply, error) {
+	userID, err := service.GetUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	items, total, err := s.cc.ListAvailableCoupons(ctx, userID, req.Page, req.PageSize)
+	if err != nil {
+		return nil, err
+	}
+	reply := &v1.ListAvailableCouponsReply{Total: total}
+	for _, item := range items {
+		reply.Items = append(reply.Items, &v1.AvailableCouponItem{
+			CouponId:     item.CouponID,
+			Name:         item.Name,
+			Type:         item.Type,
+			Value:        item.Value,
+			MinAmount:    item.MinAmount,
+			ValidType:    item.ValidType,
+			ValidDays:    item.ValidDays,
+			ValidStart:   item.ValidStart,
+			ValidEnd:     item.ValidEnd,
+			RemainCount:  item.RemainCount,
+			Claimed:      item.Claimed,
+			LimitPerUser: item.LimitPerUser,
+		})
+	}
+	return reply, nil
+}
+
+// ListUsableCoupons 结算可用优惠券：按订单金额筛选用户未使用且有效的券
+func (s *CinInterface) ListUsableCoupons(ctx context.Context, req *v1.ListUsableCouponsRequest) (*v1.ListUsableCouponsReply, error) {
+	userID, err := service.GetUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	items, err := s.cc.ListUsableCoupons(ctx, userID, req.Amount)
+	if err != nil {
+		return nil, err
+	}
+	reply := &v1.ListUsableCouponsReply{}
+	for _, item := range items {
+		reply.Items = append(reply.Items, &v1.UsableCouponItem{
+			RecordId:  item.RecordID,
+			CouponId:  item.CouponID,
+			Name:      item.Name,
+			Type:      item.Type,
+			Value:     item.Value,
+			MinAmount: item.MinAmount,
+			ValidEnd:  UnixToDateStr(item.ValidEnd),
+			Usable:    item.Usable,
+			Discount:  item.Discount,
+			GapAmount: item.GapAmount,
+		})
+	}
+	return reply, nil
+}

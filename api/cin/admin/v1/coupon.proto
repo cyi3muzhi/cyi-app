@@ -99,6 +99,7 @@ message DistRecord {
   int64 create_time = 9; // 领取时间（Unix秒）
   string valid_start = 10; // 实际有效期开始
   string valid_end = 11; // 实际有效期结束，空=永久有效
+  string avatar = 12; // 领取用户头像（显示用）
 }
 
 // 优惠券列表查询参数

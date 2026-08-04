@@ -56,12 +56,17 @@
       <div class="content-panel">
         <!-- 面包屑 -->
         <div class="breadcrumb-bar">
+          <!-- 全部分类入口：点击返回顶级分类列表 -->
+          <span
+            class="bc-link"
+            :class="{ 'bc-current': selectedNodeId === null }"
+            @click="selectedNodeId = null"
+          >全部分类</span>
           <template v-for="(bc, idx) in breadcrumbs" :key="bc.id">
-            <span v-if="idx > 0" class="bc-sep">/</span>
+            <span class="bc-sep">/</span>
             <span v-if="idx < breadcrumbs.length - 1" class="bc-link" @click="selectTreeNode(bc.id)">{{ bc.name }}</span>
             <span v-else class="bc-current">{{ bc.name }}</span>
           </template>
-          <span v-if="breadcrumbs.length === 0" class="bc-current">全部分类</span>
         </div>
 
         <!-- 工具栏 -->
@@ -118,7 +123,7 @@
                 <input type="number" class="sort-input" :value="item.sort" min="0" @change="updateSort(item, ($event.target as HTMLInputElement).value)" />
               </div>
               <div class="td-cell td-cell--name">
-                <div class="cat-avatar">{{ item.icon || '📁' }}</div>
+                <div class="cat-avatar" v-html="renderIcon(item.icon)"></div>
                 <span class="cat-name-text">{{ item.name }}</span>
                 <span v-if="item.children && item.children.length > 0" class="child-chip" @click="selectTreeNode(item.id)">{{ item.children.length }} 子级</span>
               </div>
@@ -200,11 +205,49 @@
             <!-- 图标 -->
             <div class="d-field">
               <label class="d-label">分类图标</label>
-              <div class="emoji-bar">
-                <span class="emoji-current">{{ formData.icon || '📁' }}</span>
-                <div class="emoji-scroll">
-                  <button v-for="emoji in emojiList" :key="emoji" type="button" :class="['emoji-opt', { selected: formData.icon === emoji }]" @click="formData.icon = emoji">{{ emoji }}</button>
+              <div class="icon-picker">
+                <div class="icon-picker-top">
+                  <!-- 当前图标预览 -->
+                  <div class="icon-current" v-html="renderIcon(formData.icon)"></div>
+                  <!-- Tab 切换 -->
+                  <div class="icon-tabs">
+                    <button type="button" :class="['icon-tab', { active: iconTab === 'svg' }]" @click="iconTab = 'svg'">图标库</button>
+                    <button type="button" :class="['icon-tab', { active: iconTab === 'emoji' }]" @click="iconTab = 'emoji'">Emoji</button>
+                    <button type="button" :class="['icon-tab', { active: iconTab === 'upload' }]" @click="iconTab = 'upload'">上传</button>
+                  </div>
                 </div>
+                <!-- SVG 图标库 -->
+                <div v-if="iconTab === 'svg'" class="icon-panel">
+                  <button
+                    v-for="ic in svgIconList"
+                    :key="ic.name"
+                    type="button"
+                    :class="['icon-opt', { selected: formData.icon === ic.svg }]"
+                    :title="ic.name"
+                    @click="formData.icon = ic.svg"
+                    v-html="ic.svg"
+                  ></button>
+                </div>
+                <!-- Emoji -->
+                <div v-else-if="iconTab === 'emoji'" class="icon-panel">
+                  <button
+                    v-for="emoji in emojiList"
+                    :key="emoji"
+                    type="button"
+                    :class="['icon-opt', { selected: formData.icon === emoji }]"
+                    @click="formData.icon = emoji"
+                  >{{ emoji }}</button>
+                </div>
+                <!-- 上传图片 -->
+                <div v-else class="icon-upload-zone" @click="triggerIconUpload">
+                  <img v-if="isImageIcon(formData.icon)" :src="formData.icon" class="icon-upload-preview" />
+                  <template v-else>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>点击上传图标图片</span>
+                    <small>建议方形小图 · PNG / JPG / SVG</small>
+                  </template>
+                </div>
+                <input ref="iconInputRef" type="file" accept="image/*" style="display:none" @change="handleIconUpload" />
               </div>
             </div>
 
@@ -310,10 +353,44 @@ const expandedState = reactive<Record<number, boolean>>({})
 const dialogVisible = ref(false); const confirmVisible = ref(false)
 const isEditing = ref(false); const editingId = ref<number | null>(null)
 const seoOpen = ref(false); const fileInputRef = ref<HTMLInputElement | null>(null)
+/** 图标选择器 Tab：svg=图标库 emoji=Emoji upload=上传 */
+const iconTab = ref<'svg' | 'emoji' | 'upload'>('svg')
+const iconInputRef = ref<HTMLInputElement | null>(null)
 /** AI 生成 SEO loading */
 const seoLoading = ref(false)
 const deletingId = ref<number | null>(null); const confirmTitle = ref(''); const confirmMsg = ref('')
 const formData = reactive({ id: null as number | null, name: '', slug: '', parentId: null as number | null, sort: 0, icon: '📁', status: true, showcase: false, image: '', count: 0, seoTitle: '', seoKeywords: '', seoDesc: '' })
+
+/** 精选 SVG 图标库（线性风格，stroke=currentColor） */
+interface PresetIcon { name: string; svg: string }
+const svgIconList: PresetIcon[] = [
+  { name: '手机', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>' },
+  { name: '电脑', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>' },
+  { name: '耳机', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>' },
+  { name: '手表', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><polyline points="12 10 12 12 13 13"/><path d="M9 2l1.5 4M15 2l-1.5 4M9 22l1.5-4M15 22l-1.5-4"/></svg>' },
+  { name: '相机', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' },
+  { name: '电视', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>' },
+  { name: '服装', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.34 0L12 6l-1.5-1.39a5.5 5.5 0 0 0-7.34 0A5.5 5.5 0 0 0 2.07 11L12 21l9.93-10a5.5 5.5 0 0 0-1.09-6.39z"/></svg>' },
+  { name: '鞋', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/></svg>' },
+  { name: '箱包', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+  { name: '食品', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>' },
+  { name: '饮品', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>' },
+  { name: '家居', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>' },
+  { name: '家具', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0Z"/><path d="M4 18v2"/><path d="M20 18v2"/></svg>' },
+  { name: '厨具', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/><path d="M6 17h12"/></svg>' },
+  { name: '美妆', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.06 11.9 17.13 3.83a2.83 2.83 0 1 1 4 4L13.1 15.9"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg>' },
+  { name: '图书', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>' },
+  { name: '文具', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' },
+  { name: '运动', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14M9.17 4.93 4.93 9.17M14.83 19.07l4.24-4.24M9.17 19.07l10.6-10.6M4.93 14.83l4.24 4.24"/></svg>' },
+  { name: '玩具', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>' },
+  { name: '宠物', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.34 0L12 5.59l-1.5-1.5a5.5 5.5 0 0 0-7.34 7.34L12 20l8.84-8.84a5.5 5.5 0 0 0 0-7.34z"/></svg>' },
+  { name: '汽车', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>' },
+  { name: '医药', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>' },
+  { name: '乐器', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>' },
+  { name: '办公', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>' },
+  { name: '母婴', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' },
+  { name: '出行', svg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' }
+]
 
 const emojiList = ['📱','💻','🎧','⌚','📷','👕','👗','👟','🎒','🍔','🍿','🥤','🥩','🍷','🏠','🍳','🌀','🛋','🛏','📚','📖','✏️','⚽','🎮','🎵','💄','👶','🐾','🌿','🎁','📦','🔧','💊','🚗','✈️','🏕','🔌','🖨','🎤','🎸','🏆','🥇','🧸','🎈','🎀','💎','⌨️','🖥','📡','🕹','📀','💿','📷','🎥','📺','🔋','🛒','🧾','🏷','💳','📊','📋','📌','📍','✂️','🧵','👠','👒','🧤','🧣','🌂','🧴','🪥','🪒','🧹','🪣','🧯','🪜','🛠','🧰','⚙️','🔩','🔗','🧲']
 
@@ -327,7 +404,7 @@ const enabledCount = computed(() => currentChildren.value.filter(c => c.status).
 const disabledCount = computed(() => currentChildren.value.filter(c => !c.status).length)
 const parentOptions = computed(() => { const r: { id: number; label: string }[] = []; flattenOptions(treeData.value, r, '', editingId.value); return r })
 
-async function loadTree() { try { const res = await listCategoryTree(); treeData.value = (res.items || []).map(n => { const node: CategoryNode = { id: n.id, name: n.name || '', slug: n.slug || '', icon: n.icon || '📁', sort: n.sort ?? 0, status: n.status ?? true, showcase: n.showcase ?? false, count: n.count ?? 0, image: n.image || '', seoTitle: n.seo_title || '', seoKeywords: n.seo_keywords || '', seoDesc: n.seo_desc || '', parentId: n.parent_id }; if (n.children && Array.isArray(n.children)) node.children = n.children.map(((child:any) => { const cnode: CategoryNode = { id: child.id, name: child.name || '', slug: child.slug || '', icon: child.icon || '📁', sort: child.sort ?? 0, status: child.status ?? true, showcase: child.showcase ?? false, count: child.count ?? 0, image: child.image || '', seoTitle: child.seo_title || '', seoKeywords: child.seo_keywords || '', seoDesc: child.seo_desc || '', parentId: child.parent_id }; if (child.children && Array.isArray(child.children)) cnode.children = child.children; return cnode })); return node }); buildCatMap(treeData.value); treeData.value.forEach(c => { expandedState[c.id] = true }); if (treeData.value.length > 0 && !selectedNodeId.value) selectedNodeId.value = treeData.value[0].id } catch (e) { console.error('加载分类树失败:', e) } }
+async function loadTree() { try { const res = await listCategoryTree(); treeData.value = (res.items || []).map(n => { const node: CategoryNode = { id: n.id, name: n.name || '', slug: n.slug || '', icon: n.icon || '📁', sort: n.sort ?? 0, status: n.status ?? true, showcase: n.showcase ?? false, count: n.count ?? 0, image: n.image || '', seoTitle: n.seo_title || '', seoKeywords: n.seo_keywords || '', seoDesc: n.seo_desc || '', parentId: n.parent_id }; if (n.children && Array.isArray(n.children)) node.children = n.children.map(((child:any) => { const cnode: CategoryNode = { id: child.id, name: child.name || '', slug: child.slug || '', icon: child.icon || '📁', sort: child.sort ?? 0, status: child.status ?? true, showcase: child.showcase ?? false, count: child.count ?? 0, image: child.image || '', seoTitle: child.seo_title || '', seoKeywords: child.seo_keywords || '', seoDesc: child.seo_desc || '', parentId: child.parent_id }; if (child.children && Array.isArray(child.children)) cnode.children = child.children; return cnode })); return node }); buildCatMap(treeData.value); treeData.value.forEach(c => { expandedState[c.id] = true }); /* 默认展示全部分类（顶级列表），便于直接编辑/删除一级分类 */ } catch (e) { console.error('加载分类树失败:', e) } }
 
 function flattenNodes(arr: CategoryNode[], filter: string, depth: number, result: (CategoryNode & { _depth: number; hasChildren: boolean })[]) { for (const node of arr) { const mn = !filter || node.name.toLowerCase().includes(filter); const cm = filter && node.children ? ((n:CategoryNode[]):boolean=>{for(const x of n){if(x.name.toLowerCase().includes(filter))return true;if(x.children&&hasMatchInTree(x.children,filter))return true}return false})(node.children) : false; if (filter && !mn && !cm) continue; const ie = filter ? true : (expandedState[node.id] !== false); result.push({ ...node, _depth: depth, hasChildren: !!(node.children && node.children.length > 0) }); if (node.children && ie) flattenNodes(node.children, filter, depth + 1, result) } }
 function hasMatchInTree(arr: CategoryNode[], filter: string): boolean { for (const n of arr) { if (n.name.toLowerCase().includes(filter)) return true; if (n.children && hasMatchInTree(n.children, filter)) return true } return false }
@@ -339,7 +416,7 @@ function flattenOptions(arr: CategoryNode[], result: { id: number; label: string
 function toggleTreeNode(id: number) { expandedState[id] = expandedState[id] === false ? true : false }
 function expandAll() { for (const key in catMap) { const n = catMap[key]; if (n.children && n.children.length > 0) expandedState[n.id] = true } }
 function collapseAll() { for (const key in catMap) expandedState[catMap[key].id] = false }
-function selectTreeNode(id: number) { selectedNodeId.value = id }
+function selectTreeNode(id: number | null) { selectedNodeId.value = id }
 async function updateSort(item: CategoryNode, val: string) { const s = parseInt(val) || 0; item.sort = s; try { await updateCategorySort(item.id, s); ElMessage.success('排序已更新') } catch (e) { console.error(e) } }
 async function toggleStatus(item: CategoryNode) { const ns = !item.status; item.status = ns; try { await updateCategoryStatus(item.id, ns); ElMessage.success(`${item.name} 已${ns ? '启用' : '禁用'}`) } catch (e) { item.status = !ns } }
 async function toggleShowcase(item: CategoryNode) { const nv = !item.showcase; item.showcase = nv; try { await toggleCategoryShowcase(item.id, nv); ElMessage.success(`${item.name} 已${nv ? '设为首页展示' : '取消首页展示'}`) } catch (e) { item.showcase = !nv } }
@@ -375,10 +452,65 @@ async function handleAIGenerateSEO() {
   }
 }
 async function saveCategory() { if (!formData.name.trim()) { ElMessage.warning('请输入分类名称'); return }; const payload = { name: formData.name.trim(), slug: formData.slug.trim() || formData.name.toLowerCase().replace(/\s+/g, '-'), icon: formData.icon || '📁', sort: formData.sort, status: formData.status, showcase: formData.showcase, image: formData.image, seo_title: formData.seoTitle, seo_keywords: formData.seoKeywords, seo_desc: formData.seoDesc, parent_id: formData.parentId || 0 }; try { if (isEditing.value && editingId.value) { await updateCategoryApi(editingId.value, payload); ElMessage.success(`分类「${formData.name}」已更新`) } else { await createCategoryApi(payload); ElMessage.success(`分类「${formData.name}」已创建`) }; dialogVisible.value = false; await loadTree() } catch (e) { console.error(e) } }
-function confirmDelete(item: CategoryNode) { if (item.children && item.children.length > 0) { ElMessage.warning('该分类下有子分类，请先删除子分类'); return }; deletingId.value = item.id; confirmTitle.value = `确认删除「${item.name}」？`; confirmMsg.value = `此操作不可恢复，确定要删除分类「${item.name}」吗？`; confirmVisible.value = true }
-async function doDelete() { if (deletingId.value === null) return; try { await deleteCategoryApi(deletingId.value); ElMessage.success('分类已删除'); confirmVisible.value = false; deletingId.value = null; await loadTree() } catch (e) { console.error(e); confirmVisible.value = false } }
+function confirmDelete(item: CategoryNode) {
+  const subCount = countAll(item.children || [])
+  deletingId.value = item.id
+  confirmTitle.value = `确认删除「${item.name}」？`
+  confirmMsg.value = subCount > 0
+    ? `该分类下有 ${subCount} 个子分类，将一并删除。若分类下有商品则无法删除。此操作不可恢复。`
+    : `此操作不可恢复，确定要删除分类「${item.name}」吗？`
+  confirmVisible.value = true
+}
+async function doDelete() {
+  if (deletingId.value === null) return
+  try {
+    await deleteCategoryApi(deletingId.value)
+    ElMessage.success('分类已删除')
+    confirmVisible.value = false
+    deletingId.value = null
+    await loadTree()
+  } catch {
+    // 错误提示由请求拦截器统一弹出（如：分类下有商品无法删除）
+    confirmVisible.value = false
+    deletingId.value = null
+  }
+}
 function triggerUpload() { fileInputRef.value?.click() }
 function handleUpload(event: Event) { const target = event.target as HTMLInputElement; const file = target.files?.[0]; if (!file) return; if (!file.type.startsWith('image/')) { ElMessage.warning('请选择图片文件'); return }; if (file.size > 2 * 1024 * 1024) { ElMessage.warning('图片大小不能超过 2MB'); return }; const reader = new FileReader(); reader.onload = (e) => { formData.image = e.target!.result as string }; reader.readAsDataURL(file); target.value = '' }
+
+/* ==================== 图标判断与渲染 ==================== */
+
+/** 是否为内联 SVG 图标 */
+function isSvgIcon(icon: string): boolean {
+  return !!icon && icon.trim().startsWith('<svg')
+}
+/** 是否为图片 URL（http 或 base64） */
+function isImageIcon(icon: string): boolean {
+  return !!icon && /^(https?:|data:image)/.test(icon.trim())
+}
+/**
+ * 渲染分类图标：SVG 直接输出，图片用 img 标签，否则按 Emoji 文本展示
+ * @param icon 图标内容（SVG/URL/Emoji）
+ */
+function renderIcon(icon: string): string {
+  if (isSvgIcon(icon)) return icon
+  if (isImageIcon(icon)) return `<img src="${icon}" alt="图标" style="width:100%;height:100%;object-fit:contain;border-radius:6px;" />`
+  return icon || '📁'
+}
+/** 触发图标图片上传 */
+function triggerIconUpload() { iconInputRef.value?.click() }
+/** 上传图标图片（存为 base64，icon 字段已扩容为 TEXT） */
+function handleIconUpload(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  if (!file.type.startsWith('image/')) { ElMessage.warning('请选择图片文件'); return }
+  if (file.size > 2 * 1024 * 1024) { ElMessage.warning('图片大小不能超过 2MB'); return }
+  const reader = new FileReader()
+  reader.onload = (e) => { formData.icon = e.target!.result as string }
+  reader.readAsDataURL(file)
+  target.value = ''
+}
 onMounted(() => { loadTree() })
 </script>
 
@@ -1163,51 +1295,96 @@ onMounted(() => { loadTree() })
 .d-textarea:focus { border-color: var(--c-accent); box-shadow: 0 0 0 2px rgba(99,102,241,0.15); }
 .d-textarea::placeholder { color: var(--c-muted); }
 
-/* Emoji 选择器 */
-.emoji-bar {
+/* 图标选择器 */
+.icon-picker-top {
   display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
 }
-.emoji-current {
-  font-size: 1.5rem;
-  width: 2.5rem;
-  height: 2.5rem;
+.icon-current {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid #e2e8f0;
   border-radius: var(--radius-xs);
   background: #f8fafc;
-  flex-shrink: 0;
+  font-size: 1.4rem;
+  overflow: hidden;
 }
-.emoji-scroll {
+.icon-current svg { width: 24px; height: 24px; color: var(--c-accent); }
+.icon-current img { width: 100%; height: 100%; object-fit: contain; }
+.icon-tabs {
+  display: flex;
+  gap: 4px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 3px;
+}
+.icon-tab {
+  border: none;
+  background: transparent;
+  padding: 4px 14px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--c-text2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+.icon-tab.active { background: #fff; color: var(--c-accent); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.icon-panel {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
-  max-height: 104px;
+  gap: 4px;
+  max-height: 132px;
   overflow-y: auto;
-  flex: 1;
+  padding: 4px;
 }
-.emoji-scroll::-webkit-scrollbar { width: 2px; }
-.emoji-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 999px; }
-.emoji-opt {
-  width: 2rem;
-  height: 2rem;
+.icon-panel::-webkit-scrollbar { width: 2px; }
+.icon-panel::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 999px; }
+.icon-opt {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
   border: 1px solid #f1f5f9;
   background: #fff;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.125rem;
-  transition: all 0.15s var(--ease-spring);
   padding: 0;
   line-height: 1;
+  transition: all 0.15s var(--ease-spring);
+  color: var(--c-text2);
 }
-.emoji-opt:hover { border-color: var(--c-accent); background: rgba(99,102,241,0.06); transform: scale(1.15); z-index: 1; }
-.emoji-opt.selected { border-color: var(--c-accent); background: rgba(99,102,241,0.08); box-shadow: 0 0 0 2px rgba(99,102,241,0.2); }
+.icon-opt svg { width: 20px; height: 20px; }
+.icon-opt:hover { border-color: var(--c-accent); color: var(--c-accent); background: rgba(99,102,241,0.06); transform: scale(1.12); z-index: 1; }
+.icon-opt.selected { border-color: var(--c-accent); color: var(--c-accent); background: rgba(99,102,241,0.08); box-shadow: 0 0 0 2px rgba(99,102,241,0.2); }
+.icon-upload-zone {
+  border: 2px dashed #e2e8f0;
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f8fafc;
+  color: var(--c-text2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+}
+.icon-upload-zone:hover { border-color: var(--c-accent); background: rgba(99,102,241,0.04); }
+.icon-upload-zone small { font-size: 0.625rem; color: var(--c-muted); }
+.icon-upload-preview { max-width: 80px; max-height: 80px; border-radius: var(--radius-xs); object-fit: contain; }
 
 /* 上传区域 */
 .upload-zone {

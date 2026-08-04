@@ -7,8 +7,22 @@
     <section class="container-shop breadcrumb-section">
       <div class="breadcrumb">
         <router-link to="/" class="breadcrumb-link">首页</router-link>
-        <span class="breadcrumb-separator">&gt;</span>
-        <span class="breadcrumb-current">全部商品</span>
+        <template v-if="breadcrumbPath.length">
+          <span class="breadcrumb-separator">&gt;</span>
+          <template v-for="(bc, idx) in breadcrumbPath" :key="bc.id">
+            <router-link
+              v-if="idx < breadcrumbPath.length - 1"
+              :to="{ path: '/products', query: { category: bc.id } }"
+              class="breadcrumb-link"
+            >{{ bc.name }}</router-link>
+            <span v-else class="breadcrumb-current">{{ bc.name }}</span>
+            <span v-if="idx < breadcrumbPath.length - 1" class="breadcrumb-separator">&gt;</span>
+          </template>
+        </template>
+        <template v-else>
+          <span class="breadcrumb-separator">&gt;</span>
+          <span class="breadcrumb-current">{{ activeCategoryName }}</span>
+        </template>
       </div>
     </section>
 
@@ -18,7 +32,7 @@
     <section class="container-shop toolbar-section">
       <div class="toolbar">
         <h1 class="toolbar-title">
-          全部商品
+          {{ activeCategoryName }}
           <span class="toolbar-count">（共 {{ totalCount }} 件）</span>
         </h1>
         <div class="toolbar-actions">
@@ -62,22 +76,6 @@
     </section>
 
     <!-- ============================================================ -->
-    <!-- 分类筛选按钮行 -->
-    <!-- ============================================================ -->
-    <section class="container-shop filter-row-section">
-      <div class="filter-row">
-        <button
-          v-for="cat in filterCategories"
-          :key="cat.key"
-          :class="['filter-btn', { 'filter-btn--active': activeCategory === cat.key }]"
-          @click="onCategoryChange(cat.key)"
-        >
-          {{ cat.name }}
-        </button>
-      </div>
-    </section>
-
-    <!-- ============================================================ -->
     <!-- 主体区域：桌面侧边栏 + 商品列表 -->
     <!-- ============================================================ -->
     <main class="container-shop main-section">
@@ -85,6 +83,16 @@
         <!-- 桌面端侧边栏筛选 -->
         <aside class="sidebar-desktop">
           <div class="sidebar-sticky">
+            <!-- 商品分类（层级钻取：点击一级进入二级，一级隐藏，面包屑返回） -->
+            <div class="sidebar-block">
+              <h4 class="sidebar-title">商品分类</h4>
+              <CategoryLevelPicker
+                :categories="categories"
+                :selected-id="activeCategoryId"
+                @select="selectCategory"
+                @clear="selectCategory('all')"
+              />
+            </div>
             <!-- 价格区间 -->
             <div class="sidebar-block">
               <h4 class="sidebar-title">价格区间</h4>
@@ -107,26 +115,6 @@
               </div>
               <button class="price-confirm-btn" @click="onApplyPriceFilter">确定</button>
             </div>
-            <!-- 品牌筛选 -->
-            <div class="sidebar-block">
-              <h4 class="sidebar-title">品牌</h4>
-              <div class="brand-list">
-                <label
-                  v-for="brand in brands"
-                  :key="brand"
-                  class="brand-label"
-                >
-                  <input
-                    type="checkbox"
-                    :value="brand"
-                    v-model="selectedBrands"
-                    class="brand-checkbox"
-                    @change="onBrandFilterChange"
-                  />
-                  {{ brand }}
-                </label>
-              </div>
-            </div>
           </div>
         </aside>
 
@@ -135,6 +123,15 @@
           <!-- 移动端筛选面板 -->
           <div v-show="mobileFilterOpen" class="filter-mobile-panel">
             <div class="sidebar-block">
+              <h4 class="sidebar-title">商品分类</h4>
+              <CategoryLevelPicker
+                :categories="categories"
+                :selected-id="activeCategoryId"
+                @select="selectCategory"
+                @clear="selectCategory('all')"
+              />
+            </div>
+            <div class="sidebar-block">
               <h4 class="sidebar-title">价格区间</h4>
               <div class="price-filter-row">
                 <input v-model.number="priceMin" type="number" class="price-input" placeholder="¥最低" min="0" />
@@ -142,15 +139,6 @@
                 <input v-model.number="priceMax" type="number" class="price-input" placeholder="¥最高" min="0" />
               </div>
               <button class="price-confirm-btn" @click="onApplyPriceFilter">确定</button>
-            </div>
-            <div class="sidebar-block">
-              <h4 class="sidebar-title">品牌</h4>
-              <div class="brand-list">
-                <label v-for="brand in brands" :key="brand" class="brand-label">
-                  <input type="checkbox" :value="brand" v-model="selectedBrands" class="brand-checkbox" @change="onBrandFilterChange" />
-                  {{ brand }}
-                </label>
-              </div>
             </div>
           </div>
 
@@ -183,6 +171,7 @@
                       <span v-if="(item as any).originalPrice && Number((item as any).originalPrice) > Number(item.price)" class="list-original-price">¥{{ formatPrice((item as any).originalPrice) }}</span>
                     </div>
                     <div class="list-meta">
+                      <span>已售 {{ formatSales((item as any).sales || 0) }} 件</span>
                       <span>库存 {{ item.stock }} 件</span>
                       <span class="stars">{{ getRatingStars((item as any).rating || 0) }}</span>
                     </div>
@@ -241,33 +230,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import ProductCard from '@/components/ProductCard.vue'
+import CategoryLevelPicker from '@/components/CategoryLevelPicker.vue'
 import { getProducts, getCategoryTree, type ProductItem } from '@/api/product'
 import type { CategoryNode } from '@/types/product'
 
 const route = useRoute()
-
-interface FilterCategory {
-  key: string
-  name: string
-}
+const router = useRouter()
 
 const allProducts = ref<ProductItem[]>([])
 const categories = ref<CategoryNode[]>([])
-const filterCategories = ref<FilterCategory[]>([{ key: 'all', name: '全部' }])
-
-const brands = ['悦选', '品致', '优家', '灵动']
 
 const activeCategory = ref<string>((route.query.category as string) || 'all')
+const activeKeyword = ref<string>((route.query.keyword as string) || '')
 const sortBy = ref<string>('default')
 const viewMode = ref<'grid' | 'list'>('grid')
 const mobileFilterOpen = ref(false)
 
 const priceMin = ref<number | undefined>(undefined)
 const priceMax = ref<number | undefined>(undefined)
-const selectedBrands = ref<string[]>([])
 
 const currentPage = ref(1)
 const pageSize = 8
@@ -279,29 +262,97 @@ const cardListStyle = {
   boxShadow: 'var(--shop-shadow-md)'
 }
 
-function flattenCategories(nodes: CategoryNode[]): FilterCategory[] {
-  const result: FilterCategory[] = []
-  for (const node of nodes) {
-    if (node.status) {
-      result.push({ key: String(node.id), name: node.name })
-      if (node.children && node.children.length > 0) {
-        result.push(...flattenCategories(node.children))
-      }
-    }
-  }
-  return result
-}
-
 async function loadCategories() {
   try {
     const res = await getCategoryTree()
-    categories.value = res.items || []
-    const flatCats = flattenCategories(categories.value)
-    filterCategories.value = [{ key: 'all', name: '全部' }, ...flatCats]
+    categories.value = normalizeTree(res.items || [])
   } catch (error) {
     console.error('加载分类失败:', error)
   }
 }
+
+/**
+ * 归一化分类树：protojson 将 int64 序列化为字符串，统一转为 number，
+ * 保证树节点 id 与选中/展开状态（number）严格比较一致
+ */
+function normalizeTree(nodes: any[]): CategoryNode[] {
+  return (nodes || []).map(n => ({
+    ...n,
+    id: Number(n.id),
+    parentId: n.parent_id != null ? Number(n.parent_id) : 0,
+    children: normalizeTree(n.children)
+  }))
+}
+
+/** 当前选中分类的数字 ID（null 表示"全部商品"） */
+const activeCategoryId = computed<number | null>(() => {
+  return activeCategory.value === 'all' ? null : Number(activeCategory.value)
+})
+
+/**
+ * 在分类树中查找某个分类的祖先链路径
+ * @param nodes 树节点
+ * @param target 目标分类 ID
+ * @param trail 当前已走过的祖先链
+ */
+function findPath(nodes: CategoryNode[], target: number, trail: number[] = []): number[] | null {
+  for (const n of nodes) {
+    if (n.id === target) return [...trail, n.id]
+    if (n.children && n.children.length > 0) {
+      const found = findPath(n.children, target, [...trail, n.id])
+      if (found) return found
+    }
+  }
+  return null
+}
+
+/**
+ * 选择分类（同步 URL，由 watch 统一触发加载）
+ * @param id 分类 ID 或 'all'（全部商品）
+ */
+function selectCategory(id: number | 'all') {
+  if (id === 'all') {
+    router.replace({ path: '/products', query: activeKeyword.value ? { keyword: activeKeyword.value } : undefined })
+  } else {
+    router.replace({ path: '/products', query: { category: String(id), ...(activeKeyword.value ? { keyword: activeKeyword.value } : {}) } })
+  }
+}
+
+/** 当前选中分类名称（用于标题） */
+const activeCategoryName = computed(() => {
+  if (activeCategory.value === 'all') return '全部商品'
+  const path = findPath(categories.value, Number(activeCategory.value))
+  return path ? (categories.value.length ? findName(path) : '') : '全部商品'
+})
+
+/** 由祖先链 ID 反查名称（最后一个为当前分类） */
+function findName(path: number[]): string {
+  let nodes = categories.value
+  let name = ''
+  for (let i = 0; i < path.length; i++) {
+    const n = nodes.find(x => x.id === path[i])
+    if (!n) break
+    name = n.name
+    nodes = n.children || []
+  }
+  return name
+}
+
+/** 面包屑祖先链（首页 > 电子产品 > 手机） */
+const breadcrumbPath = computed(() => {
+  if (activeCategory.value === 'all') return [] as { id: number; name: string }[]
+  const path = findPath(categories.value, Number(activeCategory.value))
+  if (!path) return [] as { id: number; name: string }[]
+  const result: { id: number; name: string }[] = []
+  let nodes = categories.value
+  for (const id of path) {
+    const n = nodes.find(x => x.id === id)
+    if (!n) break
+    result.push({ id, name: n.name })
+    nodes = n.children || []
+  }
+  return result
+})
 
 async function loadProducts() {
   loading.value = true
@@ -312,6 +363,9 @@ async function loadProducts() {
     }
     if (activeCategory.value !== 'all') {
       params.category = activeCategory.value
+    }
+    if (activeKeyword.value) {
+      params.keyword = activeKeyword.value
     }
     if (sortBy.value !== 'default') {
       params.sort = sortBy.value
@@ -356,11 +410,21 @@ const visiblePages = computed(() => {
   return pages
 })
 
-function onCategoryChange(key: string) {
-  activeCategory.value = key
-  currentPage.value = 1
-  loadProducts()
-}
+/** 监听 URL 参数变化（分类/关键词），统一触发列表加载 */
+watch(
+  () => [route.query.category, route.query.keyword],
+  () => {
+    const nextCategory = (route.query.category as string) || 'all'
+    const nextKeyword = (route.query.keyword as string) || ''
+    // 仅当条件变化时重置页码并重新加载，避免重复请求
+    if (nextCategory !== activeCategory.value || nextKeyword !== activeKeyword.value) {
+      activeCategory.value = nextCategory
+      activeKeyword.value = nextKeyword
+      currentPage.value = 1
+      loadProducts()
+    }
+  }
+)
 
 function onSortChange() {
   currentPage.value = 1
@@ -368,11 +432,6 @@ function onSortChange() {
 }
 
 function onApplyPriceFilter() {
-  currentPage.value = 1
-  loadProducts()
-}
-
-function onBrandFilterChange() {
   currentPage.value = 1
   loadProducts()
 }
@@ -554,49 +613,7 @@ onMounted(() => {
   color: var(--shop-primary-foreground);
 }
 
-/* ============================================
-   分类筛选按钮行
-   ============================================ */
-.filter-row-section {
-  padding-bottom: 12px;
-  overflow-x: auto;
-}
-
-.filter-row {
-  display: flex;
-  gap: 8px;
-  padding-bottom: 4px;
-  min-width: max-content;
-}
-
-.filter-btn {
-  padding: 6px 18px;
-  border-radius: var(--shop-radius-xl);
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
-  cursor: pointer;
-  border: 1px solid var(--shop-border);
-  background: var(--shop-background);
-  color: var(--shop-muted-foreground);
-  white-space: nowrap;
-}
-
-.filter-btn:hover {
-  border-color: var(--shop-primary);
-  color: var(--shop-primary);
-}
-
-.filter-btn--active {
-  background: var(--shop-primary);
-  color: var(--shop-primary-foreground);
-  border-color: var(--shop-primary);
-}
-
-.filter-btn--active:hover {
-  background: var(--shop-primary-dark);
-  color: var(--shop-primary-foreground);
-}
+/* 分类筛选由 CategoryLevelPicker 组件承载（层级钻取） */
 
 /* ============================================
    主体布局
@@ -688,50 +705,6 @@ onMounted(() => {
 
 .price-confirm-btn:hover {
   opacity: 0.9;
-}
-
-.brand-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.brand-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.875rem;
-  color: var(--shop-foreground);
-  cursor: pointer;
-}
-
-.brand-checkbox {
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--shop-border);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
-  position: relative;
-}
-
-.brand-checkbox:checked {
-  background: var(--shop-primary);
-  border-color: var(--shop-primary);
-}
-
-.brand-checkbox:checked::after {
-  content: '';
-  position: absolute;
-  left: 4px;
-  top: 1px;
-  width: 6px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
 }
 
 /* ============================================

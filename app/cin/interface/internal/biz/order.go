@@ -50,6 +50,9 @@ type Order struct {
 	Phone     string `json:"phone"`      // 手机号
 	Address   string `json:"address"`    // 完整收货地址
 
+	// 优惠券发放记录ID（结算下单时使用，0=不使用优惠券）
+	CouponRecordID int64 `json:"coupon_record_id"`
+
 	// ---- 物流信息（发货后） ----
 	LogisticsCompany string `json:"logistics_company"` // 物流公司
 	LogisticsNo      string `json:"logistics_no"`      // 快递单号

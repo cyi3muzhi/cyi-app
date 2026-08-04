@@ -2,12 +2,14 @@
  * 默认布局 - 包含 Header 和 Footer
  */
 <template>
-  <AppHeader />
-  <main class="main-content">
-    <router-view />
-  </main>
-  <AppFooter />
-  <BackToTop />
+  <div class="layout-root">
+    <AppHeader />
+    <main class="main-content">
+      <router-view />
+    </main>
+    <AppFooter />
+    <BackToTop />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -39,8 +41,17 @@ watch(() => shopStore.shopName, (name) => {
 </script>
 
 <style scoped>
+/* 根容器：flex 列布局，min-height 撑满视口。
+   内容不足一屏时 footer 吸附底部，超出时 footer 自然跟随内容下移 */
+.layout-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh; /* 移动端地址栏动态高度更准确 */
+}
+
 .main-content {
-  min-height: calc(100vh - 72px - 380px);
-  padding-top: 72px;
+  flex: 1; /* 占满剩余空间，将 footer 推到底部 */
+  padding-top: 72px; /* header 高度（fixed 定位，占位由 padding 补偿） */
 }
 </style>

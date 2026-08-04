@@ -218,6 +218,7 @@ type DistRecord struct {
 	CreateTime    int64                  `protobuf:"varint,9,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"` // 领取时间（Unix秒）
 	ValidStart    string                 `protobuf:"bytes,10,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"` // 实际有效期开始
 	ValidEnd      string                 `protobuf:"bytes,11,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`       // 实际有效期结束，空=永久有效
+	Avatar        string                 `protobuf:"bytes,12,opt,name=avatar,proto3" json:"avatar,omitempty"`                           // 领取用户头像（显示用）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -325,6 +326,13 @@ func (x *DistRecord) GetValidStart() string {
 func (x *DistRecord) GetValidEnd() string {
 	if x != nil {
 		return x.ValidEnd
+	}
+	return ""
+}
+
+func (x *DistRecord) GetAvatar() string {
+	if x != nil {
+		return x.Avatar
 	}
 	return ""
 }
@@ -1337,7 +1345,7 @@ const file_api_cin_admin_v1_coupon_proto_rawDesc = "" +
 	"\n" +
 	"valid_type\x18\x11 \x01(\x05R\tvalidType\x12\x1d\n" +
 	"\n" +
-	"valid_days\x18\x12 \x01(\x05R\tvalidDays\"\xa4\x02\n" +
+	"valid_days\x18\x12 \x01(\x05R\tvalidDays\"\xbc\x02\n" +
 	"\n" +
 	"DistRecord\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x17\n" +
@@ -1353,7 +1361,8 @@ const file_api_cin_admin_v1_coupon_proto_rawDesc = "" +
 	"\vvalid_start\x18\n" +
 	" \x01(\tR\n" +
 	"validStart\x12\x1b\n" +
-	"\tvalid_end\x18\v \x01(\tR\bvalidEnd\"\xac\x01\n" +
+	"\tvalid_end\x18\v \x01(\tR\bvalidEnd\x12\x16\n" +
+	"\x06avatar\x18\f \x01(\tR\x06avatar\"\xac\x01\n" +
 	"\x11CouponListRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x16\n" +

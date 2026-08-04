@@ -14,7 +14,7 @@
         <div class="card-notch"></div>
         <div class="card-amount">
           <span class="card-symbol">{{ couponInfo.type === '折扣' ? '' : '¥' }}</span>
-          <span class="card-number">{{ couponInfo.value }}</span>
+          <span class="card-number">{{ displayValue(couponInfo.value, couponInfo.type) }}</span>
           <span class="card-suffix">{{ couponInfo.type === '折扣' ? '%' : '' }}</span>
         </div>
         <div class="card-type">{{ couponInfo.type }}</div>
@@ -31,7 +31,7 @@
           <div class="info-row">
             <div class="info-item">
               <span class="info-label">门槛</span>
-              <span class="info-value">{{ couponInfo.minAmount > 0 ? '¥' + couponInfo.minAmount : '无门槛' }}</span>
+              <span class="info-value">{{ couponInfo.minAmount > 0 ? '¥' + formatMoney(couponInfo.minAmount) : '无门槛' }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">库存</span>
@@ -68,11 +68,12 @@
           <div class="record-top">
             <div class="record-user">
               <el-avatar :size="32" class="user-avatar" :style="{ background: getCouponGradient(couponInfo?.type || '立减') }">
-                {{ record.userId.toString().slice(-2) }}
+                <img v-if="record.avatar" :src="record.avatar" alt="用户头像" />
+                <template v-else>{{ record.userId.toString().slice(-2) }}</template>
               </el-avatar>
               <div class="user-detail">
-                <div class="user-id">UID {{ record.userId }}</div>
-                <div class="user-name" v-if="record.user">{{ record.user }}</div>
+                <div class="user-id">{{ record.user || ('UID ' + record.userId) }}</div>
+                <div class="user-name" v-if="record.user">UID {{ record.userId }}</div>
               </div>
             </div>
             <div class="record-meta">
@@ -102,7 +103,7 @@
             </div>
             <div class="record-order" v-if="record.orderId && record.orderId > 0">
               <span class="order-label">关联订单</span>
-              <span class="order-value">#{{ record.orderId }}</span>
+              <a class="order-value link" title="查看订单详情" @click="goOrder(record.orderId)">#{{ record.orderId }}</a>
             </div>
             <div class="record-order" v-else>
               <span class="order-label">关联订单</span>
@@ -159,6 +160,11 @@ function goBack() {
   router.push({ name: 'Coupons' })
 }
 
+/** 跳转订单详情 */
+function goOrder(orderId: number) {
+  router.push({ name: 'OrderDetail', params: { id: String(orderId) } })
+}
+
 function formatTimestamp(ts: number) {
   if (!ts) return ''
   const date = new Date(ts * 1000)
@@ -181,6 +187,20 @@ function formatValidity(coupon: CouponItem) {
     return '永久有效'
   }
   return `${coupon.validStart} ~ ${coupon.validEnd}`
+}
+
+/**
+ * 金额格式化（分 → 元，整数不带小数）
+ * @param cents 金额（分）
+ */
+function formatMoney(cents: number): string {
+  const yuan = cents / 100
+  return Number.isInteger(yuan) ? String(yuan) : yuan.toFixed(2)
+}
+
+/** 面值展示：折扣券显示百分比，其余金额分 → 元 */
+function displayValue(value: number, type: string): string {
+  return type === '折扣' ? String(value) : formatMoney(value)
 }
 
 /* ==================== 优惠券信息 ==================== */
@@ -547,6 +567,12 @@ onMounted(async () => {
   font-weight: 500;
 }
 
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .user-name {
   font-size: 0.6875rem;
   color: var(--shop-muted-foreground);
@@ -609,6 +635,17 @@ onMounted(async () => {
   font-size: 0.75rem;
   color: var(--shop-primary);
   font-family: var(--shop-font-mono);
+}
+
+/* 关联订单可点击跳转 */
+.order-value.link {
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s, text-decoration 0.2s;
+}
+.order-value.link:hover {
+  color: var(--shop-primary-dark);
+  text-decoration: underline;
 }
 
 .order-value.empty {

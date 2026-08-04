@@ -20,6 +20,8 @@ service CouponService {
   rpc ClaimCoupon (ClaimCouponRequest) returns (ClaimCouponReply);
   // 用户优惠券列表
   rpc ListUserCoupons (ListUserCouponsRequest) returns (ListUserCouponsReply);
+  // 可领取优惠券列表（领券中心用，含剩余量/是否已领）
+  rpc ListAvailableCoupons (ListAvailableCouponsRequest) returns (ListAvailableCouponsReply);
   // 使用/核销优惠券
   rpc UseCoupon (UseCouponRequest) returns (UseCouponReply);
   // 返还优惠券（订单取消/退款时调用，解除核销）
@@ -171,6 +173,35 @@ message UserCouponItem {
 
 message ListUserCouponsReply {
   repeated UserCouponItem items = 1;
+  int32 total = 2;
+}
+
+// 可领取优惠券列表请求（领券中心用）
+message ListAvailableCouponsRequest {
+  int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+// 可领取优惠券项
+message AvailableCouponItem {
+  int64 coupon_id = 1;       // 优惠券 ID
+  string name = 2;           // 名称
+  int32 type = 3;            // 类型：1-立减 2-折扣 3-满减
+  int64 value = 4;           // 面值（分）或折扣百分比（1-99）
+  int64 min_amount = 5;      // 使用门槛（分）
+  int32 valid_type = 6;      // 有效期类型：1-固定日期 2-领取后N天 3-永久
+  int32 valid_days = 7;      // 领取后有效天数（valid_type=2 时有效）
+  int64 valid_start = 8;     // 有效期开始（Unix 秒）
+  int64 valid_end = 9;       // 有效期结束（Unix 秒），0=永久
+  int32 remain_count = 10;   // 剩余可领数量
+  bool claimed = 11;         // 当前用户是否已领取
+  int32 limit_per_user = 12; // 每人限领数量，0=不限制
+  int64 create_time = 13;    // 创建时间
+}
+
+message ListAvailableCouponsReply {
+  repeated AvailableCouponItem items = 1;
   int32 total = 2;
 }
 

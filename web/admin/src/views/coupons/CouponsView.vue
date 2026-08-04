@@ -75,7 +75,7 @@
           <div class="card-notch"></div>
           <div class="card-amount">
             <span class="card-symbol">{{ coupon.type === '折扣' ? '' : '¥' }}</span>
-            <span class="card-number">{{ coupon.value }}</span>
+            <span class="card-number">{{ displayValue(coupon.value, coupon.type) }}</span>
             <span class="card-suffix">{{ coupon.type === '折扣' ? '%' : '' }}</span>
           </div>
           <div class="card-type">{{ coupon.type }}</div>
@@ -95,7 +95,7 @@
             <div class="info-row">
               <div class="info-item">
                 <span class="info-label">门槛</span>
-                <span class="info-value">{{ coupon.minAmount > 0 ? '¥' + coupon.minAmount : '无门槛' }}</span>
+                <span class="info-value">{{ coupon.minAmount > 0 ? '¥' + formatMoney(coupon.minAmount) : '无门槛' }}</span>
               </div>
               <div class="info-item">
                 <span class="info-label">库存</span>
@@ -694,11 +694,25 @@ function getCouponGradient(type: string) {
   return map[type] || map['立减']
 }
 
+/**
+ * 金额格式化（分 → 元，整数不带小数）
+ * @param cents 金额（分）
+ */
+function formatMoney(cents: number): string {
+  const yuan = cents / 100
+  return Number.isInteger(yuan) ? String(yuan) : yuan.toFixed(2)
+}
+
+/** 面值展示：折扣券显示百分比，其余金额分 → 元 */
+function displayValue(value: number, type: string): string {
+  return type === '折扣' ? String(value) : formatMoney(value)
+}
+
 function formatValue(coupon: CouponItem) {
   if (coupon.type === '折扣') {
     return `${coupon.value}%`
   }
-  return `¥${coupon.value}`
+  return `¥${formatMoney(coupon.value)}`
 }
 
 function usagePercent(coupon: CouponItem) {
@@ -751,8 +765,8 @@ function handleEdit(row: CouponItem) {
   editCreateTime.value = row.createTime ? new Date(row.createTime * 1000).toLocaleString() : ''
   formData.name = row.name
   formData.type = row.type
-  formData.value = row.value
-  formData.minAmount = row.minAmount
+  formData.value = row.type === '折扣' ? row.value : row.value / 100 // 折扣券为百分比，其余为金额（分→元）
+  formData.minAmount = row.minAmount / 100 // 分→元
   formData.quantity = row.quantity
   formData.limitPerUser = row.limitPerUser
   formData.validType = row.validType || 1
@@ -784,8 +798,9 @@ async function handleSubmit() {
     const submitData = {
       name: formData.name,
       type: formData.type,
-      value: formData.value,
-      minAmount: formData.minAmount,
+      // 折扣券 value 为百分比（1-99），其余为金额，统一以「分」提交
+      value: formData.type === '折扣' ? formData.value : formData.value * 100,
+      minAmount: formData.minAmount * 100, // 元 → 分
       quantity: formData.quantity,
       limitPerUser: formData.limitPerUser,
       validType: formData.validType,

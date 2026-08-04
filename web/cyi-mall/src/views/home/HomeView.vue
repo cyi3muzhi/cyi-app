@@ -78,16 +78,20 @@
       <div class="container-shop">
         <h2 class="section-title">商品分类</h2>
         <p class="section-desc">一站式选购，满足你的生活所需</p>
-        <div class="categories-grid">
+        <div v-if="homeCategories.length" class="categories-grid">
           <router-link
-            v-for="cat in categories"
-            :key="cat.key"
-            :to="{ path: '/products', query: { category: cat.key } }"
+            v-for="cat in homeCategories"
+            :key="cat.id"
+            :to="{ path: '/products', query: { category: cat.id } }"
             class="category-card"
           >
-            <div class="category-icon" v-html="cat.icon"></div>
+            <div class="category-icon" v-html="renderCatIcon(cat.icon)"></div>
             <span class="category-name">{{ cat.name }}</span>
           </router-link>
+        </div>
+        <div v-else class="categories-empty">
+          <p>暂无分类</p>
+          <router-link to="/products" class="categories-empty-link">去逛逛全部商品</router-link>
         </div>
       </div>
     </section>
@@ -151,7 +155,9 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ProductCard from '@/components/ProductCard.vue'
 import { listBanners } from '@/api/banner'
+import { getCategoryTree } from '@/api/product'
 import type { BannerItem } from '@/api/banner'
+import type { CategoryNode } from '@/types/product'
 
 const router = useRouter()
 
@@ -255,6 +261,7 @@ function resetTimer() {
 
 onMounted(async () => {
   await loadBanners()
+  loadCategories()
   resetTimer()
 })
 
@@ -272,57 +279,31 @@ function goLink(link: string) {
   }
 }
 
-/** 商品分类图标（SVG 片段） */
-interface Category {
-  key: string
-  name: string
-  icon: string
+/** 首页分类（真实分类树顶级分类，展示 emoji 图标） */
+const homeCategories = ref<CategoryNode[]>([])
+
+/** 加载顶级分类（parent_id=0，仅启用状态） */
+async function loadCategories() {
+  try {
+    const res = await getCategoryTree(0)
+    homeCategories.value = (res.items || []).filter(c => c.status)
+  } catch {
+    homeCategories.value = []
+  }
 }
 
-const categories: Category[] = [
-  {
-    key: 'electronics',
-    name: '电子产品',
-    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="12" y1="18" x2="12" y2="18.01"/>
-    </svg>`
-  },
-  {
-    key: 'home',
-    name: '家居生活',
-    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-    </svg>`
-  },
-  {
-    key: 'fashion',
-    name: '时尚服饰',
-    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.34 0L12 6l-1.5-1.39a5.5 5.5 0 0 0-7.34 0A5.5 5.5 0 0 0 2.07 11L12 21l9.93-10a5.5 5.5 0 0 0-1.09-6.39z"/>
-    </svg>`
-  },
-  {
-    key: 'sports',
-    name: '运动户外',
-    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M18 6l-8 12"/>
-    </svg>`
-  },
-  {
-    key: 'beauty',
-    name: '美妆护肤',
-    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 3a9 9 0 0 0-9 9c0 4.97 4.03 9 9 9s9-4.03 9-9a9 9 0 0 0-9-9z"/><path d="M8 12a4 4 0 1 0 8 0"/>
-    </svg>`
-  },
-  {
-    key: 'books',
-    name: '图书文具',
-    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-    </svg>`
+/**
+ * 渲染分类图标：SVG 直接输出、图片 URL 用 img、否则按 Emoji 文本展示
+ * @param icon 图标内容（SVG / 图片URL / Emoji）
+ */
+function renderCatIcon(icon: string): string {
+  if (!icon) return '📁'
+  if (icon.trim().startsWith('<svg')) return icon
+  if (/^(https?:|data:image)/.test(icon.trim())) {
+    return `<img src="${icon}" alt="分类图标" style="width:100%;height:100%;object-fit:contain;" />`
   }
-]
+  return icon
+}
 
 /** 商品 Mock 数据类型 */
 interface Product {
@@ -829,15 +810,53 @@ const newProducts: Product[] = [
   height: 48px;
   border-radius: 50%;
   background: var(--shop-primary-bg);
+  color: var(--shop-primary);
+  overflow: hidden;
+}
+
+/* 分类 emoji 图标 */
+.category-emoji {
+  font-size: 24px;
+  line-height: 1;
 }
 
 .category-icon :deep(svg) {
   display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.category-icon :deep(img) {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .category-name {
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+/* 分类空状态 */
+.categories-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 0;
+  text-align: center;
+}
+.categories-empty p {
+  font-size: 0.875rem;
+  color: var(--shop-muted-foreground);
+}
+.categories-empty-link {
+  font-size: 0.875rem;
+  color: var(--shop-primary);
+  text-decoration: none;
+}
+.categories-empty-link:hover {
+  text-decoration: underline;
 }
 
 /* ============================================

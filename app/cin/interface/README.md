@@ -123,6 +123,7 @@ app/cin/interface/
 | `ProductUseCase` | 商品查询、管理 |
 | `StockUseCase` | 库存查询、扣减 |
 | `CartUseCase` | 购物车管理（Redis 存储 + 商品信息聚合，按商品+SKU 维度） |
+| `CouponUseCase` | 优惠券领取、我的优惠券列表、领券中心（可领取券）、结算可用券筛选 |
 | `BladesUseCase` | AI 聊天助手 |
 
 ### 服务接口
@@ -151,7 +152,7 @@ app/cin/interface/
 | | `PayOrder` | gRPC/HTTP | 支付订单 |
 | | `ReceiveOrder` | gRPC/HTTP | 确认收货 |
 | | `CancelOrder` | gRPC/HTTP | 取消订单 |
-| | `CartCheckout` | gRPC/HTTP | 购物车结算下单（含收货地址快照与运费） |
+| | `CartCheckout` | gRPC/HTTP | 购物车结算下单（含收货地址快照与运费，支持优惠券 coupon_id） |
 | | `ListOrder` | gRPC/HTTP | 订单列表（当前用户，按状态筛选，含商品明细、支付截止时间 pay_deadline） |
 | | `GetOrder` | gRPC/HTTP | 订单详情（当前用户，含商品明细、物流信息、支付截止时间 pay_deadline） |
 | **Cart** | `AddCartItem` | gRPC/HTTP | 加入购物车（同商品同规格数量累加，携带 sku_id） |
@@ -161,6 +162,10 @@ app/cin/interface/
 | | `SelectAllCart` | gRPC/HTTP | 全选/取消全选 |
 | | `DeleteCartItem` | gRPC/HTTP | 删除购物车商品（按商品+SKU，sku_id 缺省删除该商品全部规格） |
 | | `ClearCart` | gRPC/HTTP | 清空购物车 |
+| **Coupon** | `ClaimCoupon` | gRPC/HTTP | 领取优惠券（POST /api/v1/coupons/{coupon_id}/claim） |
+| | `ListMyCoupons` | gRPC/HTTP | 我的优惠券列表（GET /api/v1/coupons/my，按状态筛选） |
+| | `ListAvailableCoupons` | gRPC/HTTP | 领券中心可领取列表（GET /api/v1/coupons/available） |
+| | `ListUsableCoupons` | gRPC/HTTP | 结算可用券（GET /api/v1/coupons/usable，按订单金额筛选） |
 | **Stock** | `UpdateStock` | gRPC/HTTP | 更新库存 |
 | **Upload** | `GetUploadToken` | gRPC/HTTP | 获取上传凭证（OSS 预签名直传，用于头像等） |
 | **Blades** | `AiChat` | gRPC/HTTP | AI 聊天（非流式） |

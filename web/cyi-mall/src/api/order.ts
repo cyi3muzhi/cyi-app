@@ -67,6 +67,7 @@ export function cartCheckout(data: {
   phone: string
   address: string
   freight: number // 单位：分
+  coupon_id?: number // 优惠券发放记录 ID（0=不使用优惠券）
 }) {
   return request.post<any, { orderId: number }>('/order/v1/cart_checkout', data)
 }

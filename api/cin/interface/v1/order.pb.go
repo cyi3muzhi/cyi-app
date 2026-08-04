@@ -407,6 +407,7 @@ type CartCheckoutRequest struct {
 	Phone         string                 `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`                           // 手机号（地址快照）
 	Address       string                 `protobuf:"bytes,5,opt,name=address,proto3" json:"address,omitempty"`                       // 完整收货地址（地址快照）
 	Freight       int64                  `protobuf:"varint,6,opt,name=freight,proto3" json:"freight,omitempty"`                      // 运费（单位：分，前端计算）
+	CouponId      int64                  `protobuf:"varint,7,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`    // 优惠券发放记录ID（0=不使用优惠券）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -479,6 +480,13 @@ func (x *CartCheckoutRequest) GetAddress() string {
 func (x *CartCheckoutRequest) GetFreight() int64 {
 	if x != nil {
 		return x.Freight
+	}
+	return 0
+}
+
+func (x *CartCheckoutRequest) GetCouponId() int64 {
+	if x != nil {
+		return x.CouponId
 	}
 	return 0
 }
@@ -1067,7 +1075,7 @@ const file_api_cin_interface_v1_order_proto_rawDesc = "" +
 	"\border_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aorderId\x12\x16\n" +
 	"\x06reason\x18\x02 \x01(\tR\x06reason\",\n" +
 	"\x10CancelOrderReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xda\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xf7\x01\n" +
 	"\x13CartCheckoutRequest\x12>\n" +
 	"\x05items\x18\x01 \x03(\v2\x1e.api.cin.interface.v1.CartItemB\b\xfaB\x05\x92\x01\x02\b\x01R\x05items\x12\x1d\n" +
 	"\n" +
@@ -1075,7 +1083,8 @@ const file_api_cin_interface_v1_order_proto_rawDesc = "" +
 	"\breceiver\x18\x03 \x01(\tR\breceiver\x12\x14\n" +
 	"\x05phone\x18\x04 \x01(\tR\x05phone\x12\x18\n" +
 	"\aaddress\x18\x05 \x01(\tR\aaddress\x12\x18\n" +
-	"\afreight\x18\x06 \x01(\x03R\afreight\".\n" +
+	"\afreight\x18\x06 \x01(\x03R\afreight\x12\x1b\n" +
+	"\tcoupon_id\x18\a \x01(\x03R\bcouponId\".\n" +
 	"\x11CartCheckoutReply\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\x03R\aorderId\"n\n" +
 	"\bCartItem\x12&\n" +

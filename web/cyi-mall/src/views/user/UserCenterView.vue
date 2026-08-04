@@ -74,9 +74,14 @@
                 <div class="stat-label">成长值</div>
               </div>
               <div class="stat-divider"></div>
-              <div class="stat-item">
+              <div class="stat-item clickable" @click="goMyCoupons">
                 <div class="stat-value">{{ user.couponCount }}</div>
-                <div class="stat-label">优惠券</div>
+                <div class="stat-label">
+                  优惠券
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
@@ -105,10 +110,10 @@
   </section>
 
   <!-- ============================================================ -->
-  <!-- 3. 快捷功能入口（收货地址等）                                    -->
+  <!-- 3. 快捷功能入口（收货地址 / 领券中心）                        -->
   <!-- ============================================================ -->
   <section class="entry-section">
-    <div class="container-shop">
+    <div class="container-shop entry-grid">
       <router-link to="/user/address" class="entry-card">
         <div class="entry-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -118,6 +123,22 @@
         <div class="entry-info">
           <p class="entry-title">收货地址</p>
           <p class="entry-desc">管理常用收货地址</p>
+        </div>
+        <svg class="entry-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </router-link>
+
+      <!-- 领券中心入口 -->
+      <router-link to="/coupons" class="entry-card coupon">
+        <div class="entry-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+          </svg>
+        </div>
+        <div class="entry-info">
+          <p class="entry-title">领券中心 <span class="mini-new">NEW</span></p>
+          <p class="entry-desc">每周好券上新，先到先得</p>
         </div>
         <svg class="entry-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="9 18 15 12 9 6"/>
@@ -195,6 +216,11 @@ function onSwitchAccount() {
   // 清空购物车内存数据（未登录时重新读本地购物车）
   cartStore.reset()
   router.push({ path: '/login' })
+}
+
+/** 跳转我的优惠券 */
+function goMyCoupons() {
+  router.push('/user/coupons')
 }
 
 // ---- 个人中心数据（真实接口） ----
@@ -567,6 +593,25 @@ onMounted(loadCenter)
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* 可点击统计项（优惠券）：hover 高亮反馈 */
+.stat-item.clickable {
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: var(--shop-radius-md);
+  transition: background 0.2s;
+}
+.stat-item.clickable:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+.stat-item.clickable .stat-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+}
+
 /* ---- 右侧快捷操作 ---- */
 .hero-actions {
   display: none;
@@ -607,6 +652,13 @@ onMounted(loadCenter)
   padding: 24px 0 0;
 }
 
+/* 入口卡片网格：桌面两列，移动端单列 */
+.entry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
 .entry-card {
   display: flex;
   align-items: center;
@@ -636,14 +688,25 @@ onMounted(loadCenter)
   flex-shrink: 0;
 }
 
+/* 领券中心卡片：红橙渐变图标 */
+.entry-card.coupon .entry-icon {
+  background: linear-gradient(135deg, hsl(0, 84%, 60%), hsl(24, 90%, 56%));
+  color: #fff;
+  box-shadow: 0 3px 8px hsla(0, 84%, 55%, 0.35);
+}
+
 .entry-info {
   flex: 1;
+  min-width: 0;
 }
 
 .entry-title {
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--shop-foreground);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .entry-desc {
@@ -655,6 +718,24 @@ onMounted(loadCenter)
 .entry-arrow {
   color: var(--shop-muted-foreground);
   flex-shrink: 0;
+}
+
+/* NEW 角标 */
+.mini-new {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  color: #fff;
+  background: hsl(0, 84%, 60%);
+  border-radius: 4px;
+  padding: 1px 5px;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+/* 移动端：入口卡片单列 */
+@media (max-width: 640px) {
+  .entry-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ---- 订单管理区 ---- */

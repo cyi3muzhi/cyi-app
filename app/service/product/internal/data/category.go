@@ -114,7 +114,7 @@ func (r *categoryRepo) UpdateCategory(ctx context.Context, in *biz.Category) err
 func (r *categoryRepo) DeleteCategory(ctx context.Context, id int64) error {
 	// 递归收集所有需要删除的分类 ID
 	ids := []int64{id}
-	if err := r.collectChildIDs(ctx, id, &ids); err != nil {
+	if err := collectChildIDs(ctx, id, &ids); err != nil {
 		return err
 	}
 	// 检查这些分类下是否存在商品，存在则拒绝删除
@@ -128,7 +128,7 @@ func (r *categoryRepo) DeleteCategory(ctx context.Context, id int64) error {
 }
 
 // collectChildIDs 递归收集指定父分类下所有子分类 ID
-func (r *categoryRepo) collectChildIDs(ctx context.Context, parentID int64, ids *[]int64) error {
+func collectChildIDs(ctx context.Context, parentID int64, ids *[]int64) error {
 	children, err := curd.Category.WithContext(ctx).
 		Where(curd.Category.ParentID.Eq(parentID)).
 		Find()
@@ -137,11 +137,21 @@ func (r *categoryRepo) collectChildIDs(ctx context.Context, parentID int64, ids 
 	}
 	for _, child := range children {
 		*ids = append(*ids, child.ID)
-		if err := r.collectChildIDs(ctx, child.ID, ids); err != nil {
+		if err := collectChildIDs(ctx, child.ID, ids); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// collectCategoryWithDescendants 收集指定分类及其所有后代子分类的 ID 集合
+// 用于商品列表按层级分类筛选（商品可挂在任意层级分类下）
+func collectCategoryWithDescendants(ctx context.Context, categoryID int64) ([]int64, error) {
+	ids := []int64{categoryID}
+	if err := collectChildIDs(ctx, categoryID, &ids); err != nil {
+		return nil, err
+	}
+	return ids, nil
 }
 
 // assertNoProductsInCategories 校验指定分类（含子分类）下是否存在商品
@@ -214,7 +224,7 @@ func (r *categoryRepo) BatchOperation(ctx context.Context, action string, ids []
 		allIDs := make([]int64, 0, len(ids)*2)
 		for _, id := range ids {
 			allIDs = append(allIDs, id)
-			if err := r.collectChildIDs(ctx, id, &allIDs); err != nil {
+			if err := collectChildIDs(ctx, id, &allIDs); err != nil {
 				return 0, err
 			}
 		}

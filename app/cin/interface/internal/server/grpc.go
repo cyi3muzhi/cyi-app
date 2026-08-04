@@ -15,6 +15,7 @@ func NewGRPCServer(s *ts.GrpcServer, cinInterface *service.CinInterface) *grpc.S
 	v1.RegisterProductServer(s.GrpcServer, cinInterface)
 	v1.RegisterOrderServer(s.GrpcServer, cinInterface)
 	v1.RegisterCartServer(s.GrpcServer, cinInterface)
+	v1.RegisterCategoryServer(s.GrpcServer, cinInterface)
 	v1.RegisterStockServer(s.GrpcServer, cinInterface)
 	v1.RegisterBladesServer(s.GrpcServer, cinInterface)
 	v1.RegisterUserCouponServer(s.GrpcServer, cinInterface)

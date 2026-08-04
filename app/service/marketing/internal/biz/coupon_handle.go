@@ -21,6 +21,8 @@ type CouponRepo interface {
 	ClaimCoupon(ctx context.Context, couponID, userID int64, source string) (int64, error)
 	// ListUserCoupons 查询用户优惠券列表（含优惠券基本信息）
 	ListUserCoupons(ctx context.Context, userID int64, status int32, page, pageSize int32) ([]*UserCouponItem, int32, error)
+	// ListAvailableCoupons 查询可领取优惠券列表（上架中且有剩余库存）
+	ListAvailableCoupons(ctx context.Context, userID int64, page, pageSize int32) ([]*Coupon, int32, error)
 	// GetUserCouponRecord 根据记录ID和用户ID查询单条发放记录
 	GetUserCouponRecord(ctx context.Context, recordID, userID int64) (*UserCouponItem, error)
 	// UseCoupon 核销优惠券：更新发放记录状态和使用时间
@@ -274,7 +276,7 @@ func (uc *CouponUseCase) ClaimCoupon(ctx context.Context, req *v1.ClaimCouponReq
 	return &v1.ClaimCouponReply{RecordId: recordID}, nil
 }
 
-// ListUserCoupons 用户优惠券列表
+// ListUserCoupons 查询用户优惠券列表
 func (uc *CouponUseCase) ListUserCoupons(ctx context.Context, req *v1.ListUserCouponsRequest) (*v1.ListUserCouponsReply, error) {
 	items, total, err := uc.repo.ListUserCoupons(ctx, req.UserId, req.Status, req.Page, req.PageSize)
 	if err != nil {
@@ -297,6 +299,47 @@ func (uc *CouponUseCase) ListUserCoupons(ctx context.Context, req *v1.ListUserCo
 			OrderId:      item.OrderID,
 			Source:       item.Source,
 			CreateTime:   item.CreateTime,
+		})
+	}
+	return reply, nil
+}
+
+// ListAvailableCoupons 可领取优惠券列表（领券中心用）
+// 返回上架中且有剩余库存的券，并标记当前用户是否已领取
+func (uc *CouponUseCase) ListAvailableCoupons(ctx context.Context, req *v1.ListAvailableCouponsRequest) (*v1.ListAvailableCouponsReply, error) {
+	coupons, total, err := uc.repo.ListAvailableCoupons(ctx, req.UserId, req.Page, req.PageSize)
+	if err != nil {
+		return nil, err
+	}
+	reply := &v1.ListAvailableCouponsReply{Total: total}
+	for _, c := range coupons {
+		// 判断当前用户是否已领取（已达限领数量或领过）
+		claimedCount, err := uc.repo.CountUserCoupons(ctx, c.ID, req.UserId)
+		if err != nil {
+			return nil, err
+		}
+		remain := c.Quantity - c.IssuedCount
+		if remain < 0 {
+			remain = 0
+		}
+		claimed := claimedCount > 0
+		if c.LimitPerUser > 0 && claimedCount >= c.LimitPerUser {
+			claimed = true
+		}
+		reply.Items = append(reply.Items, &v1.AvailableCouponItem{
+			CouponId:     c.ID,
+			Name:         c.Name,
+			Type:         c.Type,
+			Value:        c.Value,
+			MinAmount:    c.MinAmount,
+			ValidType:    c.ValidType,
+			ValidDays:    c.ValidDays,
+			ValidStart:   c.ValidStart,
+			ValidEnd:     c.ValidEnd,
+			RemainCount:  remain,
+			Claimed:      claimed,
+			LimitPerUser: c.LimitPerUser,
+			CreateTime:   c.CreateTime,
 		})
 	}
 	return reply, nil

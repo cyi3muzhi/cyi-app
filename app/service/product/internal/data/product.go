@@ -34,6 +34,7 @@ func bizToModelProduct(in *biz.Product) *mod.Product {
 		Description: in.Description,
 		Price:       in.Price,
 		Status:      int32(in.Status),
+		Sales:       in.Sales,
 		CategoryID:  in.CategoryID,
 		Image:       in.Image,
 		Images:      marshalImages(in.Images),
@@ -48,6 +49,7 @@ func modelToBizProduct(p *mod.Product) *biz.Product {
 		Description: p.Description,
 		Price:       p.Price,
 		Status:      biz.ProductStatus(p.Status),
+		Sales:       p.Sales,
 		CategoryID:  p.CategoryID,
 		Image:       p.Image,
 	}
@@ -111,9 +113,16 @@ func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, key
 		db = db.Where("name LIKE ? OR description LIKE ?", kw, kw)
 	}
 
-	// 分类筛选
+	// 分类筛选：匹配该分类及其所有子分类（层级分类下商品挂在叶子节点）
 	if categoryID > 0 {
-		db = db.Where("category_id = ?", categoryID)
+		ids, err := collectCategoryWithDescendants(ctx, categoryID)
+		if err != nil {
+			return nil, 0, err
+		}
+		if len(ids) == 0 {
+			ids = []int64{categoryID}
+		}
+		db = db.Where("category_id IN ?", ids)
 	}
 
 	// 状态筛选（支持 "上架"/"1"=上架, "下架"/"0"=下架）

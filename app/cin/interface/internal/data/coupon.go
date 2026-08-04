@@ -70,3 +70,34 @@ func (r *couponRepo) ListUserCoupons(ctx context.Context, userID int64, status i
 	}
 	return items, res.Total, nil
 }
+
+// ListAvailableCoupons 查询可领取优惠券列表（领券中心，经 marketing gRPC）
+func (r *couponRepo) ListAvailableCoupons(ctx context.Context, userID int64, page int32, pageSize int32) ([]*biz.AvailableCoupon, int32, error) {
+	req := &marketingV1.ListAvailableCouponsRequest{
+		UserId:   userID,
+		Page:     page,
+		PageSize: pageSize,
+	}
+	res, err := r.data.mcc.ListAvailableCoupons(ctx, req)
+	if err != nil {
+		return nil, 0, err
+	}
+	items := make([]*biz.AvailableCoupon, 0, len(res.Items))
+	for _, item := range res.Items {
+		items = append(items, &biz.AvailableCoupon{
+			CouponID:     item.CouponId,
+			Name:         item.Name,
+			Type:         item.Type,
+			Value:        item.Value,
+			MinAmount:    item.MinAmount,
+			ValidType:    item.ValidType,
+			ValidDays:    item.ValidDays,
+			ValidStart:   item.ValidStart,
+			ValidEnd:     item.ValidEnd,
+			RemainCount:  item.RemainCount,
+			Claimed:      item.Claimed,
+			LimitPerUser: item.LimitPerUser,
+		})
+	}
+	return items, res.Total, nil
+}

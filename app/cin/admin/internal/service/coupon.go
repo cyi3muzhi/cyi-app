@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	adminv1 "cyi-app/api/cin/admin/v1"
@@ -189,10 +190,57 @@ func (s *AdminService) ListCouponRecords(ctx context.Context, req *adminv1.Coupo
 	if err != nil {
 		return nil, err
 	}
+	items := bizDistRecordsToProto(records)
+	s.fillRecordUsers(ctx, items)
 	return &adminv1.CouponRecordsReply{
-		Items: bizDistRecordsToProto(records),
+		Items: items,
 		Total: total,
 	}, nil
+}
+
+// fillRecordUsers 批量填充发放记录的用户昵称与头像
+// 去重后并发查询用户服务，避免逐条 N+1
+func (s *AdminService) fillRecordUsers(ctx context.Context, items []*adminv1.DistRecord) {
+	idSet := make(map[int64]struct{}, len(items))
+	for _, it := range items {
+		if it.UserId > 0 {
+			idSet[it.UserId] = struct{}{}
+		}
+	}
+	if len(idSet) == 0 {
+		return
+	}
+
+	userMap := make(map[int64]*biz.UserInfo, len(idSet))
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	for uid := range idSet {
+		wg.Add(1)
+		go func(id int64) {
+			defer wg.Done()
+			u, err := s.userUC.GetUser(ctx, id)
+			if err != nil {
+				return
+			}
+			mu.Lock()
+			userMap[id] = u
+			mu.Unlock()
+		}(uid)
+	}
+	wg.Wait()
+
+	for _, it := range items {
+		u, ok := userMap[it.UserId]
+		if !ok || u == nil {
+			continue
+		}
+		// 优先昵称，缺失时用登录账号兜底
+		it.User = u.Nickname
+		if it.User == "" {
+			it.User = u.Username
+		}
+		it.Avatar = u.Avatar
+	}
 }
 
 func (s *AdminService) ToggleCouponStatus(ctx context.Context, req *adminv1.CouponToggleStatusRequest) (*adminv1.CouponToggleStatusReply, error) {

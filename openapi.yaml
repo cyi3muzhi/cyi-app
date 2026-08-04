@@ -1619,6 +1619,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.AiChatReply'
+    /api/v1/coupons/available:
+        get:
+            tags:
+                - UserCoupon
+            description: 领券中心列表（可领取的优惠券）
+            operationId: UserCoupon_ListAvailableCoupons
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ListAvailableCouponsReply'
     /api/v1/coupons/my:
         get:
             tags:
@@ -1648,6 +1672,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.ListMyCouponsReply'
+    /api/v1/coupons/usable:
+        get:
+            tags:
+                - UserCoupon
+            description: 结算可用优惠券（按订单金额筛选）
+            operationId: UserCoupon_ListUsableCoupons
+            parameters:
+                - name: amount
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ListUsableCouponsReply'
     /api/v1/coupons/{couponId}/claim:
         post:
             tags:
@@ -2916,6 +2958,8 @@ components:
                     type: string
                 validEnd:
                     type: string
+                avatar:
+                    type: string
             description: 优惠券发放记录
         api.cin.admin.v1.ExpandDescriptionReply:
             type: object
@@ -4040,6 +4084,39 @@ components:
                     type: string
                 sessionId:
                     type: string
+        api.cin.interface.v1.AvailableCouponItem:
+            type: object
+            properties:
+                couponId:
+                    type: string
+                name:
+                    type: string
+                type:
+                    type: integer
+                    format: int32
+                value:
+                    type: string
+                minAmount:
+                    type: string
+                validType:
+                    type: integer
+                    format: int32
+                validDays:
+                    type: integer
+                    format: int32
+                validStart:
+                    type: string
+                validEnd:
+                    type: string
+                remainCount:
+                    type: integer
+                    format: int32
+                claimed:
+                    type: boolean
+                limitPerUser:
+                    type: integer
+                    format: int32
+            description: 可领取优惠券项（领券中心）
         api.cin.interface.v1.CancelOrderReply:
             type: object
             properties:
@@ -4073,6 +4150,8 @@ components:
                 address:
                     type: string
                 freight:
+                    type: string
+                couponId:
                     type: string
         api.cin.interface.v1.CartItem:
             type: object
@@ -4305,6 +4384,16 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.AddressItem'
+        api.cin.interface.v1.ListAvailableCouponsReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.AvailableCouponItem'
+                total:
+                    type: integer
+                    format: int32
         api.cin.interface.v1.ListBannersReply:
             type: object
             properties:
@@ -4352,6 +4441,13 @@ components:
                 total:
                     type: integer
                     format: int32
+        api.cin.interface.v1.ListUsableCouponsReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.UsableCouponItem'
         api.cin.interface.v1.LoginReply:
             type: object
             properties:
@@ -4717,6 +4813,31 @@ components:
                     format: int32
                 birthday:
                     type: string
+        api.cin.interface.v1.UsableCouponItem:
+            type: object
+            properties:
+                recordId:
+                    type: string
+                couponId:
+                    type: string
+                name:
+                    type: string
+                type:
+                    type: integer
+                    format: int32
+                value:
+                    type: string
+                minAmount:
+                    type: string
+                validEnd:
+                    type: string
+                usable:
+                    type: boolean
+                discount:
+                    type: string
+                gapAmount:
+                    type: string
+            description: 结算可用券项
         api.cin.interface.v1.UserCenterStats:
             type: object
             properties:

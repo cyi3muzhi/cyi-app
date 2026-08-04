@@ -18,6 +18,7 @@ func NewHTTPServer(s *ts.HttpServer, cinInterface *service.CinInterface, ac *con
 	v1.RegisterProductHTTPServer(s.HttpServer, cinInterface)
 	v1.RegisterOrderHTTPServer(s.HttpServer, cinInterface)
 	v1.RegisterCartHTTPServer(s.HttpServer, cinInterface)
+	v1.RegisterCategoryHTTPServer(s.HttpServer, cinInterface)
 	v1.RegisterStockHTTPServer(s.HttpServer, cinInterface)
 	v1.RegisterBladesHTTPServer(s.HttpServer, cinInterface)
 	v1.RegisterUserCouponHTTPServer(s.HttpServer, cinInterface)

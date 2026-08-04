@@ -23,6 +23,18 @@ service UserCoupon {
       get: "/api/v1/coupons/my"
     };
   }
+  // 领券中心列表（可领取的优惠券）
+  rpc ListAvailableCoupons (ListAvailableCouponsRequest) returns (ListAvailableCouponsReply) {
+    option (google.api.http) = {
+      get: "/api/v1/coupons/available"
+    };
+  }
+  // 结算可用优惠券（按订单金额筛选）
+  rpc ListUsableCoupons (ListUsableCouponsRequest) returns (ListUsableCouponsReply) {
+    option (google.api.http) = {
+      get: "/api/v1/coupons/usable"
+    };
+  }
 }
 
 message ClaimCouponRequest {
@@ -59,4 +71,53 @@ message MyCouponItem {
 message ListMyCouponsReply {
   repeated MyCouponItem items = 1;
   int32 total = 2;
+}
+
+message ListAvailableCouponsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+// 可领取优惠券项（领券中心）
+message AvailableCouponItem {
+  int64 coupon_id = 1;       // 优惠券 ID
+  string name = 2;           // 名称
+  int32 type = 3;            // 类型：1-立减 2-折扣 3-满减
+  int64 value = 4;           // 面值（分）或折扣百分比（1-99）
+  int64 min_amount = 5;      // 使用门槛（分）
+  int32 valid_type = 6;      // 有效期类型：1-固定日期 2-领取后N天 3-永久
+  int32 valid_days = 7;      // 领取后有效天数
+  int64 valid_start = 8;     // 有效期开始（Unix 秒）
+  int64 valid_end = 9;       // 有效期结束（Unix 秒），0=永久
+  int32 remain_count = 10;   // 剩余可领数量
+  bool claimed = 11;         // 当前用户是否已领取
+  int32 limit_per_user = 12; // 每人限领数量，0=不限制
+}
+
+message ListAvailableCouponsReply {
+  repeated AvailableCouponItem items = 1;
+  int32 total = 2;
+}
+
+// 结算可用券请求：amount 为订单商品金额（分）
+message ListUsableCouponsRequest {
+  int64 amount = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+// 结算可用券项
+message UsableCouponItem {
+  int64 record_id = 1;     // 发放记录 ID（下单时传给 cartCheckout）
+  int64 coupon_id = 2;     // 优惠券 ID
+  string name = 3;         // 名称
+  int32 type = 4;          // 类型：1-立减 2-折扣 3-满减
+  int64 value = 5;         // 面值（分）或折扣百分比
+  int64 min_amount = 6;    // 使用门槛（分）
+  string valid_end = 7;    // 有效期截止（字符串）
+  bool usable = 8;         // 是否可用（满足门槛且在有效期内）
+  int64 discount = 9;      // 可用时预估优惠金额（分）
+  int64 gap_amount = 10;   // 不可用时还差多少金额可用（分）
+}
+
+message ListUsableCouponsReply {
+  repeated UsableCouponItem items = 1;
 }

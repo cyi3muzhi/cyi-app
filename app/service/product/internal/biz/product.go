@@ -7,6 +7,7 @@ type Product struct {
 	Description string
 	Price       int64
 	Status      ProductStatus
+	Sales       int32 // 销量（支付成功后累加，退款时回退）
 	CategoryID  int64
 	Image       string
 	Images      []string `mapstructure:"-"` // 轮播图列表（手动序列化）

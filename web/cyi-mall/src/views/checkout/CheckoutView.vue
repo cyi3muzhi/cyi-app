@@ -108,11 +108,31 @@
             <span class="summary-label">商品小计</span>
             <span class="summary-value">&yen;{{ subtotal.toFixed(2) }}</span>
           </div>
+          <!-- 优惠券行：点击打开选券弹层 -->
+          <div class="summary-row coupon-summary-row" @click="openCouponPicker">
+            <span class="summary-label coupon-label">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+              </svg>
+              优惠券
+            </span>
+            <span class="summary-value" :class="selectedCoupon ? 'text-discount' : 'text-placeholder'">
+              <template v-if="selectedCoupon">-&yen;{{ selectedCoupon.discount / 100 }}</template>
+              <template v-else>{{ usableCount > 0 ? `${usableCount} 张可用` : '暂无可用' }}</template>
+              <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </span>
+          </div>
           <div class="summary-row">
             <span class="summary-label">运费</span>
             <span class="summary-value" :class="shipping === 0 ? 'text-success' : ''">
               {{ shipping === 0 ? '免运费' : '¥' + shipping.toFixed(2) }}
             </span>
+          </div>
+          <div class="summary-row" v-if="selectedCoupon">
+            <span class="summary-label">优惠抵扣</span>
+            <span class="summary-value text-discount">-&yen;{{ couponDiscount.toFixed(2) }}</span>
           </div>
           <div class="summary-row total-row">
             <span class="total-label">应付总额</span>
@@ -125,6 +145,51 @@
           {{ submitting ? '提交中...' : '提交订单' }}
         </button>
       </section>
+    </div>
+
+    <!-- 选券弹层：单选可用券/不使用，不可用券置灰提示差额 -->
+    <div v-if="couponDialogVisible" class="pick-overlay" @click.self="closeCouponPicker">
+      <div class="pick-sheet">
+        <div class="pick-head">
+          <h3>选择优惠券</h3>
+          <button class="pick-close" aria-label="关闭" @click="closeCouponPicker">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <p class="pick-sub">已按当前订单（&yen;{{ subtotal.toFixed(2) }}）筛选优惠券</p>
+
+        <div v-if="couponLoading" class="pick-loading">
+          <span class="loading-dot"></span>加载中...
+        </div>
+        <template v-else>
+          <div
+            v-for="c in usableCoupons"
+            :key="c.recordId"
+            class="pick-item"
+            :class="{ selected: pendingRecordId === c.recordId, unusable: !c.usable }"
+            @click="selectCoupon(c)"
+          >
+            <span class="pick-radio"></span>
+            <span class="pick-face">-&yen;{{ pickFace(c) }}</span>
+            <div class="pick-info">
+              <p class="name">{{ c.name }}</p>
+              <p v-if="c.usable" class="cond">{{ thresholdText(c) }} · 有效期至 {{ c.validEnd || '永久' }}</p>
+              <p v-else class="cond short">还差 &yen;{{ formatMoney(c.gapAmount) }} 可用</p>
+            </div>
+            <span v-if="c.usable" class="pick-tag">可用</span>
+          </div>
+
+          <!-- 不使用优惠券 -->
+          <div class="pick-none" :class="{ selected: !pendingRecordId }" @click="pendingRecordId = 0">
+            <span class="pick-radio"></span>
+            <span style="font-size: 0.875rem; font-weight: 600;">不使用优惠券</span>
+          </div>
+
+          <button class="pick-confirm" :disabled="couponLoading" @click="confirmCoupon">确定</button>
+        </template>
+      </div>
     </div>
 
     <!-- 付款弹窗：下单成功后弹出，立即支付或稍后支付 -->
@@ -177,9 +242,11 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '@/store/cart'
 import { listAddress } from '@/api/user'
 import { cartCheckout, payOrder, getOrderDetail } from '@/api/order'
+import { listUsableCoupons } from '@/api/coupon'
 import { deleteCartItem } from '@/api/cart'
 import { toast } from '@/utils/toast'
 import type { Address } from '@/types/user'
+import type { UsableCouponItem } from '@/types/coupon'
 
 const router = useRouter()
 const cartStore = useCartStore()
@@ -218,8 +285,95 @@ const shipping = computed(() => {
   return 0
 })
 
-/** 应付总额 */
-const total = computed(() => subtotal.value + shipping.value)
+// ---- 优惠券（结算选券） ----
+const usableCoupons = ref<UsableCouponItem[]>([])
+const couponLoading = ref(false)
+const couponDialogVisible = ref(false)
+const couponLoadAmount = ref(0) // 已加载时对应的商品金额（分），金额变化需重新加载
+const selectedRecordId = ref(0) // 确认选中的发放记录 ID（0=不使用）
+const pendingRecordId = ref(0) // 弹层中临时选中（确定后才生效）
+
+/** 当前选中的可用券 */
+const selectedCoupon = computed<UsableCouponItem | null>(
+  () => usableCoupons.value.find(c => c.recordId === selectedRecordId.value && c.usable) || null
+)
+
+/** 优惠金额（元） */
+const couponDiscount = computed(() => (selectedCoupon.value ? selectedCoupon.value.discount / 100 : 0))
+
+/** 可用券数量（满足门槛且在有效期内） */
+const usableCount = computed(() => usableCoupons.value.filter(c => c.usable).length)
+
+/** 应付总额（商品小计 + 运费 - 优惠） */
+const total = computed(() => Math.max(0, subtotal.value + shipping.value - couponDiscount.value))
+
+/**
+ * 加载结算可用券（按当前商品金额筛选，金额变化时重新拉取）
+ */
+async function loadUsableCoupons() {
+  const amountCents = Math.round(subtotal.value * 100)
+  // 金额未变化且已加载过则复用
+  if (couponLoadAmount.value === amountCents && usableCoupons.value.length > 0) return
+  couponLoading.value = true
+  try {
+    const res = await listUsableCoupons(amountCents)
+    usableCoupons.value = res.items || []
+    couponLoadAmount.value = amountCents
+  } catch {
+    usableCoupons.value = []
+  } finally {
+    couponLoading.value = false
+  }
+}
+
+/** 打开选券弹层 */
+async function openCouponPicker() {
+  await loadUsableCoupons()
+  pendingRecordId.value = selectedRecordId.value
+  couponDialogVisible.value = true
+  document.body.style.overflow = 'hidden'
+}
+
+/** 关闭选券弹层（不保存临时选择） */
+function closeCouponPicker() {
+  couponDialogVisible.value = false
+  document.body.style.overflow = ''
+}
+
+/** 选择券（仅可用券可点，不可用券置灰） */
+function selectCoupon(c: UsableCouponItem) {
+  if (!c.usable) return
+  pendingRecordId.value = c.recordId
+}
+
+/** 确定：回写选中并关闭弹层 */
+function confirmCoupon() {
+  selectedRecordId.value = pendingRecordId.value
+  closeCouponPicker()
+}
+
+/**
+ * 弹层面值展示（分 → 元，整数不带小数）
+ * @param c 可用券项
+ */
+function pickFace(c: UsableCouponItem): string {
+  const cents = c.usable ? c.discount : (c.discount || c.value)
+  return formatMoney(cents)
+}
+
+/** 使用门槛：满 x 可用 / 全场通用 */
+function thresholdText(c: UsableCouponItem): string {
+  return c.minAmount > 0 ? `满${formatMoney(c.minAmount)}可用` : '全场通用'
+}
+
+/**
+ * 金额格式化（分 → 元，整数不带小数）
+ * @param cents 金额（分）
+ */
+function formatMoney(cents: number): string {
+  const yuan = cents / 100
+  return Number.isInteger(yuan) ? String(yuan) : yuan.toFixed(2)
+}
 
 // ---- 提交订单 ----
 const submitting = ref(false)
@@ -250,7 +404,8 @@ async function onSubmit() {
       receiver: addr.receiver,
       phone: addr.phone,
       address: `${addr.province || ''}${addr.city || ''}${addr.district || ''}${addr.detail || ''}`,
-      freight: Math.round(shipping.value * 100) // 元 → 分
+      freight: Math.round(shipping.value * 100), // 元 → 分
+      coupon_id: selectedRecordId.value // 优惠券发放记录 ID（0=不使用）
     })
     // 下单成功：先清理购物车中已结算商品，再弹出付款
     await Promise.all(selectedItems.value.map(i => deleteCartItem(i.productId, i.skuId)))
@@ -633,6 +788,243 @@ onMounted(() => {
 }
 .text-success {
   color: var(--shop-success) !important;
+}
+
+/* ---- 优惠券行 ---- */
+.coupon-summary-row {
+  cursor: pointer;
+  border-radius: var(--shop-radius-md);
+  padding-left: 8px;
+  padding-right: 8px;
+  transition: background var(--shop-transition);
+}
+.coupon-summary-row:hover {
+  background: var(--shop-muted);
+}
+.coupon-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.coupon-label svg {
+  color: var(--shop-primary);
+}
+.text-discount {
+  color: var(--shop-destructive) !important;
+  font-weight: 700;
+}
+.text-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--shop-muted-foreground);
+  cursor: pointer;
+}
+.chev {
+  color: var(--shop-muted-foreground);
+  flex-shrink: 0;
+}
+
+/* ---- 选券弹层（底部弹层） ---- */
+.pick-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.25s ease;
+  padding: 0;
+}
+.pick-sheet {
+  width: 100%;
+  max-width: 560px;
+  background: var(--shop-card);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px 24px;
+  max-height: 78vh;
+  overflow: auto;
+  box-shadow: 0 -10px 40px rgb(0 0 0 / 0.18);
+  animation: sheetIn 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+@keyframes sheetIn {
+  from { transform: translateY(30px); }
+  to { transform: translateY(0); }
+}
+.pick-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.pick-head h3 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.pick-close {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: var(--shop-muted);
+  color: var(--shop-muted-foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--shop-transition), color var(--shop-transition);
+}
+.pick-close:hover {
+  background: var(--shop-border);
+  color: var(--shop-foreground);
+}
+.pick-sub {
+  font-size: 0.75rem;
+  color: var(--shop-muted-foreground);
+  margin-bottom: 12px;
+}
+.pick-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 0;
+  font-size: 0.8125rem;
+  color: var(--shop-muted-foreground);
+}
+.loading-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--shop-primary-bg);
+  border-top-color: var(--shop-primary);
+  animation: spin 0.8s linear infinite;
+}
+.pick-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--shop-border);
+  border-radius: var(--shop-radius-lg);
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all var(--shop-transition);
+  background: var(--shop-card);
+}
+.pick-item:hover {
+  border-color: var(--shop-primary-light);
+}
+.pick-item.selected {
+  border-color: var(--shop-primary);
+  background: var(--shop-primary-bg);
+  box-shadow: 0 0 0 1px var(--shop-primary);
+}
+.pick-item.unusable {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.pick-radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--shop-border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--shop-transition);
+}
+.pick-item.selected .pick-radio {
+  border-color: var(--shop-primary);
+}
+.pick-item.selected .pick-radio::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--shop-primary);
+}
+.pick-face {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--shop-destructive);
+  width: 64px;
+  flex-shrink: 0;
+}
+.pick-info {
+  flex: 1;
+  min-width: 0;
+}
+.pick-info .name {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.pick-info .cond {
+  font-size: 0.72rem;
+  color: var(--shop-muted-foreground);
+  margin-top: 3px;
+}
+.pick-info .cond.short {
+  color: var(--shop-destructive);
+  font-weight: 600;
+}
+.pick-tag {
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--shop-primary);
+  color: #fff;
+  flex-shrink: 0;
+}
+.pick-none {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--shop-radius-lg);
+  cursor: pointer;
+  background: var(--shop-muted);
+  margin-bottom: 4px;
+}
+.pick-none.selected {
+  outline: 2px solid var(--shop-primary);
+  background: var(--shop-primary-bg);
+}
+.pick-none.selected .pick-radio {
+  border-color: var(--shop-primary);
+}
+.pick-none.selected .pick-radio::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--shop-primary);
+}
+.pick-confirm {
+  width: 100%;
+  height: 46px;
+  margin-top: 14px;
+  border: none;
+  border-radius: var(--shop-radius-lg);
+  background: linear-gradient(135deg, var(--shop-primary), var(--shop-primary-dark));
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  box-shadow: 0 4px 14px hsla(217, 91%, 52%, 0.35);
+  transition: opacity var(--shop-transition);
+  cursor: pointer;
+  font-family: var(--shop-font-sans);
+}
+.pick-confirm:hover:not(:disabled) {
+  opacity: 0.92;
+}
+.pick-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 .total-row {
   padding-top: 12px;

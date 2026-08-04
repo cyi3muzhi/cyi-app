@@ -371,6 +371,449 @@ func (x *ListMyCouponsReply) GetTotal() int32 {
 	return 0
 }
 
+type ListAvailableCouponsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAvailableCouponsRequest) Reset() {
+	*x = ListAvailableCouponsRequest{}
+	mi := &file_api_cin_interface_v1_coupon_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAvailableCouponsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAvailableCouponsRequest) ProtoMessage() {}
+
+func (x *ListAvailableCouponsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_coupon_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAvailableCouponsRequest.ProtoReflect.Descriptor instead.
+func (*ListAvailableCouponsRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_coupon_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ListAvailableCouponsRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListAvailableCouponsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+// 可领取优惠券项（领券中心）
+type AvailableCouponItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CouponId      int64                  `protobuf:"varint,1,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`                // 优惠券 ID
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                                         // 名称
+	Type          int32                  `protobuf:"varint,3,opt,name=type,proto3" json:"type,omitempty"`                                        // 类型：1-立减 2-折扣 3-满减
+	Value         int64                  `protobuf:"varint,4,opt,name=value,proto3" json:"value,omitempty"`                                      // 面值（分）或折扣百分比（1-99）
+	MinAmount     int64                  `protobuf:"varint,5,opt,name=min_amount,json=minAmount,proto3" json:"min_amount,omitempty"`             // 使用门槛（分）
+	ValidType     int32                  `protobuf:"varint,6,opt,name=valid_type,json=validType,proto3" json:"valid_type,omitempty"`             // 有效期类型：1-固定日期 2-领取后N天 3-永久
+	ValidDays     int32                  `protobuf:"varint,7,opt,name=valid_days,json=validDays,proto3" json:"valid_days,omitempty"`             // 领取后有效天数
+	ValidStart    int64                  `protobuf:"varint,8,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"`          // 有效期开始（Unix 秒）
+	ValidEnd      int64                  `protobuf:"varint,9,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`                // 有效期结束（Unix 秒），0=永久
+	RemainCount   int32                  `protobuf:"varint,10,opt,name=remain_count,json=remainCount,proto3" json:"remain_count,omitempty"`      // 剩余可领数量
+	Claimed       bool                   `protobuf:"varint,11,opt,name=claimed,proto3" json:"claimed,omitempty"`                                 // 当前用户是否已领取
+	LimitPerUser  int32                  `protobuf:"varint,12,opt,name=limit_per_user,json=limitPerUser,proto3" json:"limit_per_user,omitempty"` // 每人限领数量，0=不限制
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AvailableCouponItem) Reset() {
+	*x = AvailableCouponItem{}
+	mi := &file_api_cin_interface_v1_coupon_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AvailableCouponItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AvailableCouponItem) ProtoMessage() {}
+
+func (x *AvailableCouponItem) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_coupon_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AvailableCouponItem.ProtoReflect.Descriptor instead.
+func (*AvailableCouponItem) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_coupon_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *AvailableCouponItem) GetCouponId() int64 {
+	if x != nil {
+		return x.CouponId
+	}
+	return 0
+}
+
+func (x *AvailableCouponItem) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *AvailableCouponItem) GetType() int32 {
+	if x != nil {
+		return x.Type
+	}
+	return 0
+}
+
+func (x *AvailableCouponItem) GetValue() int64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *AvailableCouponItem) GetMinAmount() int64 {
+	if x != nil {
+		return x.MinAmount
+	}
+	return 0
+}
+
+func (x *AvailableCouponItem) GetValidType() int32 {
+	if x != nil {
+		return x.ValidType
+	}
+	return 0
+}
+
+func (x *AvailableCouponItem) GetValidDays() int32 {
+	if x != nil {
+		return x.ValidDays
+	}
+	return 0
+}
+
+func (x *AvailableCouponItem) GetValidStart() int64 {
+	if x != nil {
+		return x.ValidStart
+	}
+	return 0
+}
+
+func (x *AvailableCouponItem) GetValidEnd() int64 {
+	if x != nil {
+		return x.ValidEnd
+	}
+	return 0
+}
+
+func (x *AvailableCouponItem) GetRemainCount() int32 {
+	if x != nil {
+		return x.RemainCount
+	}
+	return 0
+}
+
+func (x *AvailableCouponItem) GetClaimed() bool {
+	if x != nil {
+		return x.Claimed
+	}
+	return false
+}
+
+func (x *AvailableCouponItem) GetLimitPerUser() int32 {
+	if x != nil {
+		return x.LimitPerUser
+	}
+	return 0
+}
+
+type ListAvailableCouponsReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*AvailableCouponItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAvailableCouponsReply) Reset() {
+	*x = ListAvailableCouponsReply{}
+	mi := &file_api_cin_interface_v1_coupon_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAvailableCouponsReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAvailableCouponsReply) ProtoMessage() {}
+
+func (x *ListAvailableCouponsReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_coupon_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAvailableCouponsReply.ProtoReflect.Descriptor instead.
+func (*ListAvailableCouponsReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_coupon_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ListAvailableCouponsReply) GetItems() []*AvailableCouponItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *ListAvailableCouponsReply) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+// 结算可用券请求：amount 为订单商品金额（分）
+type ListUsableCouponsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Amount        int64                  `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUsableCouponsRequest) Reset() {
+	*x = ListUsableCouponsRequest{}
+	mi := &file_api_cin_interface_v1_coupon_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUsableCouponsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUsableCouponsRequest) ProtoMessage() {}
+
+func (x *ListUsableCouponsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_coupon_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUsableCouponsRequest.ProtoReflect.Descriptor instead.
+func (*ListUsableCouponsRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_coupon_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ListUsableCouponsRequest) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+// 结算可用券项
+type UsableCouponItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RecordId      int64                  `protobuf:"varint,1,opt,name=record_id,json=recordId,proto3" json:"record_id,omitempty"`     // 发放记录 ID（下单时传给 cartCheckout）
+	CouponId      int64                  `protobuf:"varint,2,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`     // 优惠券 ID
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`                              // 名称
+	Type          int32                  `protobuf:"varint,4,opt,name=type,proto3" json:"type,omitempty"`                             // 类型：1-立减 2-折扣 3-满减
+	Value         int64                  `protobuf:"varint,5,opt,name=value,proto3" json:"value,omitempty"`                           // 面值（分）或折扣百分比
+	MinAmount     int64                  `protobuf:"varint,6,opt,name=min_amount,json=minAmount,proto3" json:"min_amount,omitempty"`  // 使用门槛（分）
+	ValidEnd      string                 `protobuf:"bytes,7,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`      // 有效期截止（字符串）
+	Usable        bool                   `protobuf:"varint,8,opt,name=usable,proto3" json:"usable,omitempty"`                         // 是否可用（满足门槛且在有效期内）
+	Discount      int64                  `protobuf:"varint,9,opt,name=discount,proto3" json:"discount,omitempty"`                     // 可用时预估优惠金额（分）
+	GapAmount     int64                  `protobuf:"varint,10,opt,name=gap_amount,json=gapAmount,proto3" json:"gap_amount,omitempty"` // 不可用时还差多少金额可用（分）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UsableCouponItem) Reset() {
+	*x = UsableCouponItem{}
+	mi := &file_api_cin_interface_v1_coupon_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UsableCouponItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UsableCouponItem) ProtoMessage() {}
+
+func (x *UsableCouponItem) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_coupon_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UsableCouponItem.ProtoReflect.Descriptor instead.
+func (*UsableCouponItem) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_coupon_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *UsableCouponItem) GetRecordId() int64 {
+	if x != nil {
+		return x.RecordId
+	}
+	return 0
+}
+
+func (x *UsableCouponItem) GetCouponId() int64 {
+	if x != nil {
+		return x.CouponId
+	}
+	return 0
+}
+
+func (x *UsableCouponItem) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UsableCouponItem) GetType() int32 {
+	if x != nil {
+		return x.Type
+	}
+	return 0
+}
+
+func (x *UsableCouponItem) GetValue() int64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *UsableCouponItem) GetMinAmount() int64 {
+	if x != nil {
+		return x.MinAmount
+	}
+	return 0
+}
+
+func (x *UsableCouponItem) GetValidEnd() string {
+	if x != nil {
+		return x.ValidEnd
+	}
+	return ""
+}
+
+func (x *UsableCouponItem) GetUsable() bool {
+	if x != nil {
+		return x.Usable
+	}
+	return false
+}
+
+func (x *UsableCouponItem) GetDiscount() int64 {
+	if x != nil {
+		return x.Discount
+	}
+	return 0
+}
+
+func (x *UsableCouponItem) GetGapAmount() int64 {
+	if x != nil {
+		return x.GapAmount
+	}
+	return 0
+}
+
+type ListUsableCouponsReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*UsableCouponItem    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUsableCouponsReply) Reset() {
+	*x = ListUsableCouponsReply{}
+	mi := &file_api_cin_interface_v1_coupon_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUsableCouponsReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUsableCouponsReply) ProtoMessage() {}
+
+func (x *ListUsableCouponsReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_coupon_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUsableCouponsReply.ProtoReflect.Descriptor instead.
+func (*ListUsableCouponsReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_coupon_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ListUsableCouponsReply) GetItems() []*UsableCouponItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
 var File_api_cin_interface_v1_coupon_proto protoreflect.FileDescriptor
 
 const file_api_cin_interface_v1_coupon_proto_rawDesc = "" +
@@ -405,11 +848,55 @@ const file_api_cin_interface_v1_coupon_proto_rawDesc = "" +
 	"createTime\"d\n" +
 	"\x12ListMyCouponsReply\x128\n" +
 	"\x05items\x18\x01 \x03(\v2\".api.cin.interface.v1.MyCouponItemR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total2\xa0\x02\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"N\n" +
+	"\x1bListAvailableCouponsRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"\xee\x02\n" +
+	"\x13AvailableCouponItem\x12\x1b\n" +
+	"\tcoupon_id\x18\x01 \x01(\x03R\bcouponId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
+	"\x04type\x18\x03 \x01(\x05R\x04type\x12\x14\n" +
+	"\x05value\x18\x04 \x01(\x03R\x05value\x12\x1d\n" +
+	"\n" +
+	"min_amount\x18\x05 \x01(\x03R\tminAmount\x12\x1d\n" +
+	"\n" +
+	"valid_type\x18\x06 \x01(\x05R\tvalidType\x12\x1d\n" +
+	"\n" +
+	"valid_days\x18\a \x01(\x05R\tvalidDays\x12\x1f\n" +
+	"\vvalid_start\x18\b \x01(\x03R\n" +
+	"validStart\x12\x1b\n" +
+	"\tvalid_end\x18\t \x01(\x03R\bvalidEnd\x12!\n" +
+	"\fremain_count\x18\n" +
+	" \x01(\x05R\vremainCount\x12\x18\n" +
+	"\aclaimed\x18\v \x01(\bR\aclaimed\x12$\n" +
+	"\x0elimit_per_user\x18\f \x01(\x05R\flimitPerUser\"r\n" +
+	"\x19ListAvailableCouponsReply\x12?\n" +
+	"\x05items\x18\x01 \x03(\v2).api.cin.interface.v1.AvailableCouponItemR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\";\n" +
+	"\x18ListUsableCouponsRequest\x12\x1f\n" +
+	"\x06amount\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06amount\"\x99\x02\n" +
+	"\x10UsableCouponItem\x12\x1b\n" +
+	"\trecord_id\x18\x01 \x01(\x03R\brecordId\x12\x1b\n" +
+	"\tcoupon_id\x18\x02 \x01(\x03R\bcouponId\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
+	"\x04type\x18\x04 \x01(\x05R\x04type\x12\x14\n" +
+	"\x05value\x18\x05 \x01(\x03R\x05value\x12\x1d\n" +
+	"\n" +
+	"min_amount\x18\x06 \x01(\x03R\tminAmount\x12\x1b\n" +
+	"\tvalid_end\x18\a \x01(\tR\bvalidEnd\x12\x16\n" +
+	"\x06usable\x18\b \x01(\bR\x06usable\x12\x1a\n" +
+	"\bdiscount\x18\t \x01(\x03R\bdiscount\x12\x1d\n" +
+	"\n" +
+	"gap_amount\x18\n" +
+	" \x01(\x03R\tgapAmount\"V\n" +
+	"\x16ListUsableCouponsReply\x12<\n" +
+	"\x05items\x18\x01 \x03(\v2&.api.cin.interface.v1.UsableCouponItemR\x05items2\xd4\x04\n" +
 	"\n" +
 	"UserCoupon\x12\x8d\x01\n" +
 	"\vClaimCoupon\x12(.api.cin.interface.v1.ClaimCouponRequest\x1a&.api.cin.interface.v1.ClaimCouponReply\",\x82\xd3\xe4\x93\x02&:\x01*\"!/api/v1/coupons/{coupon_id}/claim\x12\x81\x01\n" +
-	"\rListMyCoupons\x12*.api.cin.interface.v1.ListMyCouponsRequest\x1a(.api.cin.interface.v1.ListMyCouponsReply\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/api/v1/coupons/myB9\n" +
+	"\rListMyCoupons\x12*.api.cin.interface.v1.ListMyCouponsRequest\x1a(.api.cin.interface.v1.ListMyCouponsReply\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/api/v1/coupons/my\x12\x9d\x01\n" +
+	"\x14ListAvailableCoupons\x121.api.cin.interface.v1.ListAvailableCouponsRequest\x1a/.api.cin.interface.v1.ListAvailableCouponsReply\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/api/v1/coupons/available\x12\x91\x01\n" +
+	"\x11ListUsableCoupons\x12..api.cin.interface.v1.ListUsableCouponsRequest\x1a,.api.cin.interface.v1.ListUsableCouponsReply\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/api/v1/coupons/usableB9\n" +
 	"\x14api.cin.interface.v1P\x01Z\x1fcyi-app/api/cin/interface/v1;v1b\x06proto3"
 
 var (
@@ -424,25 +911,37 @@ func file_api_cin_interface_v1_coupon_proto_rawDescGZIP() []byte {
 	return file_api_cin_interface_v1_coupon_proto_rawDescData
 }
 
-var file_api_cin_interface_v1_coupon_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_api_cin_interface_v1_coupon_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_api_cin_interface_v1_coupon_proto_goTypes = []any{
-	(*ClaimCouponRequest)(nil),   // 0: api.cin.interface.v1.ClaimCouponRequest
-	(*ClaimCouponReply)(nil),     // 1: api.cin.interface.v1.ClaimCouponReply
-	(*ListMyCouponsRequest)(nil), // 2: api.cin.interface.v1.ListMyCouponsRequest
-	(*MyCouponItem)(nil),         // 3: api.cin.interface.v1.MyCouponItem
-	(*ListMyCouponsReply)(nil),   // 4: api.cin.interface.v1.ListMyCouponsReply
+	(*ClaimCouponRequest)(nil),          // 0: api.cin.interface.v1.ClaimCouponRequest
+	(*ClaimCouponReply)(nil),            // 1: api.cin.interface.v1.ClaimCouponReply
+	(*ListMyCouponsRequest)(nil),        // 2: api.cin.interface.v1.ListMyCouponsRequest
+	(*MyCouponItem)(nil),                // 3: api.cin.interface.v1.MyCouponItem
+	(*ListMyCouponsReply)(nil),          // 4: api.cin.interface.v1.ListMyCouponsReply
+	(*ListAvailableCouponsRequest)(nil), // 5: api.cin.interface.v1.ListAvailableCouponsRequest
+	(*AvailableCouponItem)(nil),         // 6: api.cin.interface.v1.AvailableCouponItem
+	(*ListAvailableCouponsReply)(nil),   // 7: api.cin.interface.v1.ListAvailableCouponsReply
+	(*ListUsableCouponsRequest)(nil),    // 8: api.cin.interface.v1.ListUsableCouponsRequest
+	(*UsableCouponItem)(nil),            // 9: api.cin.interface.v1.UsableCouponItem
+	(*ListUsableCouponsReply)(nil),      // 10: api.cin.interface.v1.ListUsableCouponsReply
 }
 var file_api_cin_interface_v1_coupon_proto_depIdxs = []int32{
-	3, // 0: api.cin.interface.v1.ListMyCouponsReply.items:type_name -> api.cin.interface.v1.MyCouponItem
-	0, // 1: api.cin.interface.v1.UserCoupon.ClaimCoupon:input_type -> api.cin.interface.v1.ClaimCouponRequest
-	2, // 2: api.cin.interface.v1.UserCoupon.ListMyCoupons:input_type -> api.cin.interface.v1.ListMyCouponsRequest
-	1, // 3: api.cin.interface.v1.UserCoupon.ClaimCoupon:output_type -> api.cin.interface.v1.ClaimCouponReply
-	4, // 4: api.cin.interface.v1.UserCoupon.ListMyCoupons:output_type -> api.cin.interface.v1.ListMyCouponsReply
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	3,  // 0: api.cin.interface.v1.ListMyCouponsReply.items:type_name -> api.cin.interface.v1.MyCouponItem
+	6,  // 1: api.cin.interface.v1.ListAvailableCouponsReply.items:type_name -> api.cin.interface.v1.AvailableCouponItem
+	9,  // 2: api.cin.interface.v1.ListUsableCouponsReply.items:type_name -> api.cin.interface.v1.UsableCouponItem
+	0,  // 3: api.cin.interface.v1.UserCoupon.ClaimCoupon:input_type -> api.cin.interface.v1.ClaimCouponRequest
+	2,  // 4: api.cin.interface.v1.UserCoupon.ListMyCoupons:input_type -> api.cin.interface.v1.ListMyCouponsRequest
+	5,  // 5: api.cin.interface.v1.UserCoupon.ListAvailableCoupons:input_type -> api.cin.interface.v1.ListAvailableCouponsRequest
+	8,  // 6: api.cin.interface.v1.UserCoupon.ListUsableCoupons:input_type -> api.cin.interface.v1.ListUsableCouponsRequest
+	1,  // 7: api.cin.interface.v1.UserCoupon.ClaimCoupon:output_type -> api.cin.interface.v1.ClaimCouponReply
+	4,  // 8: api.cin.interface.v1.UserCoupon.ListMyCoupons:output_type -> api.cin.interface.v1.ListMyCouponsReply
+	7,  // 9: api.cin.interface.v1.UserCoupon.ListAvailableCoupons:output_type -> api.cin.interface.v1.ListAvailableCouponsReply
+	10, // 10: api.cin.interface.v1.UserCoupon.ListUsableCoupons:output_type -> api.cin.interface.v1.ListUsableCouponsReply
+	7,  // [7:11] is the sub-list for method output_type
+	3,  // [3:7] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_api_cin_interface_v1_coupon_proto_init() }
@@ -456,7 +955,7 @@ func file_api_cin_interface_v1_coupon_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_interface_v1_coupon_proto_rawDesc), len(file_api_cin_interface_v1_coupon_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

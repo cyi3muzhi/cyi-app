@@ -13,8 +13,8 @@ type Category struct {
 	Name string `json:"name" gorm:"type:varchar(32);not null;comment:分类名称"`
 	// 别名
 	Slug string `json:"slug" gorm:"type:varchar(64);default:'';comment:别名"`
-	// 图标Emoji
-	Icon string `json:"icon" gorm:"type:varchar(16);default:'';comment:图标Emoji"`
+	// 图标（支持 Emoji、SVG 字符串、图片 URL）；TEXT 列不允许设置默认值
+	Icon string `json:"icon" gorm:"type:text;comment:图标(Emoji/SVG/图片URL)"`
 	// 分类图片
 	Image string `json:"image" gorm:"type:varchar(255);default:'';comment:分类图片"`
 	// 排序值

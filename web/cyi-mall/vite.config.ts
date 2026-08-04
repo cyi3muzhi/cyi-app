@@ -24,6 +24,10 @@ export default defineConfig({
         target: 'http://localhost:18000',
         changeOrigin: true
       },
+      '/category/v1': {
+        target: 'http://localhost:18000',
+        changeOrigin: true
+      },
       '/cart/v1': {
         target: 'http://localhost:18000',
         changeOrigin: true
@@ -33,6 +37,10 @@ export default defineConfig({
         changeOrigin: true
       },
       '/settings/v1': {
+        target: 'http://localhost:18000',
+        changeOrigin: true
+      },
+      '/api/v1': {
         target: 'http://localhost:18000',
         changeOrigin: true
       }

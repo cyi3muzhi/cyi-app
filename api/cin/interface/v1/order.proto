@@ -102,6 +102,7 @@ message CartCheckoutRequest {
   string phone = 4; // 手机号（地址快照）
   string address = 5; // 完整收货地址（地址快照）
   int64 freight = 6; // 运费（单位：分，前端计算）
+  int64 coupon_id = 7; // 优惠券发放记录ID（0=不使用优惠券）
 }
 
 message CartCheckoutReply {

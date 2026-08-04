@@ -10,6 +10,7 @@ import (
 	"cyi-app/pkg/util/convert"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"gorm.io/gorm"
 )
 
 type stockRepo struct {
@@ -68,7 +69,7 @@ func (r *stockRepo) ReserveStock(ctx context.Context, skuID int64, count int32, 
 }
 
 // DeductStock 确认扣减库存（支付后）
-// total- , reserved- , version++
+// total- , reserved- , version++，同时累加 SKU 与商品销量
 // 条件: version 匹配
 func (r *stockRepo) DeductStock(ctx context.Context, skuID int64, count int32, version int32) (int32, error) {
 	result, err := curd.Stock.WithContext(ctx).
@@ -84,6 +85,10 @@ func (r *stockRepo) DeductStock(ctx context.Context, skuID int64, count int32, v
 	}
 	if result.RowsAffected == 0 {
 		return 0, v1.ErrorStockVersionConflict("deduct stock version conflict")
+	}
+	// 支付成功：SKU 与商品销量各累加 count
+	if err := r.increaseSales(ctx, skuID, count); err != nil {
+		return 0, err
 	}
 	return version + 1, nil
 }
@@ -111,7 +116,7 @@ func (r *stockRepo) ReleaseStock(ctx context.Context, skuID int64, count int32, 
 }
 
 // AddStock 增加库存（退款或取消已支付订单时）
-// total+ , available+ , version++
+// total+ , available+ , version++，同时扣减 SKU 与商品销量
 // 条件: version 匹配
 func (r *stockRepo) AddStock(ctx context.Context, skuID int64, count int32, version int32) (int32, error) {
 	result, err := curd.Stock.WithContext(ctx).
@@ -128,7 +133,50 @@ func (r *stockRepo) AddStock(ctx context.Context, skuID int64, count int32, vers
 	if result.RowsAffected == 0 {
 		return 0, v1.ErrorStockVersionConflict("add stock version conflict")
 	}
+	// 退款/取消已支付订单：销量回退（下限为 0）
+	if err := r.decreaseSales(ctx, skuID, count); err != nil {
+		return 0, err
+	}
 	return version + 1, nil
+}
+
+// increaseSales 累加 SKU 与商品销量（支付成功后调用）
+// 使用原生 SQL 累加，因为 gorm gen 生成的 Product 字段未包含 sales 列
+func (r *stockRepo) increaseSales(ctx context.Context, skuID int64, count int32) error {
+	// 查询 SKU 归属商品
+	var sku mod.Sku
+	if err := curd.Sku.WithContext(ctx).UnderlyingDB().First(&sku, skuID).Error; err != nil {
+		return err
+	}
+	db := curd.Sku.WithContext(ctx).UnderlyingDB()
+	if err := db.Model(&mod.Sku{}).Where("id = ?", skuID).
+		UpdateColumn("sales", gorm.Expr("sales + ?", count)).Error; err != nil {
+		return err
+	}
+	if err := db.Model(&mod.Product{}).Where("id = ?", sku.ProductID).
+		UpdateColumn("sales", gorm.Expr("sales + ?", count)).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// decreaseSales 扣减 SKU 与商品销量（退款/取消已支付订单时调用），下限为 0
+func (r *stockRepo) decreaseSales(ctx context.Context, skuID int64, count int32) error {
+	// 查询 SKU 归属商品
+	var sku mod.Sku
+	if err := curd.Sku.WithContext(ctx).UnderlyingDB().First(&sku, skuID).Error; err != nil {
+		return err
+	}
+	db := curd.Sku.WithContext(ctx).UnderlyingDB()
+	if err := db.Model(&mod.Sku{}).Where("id = ?", skuID).
+		UpdateColumn("sales", gorm.Expr("GREATEST(sales - ?, 0)", count)).Error; err != nil {
+		return err
+	}
+	if err := db.Model(&mod.Product{}).Where("id = ?", sku.ProductID).
+		UpdateColumn("sales", gorm.Expr("GREATEST(sales - ?, 0)", count)).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetStock 按 SKU ID 获取库存

@@ -20,19 +20,27 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 const OperationUserCouponClaimCoupon = "/api.cin.interface.v1.UserCoupon/ClaimCoupon"
+const OperationUserCouponListAvailableCoupons = "/api.cin.interface.v1.UserCoupon/ListAvailableCoupons"
 const OperationUserCouponListMyCoupons = "/api.cin.interface.v1.UserCoupon/ListMyCoupons"
+const OperationUserCouponListUsableCoupons = "/api.cin.interface.v1.UserCoupon/ListUsableCoupons"
 
 type UserCouponHTTPServer interface {
 	// ClaimCoupon 用户领取优惠券
 	ClaimCoupon(context.Context, *ClaimCouponRequest) (*ClaimCouponReply, error)
+	// ListAvailableCoupons 领券中心列表（可领取的优惠券）
+	ListAvailableCoupons(context.Context, *ListAvailableCouponsRequest) (*ListAvailableCouponsReply, error)
 	// ListMyCoupons 我的优惠券列表
 	ListMyCoupons(context.Context, *ListMyCouponsRequest) (*ListMyCouponsReply, error)
+	// ListUsableCoupons 结算可用优惠券（按订单金额筛选）
+	ListUsableCoupons(context.Context, *ListUsableCouponsRequest) (*ListUsableCouponsReply, error)
 }
 
 func RegisterUserCouponHTTPServer(s *http.Server, srv UserCouponHTTPServer) {
 	r := s.Route("/")
 	r.POST("/api/v1/coupons/{coupon_id}/claim", _UserCoupon_ClaimCoupon0_HTTP_Handler(srv))
 	r.GET("/api/v1/coupons/my", _UserCoupon_ListMyCoupons0_HTTP_Handler(srv))
+	r.GET("/api/v1/coupons/available", _UserCoupon_ListAvailableCoupons0_HTTP_Handler(srv))
+	r.GET("/api/v1/coupons/usable", _UserCoupon_ListUsableCoupons0_HTTP_Handler(srv))
 }
 
 func _UserCoupon_ClaimCoupon0_HTTP_Handler(srv UserCouponHTTPServer) func(ctx http.Context) error {
@@ -79,11 +87,53 @@ func _UserCoupon_ListMyCoupons0_HTTP_Handler(srv UserCouponHTTPServer) func(ctx 
 	}
 }
 
+func _UserCoupon_ListAvailableCoupons0_HTTP_Handler(srv UserCouponHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListAvailableCouponsRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserCouponListAvailableCoupons)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListAvailableCoupons(ctx, req.(*ListAvailableCouponsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListAvailableCouponsReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _UserCoupon_ListUsableCoupons0_HTTP_Handler(srv UserCouponHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListUsableCouponsRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserCouponListUsableCoupons)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListUsableCoupons(ctx, req.(*ListUsableCouponsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListUsableCouponsReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type UserCouponHTTPClient interface {
 	// ClaimCoupon 用户领取优惠券
 	ClaimCoupon(ctx context.Context, req *ClaimCouponRequest, opts ...http.CallOption) (rsp *ClaimCouponReply, err error)
+	// ListAvailableCoupons 领券中心列表（可领取的优惠券）
+	ListAvailableCoupons(ctx context.Context, req *ListAvailableCouponsRequest, opts ...http.CallOption) (rsp *ListAvailableCouponsReply, err error)
 	// ListMyCoupons 我的优惠券列表
 	ListMyCoupons(ctx context.Context, req *ListMyCouponsRequest, opts ...http.CallOption) (rsp *ListMyCouponsReply, err error)
+	// ListUsableCoupons 结算可用优惠券（按订单金额筛选）
+	ListUsableCoupons(ctx context.Context, req *ListUsableCouponsRequest, opts ...http.CallOption) (rsp *ListUsableCouponsReply, err error)
 }
 
 type UserCouponHTTPClientImpl struct {
@@ -108,12 +158,40 @@ func (c *UserCouponHTTPClientImpl) ClaimCoupon(ctx context.Context, in *ClaimCou
 	return &out, nil
 }
 
+// ListAvailableCoupons 领券中心列表（可领取的优惠券）
+func (c *UserCouponHTTPClientImpl) ListAvailableCoupons(ctx context.Context, in *ListAvailableCouponsRequest, opts ...http.CallOption) (*ListAvailableCouponsReply, error) {
+	var out ListAvailableCouponsReply
+	pattern := "/api/v1/coupons/available"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationUserCouponListAvailableCoupons))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 // ListMyCoupons 我的优惠券列表
 func (c *UserCouponHTTPClientImpl) ListMyCoupons(ctx context.Context, in *ListMyCouponsRequest, opts ...http.CallOption) (*ListMyCouponsReply, error) {
 	var out ListMyCouponsReply
 	pattern := "/api/v1/coupons/my"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationUserCouponListMyCoupons))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ListUsableCoupons 结算可用优惠券（按订单金额筛选）
+func (c *UserCouponHTTPClientImpl) ListUsableCoupons(ctx context.Context, in *ListUsableCouponsRequest, opts ...http.CallOption) (*ListUsableCouponsReply, error) {
+	var out ListUsableCouponsReply
+	pattern := "/api/v1/coupons/usable"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationUserCouponListUsableCoupons))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

@@ -384,6 +384,11 @@ func (m *CartCheckoutRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.CouponId != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.CouponId))
+		i--
+		dAtA[i] = 0x38
+	}
 	if m.Freight != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Freight))
 		i--
@@ -1058,6 +1063,9 @@ func (m *CartCheckoutRequest) SizeVT() (n int) {
 	}
 	if m.Freight != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.Freight))
+	}
+	if m.CouponId != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.CouponId))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -2094,6 +2102,25 @@ func (m *CartCheckoutRequest) UnmarshalVT(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.Freight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CouponId", wireType)
+			}
+			m.CouponId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CouponId |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

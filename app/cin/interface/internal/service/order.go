@@ -38,12 +38,13 @@ func (s *CinInterface) CartCheckout(ctx context.Context, req *v1.CartCheckoutReq
 		return nil, err
 	}
 	in := &biz.Order{
-		UserID:    userID,
-		AddressID: req.AddressId,
-		Receiver:  req.Receiver,
-		Phone:     req.Phone,
-		Address:   req.Address,
-		Freight:   req.Freight,
+		UserID:         userID,
+		AddressID:      req.AddressId,
+		Receiver:       req.Receiver,
+		Phone:          req.Phone,
+		Address:        req.Address,
+		Freight:        req.Freight,
+		CouponRecordID: req.CouponId, // 优惠券发放记录ID（0=不使用）
 	}
 	for _, item := range req.Items {
 		in.Items = append(in.Items, &biz.CartItem{

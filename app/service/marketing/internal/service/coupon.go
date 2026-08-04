@@ -56,6 +56,11 @@ func (s *CouponService) ListUserCoupons(ctx context.Context, req *v1.ListUserCou
 	return s.uc.ListUserCoupons(ctx, req)
 }
 
+// ListAvailableCoupons 可领取优惠券列表（领券中心用）
+func (s *CouponService) ListAvailableCoupons(ctx context.Context, req *v1.ListAvailableCouponsRequest) (*v1.ListAvailableCouponsReply, error) {
+	return s.uc.ListAvailableCoupons(ctx, req)
+}
+
 func (s *CouponService) UseCoupon(ctx context.Context, req *v1.UseCouponRequest) (*v1.UseCouponReply, error) {
 	return s.uc.UseCoupon(ctx, req)
 }

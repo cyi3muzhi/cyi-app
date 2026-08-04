@@ -10,6 +10,7 @@ type Sku struct {
 	SkuCode   string
 	Price     int64
 	Stock     int32 // 库存数量（从 inventory_stock 表加载，不持久化在 sku 表）
+	Sales     int32 // 销量（支付成功后累加，退款时回退）
 	Spec      map[string]string // 规格描述，如 {"颜色":"红色","尺码":"XL"}
 	Image     string // SKU图片
 }

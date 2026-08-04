@@ -19,8 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserCoupon_ClaimCoupon_FullMethodName   = "/api.cin.interface.v1.UserCoupon/ClaimCoupon"
-	UserCoupon_ListMyCoupons_FullMethodName = "/api.cin.interface.v1.UserCoupon/ListMyCoupons"
+	UserCoupon_ClaimCoupon_FullMethodName          = "/api.cin.interface.v1.UserCoupon/ClaimCoupon"
+	UserCoupon_ListMyCoupons_FullMethodName        = "/api.cin.interface.v1.UserCoupon/ListMyCoupons"
+	UserCoupon_ListAvailableCoupons_FullMethodName = "/api.cin.interface.v1.UserCoupon/ListAvailableCoupons"
+	UserCoupon_ListUsableCoupons_FullMethodName    = "/api.cin.interface.v1.UserCoupon/ListUsableCoupons"
 )
 
 // UserCouponClient is the client API for UserCoupon service.
@@ -31,6 +33,10 @@ type UserCouponClient interface {
 	ClaimCoupon(ctx context.Context, in *ClaimCouponRequest, opts ...grpc.CallOption) (*ClaimCouponReply, error)
 	// 我的优惠券列表
 	ListMyCoupons(ctx context.Context, in *ListMyCouponsRequest, opts ...grpc.CallOption) (*ListMyCouponsReply, error)
+	// 领券中心列表（可领取的优惠券）
+	ListAvailableCoupons(ctx context.Context, in *ListAvailableCouponsRequest, opts ...grpc.CallOption) (*ListAvailableCouponsReply, error)
+	// 结算可用优惠券（按订单金额筛选）
+	ListUsableCoupons(ctx context.Context, in *ListUsableCouponsRequest, opts ...grpc.CallOption) (*ListUsableCouponsReply, error)
 }
 
 type userCouponClient struct {
@@ -61,6 +67,26 @@ func (c *userCouponClient) ListMyCoupons(ctx context.Context, in *ListMyCouponsR
 	return out, nil
 }
 
+func (c *userCouponClient) ListAvailableCoupons(ctx context.Context, in *ListAvailableCouponsRequest, opts ...grpc.CallOption) (*ListAvailableCouponsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListAvailableCouponsReply)
+	err := c.cc.Invoke(ctx, UserCoupon_ListAvailableCoupons_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userCouponClient) ListUsableCoupons(ctx context.Context, in *ListUsableCouponsRequest, opts ...grpc.CallOption) (*ListUsableCouponsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListUsableCouponsReply)
+	err := c.cc.Invoke(ctx, UserCoupon_ListUsableCoupons_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserCouponServer is the server API for UserCoupon service.
 // All implementations must embed UnimplementedUserCouponServer
 // for forward compatibility.
@@ -69,6 +95,10 @@ type UserCouponServer interface {
 	ClaimCoupon(context.Context, *ClaimCouponRequest) (*ClaimCouponReply, error)
 	// 我的优惠券列表
 	ListMyCoupons(context.Context, *ListMyCouponsRequest) (*ListMyCouponsReply, error)
+	// 领券中心列表（可领取的优惠券）
+	ListAvailableCoupons(context.Context, *ListAvailableCouponsRequest) (*ListAvailableCouponsReply, error)
+	// 结算可用优惠券（按订单金额筛选）
+	ListUsableCoupons(context.Context, *ListUsableCouponsRequest) (*ListUsableCouponsReply, error)
 	mustEmbedUnimplementedUserCouponServer()
 }
 
@@ -84,6 +114,12 @@ func (UnimplementedUserCouponServer) ClaimCoupon(context.Context, *ClaimCouponRe
 }
 func (UnimplementedUserCouponServer) ListMyCoupons(context.Context, *ListMyCouponsRequest) (*ListMyCouponsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListMyCoupons not implemented")
+}
+func (UnimplementedUserCouponServer) ListAvailableCoupons(context.Context, *ListAvailableCouponsRequest) (*ListAvailableCouponsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAvailableCoupons not implemented")
+}
+func (UnimplementedUserCouponServer) ListUsableCoupons(context.Context, *ListUsableCouponsRequest) (*ListUsableCouponsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListUsableCoupons not implemented")
 }
 func (UnimplementedUserCouponServer) mustEmbedUnimplementedUserCouponServer() {}
 func (UnimplementedUserCouponServer) testEmbeddedByValue()                    {}
@@ -142,6 +178,42 @@ func _UserCoupon_ListMyCoupons_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserCoupon_ListAvailableCoupons_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAvailableCouponsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserCouponServer).ListAvailableCoupons(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserCoupon_ListAvailableCoupons_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserCouponServer).ListAvailableCoupons(ctx, req.(*ListAvailableCouponsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserCoupon_ListUsableCoupons_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListUsableCouponsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserCouponServer).ListUsableCoupons(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserCoupon_ListUsableCoupons_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserCouponServer).ListUsableCoupons(ctx, req.(*ListUsableCouponsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserCoupon_ServiceDesc is the grpc.ServiceDesc for UserCoupon service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -156,6 +228,14 @@ var UserCoupon_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListMyCoupons",
 			Handler:    _UserCoupon_ListMyCoupons_Handler,
+		},
+		{
+			MethodName: "ListAvailableCoupons",
+			Handler:    _UserCoupon_ListAvailableCoupons_Handler,
+		},
+		{
+			MethodName: "ListUsableCoupons",
+			Handler:    _UserCoupon_ListUsableCoupons_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

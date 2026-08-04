@@ -30,6 +30,7 @@ func (r *skuRepo) CreateSkus(ctx context.Context, skus []*biz.Sku) error {
 			ProductID: sku.ProductID,
 			SkuCode:   sku.SkuCode,
 			Price:     sku.Price,
+			Sales:     sku.Sales,
 			SpecDesc:  marshalSpec(sku.Spec),
 			Image:     sku.Image,
 		})
@@ -65,6 +66,7 @@ func (r *skuRepo) ReplaceSkus(ctx context.Context, productID int64, skus []*biz.
 				ProductID: productID,
 				SkuCode:   sku.SkuCode,
 				Price:     sku.Price,
+				Sales:     sku.Sales,
 				SpecDesc:  marshalSpec(sku.Spec),
 				Image:     sku.Image,
 			})
@@ -91,6 +93,7 @@ func skuModelToBiz(m *mod.Sku) *biz.Sku {
 		ProductID: m.ProductID,
 		SkuCode:   m.SkuCode,
 		Price:     m.Price,
+		Sales:     m.Sales,
 		Spec:      unmarshalSpec(m.SpecDesc),
 		Image:     m.Image,
 	}
