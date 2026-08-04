@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/cin/admin/internal/biz"
@@ -87,17 +88,22 @@ func (r *operationLogRepo) ListOperators(ctx context.Context) ([]string, error) 
 }
 
 // NewNATSConn 创建 NATS 连接（单例）
-// 优先从环境变量 NATS_URL 读取地址，默认使用 localhost（本地开发）
+// 优先从环境变量 NATS_URL 读取地址（Docker 环境应配置为 nats://nats:4222），默认使用 localhost（本地开发）
+// 启动时基础设施容器可能尚未就绪，最多重试 5 次；仍失败则返回 nil 降级（不 panic，避免拖垮整个服务）
 func NewNATSConn() *nats.Conn {
 	natsURL := os.Getenv("NATS_URL")
 	if natsURL == "" {
 		natsURL = "nats://localhost:4222"
 	}
-	nc, err := nats.Connect(natsURL)
-	if err != nil {
-		panic(err)
+	for i := 0; i < 5; i++ {
+		nc, err := nats.Connect(natsURL)
+		if err == nil {
+			return nc
+		}
+		time.Sleep(2 * time.Second)
 	}
-	return nc
+	// 连接失败不 panic：操作日志降级跳过（OperationLogPublisher.Publish 内部有 nil 保护）
+	return nil
 }
 
 // OperationLogPublisher 操作日志 NATS 发布器

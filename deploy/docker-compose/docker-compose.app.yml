@@ -49,6 +49,7 @@ services:
       - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/service/user
       - SERVICE_ENV=dev
+      - NATS_URL=nats://nats:4222
     networks:
       - cyi-network
 
@@ -83,6 +84,8 @@ services:
       - SERVICE_ENV=dev
       # OSS 公开访问端点，走 Nginx /oss/ 代理（HTTPS + 不暴露 9000 端口）
       - OSS_PUBLIC_ENDPOINT=https://admin.cyi.dev/oss
+      # 操作日志通过 NATS 发布，需连 NATS 服务（容器网络内用服务名 nats）
+      - NATS_URL=nats://nats:4222
     networks:
       - cyi-network
 

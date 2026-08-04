@@ -31,6 +31,11 @@ func NewOperationLogConsumer(conn *nats.Conn, uc *biz.OperationLogUseCase, logge
 
 // Start 启动订阅（阻塞监听）
 func (c *OperationLogConsumer) Start() {
+	// NATS 连接失败（NewNATSConn 返回 nil）时降级跳过，不影响服务启动
+	if c == nil || c.conn == nil {
+		c.log.Warnf("NATS 连接不可用，跳过操作日志订阅")
+		return
+	}
 	_, err := c.conn.Subscribe(event.SubjectAdminOperation, func(msg *nats.Msg) {
 		c.handle(msg.Data)
 	})
