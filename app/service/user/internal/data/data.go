@@ -26,6 +26,7 @@ import (
 // ProviderSet is data providers.
 var ProviderSet = wire.NewSet(
 	NewUserRepo,
+	NewAddressRepo,
 	NewAdminUserRepo,
 	NewRoleRepo,
 	NewSettingsRepo,
@@ -75,7 +76,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 	// 仅在非生产环境自动迁移表结构（生产环境禁止使用 AutoMigrate）
 	env := os.Getenv("SERVICE_ENV")
 	if env != "production" {
-		if err := db.AutoMigrate(&mod.User{}, &mod.AdminUser{}, &mod.CasbinRule{}, &mod.RoleMeta{}, &mod.SettingsRow{}, &mod.BannersRow{}); err != nil {
+		if err := db.AutoMigrate(&mod.User{}, &mod.Address{}, &mod.AdminUser{}, &mod.CasbinRule{}, &mod.RoleMeta{}, &mod.SettingsRow{}, &mod.BannersRow{}); err != nil {
 			panic(err)
 		}
 

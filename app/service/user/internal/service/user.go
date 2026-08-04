@@ -16,15 +16,17 @@ import (
 // UserService 用户服务实现
 type UserService struct {
 	pb.UnimplementedUserServer
-	uc  *biz.UserUseCase
-	log *log.Helper
+	uc        *biz.UserUseCase
+	addressUC *biz.AddressUseCase
+	log       *log.Helper
 }
 
 // NewUserService 创建 UserService
-func NewUserService(uc *biz.UserUseCase, logger log.Logger) *UserService {
+func NewUserService(uc *biz.UserUseCase, addressUC *biz.AddressUseCase, logger log.Logger) *UserService {
 	return &UserService{
-		uc:  uc,
-		log: log.NewHelper(logger),
+		uc:        uc,
+		addressUC: addressUC,
+		log:       log.NewHelper(logger),
 	}
 }
 
@@ -257,4 +259,98 @@ func (s *UserService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 	return &pb.LoginReply{
 		Token: reply.Token,
 	}, nil
+}
+
+// ChangePassword 修改密码
+func (s *UserService) ChangePassword(ctx context.Context, req *pb.ChangePasswordRequest) (*pb.ChangePasswordReply, error) {
+	if err := s.uc.ChangePassword(ctx, req.UserId, req.OldPassword, req.NewPassword); err != nil {
+		return &pb.ChangePasswordReply{Success: false}, convertBizError(err)
+	}
+	return &pb.ChangePasswordReply{Success: true}, nil
+}
+
+// ListAddress 查询用户收货地址列表
+func (s *UserService) ListAddress(ctx context.Context, req *pb.ListAddressRequest) (*pb.ListAddressReply, error) {
+	list, err := s.addressUC.ListAddress(ctx, req.UserId)
+	if err != nil {
+		return nil, convertBizError(err)
+	}
+	items := make([]*pb.AddressInfo, 0, len(list))
+	for _, a := range list {
+		items = append(items, addressBizToProto(a))
+	}
+	return &pb.ListAddressReply{Items: items}, nil
+}
+
+// CreateAddress 新增收货地址
+func (s *UserService) CreateAddress(ctx context.Context, req *pb.CreateAddressRequest) (*pb.CreateAddressReply, error) {
+	a := &biz.Address{
+		UserID:    req.UserId,
+		Receiver:  req.Receiver,
+		Phone:     req.Phone,
+		Province:  req.Province,
+		City:      req.City,
+		District:  req.District,
+		Detail:    req.Detail,
+		IsDefault: req.IsDefault,
+	}
+	created, err := s.addressUC.CreateAddress(ctx, a)
+	if err != nil {
+		return nil, convertBizError(err)
+	}
+	return &pb.CreateAddressReply{Id: created.ID}, nil
+}
+
+// UpdateAddress 更新收货地址
+func (s *UserService) UpdateAddress(ctx context.Context, req *pb.UpdateAddressRequest) (*pb.UpdateAddressReply, error) {
+	a := &biz.Address{
+		ID:        req.Id,
+		UserID:    req.UserId,
+		Receiver:  req.Receiver,
+		Phone:     req.Phone,
+		Province:  req.Province,
+		City:      req.City,
+		District:  req.District,
+		Detail:    req.Detail,
+		IsDefault: req.IsDefault,
+	}
+	if err := s.addressUC.UpdateAddress(ctx, a); err != nil {
+		return &pb.UpdateAddressReply{Success: false}, convertBizError(err)
+	}
+	return &pb.UpdateAddressReply{Success: true}, nil
+}
+
+// DeleteAddress 删除收货地址
+func (s *UserService) DeleteAddress(ctx context.Context, req *pb.DeleteAddressRequest) (*pb.DeleteAddressReply, error) {
+	if err := s.addressUC.DeleteAddress(ctx, req.Id, req.UserId); err != nil {
+		return &pb.DeleteAddressReply{Success: false}, convertBizError(err)
+	}
+	return &pb.DeleteAddressReply{Success: true}, nil
+}
+
+// SetDefaultAddress 设置默认收货地址
+func (s *UserService) SetDefaultAddress(ctx context.Context, req *pb.SetDefaultAddressRequest) (*pb.SetDefaultAddressReply, error) {
+	if err := s.addressUC.SetDefaultAddress(ctx, req.Id, req.UserId); err != nil {
+		return &pb.SetDefaultAddressReply{Success: false}, convertBizError(err)
+	}
+	return &pb.SetDefaultAddressReply{Success: true}, nil
+}
+
+// addressBizToProto biz.Address -> pb.AddressInfo 转换
+func addressBizToProto(a *biz.Address) *pb.AddressInfo {
+	if a == nil {
+		return nil
+	}
+	return &pb.AddressInfo{
+		Id:         a.ID,
+		Receiver:   a.Receiver,
+		Phone:      a.Phone,
+		Province:   a.Province,
+		City:       a.City,
+		District:   a.District,
+		Detail:     a.Detail,
+		IsDefault:  a.IsDefault,
+		CreateTime: a.CreateTime,
+		UpdateTime: a.UpdateTime,
+	}
 }

@@ -9,6 +9,7 @@ import (
 // ProviderSet is biz providers.
 var ProviderSet = wire.NewSet(
 	NewUserUseCase,
+	NewAddressUseCase,
 	NewAdminUserUseCase,
 	NewRoleUseCase,
 	NewSettingsUseCase,

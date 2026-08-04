@@ -4,6 +4,7 @@ import (
 	v1 "cyi-app/api/cin/interface/v1"
 	"cyi-app/app/cin/interface/internal/biz"
 	"cyi-app/app/cin/interface/internal/conf"
+	"cyi-app/app/cin/interface/internal/data"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -28,20 +29,23 @@ type CinInterface struct {
 	v1.UnimplementedSettingsServer
 	v1.UnimplementedBannerServer
 	v1.UnimplementedCategoryServer
-	log     *log.Helper
-	uc      *biz.UserUseCase
-	oc      *biz.OrderUseCase
-	pc      *biz.ProductUseCase
-	catUC   *biz.CategoryUseCase
-	sc      *biz.StockUseCase
-	bc      *biz.BladesUseCase
-	cc      *biz.CouponUseCase
-	settUC  *biz.SettingsUseCase
+	v1.UnimplementedUploadServer
+	log      *log.Helper
+	uc       *biz.UserUseCase
+	oc       *biz.OrderUseCase
+	pc       *biz.ProductUseCase
+	catUC    *biz.CategoryUseCase
+	sc       *biz.StockUseCase
+	bc       *biz.BladesUseCase
+	cc       *biz.CouponUseCase
+	settUC   *biz.SettingsUseCase
 	bannerUC *biz.BannerUseCase
-	auth    *conf.Auth
+	cartUC   *biz.CartUseCase
+	uploadR  *data.UploadRepo
+	auth     *conf.Auth
 }
 
-func NewCinInterface(uc *biz.UserUseCase, oc *biz.OrderUseCase, pc *biz.ProductUseCase, catUC *biz.CategoryUseCase, sc *biz.StockUseCase, bc *biz.BladesUseCase, cc *biz.CouponUseCase, settUC *biz.SettingsUseCase, bannerUC *biz.BannerUseCase, logger log.Logger, auth *conf.Auth) *CinInterface {
+func NewCinInterface(uc *biz.UserUseCase, oc *biz.OrderUseCase, pc *biz.ProductUseCase, catUC *biz.CategoryUseCase, sc *biz.StockUseCase, bc *biz.BladesUseCase, cc *biz.CouponUseCase, settUC *biz.SettingsUseCase, bannerUC *biz.BannerUseCase, cartUC *biz.CartUseCase, uploadR *data.UploadRepo, logger log.Logger, auth *conf.Auth) *CinInterface {
 	return &CinInterface{
 		log:      log.NewHelper(logger),
 		uc:       uc,
@@ -53,6 +57,8 @@ func NewCinInterface(uc *biz.UserUseCase, oc *biz.OrderUseCase, pc *biz.ProductU
 		cc:       cc,
 		settUC:   settUC,
 		bannerUC: bannerUC,
+		cartUC:   cartUC,
+		uploadR:  uploadR,
 		auth:     auth,
 	}
 }

@@ -2328,3 +2328,919 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ClearChatHistoryReplyValidationError{}
+
+// Validate checks the field values on ListKnowledgeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListKnowledgeRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListKnowledgeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListKnowledgeRequestMultiError, or nil if none found.
+func (m *ListKnowledgeRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListKnowledgeRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Source
+
+	if len(errors) > 0 {
+		return ListKnowledgeRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListKnowledgeRequestMultiError is an error wrapping multiple validation
+// errors returned by ListKnowledgeRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListKnowledgeRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListKnowledgeRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListKnowledgeRequestMultiError) AllErrors() []error { return m }
+
+// ListKnowledgeRequestValidationError is the validation error returned by
+// ListKnowledgeRequest.Validate if the designated constraints aren't met.
+type ListKnowledgeRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListKnowledgeRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListKnowledgeRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListKnowledgeRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListKnowledgeRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListKnowledgeRequestValidationError) ErrorName() string {
+	return "ListKnowledgeRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListKnowledgeRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListKnowledgeRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListKnowledgeRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListKnowledgeRequestValidationError{}
+
+// Validate checks the field values on AdminKnowledgeDocInfo with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *AdminKnowledgeDocInfo) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AdminKnowledgeDocInfo with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AdminKnowledgeDocInfoMultiError, or nil if none found.
+func (m *AdminKnowledgeDocInfo) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AdminKnowledgeDocInfo) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DocId
+
+	// no validation rules for Source
+
+	// no validation rules for Title
+
+	// no validation rules for ChunkCount
+
+	// no validation rules for Tags
+
+	if len(errors) > 0 {
+		return AdminKnowledgeDocInfoMultiError(errors)
+	}
+
+	return nil
+}
+
+// AdminKnowledgeDocInfoMultiError is an error wrapping multiple validation
+// errors returned by AdminKnowledgeDocInfo.ValidateAll() if the designated
+// constraints aren't met.
+type AdminKnowledgeDocInfoMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AdminKnowledgeDocInfoMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AdminKnowledgeDocInfoMultiError) AllErrors() []error { return m }
+
+// AdminKnowledgeDocInfoValidationError is the validation error returned by
+// AdminKnowledgeDocInfo.Validate if the designated constraints aren't met.
+type AdminKnowledgeDocInfoValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AdminKnowledgeDocInfoValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AdminKnowledgeDocInfoValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AdminKnowledgeDocInfoValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AdminKnowledgeDocInfoValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AdminKnowledgeDocInfoValidationError) ErrorName() string {
+	return "AdminKnowledgeDocInfoValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AdminKnowledgeDocInfoValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAdminKnowledgeDocInfo.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AdminKnowledgeDocInfoValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AdminKnowledgeDocInfoValidationError{}
+
+// Validate checks the field values on ListKnowledgeReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListKnowledgeReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListKnowledgeReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListKnowledgeReplyMultiError, or nil if none found.
+func (m *ListKnowledgeReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListKnowledgeReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetDocs() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListKnowledgeReplyValidationError{
+						field:  fmt.Sprintf("Docs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListKnowledgeReplyValidationError{
+						field:  fmt.Sprintf("Docs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListKnowledgeReplyValidationError{
+					field:  fmt.Sprintf("Docs[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ListKnowledgeReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListKnowledgeReplyMultiError is an error wrapping multiple validation errors
+// returned by ListKnowledgeReply.ValidateAll() if the designated constraints
+// aren't met.
+type ListKnowledgeReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListKnowledgeReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListKnowledgeReplyMultiError) AllErrors() []error { return m }
+
+// ListKnowledgeReplyValidationError is the validation error returned by
+// ListKnowledgeReply.Validate if the designated constraints aren't met.
+type ListKnowledgeReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListKnowledgeReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListKnowledgeReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListKnowledgeReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListKnowledgeReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListKnowledgeReplyValidationError) ErrorName() string {
+	return "ListKnowledgeReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListKnowledgeReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListKnowledgeReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListKnowledgeReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListKnowledgeReplyValidationError{}
+
+// Validate checks the field values on DeleteKnowledgeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteKnowledgeRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteKnowledgeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeleteKnowledgeRequestMultiError, or nil if none found.
+func (m *DeleteKnowledgeRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteKnowledgeRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DocId
+
+	// no validation rules for Source
+
+	if len(errors) > 0 {
+		return DeleteKnowledgeRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteKnowledgeRequestMultiError is an error wrapping multiple validation
+// errors returned by DeleteKnowledgeRequest.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteKnowledgeRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteKnowledgeRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteKnowledgeRequestMultiError) AllErrors() []error { return m }
+
+// DeleteKnowledgeRequestValidationError is the validation error returned by
+// DeleteKnowledgeRequest.Validate if the designated constraints aren't met.
+type DeleteKnowledgeRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteKnowledgeRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteKnowledgeRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteKnowledgeRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteKnowledgeRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteKnowledgeRequestValidationError) ErrorName() string {
+	return "DeleteKnowledgeRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteKnowledgeRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteKnowledgeRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteKnowledgeRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteKnowledgeRequestValidationError{}
+
+// Validate checks the field values on DeleteKnowledgeReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteKnowledgeReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteKnowledgeReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeleteKnowledgeReplyMultiError, or nil if none found.
+func (m *DeleteKnowledgeReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteKnowledgeReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Success
+
+	if len(errors) > 0 {
+		return DeleteKnowledgeReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteKnowledgeReplyMultiError is an error wrapping multiple validation
+// errors returned by DeleteKnowledgeReply.ValidateAll() if the designated
+// constraints aren't met.
+type DeleteKnowledgeReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteKnowledgeReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteKnowledgeReplyMultiError) AllErrors() []error { return m }
+
+// DeleteKnowledgeReplyValidationError is the validation error returned by
+// DeleteKnowledgeReply.Validate if the designated constraints aren't met.
+type DeleteKnowledgeReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteKnowledgeReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteKnowledgeReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteKnowledgeReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteKnowledgeReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteKnowledgeReplyValidationError) ErrorName() string {
+	return "DeleteKnowledgeReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteKnowledgeReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteKnowledgeReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteKnowledgeReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteKnowledgeReplyValidationError{}
+
+// Validate checks the field values on SearchKnowledgeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SearchKnowledgeRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SearchKnowledgeRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SearchKnowledgeRequestMultiError, or nil if none found.
+func (m *SearchKnowledgeRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SearchKnowledgeRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Query
+
+	// no validation rules for Source
+
+	// no validation rules for TopK
+
+	if len(errors) > 0 {
+		return SearchKnowledgeRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SearchKnowledgeRequestMultiError is an error wrapping multiple validation
+// errors returned by SearchKnowledgeRequest.ValidateAll() if the designated
+// constraints aren't met.
+type SearchKnowledgeRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SearchKnowledgeRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SearchKnowledgeRequestMultiError) AllErrors() []error { return m }
+
+// SearchKnowledgeRequestValidationError is the validation error returned by
+// SearchKnowledgeRequest.Validate if the designated constraints aren't met.
+type SearchKnowledgeRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SearchKnowledgeRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SearchKnowledgeRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SearchKnowledgeRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SearchKnowledgeRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SearchKnowledgeRequestValidationError) ErrorName() string {
+	return "SearchKnowledgeRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SearchKnowledgeRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSearchKnowledgeRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SearchKnowledgeRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SearchKnowledgeRequestValidationError{}
+
+// Validate checks the field values on AdminKnowledgeChunk with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *AdminKnowledgeChunk) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AdminKnowledgeChunk with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AdminKnowledgeChunkMultiError, or nil if none found.
+func (m *AdminKnowledgeChunk) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AdminKnowledgeChunk) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DocId
+
+	// no validation rules for Title
+
+	// no validation rules for Content
+
+	// no validation rules for Score
+
+	if len(errors) > 0 {
+		return AdminKnowledgeChunkMultiError(errors)
+	}
+
+	return nil
+}
+
+// AdminKnowledgeChunkMultiError is an error wrapping multiple validation
+// errors returned by AdminKnowledgeChunk.ValidateAll() if the designated
+// constraints aren't met.
+type AdminKnowledgeChunkMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AdminKnowledgeChunkMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AdminKnowledgeChunkMultiError) AllErrors() []error { return m }
+
+// AdminKnowledgeChunkValidationError is the validation error returned by
+// AdminKnowledgeChunk.Validate if the designated constraints aren't met.
+type AdminKnowledgeChunkValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AdminKnowledgeChunkValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AdminKnowledgeChunkValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AdminKnowledgeChunkValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AdminKnowledgeChunkValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AdminKnowledgeChunkValidationError) ErrorName() string {
+	return "AdminKnowledgeChunkValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AdminKnowledgeChunkValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAdminKnowledgeChunk.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AdminKnowledgeChunkValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AdminKnowledgeChunkValidationError{}
+
+// Validate checks the field values on SearchKnowledgeReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SearchKnowledgeReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SearchKnowledgeReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SearchKnowledgeReplyMultiError, or nil if none found.
+func (m *SearchKnowledgeReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SearchKnowledgeReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetChunks() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, SearchKnowledgeReplyValidationError{
+						field:  fmt.Sprintf("Chunks[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, SearchKnowledgeReplyValidationError{
+						field:  fmt.Sprintf("Chunks[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return SearchKnowledgeReplyValidationError{
+					field:  fmt.Sprintf("Chunks[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return SearchKnowledgeReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// SearchKnowledgeReplyMultiError is an error wrapping multiple validation
+// errors returned by SearchKnowledgeReply.ValidateAll() if the designated
+// constraints aren't met.
+type SearchKnowledgeReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SearchKnowledgeReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SearchKnowledgeReplyMultiError) AllErrors() []error { return m }
+
+// SearchKnowledgeReplyValidationError is the validation error returned by
+// SearchKnowledgeReply.Validate if the designated constraints aren't met.
+type SearchKnowledgeReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SearchKnowledgeReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SearchKnowledgeReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SearchKnowledgeReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SearchKnowledgeReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SearchKnowledgeReplyValidationError) ErrorName() string {
+	return "SearchKnowledgeReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SearchKnowledgeReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSearchKnowledgeReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SearchKnowledgeReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SearchKnowledgeReplyValidationError{}

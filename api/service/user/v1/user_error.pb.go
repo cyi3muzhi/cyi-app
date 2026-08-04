@@ -49,6 +49,14 @@ const (
 	UserServiceErrorReason_UPDATE_USER_FAILED UserServiceErrorReason = 11
 	// 删除用户失败
 	UserServiceErrorReason_DELETE_USER_FAILED UserServiceErrorReason = 12
+	// 收货地址不存在
+	UserServiceErrorReason_ADDRESS_NOT_FOUND UserServiceErrorReason = 13
+	// 收货地址新增失败
+	UserServiceErrorReason_ADDRESS_CREATE_FAILED UserServiceErrorReason = 14
+	// 收货地址更新失败
+	UserServiceErrorReason_ADDRESS_UPDATE_FAILED UserServiceErrorReason = 15
+	// 收货地址删除失败
+	UserServiceErrorReason_ADDRESS_DELETE_FAILED UserServiceErrorReason = 16
 )
 
 // Enum value maps for UserServiceErrorReason.
@@ -67,6 +75,10 @@ var (
 		10: "USER_FROZEN",
 		11: "UPDATE_USER_FAILED",
 		12: "DELETE_USER_FAILED",
+		13: "ADDRESS_NOT_FOUND",
+		14: "ADDRESS_CREATE_FAILED",
+		15: "ADDRESS_UPDATE_FAILED",
+		16: "ADDRESS_DELETE_FAILED",
 	}
 	UserServiceErrorReason_value = map[string]int32{
 		"USER_NOT_FOUND":             0,
@@ -82,6 +94,10 @@ var (
 		"USER_FROZEN":                10,
 		"UPDATE_USER_FAILED":         11,
 		"DELETE_USER_FAILED":         12,
+		"ADDRESS_NOT_FOUND":          13,
+		"ADDRESS_CREATE_FAILED":      14,
+		"ADDRESS_UPDATE_FAILED":      15,
+		"ADDRESS_DELETE_FAILED":      16,
 	}
 )
 
@@ -116,7 +132,7 @@ var File_api_service_user_v1_user_error_proto protoreflect.FileDescriptor
 
 const file_api_service_user_v1_user_error_proto_rawDesc = "" +
 	"\n" +
-	"$api/service/user/v1/user_error.proto\x12\x13api.service.user.v1\x1a\x13errors/errors.proto*\xa6\x03\n" +
+	"$api/service/user/v1/user_error.proto\x12\x13api.service.user.v1\x1a\x13errors/errors.proto*\xa6\x04\n" +
 	"\x16UserServiceErrorReason\x12\x18\n" +
 	"\x0eUSER_NOT_FOUND\x10\x00\x1a\x04\xa8E\xa6\x03\x12\x19\n" +
 	"\x0fCONTENT_MISSING\x10\x01\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
@@ -131,7 +147,11 @@ const file_api_service_user_v1_user_error_proto_rawDesc = "" +
 	"\vUSER_FROZEN\x10\n" +
 	"\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
 	"\x12UPDATE_USER_FAILED\x10\v\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
-	"\x12DELETE_USER_FAILED\x10\f\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
+	"\x12DELETE_USER_FAILED\x10\f\x1a\x04\xa8E\xa6\x03\x12\x1b\n" +
+	"\x11ADDRESS_NOT_FOUND\x10\r\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
+	"\x15ADDRESS_CREATE_FAILED\x10\x0e\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
+	"\x15ADDRESS_UPDATE_FAILED\x10\x0f\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
+	"\x15ADDRESS_DELETE_FAILED\x10\x10\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
 
 var (
 	file_api_service_user_v1_user_error_proto_rawDescOnce sync.Once

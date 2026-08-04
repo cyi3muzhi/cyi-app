@@ -25,7 +25,14 @@
           <!-- 头像 -->
           <div class="avatar-wrap">
             <div class="avatar">
-              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <img
+                v-if="user.avatar && !avatarFailed"
+                :src="user.avatar"
+                alt="用户头像"
+                class="avatar-img"
+                @error="avatarFailed = true"
+              />
+              <svg v-else width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                 <circle cx="12" cy="7" r="4"/>
               </svg>
@@ -35,25 +42,25 @@
           <!-- 用户信息 -->
           <div class="user-info">
             <div class="user-name-row">
-              <h1 class="user-name">{{ user.nickname }}</h1>
+              <h1 class="user-name">{{ loading ? '加载中…' : user.nickname }}</h1>
               <!-- 会员等级徽章 -->
               <span class="member-badge">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
-                {{ memberLevelLabel }}
+                {{ loading ? '加载中…' : memberLevelLabel }}
               </span>
             </div>
             <p class="user-regtime">注册时间：{{ user.createdAt }}</p>
 
             <!-- 编辑资料按钮 -->
-            <button class="edit-profile-btn">
+            <router-link to="/user/edit" class="edit-profile-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
               编辑资料
-            </button>
+            </router-link>
 
             <!-- 数据统计 -->
             <div class="stats-row">
@@ -63,8 +70,8 @@
               </div>
               <div class="stat-divider"></div>
               <div class="stat-item">
-                <div class="stat-value">{{ user.points }}</div>
-                <div class="stat-label">积分</div>
+                <div class="stat-value">{{ user.growthValue }}</div>
+                <div class="stat-label">成长值</div>
               </div>
               <div class="stat-divider"></div>
               <div class="stat-item">
@@ -76,14 +83,14 @@
 
           <!-- 右侧快捷操作（桌面端） -->
           <div class="hero-actions">
-            <button class="action-btn">
+            <button class="action-btn" @click="onProfile">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                 <circle cx="12" cy="7" r="4"/>
               </svg>
               个人主页
             </button>
-            <button class="action-btn">
+            <button class="action-btn" @click="onSwitchAccount">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
                 <polyline points="10 17 15 12 10 7"/>
@@ -98,7 +105,29 @@
   </section>
 
   <!-- ============================================================ -->
-  <!-- 3. 订单管理区                                                  -->
+  <!-- 3. 快捷功能入口（收货地址等）                                    -->
+  <!-- ============================================================ -->
+  <section class="entry-section">
+    <div class="container-shop">
+      <router-link to="/user/address" class="entry-card">
+        <div class="entry-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <div class="entry-info">
+          <p class="entry-title">收货地址</p>
+          <p class="entry-desc">管理常用收货地址</p>
+        </div>
+        <svg class="entry-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </router-link>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 4. 订单管理区                                                  -->
   <!-- ============================================================ -->
   <section class="order-section">
     <div class="container-shop">
@@ -114,7 +143,7 @@
           </router-link>
         </div>
 
-        <!-- 快速操作（图标+数字角标） -->
+        <!-- 快速操作（图标+数字角标，点击跳转到订单列表页并携带状态筛选） -->
         <div class="quick-actions">
           <div
             v-for="action in quickActions"
@@ -132,29 +161,6 @@
             <span class="quick-action-label">{{ action.label }}</span>
           </div>
         </div>
-
-        <!-- 订单标签页 -->
-        <div class="order-tabs">
-          <button
-            v-for="tab in orderTabs"
-            :key="tab.key"
-            class="order-tab"
-            :class="{ 'tab-active': activeTab === tab.key }"
-            @click="activeTab = tab.key"
-          >
-            {{ tab.label }}
-          </button>
-        </div>
-
-        <!-- 订单列表区域（后续扩展时在此处插入订单卡片列表） -->
-        <div class="order-list-area">
-          <div v-if="filteredOrders.length === 0" class="empty-state">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--shop-muted-foreground)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
-            </svg>
-            <p>暂无相关订单</p>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -164,49 +170,100 @@
 /**
  * 个人中心页面
  * 包含用户信息头部、订单快速操作和订单标签页
+ * 数据来源：GET /user/v1/center（用户信息 + 订单/优惠券统计）
  */
-import { ref, computed } from 'vue'
-import type { User } from '@/types/user'
-import type { OrderStatus } from '@/types/order'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { getUserCenter } from '@/api/user'
+import { useUserStore } from '@/store/user'
+import { useCartStore } from '@/store/cart'
+import type { User, UserCenter } from '@/types/user'
 
-// ---- Mock 用户数据 ----
-const user: User = {
-  id: 1,
-  nickname: '张小明',
-  avatar: '',
-  phone: '138****1234',
-  email: 'zhangxm@example.com',
-  memberLevel: 'gold',
-  totalSpent: 12680,
-  points: 2360,
-  couponCount: 5,
-  createdAt: '2025-01-15'
+const router = useRouter()
+const userStore = useUserStore()
+const cartStore = useCartStore()
+
+/** 个人主页（暂无独立页面，提示开发中） */
+function onProfile() {
+  alert('个人主页功能开发中，敬请期待')
+}
+
+/** 切换账户：退出当前登录后跳转登录页 */
+function onSwitchAccount() {
+  if (!window.confirm('确定退出当前账户吗？')) return
+  userStore.logout()
+  // 清空购物车内存数据（未登录时重新读本地购物车）
+  cartStore.reset()
+  router.push({ path: '/login' })
+}
+
+// ---- 个人中心数据（真实接口） ----
+const center = ref<UserCenter | null>(null)
+const loading = ref(true)
+
+/** 头像加载失败标记（回退为默认人像图标） */
+const avatarFailed = ref(false)
+
+/** 用户信息（从接口数据组装，totalSpent 由分转为元） */
+const user = computed<User>(() => {
+  const u = center.value?.user
+  return {
+    id: u?.id ?? 0,
+    nickname: u?.nickname || '未登录',
+    avatar: u?.avatar || '',
+    phone: u?.phone || '',
+    email: u?.email || '',
+    memberLevel: u?.level || 'regular',
+    level: u?.level || 'regular',
+    growthValue: u?.growthValue ?? 0,
+    totalSpent: (center.value?.stats?.totalSpent ?? 0) / 100,
+    points: 0,
+    couponCount: center.value?.stats?.couponCount ?? 0,
+    createdAt: formatDate(u?.createdAt)
+  }
+})
+
+/**
+ * 格式化 Unix 时间戳为日期（兼容数字或字符串）
+ * @param ts - Unix 秒级时间戳
+ * @returns YYYY-MM-DD
+ */
+function formatDate(ts?: number | string): string {
+  if (!ts) return ''
+  const num = typeof ts === 'string' ? Number(ts) : ts
+  if (!num) return ''
+  const d = new Date(num * 1000)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 /**
- * 会员等级标签映射
+ * 会员等级标签映射（level 取值 regular/gold/diamond）
  */
 const memberLevelLabel = computed(() => {
   const levelMap: Record<string, string> = {
+    regular: '普通会员',
     bronze: '青铜会员',
     silver: '白银会员',
     gold: '黄金会员',
     platinum: '铂金会员',
     diamond: '钻石会员'
   }
-  return levelMap[user.memberLevel] || '普通会员'
+  return levelMap[user.value.level || user.value.memberLevel] || '普通会员'
 })
 
 /**
  * 格式化金额
- * @param amount - 金额数值
+ * @param amount - 金额数值（元）
  * @returns 格式化后的金额字符串
  */
 function formatAmount(amount: number): string {
   return amount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-// ---- 快速操作 ----
+// ---- 快速操作（角标数字来自接口统计） ----
 interface QuickAction {
   key: string
   label: string
@@ -214,71 +271,63 @@ interface QuickAction {
   count: number
 }
 
-const quickActions: QuickAction[] = [
-  {
-    key: 'pending_payment',
-    label: '待付款',
-    count: 2,
-    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>'
-  },
-  {
-    key: 'pending_ship',
-    label: '待发货',
-    count: 1,
-    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4"/><path d="M3 10v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8"/><polyline points="16 14 12 18 8 14"/></svg>'
-  },
-  {
-    key: 'pending_receive',
-    label: '待收货',
-    count: 0,
-    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>'
-  },
-  {
-    key: 'pending_review',
-    label: '待评价',
-    count: 3,
-    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/></svg>'
-  },
-  {
-    key: 'refund',
-    label: '退款/售后',
-    count: 0,
-    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>'
-  }
-]
+const quickActions = computed<QuickAction[]>(() => {
+  const s = center.value?.stats
+  return [
+    {
+      key: 'pending_payment',
+      label: '待付款',
+      count: s?.pendingPay ?? 0,
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>'
+    },
+    {
+      key: 'pending_ship',
+      label: '待发货',
+      count: s?.pendingShip ?? 0,
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4"/><path d="M3 10v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8"/><polyline points="16 14 12 18 8 14"/></svg>'
+    },
+    {
+      key: 'pending_receive',
+      label: '待收货',
+      count: s?.pendingReceive ?? 0,
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>'
+    },
+    {
+      key: 'pending_review',
+      label: '待评价',
+      count: s?.pendingReview ?? 0,
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/></svg>'
+    },
+    {
+      key: 'refund',
+      label: '退款/售后',
+      count: s?.refundCount ?? 0,
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--shop-primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>'
+    }
+  ]
+})
 
 /**
- * 处理快速操作点击
+ * 处理快速操作点击：跳转到订单列表页并带上状态参数
  * @param key - 操作标识
  */
 function onQuickAction(key: string) {
-  // 点击快速操作时切换到对应标签页
-  activeTab.value = key
+  router.push({ path: '/user/orders', query: { status: key } })
 }
 
-// ---- 订单标签页 ----
-interface OrderTab {
-  key: string
-  label: string
+// 页面加载时获取个人中心概览数据
+async function loadCenter() {
+  loading.value = true
+  try {
+    center.value = await getUserCenter()
+  } catch {
+    center.value = null
+  } finally {
+    loading.value = false
+  }
 }
 
-const orderTabs: OrderTab[] = [
-  { key: 'all', label: '全部' },
-  { key: 'pending_payment', label: '待付款' },
-  { key: 'pending_ship', label: '待发货' },
-  { key: 'pending_receive', label: '待收货' },
-  { key: 'pending_review', label: '待评价' }
-]
-
-const activeTab = ref('all')
-
-/**
- * 根据当前标签页过滤订单（占位，后续扩展）
- */
-const filteredOrders = computed(() => {
-  // 当前返回空数组占位，后续从 store 获取订单数据
-  return [] as any[]
-})
+onMounted(loadCenter)
 </script>
 
 <style scoped>
@@ -385,6 +434,13 @@ const filteredOrders = computed(() => {
   border: 4px solid rgba(255, 255, 255, 0.7);
   background: linear-gradient(135deg, #fff, hsl(217, 91%, 90%));
   box-shadow: var(--shop-shadow-xl);
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 @media (min-width: 768px) {
@@ -546,6 +602,61 @@ const filteredOrders = computed(() => {
   background: rgba(255, 255, 255, 0.3);
 }
 
+/* ---- 快捷功能入口 ---- */
+.entry-section {
+  padding: 24px 0 0;
+}
+
+.entry-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--shop-card);
+  border: 1px solid var(--shop-border);
+  border-radius: var(--shop-radius-xl);
+  text-decoration: none;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.entry-card:hover {
+  border-color: var(--shop-primary);
+  box-shadow: var(--shop-shadow-lg);
+}
+
+.entry-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--shop-primary-bg);
+  color: var(--shop-primary);
+  flex-shrink: 0;
+}
+
+.entry-info {
+  flex: 1;
+}
+
+.entry-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--shop-foreground);
+}
+
+.entry-desc {
+  margin-top: 2px;
+  font-size: 0.75rem;
+  color: var(--shop-muted-foreground);
+}
+
+.entry-arrow {
+  color: var(--shop-muted-foreground);
+  flex-shrink: 0;
+}
+
 /* ---- 订单管理区 ---- */
 .order-section {
   padding: 32px 0;
@@ -591,8 +702,7 @@ const filteredOrders = computed(() => {
 .quick-actions {
   display: flex;
   gap: 8px;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--shop-border);
+  padding: 20px 24px 28px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -662,53 +772,5 @@ const filteredOrders = computed(() => {
   font-weight: 500;
   color: var(--shop-foreground);
   white-space: nowrap;
-}
-
-/* ---- 订单标签页 ---- */
-.order-tabs {
-  display: flex;
-  gap: 0;
-  padding: 0 24px;
-  border-bottom: 1px solid var(--shop-border);
-}
-
-.order-tab {
-  padding: 12px 16px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--shop-muted-foreground);
-  cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
-  white-space: nowrap;
-}
-
-.order-tab:hover {
-  color: var(--shop-foreground);
-}
-
-.tab-active {
-  color: var(--shop-primary);
-  border-bottom-color: var(--shop-primary);
-}
-
-/* ---- 订单列表区域 ---- */
-.order-list-area {
-  min-height: 120px;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 48px 24px;
-}
-
-.empty-state p {
-  font-size: 0.875rem;
-  color: var(--shop-muted-foreground);
 }
 </style>

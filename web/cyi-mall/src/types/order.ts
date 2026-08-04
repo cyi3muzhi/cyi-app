@@ -8,6 +8,7 @@ export interface Order {
   quantity: number
   items: OrderItem[]
   createdAt: string
+  payDeadline?: number // 支付截止时间（Unix 秒，仅待付款订单有值）
   address: string
   receiver: string
   phone: string
@@ -16,6 +17,7 @@ export interface Order {
 /** 订单商品项 */
 export interface OrderItem {
   productId: number
+  skuId: number
   name: string
   image: string
   price: number

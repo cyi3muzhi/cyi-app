@@ -34,14 +34,16 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	productClient := data.NewProductServiceClient(discovery, auth, confServer, traceTracerProvider, meter)
 	couponServiceClient := data.NewMarketingCouponServiceClient(discovery, auth, confServer, traceTracerProvider, meter)
 	conn := data.NewNATSConn()
-	dataData, cleanup, err := data.NewData(confData, db, logger, productClient, couponServiceClient, conn)
+	asynqClient := data.NewAsynqClient(confData, logger)
+	dataData, cleanup, err := data.NewData(confData, db, logger, productClient, couponServiceClient, conn, asynqClient)
 	if err != nil {
 		return nil, nil, err
 	}
 	orderRepo := data.NewOrderRepo(dataData, logger)
 	productRepo := data.NewProductRepo(dataData, logger)
 	stockRepo := data.NewStockRepo(dataData, logger)
-	orderUseCase := biz.NewOrderUseCase(orderRepo, productRepo, stockRepo, logger)
+	orderTimeoutTaskRepo := data.NewOrderTimeoutTaskRepo(asynqClient, logger)
+	orderUseCase := biz.NewOrderUseCase(orderRepo, productRepo, stockRepo, orderTimeoutTaskRepo, logger)
 	orderService := service.NewOrderService(orderUseCase, logger)
 	server2 := server.NewServer(grpcServer, orderService)
 	registrar := server.NewRegistrar(registry)

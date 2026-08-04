@@ -119,6 +119,44 @@
         </div>
       </div>
 
+      <!-- ===== 收货与物流信息卡片 ===== -->
+      <div class="info-card logistics-card" style="--i: 1.5">
+        <div class="info-card-accent info-card-accent--3" />
+        <div class="card-header">
+          <span class="card-header-icon"><Van /></span>
+          <span>收货与物流信息</span>
+          <span v-if="order.logisticsCompany" class="card-subtitle">已发货</span>
+        </div>
+        <div class="card-body">
+          <div class="field-row">
+            <div class="field">
+              <span class="field-label">收货人</span>
+              <span class="field-value">{{ order.receiver || '-' }}</span>
+            </div>
+            <div class="field">
+              <span class="field-label">联系电话</span>
+              <span class="field-value">{{ order.phone || '-' }}</span>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field field--wide">
+              <span class="field-label">收货地址</span>
+              <span class="field-value">{{ order.address || '-' }}</span>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <span class="field-label">物流公司</span>
+              <span class="field-value">{{ order.logisticsCompany || '未发货' }}</span>
+            </div>
+            <div class="field">
+              <span class="field-label">快递单号</span>
+              <span class="field-value mono">{{ order.logisticsNo || '-' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ===== 商品明细卡片 ===== -->
       <div class="product-card" style="--i: 2">
         <div class="card-header">
@@ -222,7 +260,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, InfoFilled, Goods, Loading, Clock, UserFilled } from '@element-plus/icons-vue'
+import { ArrowLeft, InfoFilled, Goods, Loading, Clock, UserFilled, Van } from '@element-plus/icons-vue'
 import { getOrder, shipOrder, cancelOrder } from '../../api/order'
 import type { OrderItem } from '../../types/order'
 
@@ -465,6 +503,9 @@ onMounted(loadOrder)
   border-radius: 0 2px 2px 0;
 }
 .info-card-accent--2 { background: #10b981; }
+.info-card-accent--3 { background: #f59e0b; }
+/* 单张卡片（收货与物流信息）独立成行 */
+.logistics-card { margin-bottom: 16px; }
 
 .card-header {
   display: flex; align-items: center; gap: 8px;
@@ -481,6 +522,7 @@ onMounted(loadOrder)
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px; }
 .field-row:last-child { margin-bottom: 0; }
 .field { display: flex; flex-direction: column; gap: 3px; }
+.field--wide { grid-column: 1 / -1; }
 .field-label { font-size: 0.75rem; color: var(--shop-muted-foreground, #94a3b8); font-weight: 500; text-transform: uppercase; letter-spacing: 0.03em; }
 .field-value { font-size: 0.875rem; color: var(--shop-foreground, #1e293b); font-weight: 500; }
 .field-value.mono { font-family: var(--shop-font-mono, 'JetBrains Mono', monospace); font-size: 0.8125rem; word-break: break-all; }

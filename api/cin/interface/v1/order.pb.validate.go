@@ -1282,6 +1282,8 @@ func (m *OrderProduct) validate(all bool) error {
 
 	// no validation rules for Price
 
+	// no validation rules for Image
+
 	if len(errors) > 0 {
 		return OrderProductMultiError(errors)
 	}

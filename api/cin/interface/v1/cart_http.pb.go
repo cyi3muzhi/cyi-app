@@ -20,19 +20,39 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 const OperationCartAddCartItem = "/api.cin.interface.v1.Cart/AddCartItem"
+const OperationCartClearCart = "/api.cin.interface.v1.Cart/ClearCart"
+const OperationCartDeleteCartItem = "/api.cin.interface.v1.Cart/DeleteCartItem"
 const OperationCartGetCart = "/api.cin.interface.v1.Cart/GetCart"
+const OperationCartSelectAllCart = "/api.cin.interface.v1.Cart/SelectAllCart"
+const OperationCartToggleCartItem = "/api.cin.interface.v1.Cart/ToggleCartItem"
+const OperationCartUpdateCartItem = "/api.cin.interface.v1.Cart/UpdateCartItem"
 
 type CartHTTPServer interface {
-	// AddCartItem 加入购物车
+	// AddCartItem 加入购物车（同商品自动累加数量）
 	AddCartItem(context.Context, *AddCartItemRequest) (*AddCartItemReply, error)
+	// ClearCart 清空购物车
+	ClearCart(context.Context, *ClearCartRequest) (*ClearCartReply, error)
+	// DeleteCartItem 删除购物车商品
+	DeleteCartItem(context.Context, *DeleteCartItemRequest) (*DeleteCartItemReply, error)
 	// GetCart 获取购物车
 	GetCart(context.Context, *GetCartRequest) (*GetCartReply, error)
+	// SelectAllCart 全选/取消全选
+	SelectAllCart(context.Context, *SelectAllCartRequest) (*SelectAllCartReply, error)
+	// ToggleCartItem 选中/取消选中单个商品
+	ToggleCartItem(context.Context, *ToggleCartItemRequest) (*ToggleCartItemReply, error)
+	// UpdateCartItem 修改购物车商品数量
+	UpdateCartItem(context.Context, *UpdateCartItemRequest) (*UpdateCartItemReply, error)
 }
 
 func RegisterCartHTTPServer(s *http.Server, srv CartHTTPServer) {
 	r := s.Route("/")
 	r.POST("/cart/v1/add", _Cart_AddCartItem0_HTTP_Handler(srv))
 	r.GET("/cart/v1/info", _Cart_GetCart0_HTTP_Handler(srv))
+	r.PUT("/cart/v1/item", _Cart_UpdateCartItem0_HTTP_Handler(srv))
+	r.PUT("/cart/v1/item/select", _Cart_ToggleCartItem0_HTTP_Handler(srv))
+	r.PUT("/cart/v1/select_all", _Cart_SelectAllCart0_HTTP_Handler(srv))
+	r.DELETE("/cart/v1/item/{product_id}", _Cart_DeleteCartItem0_HTTP_Handler(srv))
+	r.DELETE("/cart/v1/clear", _Cart_ClearCart0_HTTP_Handler(srv))
 }
 
 func _Cart_AddCartItem0_HTTP_Handler(srv CartHTTPServer) func(ctx http.Context) error {
@@ -76,11 +96,128 @@ func _Cart_GetCart0_HTTP_Handler(srv CartHTTPServer) func(ctx http.Context) erro
 	}
 }
 
+func _Cart_UpdateCartItem0_HTTP_Handler(srv CartHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdateCartItemRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationCartUpdateCartItem)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateCartItem(ctx, req.(*UpdateCartItemRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdateCartItemReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Cart_ToggleCartItem0_HTTP_Handler(srv CartHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ToggleCartItemRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationCartToggleCartItem)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ToggleCartItem(ctx, req.(*ToggleCartItemRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ToggleCartItemReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Cart_SelectAllCart0_HTTP_Handler(srv CartHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SelectAllCartRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationCartSelectAllCart)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.SelectAllCart(ctx, req.(*SelectAllCartRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SelectAllCartReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Cart_DeleteCartItem0_HTTP_Handler(srv CartHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DeleteCartItemRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationCartDeleteCartItem)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeleteCartItem(ctx, req.(*DeleteCartItemRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DeleteCartItemReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Cart_ClearCart0_HTTP_Handler(srv CartHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ClearCartRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationCartClearCart)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ClearCart(ctx, req.(*ClearCartRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ClearCartReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type CartHTTPClient interface {
-	// AddCartItem 加入购物车
+	// AddCartItem 加入购物车（同商品自动累加数量）
 	AddCartItem(ctx context.Context, req *AddCartItemRequest, opts ...http.CallOption) (rsp *AddCartItemReply, err error)
+	// ClearCart 清空购物车
+	ClearCart(ctx context.Context, req *ClearCartRequest, opts ...http.CallOption) (rsp *ClearCartReply, err error)
+	// DeleteCartItem 删除购物车商品
+	DeleteCartItem(ctx context.Context, req *DeleteCartItemRequest, opts ...http.CallOption) (rsp *DeleteCartItemReply, err error)
 	// GetCart 获取购物车
 	GetCart(ctx context.Context, req *GetCartRequest, opts ...http.CallOption) (rsp *GetCartReply, err error)
+	// SelectAllCart 全选/取消全选
+	SelectAllCart(ctx context.Context, req *SelectAllCartRequest, opts ...http.CallOption) (rsp *SelectAllCartReply, err error)
+	// ToggleCartItem 选中/取消选中单个商品
+	ToggleCartItem(ctx context.Context, req *ToggleCartItemRequest, opts ...http.CallOption) (rsp *ToggleCartItemReply, err error)
+	// UpdateCartItem 修改购物车商品数量
+	UpdateCartItem(ctx context.Context, req *UpdateCartItemRequest, opts ...http.CallOption) (rsp *UpdateCartItemReply, err error)
 }
 
 type CartHTTPClientImpl struct {
@@ -91,7 +228,7 @@ func NewCartHTTPClient(client *http.Client) CartHTTPClient {
 	return &CartHTTPClientImpl{client}
 }
 
-// AddCartItem 加入购物车
+// AddCartItem 加入购物车（同商品自动累加数量）
 func (c *CartHTTPClientImpl) AddCartItem(ctx context.Context, in *AddCartItemRequest, opts ...http.CallOption) (*AddCartItemReply, error) {
 	var out AddCartItemReply
 	pattern := "/cart/v1/add"
@@ -99,6 +236,34 @@ func (c *CartHTTPClientImpl) AddCartItem(ctx context.Context, in *AddCartItemReq
 	opts = append(opts, http.Operation(OperationCartAddCartItem))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ClearCart 清空购物车
+func (c *CartHTTPClientImpl) ClearCart(ctx context.Context, in *ClearCartRequest, opts ...http.CallOption) (*ClearCartReply, error) {
+	var out ClearCartReply
+	pattern := "/cart/v1/clear"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationCartClearCart))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// DeleteCartItem 删除购物车商品
+func (c *CartHTTPClientImpl) DeleteCartItem(ctx context.Context, in *DeleteCartItemRequest, opts ...http.CallOption) (*DeleteCartItemReply, error) {
+	var out DeleteCartItemReply
+	pattern := "/cart/v1/item/{product_id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationCartDeleteCartItem))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -113,6 +278,48 @@ func (c *CartHTTPClientImpl) GetCart(ctx context.Context, in *GetCartRequest, op
 	opts = append(opts, http.Operation(OperationCartGetCart))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// SelectAllCart 全选/取消全选
+func (c *CartHTTPClientImpl) SelectAllCart(ctx context.Context, in *SelectAllCartRequest, opts ...http.CallOption) (*SelectAllCartReply, error) {
+	var out SelectAllCartReply
+	pattern := "/cart/v1/select_all"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationCartSelectAllCart))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ToggleCartItem 选中/取消选中单个商品
+func (c *CartHTTPClientImpl) ToggleCartItem(ctx context.Context, in *ToggleCartItemRequest, opts ...http.CallOption) (*ToggleCartItemReply, error) {
+	var out ToggleCartItemReply
+	pattern := "/cart/v1/item/select"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationCartToggleCartItem))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// UpdateCartItem 修改购物车商品数量
+func (c *CartHTTPClientImpl) UpdateCartItem(ctx context.Context, in *UpdateCartItemRequest, opts ...http.CallOption) (*UpdateCartItemReply, error) {
+	var out UpdateCartItemReply
+	pattern := "/cart/v1/item"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationCartUpdateCartItem))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

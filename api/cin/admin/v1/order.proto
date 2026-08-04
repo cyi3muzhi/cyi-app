@@ -84,6 +84,11 @@ message OrderItem {
   string status = 7;
   string status_text = 8;
   repeated OrderProduct products = 9;
+  string logistics_company = 10; // 物流公司（发货后）
+  string logistics_no = 11; // 快递单号（发货后）
+  string receiver = 12; // 收货人
+  string phone = 13; // 手机号
+  string address = 14; // 完整收货地址
 }
 
 message OrderProduct {

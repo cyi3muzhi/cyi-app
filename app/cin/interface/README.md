@@ -31,21 +31,27 @@ app/cin/interface/
 ├── internal/
 │   ├── biz/
 │   │   ├── auth.go      # 认证业务逻辑
+│   │   ├── banner.go    # 轮播图业务
 │   │   ├── blades.go    # AI 助手业务
 │   │   ├── biz.go       # 业务层依赖注入
+│   │   ├── cart.go      # 购物车业务逻辑
+│   │   ├── category.go  # 分类业务
 │   │   ├── order.go     # 订单业务逻辑
 │   │   ├── product.go   # 商品业务逻辑
+│   │   ├── settings.go  # 店铺设置业务
 │   │   ├── stock.go     # 库存业务逻辑
 │   │   └── user.go      # 用户业务逻辑
 │   ├── conf/
 │   │   ├── conf.pb.go   # 配置结构体
 │   │   └── conf.proto   # 配置定义
 │   ├── data/
+│   │   ├── cart.go      # 购物车数据访问（Redis Hash）
 │   │   ├── client_conn.go # 客户端连接
 │   │   ├── data.go      # 数据层初始化
 │   │   ├── order.go     # 订单数据访问
 │   │   ├── product.go   # 商品数据访问
 │   │   ├── stock.go     # 库存数据访问
+│   │   ├── upload.go    # 文件上传数据访问（OSS 预签名）
 │   │   └── user.go      # 用户数据访问
 │   ├── server/
 │   │   ├── grpc.go      # gRPC 服务注册
@@ -54,10 +60,12 @@ app/cin/interface/
 │   │   └── stream_route.go # 流式路由（WebSocket/SSE）
 │   └── service/
 │       ├── blades.go    # AI 助手服务
+│       ├── cart.go      # 购物车服务
 │       ├── order.go     # 订单服务
 │       ├── product.go   # 商品服务
 │       ├── service.go   # 服务层依赖注入
 │       ├── stock.go     # 库存服务
+│       ├── upload.go    # 文件上传服务（获取上传凭证）
 │       └── user.go      # 用户服务
 ├── Makefile             # 构建脚本
 └── openapi.yaml         # OpenAPI 文档
@@ -83,6 +91,10 @@ app/cin/interface/
 | `data.redis.password` | Redis 密码 | - |
 | `data.redis.read_timeout` | Redis 读取超时 | - |
 | `data.redis.write_timeout` | Redis 写入超时 | - |
+| `data.oss.endpoint` | OSS 服务地址 | - |
+| `data.oss.public_endpoint` | OSS 公开访问地址（Nginx 代理） | - |
+| `data.oss.access_key` | OSS 访问密钥 | - |
+| `data.oss.secret_key` | OSS 密钥 | - |
 | `auth.service_key` | 服务密钥映射 | - |
 | `auth.api_key` | JWT 签名密钥 | - |
 | `auth.white_list` | 认证白名单（无需认证的路径） | - |
@@ -106,10 +118,11 @@ app/cin/interface/
 
 | UseCase | 职责 |
 |---------|------|
-| `UserUseCase` | 用户认证、注册、信息管理 |
+| `UserUseCase` | 用户认证、注册、信息管理、修改密码、收货地址管理、个人中心概览 |
 | `OrderUseCase` | 订单创建、查询、状态管理 |
 | `ProductUseCase` | 商品查询、管理 |
 | `StockUseCase` | 库存查询、扣减 |
+| `CartUseCase` | 购物车管理（Redis 存储 + 商品信息聚合，按商品+SKU 维度） |
 | `BladesUseCase` | AI 聊天助手 |
 
 ### 服务接口
@@ -122,19 +135,34 @@ app/cin/interface/
 | | `Register` | gRPC/HTTP | 用户注册 |
 | **User** | `GetMyInfo` | gRPC/HTTP | 获取个人信息 |
 | | `GetUserInfo` | gRPC/HTTP | 获取指定用户信息 |
-| | `UpdateUserInfo` | gRPC/HTTP | 更新用户信息 |
+| | `UpdateUserInfo` | gRPC/HTTP | 更新用户信息（昵称/头像/邮箱/性别/生日） |
+| | `ChangePassword` | gRPC/HTTP | 修改密码 |
+| | `GetUserCenter` | gRPC/HTTP | 个人中心概览（用户信息 + 订单/优惠券统计） |
+| | `ListAddress` | gRPC/HTTP | 收货地址列表 |
+| | `CreateAddress` | gRPC/HTTP | 新增收货地址 |
+| | `UpdateAddress` | gRPC/HTTP | 更新收货地址 |
+| | `DeleteAddress` | gRPC/HTTP | 删除收货地址 |
+| | `SetDefaultAddress` | gRPC/HTTP | 设置默认收货地址 |
 | **Product** | `CreateProduct` | gRPC/HTTP | 创建商品 |
 | | `UpdateProduct` | gRPC/HTTP | 更新商品 |
 | | `ListProduct` | gRPC/HTTP | 商品列表 |
 | | `GetProduct` | gRPC/HTTP | 商品详情 |
 | **Order** | `PlaceOrder` | gRPC/HTTP | 下单 |
 | | `PayOrder` | gRPC/HTTP | 支付订单 |
-| | `CartCheckout` | gRPC/HTTP | 购物车结算 |
-| | `ListOrder` | gRPC/HTTP | 订单列表 |
-| | `GetOrder` | gRPC/HTTP | 订单详情 |
-| **Cart** | `AddCartItem` | gRPC/HTTP | 加入购物车 |
-| | `GetCart` | gRPC/HTTP | 获取购物车 |
+| | `ReceiveOrder` | gRPC/HTTP | 确认收货 |
+| | `CancelOrder` | gRPC/HTTP | 取消订单 |
+| | `CartCheckout` | gRPC/HTTP | 购物车结算下单（含收货地址快照与运费） |
+| | `ListOrder` | gRPC/HTTP | 订单列表（当前用户，按状态筛选，含商品明细、支付截止时间 pay_deadline） |
+| | `GetOrder` | gRPC/HTTP | 订单详情（当前用户，含商品明细、物流信息、支付截止时间 pay_deadline） |
+| **Cart** | `AddCartItem` | gRPC/HTTP | 加入购物车（同商品同规格数量累加，携带 sku_id） |
+| | `GetCart` | gRPC/HTTP | 获取购物车（含商品信息聚合，按商品+SKU 维度返回价格/库存/规格） |
+| | `UpdateCartItem` | gRPC/HTTP | 修改购物车商品数量（按商品+SKU） |
+| | `ToggleCartItem` | gRPC/HTTP | 选中/取消选中购物车商品（按商品+SKU） |
+| | `SelectAllCart` | gRPC/HTTP | 全选/取消全选 |
+| | `DeleteCartItem` | gRPC/HTTP | 删除购物车商品（按商品+SKU，sku_id 缺省删除该商品全部规格） |
+| | `ClearCart` | gRPC/HTTP | 清空购物车 |
 | **Stock** | `UpdateStock` | gRPC/HTTP | 更新库存 |
+| **Upload** | `GetUploadToken` | gRPC/HTTP | 获取上传凭证（OSS 预签名直传，用于头像等） |
 | **Blades** | `AiChat` | gRPC/HTTP | AI 聊天（非流式） |
 
 #### 流式路由（通过 HandleFunc 注册）

@@ -40,6 +40,18 @@ service User {
 	rpc Register (RegisterRequest) returns (RegisterReply);
 	// 登录
 	rpc Login (LoginRequest) returns (LoginReply);
+	// 修改密码
+	rpc ChangePassword (ChangePasswordRequest) returns (ChangePasswordReply);
+	// 地址列表
+	rpc ListAddress (ListAddressRequest) returns (ListAddressReply);
+	// 新增地址
+	rpc CreateAddress (CreateAddressRequest) returns (CreateAddressReply);
+	// 更新地址
+	rpc UpdateAddress (UpdateAddressRequest) returns (UpdateAddressReply);
+	// 删除地址
+	rpc DeleteAddress (DeleteAddressRequest) returns (DeleteAddressReply);
+	// 设置默认地址
+	rpc SetDefaultAddress (SetDefaultAddressRequest) returns (SetDefaultAddressReply);
 }
 
 // UserInfo 用户完整信息（多处复用）
@@ -195,4 +207,81 @@ message LoginRequest {
 }
 message LoginReply {
 	string token = 1;
+}
+
+// ========== ChangePassword ==========
+message ChangePasswordRequest {
+	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+	string old_password = 2 [(validate.rules).string = {min_len: 6, max_len: 32}];
+	string new_password = 3 [(validate.rules).string = {min_len: 6, max_len: 32}];
+}
+message ChangePasswordReply {
+	bool success = 1;
+}
+
+// ========== 收货地址 ==========
+// AddressInfo 收货地址信息
+message AddressInfo {
+	int64 id = 1;
+	string receiver = 2;    // 收货人姓名
+	string phone = 3;       // 收货人手机号
+	string province = 4;    // 省份
+	string city = 5;        // 城市
+	string district = 6;    // 区县
+	string detail = 7;      // 详细地址
+	int32 is_default = 8;   // 是否默认地址 0=否 1=是
+	int64 create_time = 9;  // 创建时间（Unix 秒）
+	int64 update_time = 10; // 更新时间（Unix 秒）
+}
+
+message ListAddressRequest {
+	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+message ListAddressReply {
+	repeated AddressInfo items = 1;
+}
+
+message CreateAddressRequest {
+	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+	string receiver = 2 [(validate.rules).string = {min_len: 2, max_len: 32}];
+	string phone = 3 [(validate.rules).string = {min_len: 6, max_len: 20}];
+	string province = 4;
+	string city = 5;
+	string district = 6;
+	string detail = 7 [(validate.rules).string = {min_len: 2, max_len: 255}];
+	int32 is_default = 8; // 1=设为默认地址
+}
+message CreateAddressReply {
+	int64 id = 1;
+}
+
+message UpdateAddressRequest {
+	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+	int64 user_id = 2 [(validate.rules).int64 = {gt: 0}];
+	string receiver = 3;
+	string phone = 4;
+	string province = 5;
+	string city = 6;
+	string district = 7;
+	string detail = 8;
+	int32 is_default = 9;
+}
+message UpdateAddressReply {
+	bool success = 1;
+}
+
+message DeleteAddressRequest {
+	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+	int64 user_id = 2 [(validate.rules).int64 = {gt: 0}];
+}
+message DeleteAddressReply {
+	bool success = 1;
+}
+
+message SetDefaultAddressRequest {
+	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+	int64 user_id = 2 [(validate.rules).int64 = {gt: 0}];
+}
+message SetDefaultAddressReply {
+	bool success = 1;
 }

@@ -26,8 +26,9 @@ app/service/order/
 │   ├── biz/
 │   │   ├── biz.go                       # 业务层依赖注入
 │   │   ├── order.go                     # 订单聚合根
-│   │   ├── order_handle.go              # OrderUseCase 业务逻辑（含 CancelExpired 超时取消）
+│   │   ├── order_handle.go              # OrderUseCase 业务逻辑（含下单后投递超时取消任务）
 │   │   ├── order_handle_test.go         # OrderUseCase 单元测试
+│   │   ├── order_async.go               # OrderTimeoutTaskRepo 接口（投递超时取消延迟任务）
 │   │   ├── order_item.go                # 订单行项目实体
 │   │   ├── order_value.go               # Money 值对象
 │   │   ├── order_status.go              # 订单状态接口、基类、工厂、Order 委托方法
@@ -46,6 +47,7 @@ app/service/order/
 │   │   └── conf.pb.go       # 配置结构体
 │   ├── data/
 │   │   ├── data.go          # 数据层初始化（MySQL、Redis、NATS、GORM Gen）
+│   │   ├── asynq.go         # asynq 客户端 + 订单超时任务投递（延迟队列）
 │   │   ├── client_conn.go   # 商品/库存服务 gRPC 客户端连接
 │   │   ├── order.go         # 订单数据访问
 │   │   ├── product.go       # 商品仓储实现（远程调用商品服务）
@@ -116,20 +118,30 @@ app/service/order/
 
 | UseCase | 职责 |
 |---------|------|
-| `OrderUseCase` | 订单管理（创建、查询、更新、支付），含商品校验、库存校验、预留库存、扣减库存 |
+| `OrderUseCase` | 订单管理（创建、查询、更新、支付、发货），含商品校验、库存校验、预留库存、扣减库存、物流信息写入；下单成功后投递 30 分钟超时自动取消延迟任务（Asynq）；支付幂等 + 失败补偿库存 + 写支付流水；取消自动返还优惠券 |
+| `OrderTimeoutTaskRepo` | 订单超时任务投递仓库（data 层基于 asynq 延迟队列实现：`ProcessIn(30min)` + 固定 TaskID 去重） |
+
+> 待付款订单超时自动取消链路：**订单服务**下单成功 → 投递 `delay:order_timeout_cancel` 延迟任务（30 分钟，固定 TaskID `order_timeout:{orderId}`）→ **task 服务**消费时通过 `GetOrder` 校验状态，仍为待付款才调 `CancelOrder`（userID=0 系统操作）自动取消，已支付/已取消等状态幂等跳过。共享类型定义于 `pkg/ordertask`。
+
+> **并发安全**：状态转换（支付/取消/收货）通过 `UpdateStatusIf` 条件更新落库（`UPDATE ... WHERE id=? AND status=?`），行数=0 表示状态已被并发变更（如支付时被超时取消），支付侧自动补偿已扣库存，避免库存泄漏。支付成功后写入 `payment_log` 支付流水；取消订单时若核销过优惠券则自动调用 marketing `ReleaseCoupon` 返还。
 
 ### 服务接口
 
 | 接口 | 方法 | 说明 |
 |------|------|------|
-| `CreateOrder` | gRPC | 创建订单（支持立即购买和购物车结算两种模式） |
+| `CreateOrder` | gRPC | 创建订单（支持立即购买和购物车结算两种模式；结算可携带收货地址快照写入物流表、运费） |
 | `UpdateOrder` | gRPC | 更新订单 |
 | `DeleteOrder` | gRPC | 删除订单 |
-| `GetOrder` | gRPC | 查询订单详情 |
+| `GetOrder` | gRPC | 查询订单详情（含商品明细、物流信息） |
 | `ListOrder` | gRPC | 订单列表 |
 | `PayOrder` | gRPC | 支付订单（含扣减库存） |
 | `OrderStats` | gRPC | 订单统计（按状态分组计数：总数/待处理/今日/退款） |
 | `BatchGetOrder` | gRPC | 批量获取订单详情（含商品明细，用于导出场景，1 次调用替代 N 次 GetOrder） |
+| `GetUserOrderStats` | gRPC | 用户订单统计（个人中心：各状态订单数 + 累计消费） |
+| `ShipOrder` | gRPC | 发货（管理端调用：待发货→已发货，写入物流公司和快递单号） |
+| `ReceiveOrder` | gRPC | 确认收货（用户端调用：已发货/待收货→已完成，校验订单归属） |
+| `CancelOrder` | gRPC | 取消订单（用户端/管理端调用：待支付/已支付→已取消，含释放预留库存；userID>0 校验归属；若核销过优惠券自动返还） |
+| `ListOverdueWaitPayOrders` | gRPC | 查询超时未支付的待付款订单（task 服务 cron 兜底扫描用，status=1 且创建时间早于 now-timeoutSeconds，秒级下推过滤） |
 
 ### 订单状态机
 

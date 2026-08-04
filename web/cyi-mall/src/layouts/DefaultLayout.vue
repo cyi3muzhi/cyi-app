@@ -14,16 +14,21 @@
 import { onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useShopStore } from '@/store/shop'
+import { useUserStore } from '@/store/user'
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import BackToTop from '@/components/BackToTop.vue'
 
 const route = useRoute()
 const shopStore = useShopStore()
+const userStore = useUserStore()
 
-// 应用启动时加载店铺设置
+// 应用启动时加载店铺设置；若有 token 则拉取用户信息（恢复昵称/头像）
 onMounted(() => {
   shopStore.fetchSettings()
+  if (userStore.isLoggedIn) {
+    userStore.fetchUserInfo()
+  }
 })
 
 // 当店铺名称加载后更新 document title

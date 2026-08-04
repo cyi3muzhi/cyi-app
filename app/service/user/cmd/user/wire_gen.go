@@ -45,7 +45,9 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	}
 	userRepo := data.NewUserRepo(dataData, logger)
 	userUseCase := biz.NewUserUseCase(userRepo, logger)
-	userService := service.NewUserService(userUseCase, logger)
+	addressRepo := data.NewAddressRepo(dataData, logger)
+	addressUseCase := biz.NewAddressUseCase(addressRepo, logger)
+	userService := service.NewUserService(userUseCase, addressUseCase, logger)
 	adminUserRepo := data.NewAdminUserRepo(dataData, logger)
 	string2 := biz.ProvideApiKey(auth)
 	adminUserUseCase := biz.NewAdminUserUseCase(adminUserRepo, string2, logger)

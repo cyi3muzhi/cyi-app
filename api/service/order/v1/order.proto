@@ -18,6 +18,16 @@ service Order {
 	rpc OrderStats (OrderStatsRequest) returns (OrderStatsReply);
 	// 批量获取订单详情（含商品明细），用于导出等场景，1 次调用替代 N 次 GetOrder
 	rpc BatchGetOrder (BatchGetOrderRequest) returns (BatchGetOrderReply);
+	// 用户订单统计（个人中心使用）：按状态计数 + 累计消费
+	rpc GetUserOrderStats (GetUserOrderStatsRequest) returns (GetUserOrderStatsReply);
+	// 发货（管理端调用）：待发货 -> 已发货，并写入物流单号
+	rpc ShipOrder (ShipOrderRequest) returns (ShipOrderReply);
+	// 确认收货（用户端调用）：已发货/待收货 -> 已完成
+	rpc ReceiveOrder (ReceiveOrderRequest) returns (ReceiveOrderReply);
+	// 取消订单（用户端/管理端调用）：待支付/已支付 -> 已取消
+	rpc CancelOrder (CancelOrderRequest) returns (CancelOrderReply);
+	// 查询超时未支付的待付款订单（task 服务 cron 兜底扫描用，status=1 且超过超时阈值）
+	rpc ListOverdueWaitPayOrders (ListOverdueWaitPayOrdersRequest) returns (ListOverdueWaitPayOrdersReply);
 }
 
 message CreateOrderRequest {
@@ -28,6 +38,11 @@ message CreateOrderRequest {
 	repeated OrderItemProto items = 5; // 购物车结算：多个商品（与 product_id 二选一）
 	int64 sku_id = 6; // 立即购买：SKU ID
 	int64 coupon_record_id = 7; // 优惠券发放记录ID（可选）
+	int64 address_id = 8; // 收货地址ID（可选）
+	string receiver = 9; // 收货人（地址快照）
+	string phone = 10; // 手机号（地址快照）
+	string address = 11; // 完整收货地址（地址快照）
+	int64 freight = 12; // 运费（单位：分）
 }
 
 message CreateOrderReply {
@@ -57,6 +72,11 @@ message GetOrderReply {
 	int64 freight = 8; // 运费（单位：分）
 	int64 discount_amount = 9; // 优惠金额（单位：分）
 	int64 created_at = 10; // 下单时间（Unix 时间戳秒）
+	string logistics_company = 11; // 物流公司（发货后）
+	string logistics_no = 12; // 快递单号（发货后）
+	string receiver = 13; // 收货人
+	string phone = 14; // 手机号
+	string address = 15; // 完整收货地址
 }
 
 message OrderItemProto {
@@ -76,6 +96,7 @@ message ListOrderRequest {
 	string keyword = 4; // 按订单号模糊搜索
 	string date_from = 5; // 开始日期（格式：2006-01-02）
 	string date_to = 6; // 结束日期（格式：2006-01-02）
+	int64 user_id = 7; // 按用户过滤（>0 时生效，个人中心使用）
 }
 
 message ListOrderReply {
@@ -135,4 +156,61 @@ enum OrderStatus {
     Cancel = 7; // 已取消
     Refunding = 8; // 退款中
     Refunded = 9; // 已退款
+}
+
+// 用户订单统计请求
+message GetUserOrderStatsRequest {
+	int64 user_id = 1;
+}
+
+// 用户订单统计响应（个人中心使用）
+message GetUserOrderStatsReply {
+	int64 total_orders = 1; // 总订单数（不含已取消）
+	int64 pending_pay = 2; // 待付款（status=1）
+	int64 pending_ship = 3; // 待发货（status=3）
+	int64 pending_receive = 4; // 待收货（status=5）
+	int64 complete = 5; // 已完成/待评价（status=6）
+	int64 refund_count = 6; // 退款/售后（status=8,9）
+	int64 total_spent = 7; // 累计消费（已完成订单实付金额之和，单位：分）
+}
+
+// 发货请求（管理端调用）
+message ShipOrderRequest {
+	int64 order_id = 1; // 订单ID
+	string logistics_company = 2; // 物流公司
+	string logistics_no = 3; // 快递单号
+}
+
+// 发货响应
+message ShipOrderReply {}
+
+// 确认收货请求（用户端调用）
+message ReceiveOrderRequest {
+	int64 order_id = 1; // 订单ID
+	int64 user_id = 2; // 用户ID（校验订单归属）
+}
+
+// 确认收货响应
+message ReceiveOrderReply {}
+
+// 取消订单请求（用户端/管理端调用）
+message CancelOrderRequest {
+	int64 order_id = 1; // 订单ID
+	int64 user_id = 2; // 用户ID（>0 时校验订单归属；0 表示管理端操作）
+	string reason = 3; // 取消原因（可选）
+}
+
+// 取消订单响应
+message CancelOrderReply {}
+
+// 超时待付款订单查询请求
+message ListOverdueWaitPayOrdersRequest {
+	int32 page = 1;
+	int32 page_size = 2;
+	int64 timeout_seconds = 3; // 超时阈值（秒）：创建时间早于 now-timeout_seconds 且仍为待付款的订单
+}
+
+message ListOverdueWaitPayOrdersReply {
+	repeated ListOrderItem items = 1; // 复用列表项结构（含 order_id / created_at / user_id）
+	int32 total = 2;
 }

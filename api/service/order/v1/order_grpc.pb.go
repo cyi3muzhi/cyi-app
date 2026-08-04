@@ -19,14 +19,19 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Order_CreateOrder_FullMethodName   = "/api.service.order.v1.Order/CreateOrder"
-	Order_UpdateOrder_FullMethodName   = "/api.service.order.v1.Order/UpdateOrder"
-	Order_DeleteOrder_FullMethodName   = "/api.service.order.v1.Order/DeleteOrder"
-	Order_GetOrder_FullMethodName      = "/api.service.order.v1.Order/GetOrder"
-	Order_ListOrder_FullMethodName     = "/api.service.order.v1.Order/ListOrder"
-	Order_PayOrder_FullMethodName      = "/api.service.order.v1.Order/PayOrder"
-	Order_OrderStats_FullMethodName    = "/api.service.order.v1.Order/OrderStats"
-	Order_BatchGetOrder_FullMethodName = "/api.service.order.v1.Order/BatchGetOrder"
+	Order_CreateOrder_FullMethodName              = "/api.service.order.v1.Order/CreateOrder"
+	Order_UpdateOrder_FullMethodName              = "/api.service.order.v1.Order/UpdateOrder"
+	Order_DeleteOrder_FullMethodName              = "/api.service.order.v1.Order/DeleteOrder"
+	Order_GetOrder_FullMethodName                 = "/api.service.order.v1.Order/GetOrder"
+	Order_ListOrder_FullMethodName                = "/api.service.order.v1.Order/ListOrder"
+	Order_PayOrder_FullMethodName                 = "/api.service.order.v1.Order/PayOrder"
+	Order_OrderStats_FullMethodName               = "/api.service.order.v1.Order/OrderStats"
+	Order_BatchGetOrder_FullMethodName            = "/api.service.order.v1.Order/BatchGetOrder"
+	Order_GetUserOrderStats_FullMethodName        = "/api.service.order.v1.Order/GetUserOrderStats"
+	Order_ShipOrder_FullMethodName                = "/api.service.order.v1.Order/ShipOrder"
+	Order_ReceiveOrder_FullMethodName             = "/api.service.order.v1.Order/ReceiveOrder"
+	Order_CancelOrder_FullMethodName              = "/api.service.order.v1.Order/CancelOrder"
+	Order_ListOverdueWaitPayOrders_FullMethodName = "/api.service.order.v1.Order/ListOverdueWaitPayOrders"
 )
 
 // OrderClient is the client API for Order service.
@@ -44,6 +49,16 @@ type OrderClient interface {
 	OrderStats(ctx context.Context, in *OrderStatsRequest, opts ...grpc.CallOption) (*OrderStatsReply, error)
 	// 批量获取订单详情（含商品明细），用于导出等场景，1 次调用替代 N 次 GetOrder
 	BatchGetOrder(ctx context.Context, in *BatchGetOrderRequest, opts ...grpc.CallOption) (*BatchGetOrderReply, error)
+	// 用户订单统计（个人中心使用）：按状态计数 + 累计消费
+	GetUserOrderStats(ctx context.Context, in *GetUserOrderStatsRequest, opts ...grpc.CallOption) (*GetUserOrderStatsReply, error)
+	// 发货（管理端调用）：待发货 -> 已发货，并写入物流单号
+	ShipOrder(ctx context.Context, in *ShipOrderRequest, opts ...grpc.CallOption) (*ShipOrderReply, error)
+	// 确认收货（用户端调用）：已发货/待收货 -> 已完成
+	ReceiveOrder(ctx context.Context, in *ReceiveOrderRequest, opts ...grpc.CallOption) (*ReceiveOrderReply, error)
+	// 取消订单（用户端/管理端调用）：待支付/已支付 -> 已取消
+	CancelOrder(ctx context.Context, in *CancelOrderRequest, opts ...grpc.CallOption) (*CancelOrderReply, error)
+	// 查询超时未支付的待付款订单（task 服务 cron 兜底扫描用，status=1 且超过超时阈值）
+	ListOverdueWaitPayOrders(ctx context.Context, in *ListOverdueWaitPayOrdersRequest, opts ...grpc.CallOption) (*ListOverdueWaitPayOrdersReply, error)
 }
 
 type orderClient struct {
@@ -134,6 +149,56 @@ func (c *orderClient) BatchGetOrder(ctx context.Context, in *BatchGetOrderReques
 	return out, nil
 }
 
+func (c *orderClient) GetUserOrderStats(ctx context.Context, in *GetUserOrderStatsRequest, opts ...grpc.CallOption) (*GetUserOrderStatsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserOrderStatsReply)
+	err := c.cc.Invoke(ctx, Order_GetUserOrderStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orderClient) ShipOrder(ctx context.Context, in *ShipOrderRequest, opts ...grpc.CallOption) (*ShipOrderReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ShipOrderReply)
+	err := c.cc.Invoke(ctx, Order_ShipOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orderClient) ReceiveOrder(ctx context.Context, in *ReceiveOrderRequest, opts ...grpc.CallOption) (*ReceiveOrderReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReceiveOrderReply)
+	err := c.cc.Invoke(ctx, Order_ReceiveOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orderClient) CancelOrder(ctx context.Context, in *CancelOrderRequest, opts ...grpc.CallOption) (*CancelOrderReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelOrderReply)
+	err := c.cc.Invoke(ctx, Order_CancelOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orderClient) ListOverdueWaitPayOrders(ctx context.Context, in *ListOverdueWaitPayOrdersRequest, opts ...grpc.CallOption) (*ListOverdueWaitPayOrdersReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListOverdueWaitPayOrdersReply)
+	err := c.cc.Invoke(ctx, Order_ListOverdueWaitPayOrders_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrderServer is the server API for Order service.
 // All implementations must embed UnimplementedOrderServer
 // for forward compatibility.
@@ -149,6 +214,16 @@ type OrderServer interface {
 	OrderStats(context.Context, *OrderStatsRequest) (*OrderStatsReply, error)
 	// 批量获取订单详情（含商品明细），用于导出等场景，1 次调用替代 N 次 GetOrder
 	BatchGetOrder(context.Context, *BatchGetOrderRequest) (*BatchGetOrderReply, error)
+	// 用户订单统计（个人中心使用）：按状态计数 + 累计消费
+	GetUserOrderStats(context.Context, *GetUserOrderStatsRequest) (*GetUserOrderStatsReply, error)
+	// 发货（管理端调用）：待发货 -> 已发货，并写入物流单号
+	ShipOrder(context.Context, *ShipOrderRequest) (*ShipOrderReply, error)
+	// 确认收货（用户端调用）：已发货/待收货 -> 已完成
+	ReceiveOrder(context.Context, *ReceiveOrderRequest) (*ReceiveOrderReply, error)
+	// 取消订单（用户端/管理端调用）：待支付/已支付 -> 已取消
+	CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error)
+	// 查询超时未支付的待付款订单（task 服务 cron 兜底扫描用，status=1 且超过超时阈值）
+	ListOverdueWaitPayOrders(context.Context, *ListOverdueWaitPayOrdersRequest) (*ListOverdueWaitPayOrdersReply, error)
 	mustEmbedUnimplementedOrderServer()
 }
 
@@ -182,6 +257,21 @@ func (UnimplementedOrderServer) OrderStats(context.Context, *OrderStatsRequest) 
 }
 func (UnimplementedOrderServer) BatchGetOrder(context.Context, *BatchGetOrderRequest) (*BatchGetOrderReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchGetOrder not implemented")
+}
+func (UnimplementedOrderServer) GetUserOrderStats(context.Context, *GetUserOrderStatsRequest) (*GetUserOrderStatsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserOrderStats not implemented")
+}
+func (UnimplementedOrderServer) ShipOrder(context.Context, *ShipOrderRequest) (*ShipOrderReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ShipOrder not implemented")
+}
+func (UnimplementedOrderServer) ReceiveOrder(context.Context, *ReceiveOrderRequest) (*ReceiveOrderReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReceiveOrder not implemented")
+}
+func (UnimplementedOrderServer) CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CancelOrder not implemented")
+}
+func (UnimplementedOrderServer) ListOverdueWaitPayOrders(context.Context, *ListOverdueWaitPayOrdersRequest) (*ListOverdueWaitPayOrdersReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListOverdueWaitPayOrders not implemented")
 }
 func (UnimplementedOrderServer) mustEmbedUnimplementedOrderServer() {}
 func (UnimplementedOrderServer) testEmbeddedByValue()               {}
@@ -348,6 +438,96 @@ func _Order_BatchGetOrder_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Order_GetUserOrderStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserOrderStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServer).GetUserOrderStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Order_GetUserOrderStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServer).GetUserOrderStats(ctx, req.(*GetUserOrderStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Order_ShipOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ShipOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServer).ShipOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Order_ShipOrder_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServer).ShipOrder(ctx, req.(*ShipOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Order_ReceiveOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReceiveOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServer).ReceiveOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Order_ReceiveOrder_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServer).ReceiveOrder(ctx, req.(*ReceiveOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Order_CancelOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServer).CancelOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Order_CancelOrder_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServer).CancelOrder(ctx, req.(*CancelOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Order_ListOverdueWaitPayOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListOverdueWaitPayOrdersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServer).ListOverdueWaitPayOrders(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Order_ListOverdueWaitPayOrders_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServer).ListOverdueWaitPayOrders(ctx, req.(*ListOverdueWaitPayOrdersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Order_ServiceDesc is the grpc.ServiceDesc for Order service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -386,6 +566,26 @@ var Order_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BatchGetOrder",
 			Handler:    _Order_BatchGetOrder_Handler,
+		},
+		{
+			MethodName: "GetUserOrderStats",
+			Handler:    _Order_GetUserOrderStats_Handler,
+		},
+		{
+			MethodName: "ShipOrder",
+			Handler:    _Order_ShipOrder_Handler,
+		},
+		{
+			MethodName: "ReceiveOrder",
+			Handler:    _Order_ReceiveOrder_Handler,
+		},
+		{
+			MethodName: "CancelOrder",
+			Handler:    _Order_CancelOrder_Handler,
+		},
+		{
+			MethodName: "ListOverdueWaitPayOrders",
+			Handler:    _Order_ListOverdueWaitPayOrders_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -28,6 +28,7 @@ app/service/user/
 │   └── register.yaml    # 注册配置
 ├── internal/
 │   ├── biz/
+│   │   ├── address.go   # 收货地址业务逻辑
 │   │   ├── admin_user.go # 管理员业务逻辑
 │   │   ├── auth.go      # 认证业务逻辑（注册/登录）
 │   │   ├── biz.go       # 业务层依赖注入
@@ -37,6 +38,7 @@ app/service/user/
 │   │   ├── conf.pb.go   # 配置结构体
 │   │   └── conf.proto   # 配置定义
 │   ├── data/
+│   │   ├── address.go   # 收货地址数据访问
 │   │   ├── admin_user.go # 管理员数据访问
 │   │   ├── admin_user_test.go # 管理员数据访问测试
 │   │   ├── casbin.go    # Casbin 适配器（GORM 存储）
@@ -115,7 +117,8 @@ app/service/user/
 
 | UseCase | 职责 |
 |---------|------|
-| `UserUseCase` | 用户管理（注册、登录、信息管理、密码验证） |
+| `UserUseCase` | 用户管理（注册、登录、信息管理、密码验证、修改密码） |
+| `AddressUseCase` | 收货地址管理（增删改查、设置默认地址） |
 | `AdminUserUseCase` | 管理员管理（登录验证、CRUD、头像管理、单点登录） |
 | `RoleUseCase` | 角色管理（角色 CRUD、权限分配、权限校验） |
 
@@ -161,6 +164,12 @@ admin BFF 请求 → 调用 Login gRPC 验证账号密码 → 返回管理员信
 | `GetUserByUsername` | gRPC | 根据用户名查询用户 |
 | `VerifyPassword` | gRPC | 校验用户密码 |
 | `UserCount` | gRPC | 统计用户数量 |
+| `ChangePassword` | gRPC | 修改密码（校验旧密码后更新） |
+| `ListAddress` | gRPC | 查询用户收货地址列表 |
+| `CreateAddress` | gRPC | 新增收货地址 |
+| `UpdateAddress` | gRPC | 更新收货地址 |
+| `DeleteAddress` | gRPC | 删除收货地址 |
+| `SetDefaultAddress` | gRPC | 设置默认收货地址 |
 
 #### 管理员服务（AdminUser）
 

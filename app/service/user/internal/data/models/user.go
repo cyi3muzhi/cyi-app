@@ -36,12 +36,21 @@ type User struct {
 // TableName 显式指定表名（与 SingularTable:true 配合，表名为 user）
 func (User) TableName() string { return "user" }
 
-// Address 用户地址
+// Address 用户收货地址
 type Address struct {
 	gorm.Model
-	UserID int    `gorm:"column:user_id;type:int;comment:关联用户ID"`
-	Detail string `gorm:"column:detail;type:varchar(255);comment:地址详情"`
+	UserID    int64  `gorm:"column:user_id;type:int;index;not null;comment:关联用户ID"`
+	Receiver  string `gorm:"column:receiver;type:varchar(64);not null;comment:收货人姓名"`
+	Phone     string `gorm:"column:phone;type:varchar(20);not null;comment:收货人手机号"`
+	Province  string `gorm:"column:province;type:varchar(32);comment:省份"`
+	City      string `gorm:"column:city;type:varchar(32);comment:城市"`
+	District  string `gorm:"column:district;type:varchar(32);comment:区县"`
+	Detail    string `gorm:"column:detail;type:varchar(255);not null;comment:详细地址"`
+	IsDefault int32  `gorm:"column:is_default;type:tinyint;default:0;index;comment:是否默认地址 0=否 1=是"`
 }
+
+// TableName 显式指定表名
+func (Address) TableName() string { return "user_address" }
 
 // IUser 用户数据仓库接口（gorm gen 模板方法）
 type IUser interface {

@@ -38,8 +38,15 @@
           <span v-if="cartCount > 0" class="cart-badge">{{ cartCount }}</span>
         </router-link>
         <router-link v-if="!isLoggedIn" to="/login" class="nav-item nav-btn">登录</router-link>
-        <router-link v-else to="/user" class="nav-item user-avatar" active-class="nav-active">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <router-link v-else to="/user" class="nav-item user-avatar" active-class="nav-active" :title="userStore.nickname || '个人中心'">
+          <img
+            v-if="userStore.avatar && !avatarFailed"
+            :src="userStore.avatar"
+            alt="用户头像"
+            class="avatar-img"
+            @error="avatarFailed = true"
+          />
+          <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
           </svg>
         </router-link>
@@ -74,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/store/cart'
 import { useUserStore } from '@/store/user'
@@ -88,8 +95,16 @@ const shopStore = useShopStore()
 const keyword = ref('')
 const showMobileSearch = ref(false)
 
+/** 头像加载失败标记（回退为默认人像图标） */
+const avatarFailed = ref(false)
+
 const cartCount = computed(() => cartStore.totalCount)
 const isLoggedIn = computed(() => userStore.isLoggedIn)
+
+// 挂载时加载购物车数量（登录读后端，未登录读本地）
+onMounted(() => {
+  cartStore.loadCart()
+})
 
 function onSearch() {
   if (keyword.value.trim()) {
@@ -233,6 +248,13 @@ function onSearch() {
   border-radius: 50%;
   border: 2px solid var(--shop-border);
   transition: border-color 0.2s, color 0.2s;
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .user-avatar:hover {
   border-color: var(--shop-primary);

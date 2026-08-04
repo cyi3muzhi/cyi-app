@@ -1677,7 +1677,7 @@ paths:
         post:
             tags:
                 - Cart
-            description: 加入购物车
+            description: 加入购物车（同商品自动累加数量）
             operationId: Cart_AddCartItem
             requestBody:
                 content:
@@ -1692,6 +1692,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.AddCartItemReply'
+    /cart/v1/clear:
+        delete:
+            tags:
+                - Cart
+            description: 清空购物车
+            operationId: Cart_ClearCart
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ClearCartReply'
     /cart/v1/info:
         get:
             tags:
@@ -1705,6 +1718,86 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.GetCartReply'
+    /cart/v1/item:
+        put:
+            tags:
+                - Cart
+            description: 修改购物车商品数量
+            operationId: Cart_UpdateCartItem
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.UpdateCartItemRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.UpdateCartItemReply'
+    /cart/v1/item/select:
+        put:
+            tags:
+                - Cart
+            description: 选中/取消选中单个商品
+            operationId: Cart_ToggleCartItem
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.ToggleCartItemRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ToggleCartItemReply'
+    /cart/v1/item/{productId}:
+        delete:
+            tags:
+                - Cart
+            description: 删除购物车商品
+            operationId: Cart_DeleteCartItem
+            parameters:
+                - name: productId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: skuId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.DeleteCartItemReply'
+    /cart/v1/select_all:
+        put:
+            tags:
+                - Cart
+            description: 全选/取消全选
+            operationId: Cart_SelectAllCart
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.SelectAllCartRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.SelectAllCartReply'
     /category/v1/tree:
         get:
             tags:
@@ -1742,6 +1835,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.GetCategoryReply'
+    /order/v1/cancel:
+        post:
+            tags:
+                - Order
+            description: 取消订单
+            operationId: Order_CancelOrder
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.CancelOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.CancelOrderReply'
     /order/v1/cart_checkout:
         post:
             tags:
@@ -1831,6 +1943,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.PayOrderReply'
+    /order/v1/receive:
+        post:
+            tags:
+                - Order
+            description: 确认收货
+            operationId: Order_ReceiveOrder
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.ReceiveOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ReceiveOrderReply'
     /order/v1/{orderId}:
         get:
             tags:
@@ -1984,6 +2115,133 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.PublicSettingsReply'
+    /user/v1/address/create:
+        post:
+            tags:
+                - User
+            description: 新增收货地址
+            operationId: User_CreateAddress
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.CreateAddressRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.CreateAddressReply'
+    /user/v1/address/list:
+        get:
+            tags:
+                - User
+            description: 收货地址列表
+            operationId: User_ListAddress
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ListAddressReply'
+    /user/v1/address/update:
+        put:
+            tags:
+                - User
+            description: 更新收货地址
+            operationId: User_UpdateAddress
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.UpdateAddressRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.UpdateAddressReply'
+    /user/v1/address/{id}:
+        delete:
+            tags:
+                - User
+            description: 删除收货地址
+            operationId: User_DeleteAddress
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.DeleteAddressReply'
+    /user/v1/address/{id}/default:
+        post:
+            tags:
+                - User
+            description: 设置默认收货地址
+            operationId: User_SetDefaultAddress
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.SetDefaultAddressRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.SetDefaultAddressReply'
+    /user/v1/center:
+        get:
+            tags:
+                - User
+            description: 个人中心概览（用户信息 + 订单/优惠券统计）
+            operationId: User_GetUserCenter
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.GetUserCenterReply'
+    /user/v1/change_password:
+        post:
+            tags:
+                - User
+            description: 修改密码
+            operationId: User_ChangePassword
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.ChangePasswordRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ChangePasswordReply'
     /user/v1/login:
         post:
             tags:
@@ -2054,11 +2312,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.UpdateUserInfoReply'
+    /user/v1/upload/token:
+        post:
+            tags:
+                - Upload
+            description: 获取上传凭证（预签名 URL 直传）
+            operationId: Upload_GetUploadToken
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.GetUploadTokenRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.GetUploadTokenReply'
     /user/v1/{id}:
         get:
             tags:
                 - User
-            description: 获取用户信息
+            description: 获取用户信息（带路径参数，需注册在静态路由之后避免抢占）
             operationId: User_GetUserInfo
             parameters:
                 - name: id
@@ -3094,6 +3371,16 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.OrderProduct'
+                logisticsCompany:
+                    type: string
+                logisticsNo:
+                    type: string
+                receiver:
+                    type: string
+                phone:
+                    type: string
+                address:
+                    type: string
         api.cin.admin.v1.OrderProduct:
             type: object
             properties:
@@ -3716,6 +4003,31 @@ components:
                 quantity:
                     type: integer
                     format: int32
+                skuId:
+                    type: string
+        api.cin.interface.v1.AddressItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                receiver:
+                    type: string
+                phone:
+                    type: string
+                province:
+                    type: string
+                city:
+                    type: string
+                district:
+                    type: string
+                detail:
+                    type: string
+                isDefault:
+                    type: integer
+                    format: int32
+                createTime:
+                    type: string
+            description: ========== 收货地址 ==========
         api.cin.interface.v1.AiChatReply:
             type: object
             properties:
@@ -3727,6 +4039,18 @@ components:
                 message:
                     type: string
                 sessionId:
+                    type: string
+        api.cin.interface.v1.CancelOrderReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.CancelOrderRequest:
+            type: object
+            properties:
+                orderId:
+                    type: string
+                reason:
                     type: string
         api.cin.interface.v1.CartCheckoutReply:
             type: object
@@ -3740,6 +4064,16 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.CartItem'
+                addressId:
+                    type: string
+                receiver:
+                    type: string
+                phone:
+                    type: string
+                address:
+                    type: string
+                freight:
+                    type: string
         api.cin.interface.v1.CartItem:
             type: object
             properties:
@@ -3763,6 +4097,18 @@ components:
                     type: integer
                     format: int32
                 image:
+                    type: string
+                stock:
+                    type: integer
+                    format: int32
+                selected:
+                    type: boolean
+                sku:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                skuId:
                     type: string
         api.cin.interface.v1.CategoryNode:
             type: object
@@ -3793,6 +4139,19 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.CategoryNode'
+        api.cin.interface.v1.ChangePasswordReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.ChangePasswordRequest:
+            type: object
+            properties:
+                oldPassword:
+                    type: string
+                newPassword:
+                    type: string
+            description: ========== 修改密码 ==========
         api.cin.interface.v1.ClaimCouponReply:
             type: object
             properties:
@@ -3805,6 +4164,34 @@ components:
                     type: string
                 source:
                     type: string
+        api.cin.interface.v1.ClearCartReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.CreateAddressReply:
+            type: object
+            properties:
+                id:
+                    type: string
+        api.cin.interface.v1.CreateAddressRequest:
+            type: object
+            properties:
+                receiver:
+                    type: string
+                phone:
+                    type: string
+                province:
+                    type: string
+                city:
+                    type: string
+                district:
+                    type: string
+                detail:
+                    type: string
+                isDefault:
+                    type: integer
+                    format: int32
         api.cin.interface.v1.CreateProductReply:
             type: object
             properties:
@@ -3819,6 +4206,16 @@ components:
                     type: string
                 price:
                     type: string
+        api.cin.interface.v1.DeleteAddressReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.DeleteCartItemReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
         api.cin.interface.v1.GetCartReply:
             type: object
             properties:
@@ -3847,6 +4244,16 @@ components:
                 gender:
                     type: integer
                     format: int32
+                email:
+                    type: string
+                birthday:
+                    type: string
+                level:
+                    type: string
+                growthValue:
+                    type: string
+                createdAt:
+                    type: string
         api.cin.interface.v1.GetOrderReply:
             type: object
             properties:
@@ -3857,6 +4264,29 @@ components:
             properties:
                 product:
                     $ref: '#/components/schemas/api.cin.interface.v1.ProductItem'
+        api.cin.interface.v1.GetUploadTokenReply:
+            type: object
+            properties:
+                uploadUrl:
+                    type: string
+                objectKey:
+                    type: string
+                publicUrl:
+                    type: string
+        api.cin.interface.v1.GetUploadTokenRequest:
+            type: object
+            properties:
+                filename:
+                    type: string
+                directory:
+                    type: string
+        api.cin.interface.v1.GetUserCenterReply:
+            type: object
+            properties:
+                user:
+                    $ref: '#/components/schemas/api.cin.interface.v1.GetMyInfoReply'
+                stats:
+                    $ref: '#/components/schemas/api.cin.interface.v1.UserCenterStats'
         api.cin.interface.v1.GetUserInfoReply:
             type: object
             properties:
@@ -3868,6 +4298,13 @@ components:
                     type: string
                 phone:
                     type: string
+        api.cin.interface.v1.ListAddressReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.AddressItem'
         api.cin.interface.v1.ListBannersReply:
             type: object
             properties:
@@ -3929,6 +4366,9 @@ components:
                 password:
                     type: string
                     description: 密码
+                clientIp:
+                    type: string
+                    description: 客户端 IP（由服务端从请求头获取，前端无需传递）
         api.cin.interface.v1.MyCouponItem:
             type: object
             properties:
@@ -3983,6 +4423,18 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.OrderProduct'
+                logisticsCompany:
+                    type: string
+                logisticsNo:
+                    type: string
+                receiver:
+                    type: string
+                phone:
+                    type: string
+                address:
+                    type: string
+                payDeadline:
+                    type: string
         api.cin.interface.v1.OrderProduct:
             type: object
             properties:
@@ -3994,6 +4446,12 @@ components:
                     type: integer
                     format: int32
                 price:
+                    type: string
+                image:
+                    type: string
+                productId:
+                    type: string
+                skuId:
                     type: string
         api.cin.interface.v1.PayOrderReply:
             type: object
@@ -4070,6 +4528,16 @@ components:
                     type: string
                 icpRecord:
                     type: string
+        api.cin.interface.v1.ReceiveOrderReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.ReceiveOrderRequest:
+            type: object
+            properties:
+                orderId:
+                    type: string
         api.cin.interface.v1.RegisterReply:
             type: object
             properties:
@@ -4090,6 +4558,29 @@ components:
                 phone:
                     type: string
                     description: 手机号（与 username 相同，作为联系方式存储）
+                clientIp:
+                    type: string
+                    description: 客户端 IP（由服务端从请求头获取，前端无需传递）
+        api.cin.interface.v1.SelectAllCartReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.SelectAllCartRequest:
+            type: object
+            properties:
+                selected:
+                    type: boolean
+        api.cin.interface.v1.SetDefaultAddressReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.SetDefaultAddressRequest:
+            type: object
+            properties:
+                id:
+                    type: string
         api.cin.interface.v1.SkuInfo:
             type: object
             properties:
@@ -4122,6 +4613,60 @@ components:
                     type: array
                     items:
                         type: string
+        api.cin.interface.v1.ToggleCartItemReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.ToggleCartItemRequest:
+            type: object
+            properties:
+                productId:
+                    type: string
+                selected:
+                    type: boolean
+                skuId:
+                    type: string
+        api.cin.interface.v1.UpdateAddressReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.UpdateAddressRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                receiver:
+                    type: string
+                phone:
+                    type: string
+                province:
+                    type: string
+                city:
+                    type: string
+                district:
+                    type: string
+                detail:
+                    type: string
+                isDefault:
+                    type: integer
+                    format: int32
+        api.cin.interface.v1.UpdateCartItemReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        api.cin.interface.v1.UpdateCartItemRequest:
+            type: object
+            properties:
+                productId:
+                    type: string
+                quantity:
+                    type: integer
+                    format: int32
+                skuId:
+                    type: string
         api.cin.interface.v1.UpdateProductReply:
             type: object
             properties:
@@ -4165,6 +4710,33 @@ components:
                     type: string
                 avatar:
                     type: string
+                email:
+                    type: string
+                gender:
+                    type: integer
+                    format: int32
+                birthday:
+                    type: string
+        api.cin.interface.v1.UserCenterStats:
+            type: object
+            properties:
+                totalOrders:
+                    type: string
+                pendingPay:
+                    type: string
+                pendingShip:
+                    type: string
+                pendingReceive:
+                    type: string
+                pendingReview:
+                    type: string
+                refundCount:
+                    type: string
+                couponCount:
+                    type: string
+                totalSpent:
+                    type: string
+            description: ========== 个人中心概览 ==========
         api.service.user.v1.BannerItem:
             type: object
             properties:
@@ -4237,6 +4809,8 @@ tags:
       description: 库存服务
     - name: Upload
       description: 管理后台 - 文件上传服务
+    - name: Upload
+      description: 文件上传服务（头像等，前端直传 OSS）
     - name: User
       description: 用户信息服务
     - name: UserCoupon

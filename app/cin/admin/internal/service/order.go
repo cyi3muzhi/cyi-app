@@ -91,5 +91,11 @@ func bizToAdminProtoOrder(order *biz.Order) *adminv1.OrderItem {
 		Status:     order.Status,
 		StatusText: order.StatusText,
 		Products:   products,
+		// 物流信息（发货后展示）
+		LogisticsCompany: order.LogisticsCompany,
+		LogisticsNo:      order.LogisticsNo,
+		Receiver:         order.Receiver,
+		Phone:            order.Phone,
+		Address:          order.Address,
 	}
 }

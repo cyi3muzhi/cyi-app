@@ -15,6 +15,8 @@ type OrderLogistics struct {
 	Phone string `json:"phone" gorm:"type:varchar(20);not null;comment:手机号"`
 	// 收货地址
 	Address string `json:"address" gorm:"type:varchar(256);not null;comment:收货地址"`
+	// 物流公司
+	Company string `json:"company" gorm:"type:varchar(64);default:'';comment:物流公司"`
 	// 快递单号
 	ExpressNo string `json:"express_no" gorm:"type:varchar(64);default:'';comment:快递单号"`
 }

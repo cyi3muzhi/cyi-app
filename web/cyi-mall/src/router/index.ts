@@ -13,8 +13,12 @@ const routes: RouteRecordRaw[] = [
       { path: 'products', name: 'ProductList', component: () => import('../views/products/ProductListView.vue'), meta: { title: '全部商品' } },
       { path: 'product/:id', name: 'ProductDetail', component: () => import('../views/product/ProductDetailView.vue'), meta: { title: '商品详情' } },
       { path: 'cart', name: 'Cart', component: () => import('../views/cart/CartView.vue'), meta: { title: '购物车' } },
+      { path: 'checkout', name: 'Checkout', component: () => import('../views/checkout/CheckoutView.vue'), meta: { title: '确认订单', requiresAuth: true } },
       { path: 'user', name: 'User', component: () => import('../views/user/UserCenterView.vue'), meta: { title: '个人中心', requiresAuth: true } },
-      { path: 'user/orders', name: 'OrderList', component: () => import('../views/user/OrderListView.vue'), meta: { title: '我的订单', requiresAuth: true } }
+      { path: 'user/edit', name: 'ProfileEdit', component: () => import('../views/user/ProfileEditView.vue'), meta: { title: '编辑资料', requiresAuth: true } },
+      { path: 'user/orders', name: 'OrderList', component: () => import('../views/user/OrderListView.vue'), meta: { title: '我的订单', requiresAuth: true } },
+      { path: 'user/orders/:id', name: 'OrderDetail', component: () => import('../views/user/OrderDetailView.vue'), meta: { title: '订单详情', requiresAuth: true } },
+      { path: 'user/address', name: 'AddressList', component: () => import('../views/user/AddressView.vue'), meta: { title: '收货地址', requiresAuth: true } }
     ]
   },
   { path: '/login', name: 'Login', component: () => import('../views/login/LoginView.vue'), meta: { title: '登录' } },

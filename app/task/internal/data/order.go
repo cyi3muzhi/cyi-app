@@ -8,6 +8,7 @@ import (
 	orderRpc "cyi-app/api/service/order/v1"
 	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/task/internal/biz"
+	"cyi-app/pkg/ordertask"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -70,6 +71,53 @@ func NewOrderRepo(data *Data, logger log.Logger) biz.OrderQueryRepo {
 		log:  log.NewHelper(logger),
 		data: data,
 	}
+}
+
+// NewOrderTimeoutRepo 创建订单超时取消仓库（复用 orderRepo，额外实现 biz.OrderTimeoutRepo 接口）
+func NewOrderTimeoutRepo(data *Data, logger log.Logger) biz.OrderTimeoutRepo {
+	return &orderRepo{
+		log:  log.NewHelper(logger),
+		data: data,
+	}
+}
+
+// GetOrderStatus 查询订单状态（数字状态码，如 1=待付款）
+func (r *orderRepo) GetOrderStatus(ctx context.Context, orderID int64) (int32, error) {
+	reply, err := r.data.oc.GetOrder(ctx, &orderRpc.GetOrderRequest{OrderId: orderID})
+	if err != nil {
+		return 0, err
+	}
+	return reply.Status, nil
+}
+
+// CancelOrder 取消订单（userID=0 表示系统操作，不校验订单归属）
+func (r *orderRepo) CancelOrder(ctx context.Context, orderID int64, reason string) error {
+	_, err := r.data.oc.CancelOrder(ctx, &orderRpc.CancelOrderRequest{
+		OrderId: orderID,
+		Reason:  reason,
+	})
+	return err
+}
+
+// ListWaitPayOrders 分页查询超时未支付的待付款订单（status=1 且创建时间超过 timeoutSeconds）
+// 超时过滤已下推到订单服务数据库（秒级精确），无需再在内存判断
+func (r *orderRepo) ListWaitPayOrders(ctx context.Context, page, pageSize int32) ([]*biz.WaitPayOrder, error) {
+	reply, err := r.data.oc.ListOverdueWaitPayOrders(ctx, &orderRpc.ListOverdueWaitPayOrdersRequest{
+		Page:           page,
+		PageSize:       pageSize,
+		TimeoutSeconds: int64(ordertask.OrderTimeoutDelay.Seconds()),
+	})
+	if err != nil {
+		return nil, err
+	}
+	orders := make([]*biz.WaitPayOrder, 0, len(reply.Items))
+	for _, item := range reply.Items {
+		orders = append(orders, &biz.WaitPayOrder{
+			OrderID:   item.OrderId,
+			CreatedAt: item.CreatedAt,
+		})
+	}
+	return orders, nil
 }
 
 // ListOrdersForExport 分页查询订单用于导出

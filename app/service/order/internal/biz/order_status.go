@@ -14,17 +14,14 @@ type statusBase struct {
 	log     *log.Helper
 }
 
-// transitionTo 统一的状态转换方法：先写库（失败则回滚内存），再切换状态处理器
+// transitionTo 统一的状态转换方法：先条件更新数据库（乐观并发控制），成功后才切换状态处理器
+// 使用 UpdateStatusIf 保证「仅当当前状态仍为期望状态时才落库」，避免支付/取消并发时互相覆盖导致库存泄漏
 func (b *statusBase) transitionTo(ctx context.Context, order *Order, newStatus v1.OrderStatus) error {
 	oldStatus := order.Status
-	order.Status = newStatus
-
-	if err := b.repo.UpdateOrder(ctx, order); err != nil {
-		order.Status = oldStatus // DB 失败，回滚内存状态
-		b.log.WithContext(ctx).Errorf("订单状态更新失败, orderID: %d, newStatus: %v, error: %v", order.ID, newStatus, err)
+	if err := b.repo.UpdateStatusIf(ctx, order.ID, int32(oldStatus), int32(newStatus)); err != nil {
+		b.log.WithContext(ctx).Errorf("订单状态更新失败, orderID: %d, oldStatus: %v, newStatus: %v, error: %v", order.ID, oldStatus, newStatus, err)
 		return err
 	}
-
 	order.SetStatus(newStatus, b.repo, b.stockRe, b.log.Logger()) // DB 成功，切换状态处理器
 	return nil
 }

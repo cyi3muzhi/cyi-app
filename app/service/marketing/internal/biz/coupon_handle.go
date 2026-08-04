@@ -25,6 +25,8 @@ type CouponRepo interface {
 	GetUserCouponRecord(ctx context.Context, recordID, userID int64) (*UserCouponItem, error)
 	// UseCoupon 核销优惠券：更新发放记录状态和使用时间
 	UseCoupon(ctx context.Context, recordID, userID, orderID int64) error
+	// ReleaseCoupon 返还优惠券：解除核销（订单取消/退款时调用），校验记录归属订单
+	ReleaseCoupon(ctx context.Context, recordID, userID, orderID int64) error
 	// BatchExpireCoupons 批量过期已过期的优惠券发放记录
 	BatchExpireCoupons(ctx context.Context, batchSize int64) (int32, error)
 	// GetCouponByID 根据ID获取优惠券基本信息
@@ -342,6 +344,16 @@ func (uc *CouponUseCase) UseCoupon(ctx context.Context, req *v1.UseCouponRequest
 	}
 
 	return &v1.UseCouponReply{Success: true, DiscountAmount: discount}, nil
+}
+
+// ReleaseCoupon 返还优惠券（订单取消/退款时调用）
+// 校验：发放记录归属该用户、状态为已使用、且核销的订单与传入订单一致，才解除核销
+func (uc *CouponUseCase) ReleaseCoupon(ctx context.Context, req *v1.ReleaseCouponRequest) (*v1.ReleaseCouponReply, error) {
+	if err := uc.repo.ReleaseCoupon(ctx, req.RecordId, req.UserId, req.OrderId); err != nil {
+		return nil, err
+	}
+	uc.log.Infof("coupon released: record_id=%d, order_id=%d", req.RecordId, req.OrderId)
+	return &v1.ReleaseCouponReply{Success: true}, nil
 }
 
 // ListDistRecords 按优惠券ID查询发放记录

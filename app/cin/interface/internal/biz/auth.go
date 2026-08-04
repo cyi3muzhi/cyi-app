@@ -44,6 +44,16 @@ type User struct {
 	Gender int32 `json:"gender"`
 	// 密码
 	Password string `json:"password"`
+	// 邮箱
+	Email string `json:"email"`
+	// 生日 YYYY-MM-DD
+	Birthday string `json:"birthday"`
+	// 会员等级 regular/gold/diamond
+	Level string `json:"level"`
+	// 成长值
+	GrowthValue int64 `json:"growth_value"`
+	// 注册时间（Unix 秒）
+	CreatedAt int64 `json:"created_at"`
 }
 
 func (uc *AuthUseCase) Login(ctx context.Context, in *User) (*v1.LoginReply, error) {

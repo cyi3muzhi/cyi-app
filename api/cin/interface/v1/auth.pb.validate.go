@@ -68,17 +68,6 @@ func (m *LoginRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if !_LoginRequest_Username_Pattern.MatchString(m.GetUsername()) {
-		err := LoginRequestValidationError{
-			field:  "Username",
-			reason: "value does not match regex pattern \"^[\\\\w\\\\p{Han}]+$\"",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if l := utf8.RuneCountInString(m.GetPassword()); l < 6 || l > 20 {
 		err := LoginRequestValidationError{
 			field:  "Password",
@@ -89,6 +78,8 @@ func (m *LoginRequest) validate(all bool) error {
 		}
 		errors = append(errors, err)
 	}
+
+	// no validation rules for ClientIp
 
 	if len(errors) > 0 {
 		return LoginRequestMultiError(errors)
@@ -166,8 +157,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = LoginRequestValidationError{}
-
-var _LoginRequest_Username_Pattern = regexp.MustCompile("^[\\w\\p{Han}]+$")
 
 // Validate checks the field values on LoginReply with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
@@ -303,17 +292,6 @@ func (m *RegisterReq) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if !_RegisterReq_Username_Pattern.MatchString(m.GetUsername()) {
-		err := RegisterReqValidationError{
-			field:  "Username",
-			reason: "value does not match regex pattern \"^[\\\\w\\\\p{Han}]+$\"",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if l := utf8.RuneCountInString(m.GetPassword()); l < 6 || l > 20 {
 		err := RegisterReqValidationError{
 			field:  "Password",
@@ -324,6 +302,12 @@ func (m *RegisterReq) validate(all bool) error {
 		}
 		errors = append(errors, err)
 	}
+
+	// no validation rules for Nickname
+
+	// no validation rules for Phone
+
+	// no validation rules for ClientIp
 
 	if len(errors) > 0 {
 		return RegisterReqMultiError(errors)
@@ -401,8 +385,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = RegisterReqValidationError{}
-
-var _RegisterReq_Username_Pattern = regexp.MustCompile("^[\\w\\p{Han}]+$")
 
 // Validate checks the field values on RegisterReply with the rules defined in
 // the proto definition for this message. If any rules are violated, the first

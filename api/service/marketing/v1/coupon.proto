@@ -22,6 +22,8 @@ service CouponService {
   rpc ListUserCoupons (ListUserCouponsRequest) returns (ListUserCouponsReply);
   // 使用/核销优惠券
   rpc UseCoupon (UseCouponRequest) returns (UseCouponReply);
+  // 返还优惠券（订单取消/退款时调用，解除核销）
+  rpc ReleaseCoupon (ReleaseCouponRequest) returns (ReleaseCouponReply);
   // 批量过期优惠券发放记录（给 job 服务调）
   rpc BatchExpireCoupons (BatchExpireCouponsRequest) returns (BatchExpireCouponsReply);
   // 查询优惠券发放记录列表
@@ -183,6 +185,17 @@ message UseCouponRequest {
 message UseCouponReply {
   bool success = 1;
   int64 discount_amount = 2; // 实际优惠金额（分）
+}
+
+// 返还优惠券请求（订单取消/退款时调用）
+message ReleaseCouponRequest {
+  int64 record_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int64 user_id = 2 [(validate.rules).int64 = {gt: 0}];
+  int64 order_id = 3 [(validate.rules).int64 = {gt: 0}]; // 核销时的订单ID，用于归属校验
+}
+
+message ReleaseCouponReply {
+  bool success = 1;
 }
 
 // 批量过期请求

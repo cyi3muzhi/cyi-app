@@ -60,6 +60,11 @@ func (s *CouponService) UseCoupon(ctx context.Context, req *v1.UseCouponRequest)
 	return s.uc.UseCoupon(ctx, req)
 }
 
+// ReleaseCoupon 返还优惠券（订单取消/退款时调用，解除核销）
+func (s *CouponService) ReleaseCoupon(ctx context.Context, req *v1.ReleaseCouponRequest) (*v1.ReleaseCouponReply, error) {
+	return s.uc.ReleaseCoupon(ctx, req)
+}
+
 func (s *CouponService) BatchExpireCoupons(ctx context.Context, req *v1.BatchExpireCouponsRequest) (*v1.BatchExpireCouponsReply, error) {
 	return s.uc.BatchExpireCoupons(ctx, req)
 }

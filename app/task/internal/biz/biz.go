@@ -7,4 +7,5 @@ var ProviderSet = wire.NewSet(
 	NewTaskUseCase,
 	NewUserUseCase,
 	NewExportUseCase,
+	NewOrderTimeoutUseCase,
 )

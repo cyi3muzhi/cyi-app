@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/go-kratos/kratos/v2/middleware/circuitbreaker"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/metrics"
 	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
@@ -31,6 +32,8 @@ func Middlewares(tp trace.TracerProvider, middlewareType MiddlewareType, opts ..
 	if middlewareType {
 		middlewareList = append(middlewareList,
 			recovery.Recovery(),
+			// 客户端熔断：下游服务异常（高错误率/超时）时快速失败，避免雪崩
+			circuitbreaker.Client(),
 			tracing.Client(tracing.WithTracerProvider(tp)),
 		)
 		if options.Meter.Requests != nil || options.Meter.Seconds != nil {
@@ -45,9 +48,13 @@ func Middlewares(tp trace.TracerProvider, middlewareType MiddlewareType, opts ..
 				AuthClientMiddleware(options.Auth),
 			)
 		}
+		// 降级中间件放在最内层：捕获下游调用错误后按 operation 返回兜底响应
+		middlewareList = append(middlewareList, fallbackMiddleware(options.Fallbacks))
 	} else {
 		middlewareList = append(middlewareList,
 			recovery.Recovery(),
+			// 服务端熔断：按接口维度保护自身，异常流量快速失败
+			CircuitBreakerServer(),
 			tracing.Server(
 				tracing.WithTracerProvider(tp),
 			),

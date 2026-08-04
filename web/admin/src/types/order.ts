@@ -30,6 +30,11 @@ export interface OrderItem {
   status: string       // pending|paid|shipped|completed|cancelled|refunding|refunded
   statusText: string  // 待支付|已支付|已发货|已完成|已取消|退款中|已退款
   products: OrderProduct[]
+  logisticsCompany?: string // 物流公司（发货后）
+  logisticsNo?: string // 快递单号（发货后）
+  receiver?: string // 收货人
+  phone?: string // 手机号
+  address?: string // 完整收货地址
 }
 
 /** 订单列表响应 */

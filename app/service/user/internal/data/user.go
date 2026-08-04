@@ -145,6 +145,9 @@ func (r *userRepo) getUserFromDB(ctx context.Context, query *mod.User) (*biz.Use
 func (r *userRepo) UpdateUser(ctx context.Context, u *biz.User) error {
 	user := &mod.User{}
 	convert.Convert(u, user)
+	// convert.Convert（mapstructure）无法映射嵌入 gorm.Model 的主键字段，需显式补上，
+	// 否则 GORM Updates 缺少主键条件，报 "WHERE conditions required"
+	user.ID = u.ID
 	info, err := curd.User.WithContext(ctx).Updates(user)
 	if err != nil {
 		return err
@@ -286,6 +289,39 @@ func (r *userRepo) UpdateUserAvatar(ctx context.Context, userID int64, avatarURL
 	}
 	// 失效缓存
 	r.cache.Del(ctx, userCacheKeyByID(userID))
+	return nil
+}
+
+// ChangePassword 修改密码：校验旧密码后更新为新密码，并失效缓存
+func (r *userRepo) ChangePassword(ctx context.Context, userID int64, oldPassword, newPassword string) error {
+	// 1. 查询用户（含密码）
+	var target mod.User
+	if err := r.data.db.WithContext(ctx).First(&target, userID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return biz.ErrUserNotFound
+		}
+		return err
+	}
+	// 2. 校验旧密码
+	if !encryption.CheckPassword(oldPassword, target.Password) {
+		return biz.ErrPasswordError
+	}
+	// 3. 加密新密码
+	encrypted, err := encryption.EncryptPassword(newPassword)
+	if err != nil {
+		r.log.Errorf("encrypt new password failed, userID=%d: %v", userID, err)
+		return err
+	}
+	// 4. 更新密码
+	if err := r.data.db.WithContext(ctx).Model(&mod.User{}).
+		Where("id = ?", userID).
+		Update("password", encrypted).Error; err != nil {
+		r.log.Errorf("update password failed, userID=%d: %v", userID, err)
+		return err
+	}
+	// 5. 失效缓存
+	r.cache.Del(ctx, userCacheKeyByID(userID))
+	r.cache.Del(ctx, userCacheKeyByUsername(target.Username))
 	return nil
 }
 

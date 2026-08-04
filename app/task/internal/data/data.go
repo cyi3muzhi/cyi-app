@@ -31,6 +31,8 @@ var ProviderSet = wire.NewSet(
 	NewExportRepo,
 	NewExcelGenerator,
 	NewOrderRepo,
+	// 订单超时自动取消
+	NewOrderTimeoutRepo,
 	// 接口绑定：ExcelGenerator 实现 biz.ExcelWriter 接口
 	wire.Bind(new(biz.ExcelWriter), new(*ExcelGenerator)),
 )

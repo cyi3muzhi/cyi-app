@@ -2,6 +2,7 @@ package biz
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	v1 "cyi-app/api/service/user/v1"
@@ -73,6 +74,8 @@ type UserRepo interface {
 	UpdateUserAvatar(ctx context.Context, userID int64, avatarURL string) error
 	// UpdateLastLogin 更新用户最近登录时间和 IP
 	UpdateLastLogin(ctx context.Context, id int64, at int64, ip string) error
+	// ChangePassword 修改密码（校验旧密码后更新为新密码）
+	ChangePassword(ctx context.Context, userID int64, oldPassword, newPassword string) error
 }
 
 // UserUseCase 用户业务逻辑
@@ -174,4 +177,19 @@ func (uc *UserUseCase) GetUserStats(ctx context.Context) (*UserStats, error) {
 // UpdateUserAvatar 更新头像
 func (uc *UserUseCase) UpdateUserAvatar(ctx context.Context, userID int64, avatarURL string) error {
 	return uc.repo.UpdateUserAvatar(ctx, userID, avatarURL)
+}
+
+// ChangePassword 修改密码
+func (uc *UserUseCase) ChangePassword(ctx context.Context, userID int64, oldPassword, newPassword string) error {
+	if err := uc.repo.ChangePassword(ctx, userID, oldPassword, newPassword); err != nil {
+		uc.log.Errorf("ChangePassword err: %v", err)
+		if errors.Is(err, ErrUserNotFound) {
+			return v1.ErrorUserNotFound("%s", err.Error())
+		}
+		if errors.Is(err, ErrPasswordError) {
+			return v1.ErrorPasswordError("%s", err.Error())
+		}
+		return v1.ErrorUpdateUserFailed("%s", err.Error())
+	}
+	return nil
 }

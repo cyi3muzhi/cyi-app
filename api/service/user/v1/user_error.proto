@@ -34,4 +34,12 @@ enum UserServiceErrorReason {
 	UPDATE_USER_FAILED = 11 [(errors.code) = 422];
 	// 删除用户失败
 	DELETE_USER_FAILED = 12 [(errors.code) = 422];
+	// 收货地址不存在
+	ADDRESS_NOT_FOUND = 13 [(errors.code) = 422];
+	// 收货地址新增失败
+	ADDRESS_CREATE_FAILED = 14 [(errors.code) = 422];
+	// 收货地址更新失败
+	ADDRESS_UPDATE_FAILED = 15 [(errors.code) = 422];
+	// 收货地址删除失败
+	ADDRESS_DELETE_FAILED = 16 [(errors.code) = 422];
 }

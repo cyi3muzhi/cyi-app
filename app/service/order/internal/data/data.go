@@ -17,6 +17,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
+	"github.com/hibiken/asynq"
 	"github.com/nats-io/nats.go"
 )
 
@@ -30,19 +31,26 @@ var ProviderSet = wire.NewSet(
 	NewProductServiceClient,
 	NewMarketingCouponServiceClient,
 	NewNATSConn,
+	NewAsynqClient,
+	NewOrderTimeoutTaskRepo,
 )
 
 type Data struct {
 	pc productRpc.ProductClient
 	mc marketingRpc.CouponServiceClient
 	nc *nats.Conn
+	db *gorm.DB
+	ac *asynq.Client // 投递延迟任务（订单超时自动取消）
 }
 
-func NewData(c *conf.Data, db *gorm.DB, logger log.Logger, pc productRpc.ProductClient, mc marketingRpc.CouponServiceClient, nc *nats.Conn) (*Data, func(), error) {
+func NewData(c *conf.Data, db *gorm.DB, logger log.Logger, pc productRpc.ProductClient, mc marketingRpc.CouponServiceClient, nc *nats.Conn, ac *asynq.Client) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 		if nc != nil {
 			nc.Close()
+		}
+		if ac != nil {
+			ac.Close()
 		}
 	}
 	curd.SetDefault(db)
@@ -50,6 +58,8 @@ func NewData(c *conf.Data, db *gorm.DB, logger log.Logger, pc productRpc.Product
 		pc: pc,
 		mc: mc,
 		nc: nc,
+		db: db,
+		ac: ac,
 	}, cleanup, nil
 }
 
@@ -83,6 +93,11 @@ func NewDB(c *conf.Data) *gorm.DB {
 	if env != "production" {
 		if err := db.AutoMigrate(&mod.Order{}, &mod.OrderItem{}, &mod.OrderLogistics{}, &mod.PaymentLog{}); err != nil {
 			panic(err)
+		}
+		// 订单超时扫描复合索引：(status, create_time) 加速 task 服务 cron 兜底扫描
+		// MySQL 不支持 CREATE INDEX IF NOT EXISTS，索引已存在时忽略报错
+		if err := db.Exec("CREATE INDEX idx_orders_status_create_time ON `order`(status, create_time)").Error; err != nil {
+			log.NewHelper(log.DefaultLogger).Debugf("create order status/create_time index skipped: %v", err)
 		}
 	}
 

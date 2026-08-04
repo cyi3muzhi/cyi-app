@@ -216,18 +216,23 @@ func (x *ListOrderReply) GetTotal() int32 {
 }
 
 type OrderItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	OrderNo       string                 `protobuf:"bytes,2,opt,name=order_no,json=orderNo,proto3" json:"order_no,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UserName      string                 `protobuf:"bytes,4,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
-	Amount        int64                  `protobuf:"varint,5,opt,name=amount,proto3" json:"amount,omitempty"`
-	Payment       string                 `protobuf:"bytes,6,opt,name=payment,proto3" json:"payment,omitempty"`
-	Status        string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
-	StatusText    string                 `protobuf:"bytes,8,opt,name=status_text,json=statusText,proto3" json:"status_text,omitempty"`
-	Products      []*OrderProduct        `protobuf:"bytes,9,rep,name=products,proto3" json:"products,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Id               int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	OrderNo          string                 `protobuf:"bytes,2,opt,name=order_no,json=orderNo,proto3" json:"order_no,omitempty"`
+	CreatedAt        string                 `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UserName         string                 `protobuf:"bytes,4,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
+	Amount           int64                  `protobuf:"varint,5,opt,name=amount,proto3" json:"amount,omitempty"`
+	Payment          string                 `protobuf:"bytes,6,opt,name=payment,proto3" json:"payment,omitempty"`
+	Status           string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
+	StatusText       string                 `protobuf:"bytes,8,opt,name=status_text,json=statusText,proto3" json:"status_text,omitempty"`
+	Products         []*OrderProduct        `protobuf:"bytes,9,rep,name=products,proto3" json:"products,omitempty"`
+	LogisticsCompany string                 `protobuf:"bytes,10,opt,name=logistics_company,json=logisticsCompany,proto3" json:"logistics_company,omitempty"` // 物流公司（发货后）
+	LogisticsNo      string                 `protobuf:"bytes,11,opt,name=logistics_no,json=logisticsNo,proto3" json:"logistics_no,omitempty"`                // 快递单号（发货后）
+	Receiver         string                 `protobuf:"bytes,12,opt,name=receiver,proto3" json:"receiver,omitempty"`                                         // 收货人
+	Phone            string                 `protobuf:"bytes,13,opt,name=phone,proto3" json:"phone,omitempty"`                                               // 手机号
+	Address          string                 `protobuf:"bytes,14,opt,name=address,proto3" json:"address,omitempty"`                                           // 完整收货地址
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *OrderItem) Reset() {
@@ -321,6 +326,41 @@ func (x *OrderItem) GetProducts() []*OrderProduct {
 		return x.Products
 	}
 	return nil
+}
+
+func (x *OrderItem) GetLogisticsCompany() string {
+	if x != nil {
+		return x.LogisticsCompany
+	}
+	return ""
+}
+
+func (x *OrderItem) GetLogisticsNo() string {
+	if x != nil {
+		return x.LogisticsNo
+	}
+	return ""
+}
+
+func (x *OrderItem) GetReceiver() string {
+	if x != nil {
+		return x.Receiver
+	}
+	return ""
+}
+
+func (x *OrderItem) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *OrderItem) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
 }
 
 type OrderProduct struct {
@@ -1065,7 +1105,7 @@ const file_api_cin_admin_v1_order_proto_rawDesc = "" +
 	"\adate_to\x18\x06 \x01(\tR\x06dateTo\"Y\n" +
 	"\x0eListOrderReply\x121\n" +
 	"\x05items\x18\x01 \x03(\v2\x1b.api.cin.admin.v1.OrderItemR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\"\x99\x02\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\xb5\x03\n" +
 	"\tOrderItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x19\n" +
 	"\border_no\x18\x02 \x01(\tR\aorderNo\x12\x1d\n" +
@@ -1077,7 +1117,13 @@ const file_api_cin_admin_v1_order_proto_rawDesc = "" +
 	"\x06status\x18\a \x01(\tR\x06status\x12\x1f\n" +
 	"\vstatus_text\x18\b \x01(\tR\n" +
 	"statusText\x12:\n" +
-	"\bproducts\x18\t \x03(\v2\x1e.api.cin.admin.v1.OrderProductR\bproducts\"t\n" +
+	"\bproducts\x18\t \x03(\v2\x1e.api.cin.admin.v1.OrderProductR\bproducts\x12+\n" +
+	"\x11logistics_company\x18\n" +
+	" \x01(\tR\x10logisticsCompany\x12!\n" +
+	"\flogistics_no\x18\v \x01(\tR\vlogisticsNo\x12\x1a\n" +
+	"\breceiver\x18\f \x01(\tR\breceiver\x12\x14\n" +
+	"\x05phone\x18\r \x01(\tR\x05phone\x12\x18\n" +
+	"\aaddress\x18\x0e \x01(\tR\aaddress\"t\n" +
 	"\fOrderProduct\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04spec\x18\x02 \x01(\tR\x04spec\x12\x10\n" +

@@ -44,6 +44,20 @@ service Order {
       get: "/order/v1/{order_id}"
     };
   }
+  // 确认收货
+  rpc ReceiveOrder (ReceiveOrderRequest) returns (ReceiveOrderReply) {
+    option (google.api.http) = {
+      post: "/order/v1/receive"
+      body: "*"
+    };
+  }
+  // 取消订单
+  rpc CancelOrder (CancelOrderRequest) returns (CancelOrderReply) {
+    option (google.api.http) = {
+      post: "/order/v1/cancel"
+      body: "*"
+    };
+  }
 }
 
 message PlaceOrderRequest {
@@ -64,8 +78,30 @@ message PayOrderReply {
   bool success = 1;
 }
 
+message ReceiveOrderRequest {
+  int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+message ReceiveOrderReply {
+  bool success = 1;
+}
+
+message CancelOrderRequest {
+  int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
+  string reason = 2; // 取消原因（可选）
+}
+
+message CancelOrderReply {
+  bool success = 1;
+}
+
 message CartCheckoutRequest {
   repeated CartItem items = 1 [(validate.rules).repeated = {min_items: 1}];
+  int64 address_id = 2; // 收货地址ID
+  string receiver = 3; // 收货人（地址快照）
+  string phone = 4; // 手机号（地址快照）
+  string address = 5; // 完整收货地址（地址快照）
+  int64 freight = 6; // 运费（单位：分，前端计算）
 }
 
 message CartCheckoutReply {
@@ -100,6 +136,12 @@ message OrderItem {
   string status = 7;
   string status_text = 8;
   repeated OrderProduct products = 9;
+  string logistics_company = 10; // 物流公司（发货后）
+  string logistics_no = 11; // 快递单号（发货后）
+  string receiver = 12; // 收货人
+  string phone = 13; // 手机号
+  string address = 14; // 完整收货地址
+  int64 pay_deadline = 15; // 支付截止时间（Unix 秒，待付款订单为下单时间+30分钟，其余为 0）
 }
 
 message OrderProduct {
@@ -107,6 +149,9 @@ message OrderProduct {
   string spec = 2;
   int32 qty = 3;
   int64 price = 4;
+  string image = 5;
+  int64 product_id = 6; // 商品ID（再次购买用）
+  int64 sku_id = 7; // SKU ID（再次购买用）
 }
 
 message GetOrderRequest {

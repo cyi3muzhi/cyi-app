@@ -19,13 +19,17 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationOrderCancelOrder = "/api.cin.interface.v1.Order/CancelOrder"
 const OperationOrderCartCheckout = "/api.cin.interface.v1.Order/CartCheckout"
 const OperationOrderGetOrder = "/api.cin.interface.v1.Order/GetOrder"
 const OperationOrderListOrder = "/api.cin.interface.v1.Order/ListOrder"
 const OperationOrderPayOrder = "/api.cin.interface.v1.Order/PayOrder"
 const OperationOrderPlaceOrder = "/api.cin.interface.v1.Order/PlaceOrder"
+const OperationOrderReceiveOrder = "/api.cin.interface.v1.Order/ReceiveOrder"
 
 type OrderHTTPServer interface {
+	// CancelOrder 取消订单
+	CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error)
 	// CartCheckout 购物车结算
 	CartCheckout(context.Context, *CartCheckoutRequest) (*CartCheckoutReply, error)
 	// GetOrder 订单详情
@@ -36,6 +40,8 @@ type OrderHTTPServer interface {
 	PayOrder(context.Context, *PayOrderRequest) (*PayOrderReply, error)
 	// PlaceOrder 下单
 	PlaceOrder(context.Context, *PlaceOrderRequest) (*PlaceOrderReply, error)
+	// ReceiveOrder 确认收货
+	ReceiveOrder(context.Context, *ReceiveOrderRequest) (*ReceiveOrderReply, error)
 }
 
 func RegisterOrderHTTPServer(s *http.Server, srv OrderHTTPServer) {
@@ -45,6 +51,8 @@ func RegisterOrderHTTPServer(s *http.Server, srv OrderHTTPServer) {
 	r.POST("/order/v1/cart_checkout", _Order_CartCheckout0_HTTP_Handler(srv))
 	r.GET("/order/v1/list", _Order_ListOrder1_HTTP_Handler(srv))
 	r.GET("/order/v1/{order_id}", _Order_GetOrder1_HTTP_Handler(srv))
+	r.POST("/order/v1/receive", _Order_ReceiveOrder0_HTTP_Handler(srv))
+	r.POST("/order/v1/cancel", _Order_CancelOrder1_HTTP_Handler(srv))
 }
 
 func _Order_PlaceOrder0_HTTP_Handler(srv OrderHTTPServer) func(ctx http.Context) error {
@@ -154,7 +162,53 @@ func _Order_GetOrder1_HTTP_Handler(srv OrderHTTPServer) func(ctx http.Context) e
 	}
 }
 
+func _Order_ReceiveOrder0_HTTP_Handler(srv OrderHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ReceiveOrderRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationOrderReceiveOrder)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ReceiveOrder(ctx, req.(*ReceiveOrderRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ReceiveOrderReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Order_CancelOrder1_HTTP_Handler(srv OrderHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CancelOrderRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationOrderCancelOrder)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CancelOrder(ctx, req.(*CancelOrderRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CancelOrderReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type OrderHTTPClient interface {
+	// CancelOrder 取消订单
+	CancelOrder(ctx context.Context, req *CancelOrderRequest, opts ...http.CallOption) (rsp *CancelOrderReply, err error)
 	// CartCheckout 购物车结算
 	CartCheckout(ctx context.Context, req *CartCheckoutRequest, opts ...http.CallOption) (rsp *CartCheckoutReply, err error)
 	// GetOrder 订单详情
@@ -165,6 +219,8 @@ type OrderHTTPClient interface {
 	PayOrder(ctx context.Context, req *PayOrderRequest, opts ...http.CallOption) (rsp *PayOrderReply, err error)
 	// PlaceOrder 下单
 	PlaceOrder(ctx context.Context, req *PlaceOrderRequest, opts ...http.CallOption) (rsp *PlaceOrderReply, err error)
+	// ReceiveOrder 确认收货
+	ReceiveOrder(ctx context.Context, req *ReceiveOrderRequest, opts ...http.CallOption) (rsp *ReceiveOrderReply, err error)
 }
 
 type OrderHTTPClientImpl struct {
@@ -173,6 +229,20 @@ type OrderHTTPClientImpl struct {
 
 func NewOrderHTTPClient(client *http.Client) OrderHTTPClient {
 	return &OrderHTTPClientImpl{client}
+}
+
+// CancelOrder 取消订单
+func (c *OrderHTTPClientImpl) CancelOrder(ctx context.Context, in *CancelOrderRequest, opts ...http.CallOption) (*CancelOrderReply, error) {
+	var out CancelOrderReply
+	pattern := "/order/v1/cancel"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationOrderCancelOrder))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // CartCheckout 购物车结算
@@ -237,6 +307,20 @@ func (c *OrderHTTPClientImpl) PlaceOrder(ctx context.Context, in *PlaceOrderRequ
 	pattern := "/order/v1/create"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationOrderPlaceOrder))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ReceiveOrder 确认收货
+func (c *OrderHTTPClientImpl) ReceiveOrder(ctx context.Context, in *ReceiveOrderRequest, opts ...http.CallOption) (*ReceiveOrderReply, error) {
+	var out ReceiveOrderReply
+	pattern := "/order/v1/receive"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationOrderReceiveOrder))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

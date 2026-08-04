@@ -1091,6 +1091,8 @@ func (m *ListOrderRequest) validate(all bool) error {
 
 	// no validation rules for DateTo
 
+	// no validation rules for UserId
+
 	if len(errors) > 0 {
 		return ListOrderRequestMultiError(errors)
 	}
@@ -2074,3 +2076,223 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = BatchGetOrderReplyValidationError{}
+
+// Validate checks the field values on GetUserOrderStatsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetUserOrderStatsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetUserOrderStatsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetUserOrderStatsRequestMultiError, or nil if none found.
+func (m *GetUserOrderStatsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetUserOrderStatsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for UserId
+
+	if len(errors) > 0 {
+		return GetUserOrderStatsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetUserOrderStatsRequestMultiError is an error wrapping multiple validation
+// errors returned by GetUserOrderStatsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetUserOrderStatsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetUserOrderStatsRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetUserOrderStatsRequestMultiError) AllErrors() []error { return m }
+
+// GetUserOrderStatsRequestValidationError is the validation error returned by
+// GetUserOrderStatsRequest.Validate if the designated constraints aren't met.
+type GetUserOrderStatsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetUserOrderStatsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetUserOrderStatsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetUserOrderStatsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetUserOrderStatsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetUserOrderStatsRequestValidationError) ErrorName() string {
+	return "GetUserOrderStatsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetUserOrderStatsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetUserOrderStatsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetUserOrderStatsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetUserOrderStatsRequestValidationError{}
+
+// Validate checks the field values on GetUserOrderStatsReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetUserOrderStatsReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetUserOrderStatsReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetUserOrderStatsReplyMultiError, or nil if none found.
+func (m *GetUserOrderStatsReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetUserOrderStatsReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for TotalOrders
+
+	// no validation rules for PendingPay
+
+	// no validation rules for PendingShip
+
+	// no validation rules for PendingReceive
+
+	// no validation rules for Complete
+
+	// no validation rules for RefundCount
+
+	// no validation rules for TotalSpent
+
+	if len(errors) > 0 {
+		return GetUserOrderStatsReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetUserOrderStatsReplyMultiError is an error wrapping multiple validation
+// errors returned by GetUserOrderStatsReply.ValidateAll() if the designated
+// constraints aren't met.
+type GetUserOrderStatsReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetUserOrderStatsReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetUserOrderStatsReplyMultiError) AllErrors() []error { return m }
+
+// GetUserOrderStatsReplyValidationError is the validation error returned by
+// GetUserOrderStatsReply.Validate if the designated constraints aren't met.
+type GetUserOrderStatsReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetUserOrderStatsReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetUserOrderStatsReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetUserOrderStatsReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetUserOrderStatsReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetUserOrderStatsReplyValidationError) ErrorName() string {
+	return "GetUserOrderStatsReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetUserOrderStatsReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetUserOrderStatsReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetUserOrderStatsReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetUserOrderStatsReplyValidationError{}

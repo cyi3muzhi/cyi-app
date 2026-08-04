@@ -2,9 +2,12 @@ package data
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"cyi-app/app/cin/interface/internal/conf"
+
+	"cyi-app/pkg/util/rustfs"
 
 	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
@@ -37,8 +40,11 @@ var ProviderSet = wire.NewSet(
 	NewAdminSettingsServiceClient,
 	NewBannerRepo,
 	NewAdminBannerServiceClient,
+	NewUploadRepo,
+	NewCartRepo,
 	NewRedisClient,
 	NewAsynqClient,
+	NewOssClient,
 )
 
 // Data .
@@ -53,14 +59,30 @@ type Data struct {
 	abc userRpc.AdminBannerClient
 	rc  redis.UniversalClient
 	mq  *asynq.Client
+	oss *rustfs.RustFSClient
 }
 
 // NewData .
-func NewData(c *conf.Data, uc userRpc.UserClient, oc orderRpc.OrderClient, pc productRpc.ProductClient, cc productRpc.CategoryClient, sc productRpc.StockClient, mcc marketingV1.CouponServiceClient, asc userRpc.AdminSettingsClient, abc userRpc.AdminBannerClient, rc redis.UniversalClient, logger log.Logger, mq *asynq.Client) (*Data, func(), error) {
+func NewData(c *conf.Data, uc userRpc.UserClient, oc orderRpc.OrderClient, pc productRpc.ProductClient, cc productRpc.CategoryClient, sc productRpc.StockClient, mcc marketingV1.CouponServiceClient, asc userRpc.AdminSettingsClient, abc userRpc.AdminBannerClient, rc redis.UniversalClient, logger log.Logger, mq *asynq.Client, oss *rustfs.RustFSClient) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{uc: uc, oc: oc, pc: pc, cc: cc, sc: sc, mcc: mcc, asc: asc, abc: abc, rc: rc, mq: mq}, cleanup, nil
+	return &Data{uc: uc, oc: oc, pc: pc, cc: cc, sc: sc, mcc: mcc, asc: asc, abc: abc, rc: rc, mq: mq, oss: oss}, cleanup, nil
+}
+
+// NewOssClient 创建 OSS 客户端（用户服务 bucket）
+// PublicEndpoint 支持通过环境变量 OSS_PUBLIC_ENDPOINT 覆盖（部署环境走 Nginx 代理）
+func NewOssClient(cfg *conf.Data) (*rustfs.RustFSClient, error) {
+	publicEndpoint := cfg.Oss.GetPublicEndpoint()
+	if env := os.Getenv("OSS_PUBLIC_ENDPOINT"); env != "" {
+		publicEndpoint = env
+	}
+	return rustfs.NewRustFSClient(&rustfs.Config{
+		Endpoint:       cfg.Oss.GetEndpoint(),
+		PublicEndpoint: publicEndpoint,
+		AccessKey:      cfg.Oss.GetAccessKey(),
+		SecretKey:      cfg.Oss.GetSecretKey(),
+	})
 }
 
 // NewRedisClient .

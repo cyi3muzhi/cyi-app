@@ -25,6 +25,16 @@ type Order struct {
 	Items         []*OrderItem // 聚合内的实体
 	CouponRecordID int64       // 优惠券发放记录ID（可选）
 	statusHandler OrderStatus  // 状态模式
+
+	// 收货地址快照（结算时写入订单物流表）
+	AddressID int64  // 收货地址ID
+	Receiver  string // 收货人
+	Phone     string // 手机号
+	Address   string // 完整收货地址
+
+	// 物流信息（发货后写入订单物流表）
+	LogisticsCompany string // 物流公司
+	LogisticsNo      string // 快递单号
 }
 
 // AddItem 添加商品（保持一致性）

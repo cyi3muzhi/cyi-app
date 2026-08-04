@@ -226,6 +226,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '@/store/cart'
 import ProductCard from '@/components/ProductCard.vue'
 import { getProductDetail, getProducts, type ProductItem, type SkuInfo } from '@/api/product'
+import { toast } from '@/utils/toast'
 
 const route = useRoute()
 const router = useRouter()
@@ -308,7 +309,10 @@ function decrementQty() {
 }
 
 // ---- 操作按钮 ----
-function handleAddToCart() {
+/**
+ * 加入购物车：登录存服务端（同商品累加），未登录存本地，成功后轻提示
+ */
+async function handleAddToCart() {
   if (!product.value) return
   const skuInfo = selectedSku.value
   let skuDesc = ''
@@ -317,14 +321,21 @@ function handleAddToCart() {
   } else if (Object.keys(selectedSpecs.value).length) {
     skuDesc = Object.values(selectedSpecs.value).join(' / ')
   }
-  cartStore.addItem({
-    productId: Number(product.value.id),
-    name: product.value.name,
-    image: product.value.image,
-    price: Number(currentPrice.value) / 100,
-    sku: skuDesc || '默认规格',
-    quantity: quantity.value
-  })
+  try {
+    await cartStore.addItem({
+      productId: Number(product.value.id),
+      // 未选择规格时兜底取商品第一个 SKU，避免结算时按 SKU 查库存失败
+      skuId: skuInfo?.id || product.value.skus?.[0]?.id || 0,
+      name: product.value.name,
+      image: product.value.image,
+      price: Number(currentPrice.value) / 100,
+      sku: skuDesc || '默认规格',
+      quantity: quantity.value
+    })
+    toast('已加入购物车', 'success')
+  } catch (e: any) {
+    toast(e?.response?.data?.message || e?.message || '加入购物车失败，请重试', 'error')
+  }
 }
 
 function handleBuyNow() {

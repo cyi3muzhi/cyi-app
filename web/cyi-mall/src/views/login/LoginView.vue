@@ -173,10 +173,14 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useShopStore } from '@/store/shop'
+import { useUserStore } from '@/store/user'
+import { useCartStore } from '@/store/cart'
 import { login } from '@/api/auth'
 
 const router = useRouter()
 const shopStore = useShopStore()
+const userStore = useUserStore()
+const cartStore = useCartStore()
 
 // ---- 表单数据 ----
 const account = ref('')
@@ -236,7 +240,12 @@ async function handleSubmit() {
   try {
     // 调用真实登录 API
     const res = await login({ username: account.value, password: password.value })
-    localStorage.setItem('token', res.token)
+    // 同步写入 store（header 立即显示登录态）+ localStorage 持久化
+    userStore.setLogin(res.token, '', '')
+    // 异步拉取用户信息（昵称/头像），不阻塞跳转
+    userStore.fetchUserInfo()
+    // 登录后把本地购物车合并到服务端（异步，不阻塞跳转）
+    cartStore.mergeLocalCart()
     // 登录成功后跳转回原页面，没有 redirect 则去首页
     const redirect = (router.currentRoute.value.query.redirect as string) || '/'
     router.push(redirect)

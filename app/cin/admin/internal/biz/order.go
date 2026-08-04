@@ -19,6 +19,13 @@ type Order struct {
 	Products    []*OrderProduct
 	Freight     int64 // 运费（单位：分）
 	DiscountAmt int64 // 优惠金额（单位：分）
+
+	// 物流信息（发货后展示）
+	LogisticsCompany string // 物流公司
+	LogisticsNo      string // 快递单号
+	Receiver         string // 收货人
+	Phone            string // 手机号
+	Address          string // 完整收货地址
 }
 
 // OrderProduct 订单商品明细

@@ -11,7 +11,7 @@ import "google/api/annotations.proto";
 
 // 购物车服务
 service Cart {
-  // 加入购物车
+  // 加入购物车（同商品自动累加数量）
   rpc AddCartItem (AddCartItemRequest) returns (AddCartItemReply) {
     option (google.api.http) = {
       post: "/cart/v1/add"
@@ -24,11 +24,45 @@ service Cart {
       get: "/cart/v1/info"
     };
   }
+  // 修改购物车商品数量
+  rpc UpdateCartItem (UpdateCartItemRequest) returns (UpdateCartItemReply) {
+    option (google.api.http) = {
+      put: "/cart/v1/item"
+      body: "*"
+    };
+  }
+  // 选中/取消选中单个商品
+  rpc ToggleCartItem (ToggleCartItemRequest) returns (ToggleCartItemReply) {
+    option (google.api.http) = {
+      put: "/cart/v1/item/select"
+      body: "*"
+    };
+  }
+  // 全选/取消全选
+  rpc SelectAllCart (SelectAllCartRequest) returns (SelectAllCartReply) {
+    option (google.api.http) = {
+      put: "/cart/v1/select_all"
+      body: "*"
+    };
+  }
+  // 删除购物车商品
+  rpc DeleteCartItem (DeleteCartItemRequest) returns (DeleteCartItemReply) {
+    option (google.api.http) = {
+      delete: "/cart/v1/item/{product_id}"
+    };
+  }
+  // 清空购物车
+  rpc ClearCart (ClearCartRequest) returns (ClearCartReply) {
+    option (google.api.http) = {
+      delete: "/cart/v1/clear"
+    };
+  }
 }
 
 message AddCartItemRequest {
   int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
   int32 quantity = 2 [(validate.rules).int32 = {gt: 0}];
+  int64 sku_id = 3; // SKU ID（0 表示取商品默认 SKU）
 }
 
 message AddCartItemReply {
@@ -41,10 +75,58 @@ message GetCartReply {
   repeated CartProductItem items = 1;
 }
 
+message UpdateCartItemRequest {
+  int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 quantity = 2 [(validate.rules).int32 = {gt: 0}];
+  int64 sku_id = 3; // SKU ID（0 表示取商品默认 SKU）
+}
+
+message UpdateCartItemReply {
+  bool success = 1;
+}
+
+message ToggleCartItemRequest {
+  int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  bool selected = 2;
+  int64 sku_id = 3; // SKU ID（0 表示商品默认 SKU）
+}
+
+message ToggleCartItemReply {
+  bool success = 1;
+}
+
+message SelectAllCartRequest {
+  bool selected = 1;
+}
+
+message SelectAllCartReply {
+  bool success = 1;
+}
+
+message DeleteCartItemRequest {
+  int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int64 sku_id = 2; // SKU ID（0 表示商品默认 SKU，query 参数）
+}
+
+message DeleteCartItemReply {
+  bool success = 1;
+}
+
+message ClearCartRequest {}
+
+message ClearCartReply {
+  bool success = 1;
+}
+
 message CartProductItem {
-  int64 product_id = 1;
-  string name = 2;
-  int64 price = 3;
-  int32 quantity = 4;
-  string image = 5;
+  int64 product_id = 1;   // 商品ID
+  string name = 2;        // 商品名称
+  int64 price = 3;        // 价格（单位：分）
+  int32 quantity = 4;     // 购买数量
+  string image = 5;       // 商品主图
+  int32 stock = 6;        // 可用库存
+  bool selected = 7;      // 是否选中
+  string sku = 8;         // 规格描述
+  int32 status = 9;       // 商品状态 0-下架 1-上架
+  int64 sku_id = 10;      // SKU ID（0 表示商品默认 SKU）
 }

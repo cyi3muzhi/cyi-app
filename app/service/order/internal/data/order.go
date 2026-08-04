@@ -5,6 +5,7 @@ import (
 	"cyi-app/app/service/order/internal/biz"
 	"cyi-app/app/service/order/internal/data/curd"
 	mod "cyi-app/app/service/order/internal/data/models"
+	"database/sql"
 	"errors"
 	"strconv"
 	"strings"
@@ -50,6 +51,19 @@ func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
 			return errors.New("create order failed")
 		}
 		in.ID = order.ID
+
+		// 收货地址快照写入物流表（结算下单时携带地址才写入）
+		if in.Receiver != "" || in.Phone != "" || in.Address != "" {
+			if err := tx.OrderLogistics.WithContext(ctx).Create(&mod.OrderLogistics{
+				OrderID:  order.ID,
+				Receiver: in.Receiver,
+				Phone:    in.Phone,
+				Address:  in.Address,
+			}); err != nil {
+				r.log.Errorf("create order logistics failed, orderID=%d: %v", order.ID, err)
+				return errors.New("create order logistics failed")
+			}
+		}
 
 		// 如果有优惠券，调用 marketing 服务的 UseCoupon 核销并更新优惠金额
 		if in.CouponRecordID > 0 {
@@ -118,10 +132,15 @@ func (r *orderRepo) UpdateOrder(ctx context.Context, in *biz.Order) error {
 	return nil
 }
 
-// ListOrder 实现订单列表查询，支持按订单号模糊搜索、按状态筛选（支持逗号分隔多状态）、按日期范围筛选，分页返回并按ID降序
-func (r *orderRepo) ListOrder(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string) ([]*biz.Order, int32, error) {
+// ListOrder 实现订单列表查询，支持按订单号模糊搜索、按状态筛选（支持逗号分隔多状态）、按日期范围筛选、按用户过滤，分页返回并按ID降序
+func (r *orderRepo) ListOrder(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string, userID int64) ([]*biz.Order, int32, error) {
 	// 构建查询条件
 	do := curd.Order.WithContext(ctx)
+
+	// 按用户过滤（>0 时生效，个人中心使用）
+	if userID > 0 {
+		do = do.Where(curd.Order.UserID.Eq(userID))
+	}
 
 	// 按状态筛选（status 支持逗号分隔的多状态，如 "2,3"）
 	if status != "" {
@@ -246,6 +265,72 @@ func (r *orderRepo) OrderStats(ctx context.Context) (total, pending, today, refu
 	return total, pending, today, refund, nil
 }
 
+// GetUserOrderStats 统计单个用户的订单数据（个人中心使用）
+// 各状态计数 + 累计消费（已完成订单实付金额之和）
+func (r *orderRepo) GetUserOrderStats(ctx context.Context, userID int64) (*biz.UserOrderStats, error) {
+	stats := &biz.UserOrderStats{}
+	// 基础查询：按用户过滤（gen 查询链为克隆式，base 可复用）
+	base := curd.Order.WithContext(ctx).Where(curd.Order.UserID.Eq(userID))
+
+	// 总订单数（不含已取消）
+	total, err := base.Where(curd.Order.Status.Neq(int32(v1.OrderStatus_Cancel))).Count()
+	if err != nil {
+		return nil, err
+	}
+	stats.TotalOrders = total
+
+	// 待付款（status=1）
+	pendingPay, err := base.Where(curd.Order.Status.Eq(int32(v1.OrderStatus_WaitPay))).Count()
+	if err != nil {
+		return nil, err
+	}
+	stats.PendingPay = pendingPay
+
+	// 待发货（status=2 已支付 / 3 待发货）
+	pendingShip, err := base.Where(curd.Order.Status.In(
+		int32(v1.OrderStatus_Pay), int32(v1.OrderStatus_WaitShip))).Count()
+	if err != nil {
+		return nil, err
+	}
+	stats.PendingShip = pendingShip
+
+	// 待收货（status=4 已发货 / 5 待收货）
+	pendingReceive, err := base.Where(curd.Order.Status.In(
+		int32(v1.OrderStatus_Ship), int32(v1.OrderStatus_WaitReceive))).Count()
+	if err != nil {
+		return nil, err
+	}
+	stats.PendingReceive = pendingReceive
+
+	// 已完成/待评价（status=6）
+	complete, err := base.Where(curd.Order.Status.Eq(int32(v1.OrderStatus_Complete))).Count()
+	if err != nil {
+		return nil, err
+	}
+	stats.Complete = complete
+
+	// 退款/售后（status=8,9）
+	refundCount, err := base.Where(curd.Order.Status.In(
+		int32(v1.OrderStatus_Refunding), int32(v1.OrderStatus_Refunded))).Count()
+	if err != nil {
+		return nil, err
+	}
+	stats.RefundCount = refundCount
+
+	// 累计消费（已完成订单实付金额之和；无已完成订单时 SUM 为 NULL，需用 NullInt64 兼容）
+	var totalSpent sql.NullInt64
+	if err := curd.Order.WithContext(ctx).
+		Select(curd.Order.PayAmount.Sum()).
+		Where(curd.Order.UserID.Eq(userID)).
+		Where(curd.Order.Status.Eq(int32(v1.OrderStatus_Complete))).
+		Scan(&totalSpent); err != nil {
+		return nil, err
+	}
+	stats.TotalSpent = totalSpent.Int64
+
+	return stats, nil
+}
+
 func (r *orderRepo) GetOrder(ctx context.Context, id int64) (*biz.Order, error) {
 	order, err := curd.Order.WithContext(ctx).Where(curd.Order.ID.Eq(id)).First()
 	if err != nil {
@@ -289,7 +374,30 @@ func (r *orderRepo) GetOrder(ctx context.Context, id int64) (*biz.Order, error) 
 			Quantity:    item.Quantity,
 		})
 	}
+
+	// 查询物流信息（地址快照 + 发货后的物流公司和快递单号）
+	logistics, err := curd.OrderLogistics.WithContext(ctx).
+		Where(curd.OrderLogistics.OrderID.Eq(id)).First()
+	if err == nil && logistics != nil {
+		out.Receiver = logistics.Receiver
+		out.Phone = logistics.Phone
+		out.Address = logistics.Address
+		out.LogisticsCompany = logistics.Company
+		out.LogisticsNo = logistics.ExpressNo
+	}
 	return out, nil
+}
+
+// UpdateLogistics 更新订单物流信息（发货时写入物流公司和快递单号）
+// 使用原生 GORM 更新（gen 生成的 curd 代码不包含新增的 Company 字段）
+func (r *orderRepo) UpdateLogistics(ctx context.Context, orderID int64, logisticsCompany, logisticsNo string) error {
+	if err := r.data.db.Model(&mod.OrderLogistics{}).
+		Where("order_id = ?", orderID).
+		Updates(map[string]interface{}{"company": logisticsCompany, "express_no": logisticsNo}).Error; err != nil {
+		r.log.Errorf("update logistics failed, orderID=%d: %v", orderID, err)
+		return errors.New("update logistics failed")
+	}
+	return nil
 }
 
 // BatchGetOrder 批量获取订单详情（含商品明细）
@@ -339,4 +447,85 @@ func (r *orderRepo) BatchGetOrder(ctx context.Context, ids []int64) ([]*biz.Orde
 		})
 	}
 	return result, nil
+}
+
+// UpdateStatusIf 条件更新订单状态（乐观并发控制）
+// 仅当当前状态仍为 expectStatus 时更新为 newStatus，行数=0 说明状态已被并发变更（如支付时被超时取消）
+func (r *orderRepo) UpdateStatusIf(ctx context.Context, id int64, expectStatus, newStatus int32) error {
+	result, err := curd.Order.WithContext(ctx).
+		Where(curd.Order.ID.Eq(id)).
+		Where(curd.Order.Status.Eq(expectStatus)).
+		UpdateColumn(curd.Order.Status, newStatus)
+	if err != nil {
+		r.log.Errorf("update order status failed, orderID=%d, expect=%d, new=%d: %v", id, expectStatus, newStatus, err)
+		return errors.New("update order status failed")
+	}
+	if result.RowsAffected == 0 {
+		// 状态已被并发变更，返回明确的业务错误供调用方补偿
+		return v1.ErrorOrderStatusInvalid("订单状态已变更，操作失败, orderID=%d", id)
+	}
+	return nil
+}
+
+// CreatePaymentLog 写入支付流水
+func (r *orderRepo) CreatePaymentLog(ctx context.Context, log *biz.PaymentLog) error {
+	if err := curd.PaymentLog.WithContext(ctx).Create(&mod.PaymentLog{
+		OrderID:       log.OrderID,
+		PayType:       log.PayType,
+		TransactionID: log.TransactionID,
+		Amount:        log.Amount,
+		PayStatus:     log.PayStatus,
+		PayMsg:        log.PayMsg,
+	}); err != nil {
+		r.log.Errorf("create payment log failed, orderID=%d: %v", log.OrderID, err)
+		return errors.New("create payment log failed")
+	}
+	return nil
+}
+
+// ReleaseCoupon 返还优惠券（订单取消/退款时调用，解除核销，经 marketing gRPC）
+func (r *orderRepo) ReleaseCoupon(ctx context.Context, recordID, userID, orderID int64) error {
+	_, err := r.data.mc.ReleaseCoupon(ctx, &marketingRpc.ReleaseCouponRequest{
+		RecordId: recordID,
+		UserId:   userID,
+		OrderId:  orderID,
+	})
+	if err != nil {
+		r.log.Errorf("release coupon failed, recordID=%d, orderID=%d: %v", recordID, orderID, err)
+		return err
+	}
+	return nil
+}
+
+// ListOverdueWaitPayOrders 分页查询超时未支付的待付款订单（status=1 且创建时间早于 now-timeoutSeconds）
+func (r *orderRepo) ListOverdueWaitPayOrders(ctx context.Context, page, pageSize int32, timeoutSeconds int64) ([]*biz.Order, int32, error) {
+	deadline := time.Now().Unix() - timeoutSeconds
+	do := curd.Order.WithContext(ctx).
+		Where(curd.Order.Status.Eq(1)).                     // 待付款
+		Where(curd.Order.CreateTime.Lt(deadline))            // 创建时间早于超时阈值
+
+	total, err := do.Count()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	offset := int((page - 1) * pageSize)
+	orders, err := do.Offset(offset).Limit(int(pageSize)).Order(curd.Order.ID.Desc()).Find()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	items := make([]*biz.Order, 0, len(orders))
+	for _, order := range orders {
+		items = append(items, &biz.Order{
+			ID:         order.ID,
+			UserID:     order.UserID,
+			OrderNo:    order.OrderNo,
+			TotalPrice: biz.Money{Amount: order.TotalPrice},
+			PayAmount:  biz.Money{Amount: order.PayAmount},
+			Status:     v1.OrderStatus(order.Status),
+			CreateTime: order.CreateTime,
+		})
+	}
+	return items, int32(total), nil
 }

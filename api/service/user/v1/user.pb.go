@@ -1613,6 +1613,805 @@ func (x *LoginReply) GetToken() string {
 	return ""
 }
 
+// ========== ChangePassword ==========
+type ChangePasswordRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	OldPassword   string                 `protobuf:"bytes,2,opt,name=old_password,json=oldPassword,proto3" json:"old_password,omitempty"`
+	NewPassword   string                 `protobuf:"bytes,3,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChangePasswordRequest) Reset() {
+	*x = ChangePasswordRequest{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangePasswordRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangePasswordRequest) ProtoMessage() {}
+
+func (x *ChangePasswordRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangePasswordRequest.ProtoReflect.Descriptor instead.
+func (*ChangePasswordRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *ChangePasswordRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *ChangePasswordRequest) GetOldPassword() string {
+	if x != nil {
+		return x.OldPassword
+	}
+	return ""
+}
+
+func (x *ChangePasswordRequest) GetNewPassword() string {
+	if x != nil {
+		return x.NewPassword
+	}
+	return ""
+}
+
+type ChangePasswordReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChangePasswordReply) Reset() {
+	*x = ChangePasswordReply{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangePasswordReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangePasswordReply) ProtoMessage() {}
+
+func (x *ChangePasswordReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangePasswordReply.ProtoReflect.Descriptor instead.
+func (*ChangePasswordReply) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *ChangePasswordReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+// ========== 收货地址 ==========
+// AddressInfo 收货地址信息
+type AddressInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Receiver      string                 `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver,omitempty"`                         // 收货人姓名
+	Phone         string                 `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`                               // 收货人手机号
+	Province      string                 `protobuf:"bytes,4,opt,name=province,proto3" json:"province,omitempty"`                         // 省份
+	City          string                 `protobuf:"bytes,5,opt,name=city,proto3" json:"city,omitempty"`                                 // 城市
+	District      string                 `protobuf:"bytes,6,opt,name=district,proto3" json:"district,omitempty"`                         // 区县
+	Detail        string                 `protobuf:"bytes,7,opt,name=detail,proto3" json:"detail,omitempty"`                             // 详细地址
+	IsDefault     int32                  `protobuf:"varint,8,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`     // 是否默认地址 0=否 1=是
+	CreateTime    int64                  `protobuf:"varint,9,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`  // 创建时间（Unix 秒）
+	UpdateTime    int64                  `protobuf:"varint,10,opt,name=update_time,json=updateTime,proto3" json:"update_time,omitempty"` // 更新时间（Unix 秒）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddressInfo) Reset() {
+	*x = AddressInfo{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddressInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddressInfo) ProtoMessage() {}
+
+func (x *AddressInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddressInfo.ProtoReflect.Descriptor instead.
+func (*AddressInfo) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *AddressInfo) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *AddressInfo) GetReceiver() string {
+	if x != nil {
+		return x.Receiver
+	}
+	return ""
+}
+
+func (x *AddressInfo) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *AddressInfo) GetProvince() string {
+	if x != nil {
+		return x.Province
+	}
+	return ""
+}
+
+func (x *AddressInfo) GetCity() string {
+	if x != nil {
+		return x.City
+	}
+	return ""
+}
+
+func (x *AddressInfo) GetDistrict() string {
+	if x != nil {
+		return x.District
+	}
+	return ""
+}
+
+func (x *AddressInfo) GetDetail() string {
+	if x != nil {
+		return x.Detail
+	}
+	return ""
+}
+
+func (x *AddressInfo) GetIsDefault() int32 {
+	if x != nil {
+		return x.IsDefault
+	}
+	return 0
+}
+
+func (x *AddressInfo) GetCreateTime() int64 {
+	if x != nil {
+		return x.CreateTime
+	}
+	return 0
+}
+
+func (x *AddressInfo) GetUpdateTime() int64 {
+	if x != nil {
+		return x.UpdateTime
+	}
+	return 0
+}
+
+type ListAddressRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAddressRequest) Reset() {
+	*x = ListAddressRequest{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAddressRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAddressRequest) ProtoMessage() {}
+
+func (x *ListAddressRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAddressRequest.ProtoReflect.Descriptor instead.
+func (*ListAddressRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *ListAddressRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+type ListAddressReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*AddressInfo         `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAddressReply) Reset() {
+	*x = ListAddressReply{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAddressReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAddressReply) ProtoMessage() {}
+
+func (x *ListAddressReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAddressReply.ProtoReflect.Descriptor instead.
+func (*ListAddressReply) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *ListAddressReply) GetItems() []*AddressInfo {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type CreateAddressRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Receiver      string                 `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver,omitempty"`
+	Phone         string                 `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
+	Province      string                 `protobuf:"bytes,4,opt,name=province,proto3" json:"province,omitempty"`
+	City          string                 `protobuf:"bytes,5,opt,name=city,proto3" json:"city,omitempty"`
+	District      string                 `protobuf:"bytes,6,opt,name=district,proto3" json:"district,omitempty"`
+	Detail        string                 `protobuf:"bytes,7,opt,name=detail,proto3" json:"detail,omitempty"`
+	IsDefault     int32                  `protobuf:"varint,8,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"` // 1=设为默认地址
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateAddressRequest) Reset() {
+	*x = CreateAddressRequest{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateAddressRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateAddressRequest) ProtoMessage() {}
+
+func (x *CreateAddressRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateAddressRequest.ProtoReflect.Descriptor instead.
+func (*CreateAddressRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *CreateAddressRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *CreateAddressRequest) GetReceiver() string {
+	if x != nil {
+		return x.Receiver
+	}
+	return ""
+}
+
+func (x *CreateAddressRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *CreateAddressRequest) GetProvince() string {
+	if x != nil {
+		return x.Province
+	}
+	return ""
+}
+
+func (x *CreateAddressRequest) GetCity() string {
+	if x != nil {
+		return x.City
+	}
+	return ""
+}
+
+func (x *CreateAddressRequest) GetDistrict() string {
+	if x != nil {
+		return x.District
+	}
+	return ""
+}
+
+func (x *CreateAddressRequest) GetDetail() string {
+	if x != nil {
+		return x.Detail
+	}
+	return ""
+}
+
+func (x *CreateAddressRequest) GetIsDefault() int32 {
+	if x != nil {
+		return x.IsDefault
+	}
+	return 0
+}
+
+type CreateAddressReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateAddressReply) Reset() {
+	*x = CreateAddressReply{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateAddressReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateAddressReply) ProtoMessage() {}
+
+func (x *CreateAddressReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateAddressReply.ProtoReflect.Descriptor instead.
+func (*CreateAddressReply) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *CreateAddressReply) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type UpdateAddressRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Receiver      string                 `protobuf:"bytes,3,opt,name=receiver,proto3" json:"receiver,omitempty"`
+	Phone         string                 `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
+	Province      string                 `protobuf:"bytes,5,opt,name=province,proto3" json:"province,omitempty"`
+	City          string                 `protobuf:"bytes,6,opt,name=city,proto3" json:"city,omitempty"`
+	District      string                 `protobuf:"bytes,7,opt,name=district,proto3" json:"district,omitempty"`
+	Detail        string                 `protobuf:"bytes,8,opt,name=detail,proto3" json:"detail,omitempty"`
+	IsDefault     int32                  `protobuf:"varint,9,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateAddressRequest) Reset() {
+	*x = UpdateAddressRequest{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAddressRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAddressRequest) ProtoMessage() {}
+
+func (x *UpdateAddressRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAddressRequest.ProtoReflect.Descriptor instead.
+func (*UpdateAddressRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *UpdateAddressRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *UpdateAddressRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *UpdateAddressRequest) GetReceiver() string {
+	if x != nil {
+		return x.Receiver
+	}
+	return ""
+}
+
+func (x *UpdateAddressRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *UpdateAddressRequest) GetProvince() string {
+	if x != nil {
+		return x.Province
+	}
+	return ""
+}
+
+func (x *UpdateAddressRequest) GetCity() string {
+	if x != nil {
+		return x.City
+	}
+	return ""
+}
+
+func (x *UpdateAddressRequest) GetDistrict() string {
+	if x != nil {
+		return x.District
+	}
+	return ""
+}
+
+func (x *UpdateAddressRequest) GetDetail() string {
+	if x != nil {
+		return x.Detail
+	}
+	return ""
+}
+
+func (x *UpdateAddressRequest) GetIsDefault() int32 {
+	if x != nil {
+		return x.IsDefault
+	}
+	return 0
+}
+
+type UpdateAddressReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateAddressReply) Reset() {
+	*x = UpdateAddressReply{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAddressReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAddressReply) ProtoMessage() {}
+
+func (x *UpdateAddressReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAddressReply.ProtoReflect.Descriptor instead.
+func (*UpdateAddressReply) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *UpdateAddressReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type DeleteAddressRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteAddressRequest) Reset() {
+	*x = DeleteAddressRequest{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteAddressRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteAddressRequest) ProtoMessage() {}
+
+func (x *DeleteAddressRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteAddressRequest.ProtoReflect.Descriptor instead.
+func (*DeleteAddressRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *DeleteAddressRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *DeleteAddressRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+type DeleteAddressReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteAddressReply) Reset() {
+	*x = DeleteAddressReply{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteAddressReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteAddressReply) ProtoMessage() {}
+
+func (x *DeleteAddressReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteAddressReply.ProtoReflect.Descriptor instead.
+func (*DeleteAddressReply) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *DeleteAddressReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type SetDefaultAddressRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetDefaultAddressRequest) Reset() {
+	*x = SetDefaultAddressRequest{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetDefaultAddressRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetDefaultAddressRequest) ProtoMessage() {}
+
+func (x *SetDefaultAddressRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetDefaultAddressRequest.ProtoReflect.Descriptor instead.
+func (*SetDefaultAddressRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *SetDefaultAddressRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *SetDefaultAddressRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+type SetDefaultAddressReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetDefaultAddressReply) Reset() {
+	*x = SetDefaultAddressReply{}
+	mi := &file_api_service_user_v1_user_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetDefaultAddressReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetDefaultAddressReply) ProtoMessage() {}
+
+func (x *SetDefaultAddressReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_user_v1_user_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetDefaultAddressReply.ProtoReflect.Descriptor instead.
+func (*SetDefaultAddressReply) Descriptor() ([]byte, []int) {
+	return file_api_service_user_v1_user_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *SetDefaultAddressReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_api_service_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_api_service_user_v1_user_proto_rawDesc = "" +
@@ -1728,8 +2527,68 @@ const file_api_service_user_v1_user_proto_rawDesc = "" +
 	"\tclient_ip\x18\x05 \x01(\tR\bclientIp\"\"\n" +
 	"\n" +
 	"LoginReply\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token2\x99\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"\x95\x01\n" +
+	"\x15ChangePasswordRequest\x12 \n" +
+	"\auser_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x12,\n" +
+	"\fold_password\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18 R\voldPassword\x12,\n" +
+	"\fnew_password\x18\x03 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18 R\vnewPassword\"/\n" +
+	"\x13ChangePasswordReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x94\x02\n" +
+	"\vAddressInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
+	"\breceiver\x18\x02 \x01(\tR\breceiver\x12\x14\n" +
+	"\x05phone\x18\x03 \x01(\tR\x05phone\x12\x1a\n" +
+	"\bprovince\x18\x04 \x01(\tR\bprovince\x12\x12\n" +
+	"\x04city\x18\x05 \x01(\tR\x04city\x12\x1a\n" +
+	"\bdistrict\x18\x06 \x01(\tR\bdistrict\x12\x16\n" +
+	"\x06detail\x18\a \x01(\tR\x06detail\x12\x1d\n" +
 	"\n" +
+	"is_default\x18\b \x01(\x05R\tisDefault\x12\x1f\n" +
+	"\vcreate_time\x18\t \x01(\x03R\n" +
+	"createTime\x12\x1f\n" +
+	"\vupdate_time\x18\n" +
+	" \x01(\x03R\n" +
+	"updateTime\"6\n" +
+	"\x12ListAddressRequest\x12 \n" +
+	"\auser_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\"J\n" +
+	"\x10ListAddressReply\x126\n" +
+	"\x05items\x18\x01 \x03(\v2 .api.service.user.v1.AddressInfoR\x05items\"\x8f\x02\n" +
+	"\x14CreateAddressRequest\x12 \n" +
+	"\auser_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x12%\n" +
+	"\breceiver\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x02\x18 R\breceiver\x12\x1f\n" +
+	"\x05phone\x18\x03 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x18\x14R\x05phone\x12\x1a\n" +
+	"\bprovince\x18\x04 \x01(\tR\bprovince\x12\x12\n" +
+	"\x04city\x18\x05 \x01(\tR\x04city\x12\x1a\n" +
+	"\bdistrict\x18\x06 \x01(\tR\bdistrict\x12\"\n" +
+	"\x06detail\x18\a \x01(\tB\n" +
+	"\xfaB\ar\x05\x10\x02\x18\xff\x01R\x06detail\x12\x1d\n" +
+	"\n" +
+	"is_default\x18\b \x01(\x05R\tisDefault\"$\n" +
+	"\x12CreateAddressReply\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\x86\x02\n" +
+	"\x14UpdateAddressRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\x12 \n" +
+	"\auser_id\x18\x02 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x12\x1a\n" +
+	"\breceiver\x18\x03 \x01(\tR\breceiver\x12\x14\n" +
+	"\x05phone\x18\x04 \x01(\tR\x05phone\x12\x1a\n" +
+	"\bprovince\x18\x05 \x01(\tR\bprovince\x12\x12\n" +
+	"\x04city\x18\x06 \x01(\tR\x04city\x12\x1a\n" +
+	"\bdistrict\x18\a \x01(\tR\bdistrict\x12\x16\n" +
+	"\x06detail\x18\b \x01(\tR\x06detail\x12\x1d\n" +
+	"\n" +
+	"is_default\x18\t \x01(\x05R\tisDefault\".\n" +
+	"\x12UpdateAddressReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"Q\n" +
+	"\x14DeleteAddressRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\x12 \n" +
+	"\auser_id\x18\x02 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\".\n" +
+	"\x12DeleteAddressReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"U\n" +
+	"\x18SetDefaultAddressRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\x12 \n" +
+	"\auser_id\x18\x02 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\"2\n" +
+	"\x16SetDefaultAddressReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\x80\x0f\n" +
 	"\x04User\x12Z\n" +
 	"\n" +
 	"CreateUser\x12&.api.service.user.v1.CreateUserRequest\x1a$.api.service.user.v1.CreateUserReply\x12Z\n" +
@@ -1747,7 +2606,13 @@ const file_api_service_user_v1_user_proto_rawDesc = "" +
 	"\x0eVerifyPassword\x12*.api.service.user.v1.VerifyPasswordRequest\x1a(.api.service.user.v1.VerifyPasswordReply\x12H\n" +
 	"\tUserCount\x12\x16.google.protobuf.Empty\x1a#.api.service.user.v1.UserCountReply\x12T\n" +
 	"\bRegister\x12$.api.service.user.v1.RegisterRequest\x1a\".api.service.user.v1.RegisterReply\x12K\n" +
-	"\x05Login\x12!.api.service.user.v1.LoginRequest\x1a\x1f.api.service.user.v1.LoginReplyB7\n" +
+	"\x05Login\x12!.api.service.user.v1.LoginRequest\x1a\x1f.api.service.user.v1.LoginReply\x12f\n" +
+	"\x0eChangePassword\x12*.api.service.user.v1.ChangePasswordRequest\x1a(.api.service.user.v1.ChangePasswordReply\x12]\n" +
+	"\vListAddress\x12'.api.service.user.v1.ListAddressRequest\x1a%.api.service.user.v1.ListAddressReply\x12c\n" +
+	"\rCreateAddress\x12).api.service.user.v1.CreateAddressRequest\x1a'.api.service.user.v1.CreateAddressReply\x12c\n" +
+	"\rUpdateAddress\x12).api.service.user.v1.UpdateAddressRequest\x1a'.api.service.user.v1.UpdateAddressReply\x12c\n" +
+	"\rDeleteAddress\x12).api.service.user.v1.DeleteAddressRequest\x1a'.api.service.user.v1.DeleteAddressReply\x12o\n" +
+	"\x11SetDefaultAddress\x12-.api.service.user.v1.SetDefaultAddressRequest\x1a+.api.service.user.v1.SetDefaultAddressReplyB7\n" +
 	"\x13api.service.user.v1P\x01Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
 
 var (
@@ -1762,73 +2627,99 @@ func file_api_service_user_v1_user_proto_rawDescGZIP() []byte {
 	return file_api_service_user_v1_user_proto_rawDescData
 }
 
-var file_api_service_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
+var file_api_service_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 40)
 var file_api_service_user_v1_user_proto_goTypes = []any{
-	(*UserInfo)(nil),                // 0: api.service.user.v1.UserInfo
-	(*CreateUserRequest)(nil),       // 1: api.service.user.v1.CreateUserRequest
-	(*CreateUserReply)(nil),         // 2: api.service.user.v1.CreateUserReply
-	(*UpdateUserRequest)(nil),       // 3: api.service.user.v1.UpdateUserRequest
-	(*UpdateUserReply)(nil),         // 4: api.service.user.v1.UpdateUserReply
-	(*DeleteUserRequest)(nil),       // 5: api.service.user.v1.DeleteUserRequest
-	(*DeleteUserReply)(nil),         // 6: api.service.user.v1.DeleteUserReply
-	(*GetUserRequest)(nil),          // 7: api.service.user.v1.GetUserRequest
-	(*GetUserReply)(nil),            // 8: api.service.user.v1.GetUserReply
-	(*ListUserRequest)(nil),         // 9: api.service.user.v1.ListUserRequest
-	(*ListUserReply)(nil),           // 10: api.service.user.v1.ListUserReply
-	(*ToggleUserStatusRequest)(nil), // 11: api.service.user.v1.ToggleUserStatusRequest
-	(*ToggleUserStatusReply)(nil),   // 12: api.service.user.v1.ToggleUserStatusReply
-	(*GetUserStatsReply)(nil),       // 13: api.service.user.v1.GetUserStatsReply
-	(*UpdateUserAvatarRequest)(nil), // 14: api.service.user.v1.UpdateUserAvatarRequest
-	(*UpdateUserAvatarReply)(nil),   // 15: api.service.user.v1.UpdateUserAvatarReply
-	(*CheckUserExistRequest)(nil),   // 16: api.service.user.v1.CheckUserExistRequest
-	(*CheckUserExistReply)(nil),     // 17: api.service.user.v1.CheckUserExistReply
-	(*GetUserByUsernameReq)(nil),    // 18: api.service.user.v1.GetUserByUsernameReq
-	(*GetUserByUsernameReply)(nil),  // 19: api.service.user.v1.GetUserByUsernameReply
-	(*VerifyPasswordRequest)(nil),   // 20: api.service.user.v1.VerifyPasswordRequest
-	(*VerifyPasswordReply)(nil),     // 21: api.service.user.v1.VerifyPasswordReply
-	(*UserCountReply)(nil),          // 22: api.service.user.v1.UserCountReply
-	(*RegisterRequest)(nil),         // 23: api.service.user.v1.RegisterRequest
-	(*RegisterReply)(nil),           // 24: api.service.user.v1.RegisterReply
-	(*LoginRequest)(nil),            // 25: api.service.user.v1.LoginRequest
-	(*LoginReply)(nil),              // 26: api.service.user.v1.LoginReply
-	(*emptypb.Empty)(nil),           // 27: google.protobuf.Empty
+	(*UserInfo)(nil),                 // 0: api.service.user.v1.UserInfo
+	(*CreateUserRequest)(nil),        // 1: api.service.user.v1.CreateUserRequest
+	(*CreateUserReply)(nil),          // 2: api.service.user.v1.CreateUserReply
+	(*UpdateUserRequest)(nil),        // 3: api.service.user.v1.UpdateUserRequest
+	(*UpdateUserReply)(nil),          // 4: api.service.user.v1.UpdateUserReply
+	(*DeleteUserRequest)(nil),        // 5: api.service.user.v1.DeleteUserRequest
+	(*DeleteUserReply)(nil),          // 6: api.service.user.v1.DeleteUserReply
+	(*GetUserRequest)(nil),           // 7: api.service.user.v1.GetUserRequest
+	(*GetUserReply)(nil),             // 8: api.service.user.v1.GetUserReply
+	(*ListUserRequest)(nil),          // 9: api.service.user.v1.ListUserRequest
+	(*ListUserReply)(nil),            // 10: api.service.user.v1.ListUserReply
+	(*ToggleUserStatusRequest)(nil),  // 11: api.service.user.v1.ToggleUserStatusRequest
+	(*ToggleUserStatusReply)(nil),    // 12: api.service.user.v1.ToggleUserStatusReply
+	(*GetUserStatsReply)(nil),        // 13: api.service.user.v1.GetUserStatsReply
+	(*UpdateUserAvatarRequest)(nil),  // 14: api.service.user.v1.UpdateUserAvatarRequest
+	(*UpdateUserAvatarReply)(nil),    // 15: api.service.user.v1.UpdateUserAvatarReply
+	(*CheckUserExistRequest)(nil),    // 16: api.service.user.v1.CheckUserExistRequest
+	(*CheckUserExistReply)(nil),      // 17: api.service.user.v1.CheckUserExistReply
+	(*GetUserByUsernameReq)(nil),     // 18: api.service.user.v1.GetUserByUsernameReq
+	(*GetUserByUsernameReply)(nil),   // 19: api.service.user.v1.GetUserByUsernameReply
+	(*VerifyPasswordRequest)(nil),    // 20: api.service.user.v1.VerifyPasswordRequest
+	(*VerifyPasswordReply)(nil),      // 21: api.service.user.v1.VerifyPasswordReply
+	(*UserCountReply)(nil),           // 22: api.service.user.v1.UserCountReply
+	(*RegisterRequest)(nil),          // 23: api.service.user.v1.RegisterRequest
+	(*RegisterReply)(nil),            // 24: api.service.user.v1.RegisterReply
+	(*LoginRequest)(nil),             // 25: api.service.user.v1.LoginRequest
+	(*LoginReply)(nil),               // 26: api.service.user.v1.LoginReply
+	(*ChangePasswordRequest)(nil),    // 27: api.service.user.v1.ChangePasswordRequest
+	(*ChangePasswordReply)(nil),      // 28: api.service.user.v1.ChangePasswordReply
+	(*AddressInfo)(nil),              // 29: api.service.user.v1.AddressInfo
+	(*ListAddressRequest)(nil),       // 30: api.service.user.v1.ListAddressRequest
+	(*ListAddressReply)(nil),         // 31: api.service.user.v1.ListAddressReply
+	(*CreateAddressRequest)(nil),     // 32: api.service.user.v1.CreateAddressRequest
+	(*CreateAddressReply)(nil),       // 33: api.service.user.v1.CreateAddressReply
+	(*UpdateAddressRequest)(nil),     // 34: api.service.user.v1.UpdateAddressRequest
+	(*UpdateAddressReply)(nil),       // 35: api.service.user.v1.UpdateAddressReply
+	(*DeleteAddressRequest)(nil),     // 36: api.service.user.v1.DeleteAddressRequest
+	(*DeleteAddressReply)(nil),       // 37: api.service.user.v1.DeleteAddressReply
+	(*SetDefaultAddressRequest)(nil), // 38: api.service.user.v1.SetDefaultAddressRequest
+	(*SetDefaultAddressReply)(nil),   // 39: api.service.user.v1.SetDefaultAddressReply
+	(*emptypb.Empty)(nil),            // 40: google.protobuf.Empty
 }
 var file_api_service_user_v1_user_proto_depIdxs = []int32{
 	0,  // 0: api.service.user.v1.GetUserReply.user:type_name -> api.service.user.v1.UserInfo
 	0,  // 1: api.service.user.v1.ListUserReply.items:type_name -> api.service.user.v1.UserInfo
-	1,  // 2: api.service.user.v1.User.CreateUser:input_type -> api.service.user.v1.CreateUserRequest
-	3,  // 3: api.service.user.v1.User.UpdateUser:input_type -> api.service.user.v1.UpdateUserRequest
-	5,  // 4: api.service.user.v1.User.DeleteUser:input_type -> api.service.user.v1.DeleteUserRequest
-	7,  // 5: api.service.user.v1.User.GetUser:input_type -> api.service.user.v1.GetUserRequest
-	9,  // 6: api.service.user.v1.User.ListUser:input_type -> api.service.user.v1.ListUserRequest
-	11, // 7: api.service.user.v1.User.ToggleUserStatus:input_type -> api.service.user.v1.ToggleUserStatusRequest
-	27, // 8: api.service.user.v1.User.GetUserStats:input_type -> google.protobuf.Empty
-	14, // 9: api.service.user.v1.User.UpdateUserAvatar:input_type -> api.service.user.v1.UpdateUserAvatarRequest
-	16, // 10: api.service.user.v1.User.CheckUserExist:input_type -> api.service.user.v1.CheckUserExistRequest
-	18, // 11: api.service.user.v1.User.GetUserByUsername:input_type -> api.service.user.v1.GetUserByUsernameReq
-	20, // 12: api.service.user.v1.User.VerifyPassword:input_type -> api.service.user.v1.VerifyPasswordRequest
-	27, // 13: api.service.user.v1.User.UserCount:input_type -> google.protobuf.Empty
-	23, // 14: api.service.user.v1.User.Register:input_type -> api.service.user.v1.RegisterRequest
-	25, // 15: api.service.user.v1.User.Login:input_type -> api.service.user.v1.LoginRequest
-	2,  // 16: api.service.user.v1.User.CreateUser:output_type -> api.service.user.v1.CreateUserReply
-	4,  // 17: api.service.user.v1.User.UpdateUser:output_type -> api.service.user.v1.UpdateUserReply
-	6,  // 18: api.service.user.v1.User.DeleteUser:output_type -> api.service.user.v1.DeleteUserReply
-	8,  // 19: api.service.user.v1.User.GetUser:output_type -> api.service.user.v1.GetUserReply
-	10, // 20: api.service.user.v1.User.ListUser:output_type -> api.service.user.v1.ListUserReply
-	12, // 21: api.service.user.v1.User.ToggleUserStatus:output_type -> api.service.user.v1.ToggleUserStatusReply
-	13, // 22: api.service.user.v1.User.GetUserStats:output_type -> api.service.user.v1.GetUserStatsReply
-	15, // 23: api.service.user.v1.User.UpdateUserAvatar:output_type -> api.service.user.v1.UpdateUserAvatarReply
-	17, // 24: api.service.user.v1.User.CheckUserExist:output_type -> api.service.user.v1.CheckUserExistReply
-	19, // 25: api.service.user.v1.User.GetUserByUsername:output_type -> api.service.user.v1.GetUserByUsernameReply
-	21, // 26: api.service.user.v1.User.VerifyPassword:output_type -> api.service.user.v1.VerifyPasswordReply
-	22, // 27: api.service.user.v1.User.UserCount:output_type -> api.service.user.v1.UserCountReply
-	24, // 28: api.service.user.v1.User.Register:output_type -> api.service.user.v1.RegisterReply
-	26, // 29: api.service.user.v1.User.Login:output_type -> api.service.user.v1.LoginReply
-	16, // [16:30] is the sub-list for method output_type
-	2,  // [2:16] is the sub-list for method input_type
-	2,  // [2:2] is the sub-list for extension type_name
-	2,  // [2:2] is the sub-list for extension extendee
-	0,  // [0:2] is the sub-list for field type_name
+	29, // 2: api.service.user.v1.ListAddressReply.items:type_name -> api.service.user.v1.AddressInfo
+	1,  // 3: api.service.user.v1.User.CreateUser:input_type -> api.service.user.v1.CreateUserRequest
+	3,  // 4: api.service.user.v1.User.UpdateUser:input_type -> api.service.user.v1.UpdateUserRequest
+	5,  // 5: api.service.user.v1.User.DeleteUser:input_type -> api.service.user.v1.DeleteUserRequest
+	7,  // 6: api.service.user.v1.User.GetUser:input_type -> api.service.user.v1.GetUserRequest
+	9,  // 7: api.service.user.v1.User.ListUser:input_type -> api.service.user.v1.ListUserRequest
+	11, // 8: api.service.user.v1.User.ToggleUserStatus:input_type -> api.service.user.v1.ToggleUserStatusRequest
+	40, // 9: api.service.user.v1.User.GetUserStats:input_type -> google.protobuf.Empty
+	14, // 10: api.service.user.v1.User.UpdateUserAvatar:input_type -> api.service.user.v1.UpdateUserAvatarRequest
+	16, // 11: api.service.user.v1.User.CheckUserExist:input_type -> api.service.user.v1.CheckUserExistRequest
+	18, // 12: api.service.user.v1.User.GetUserByUsername:input_type -> api.service.user.v1.GetUserByUsernameReq
+	20, // 13: api.service.user.v1.User.VerifyPassword:input_type -> api.service.user.v1.VerifyPasswordRequest
+	40, // 14: api.service.user.v1.User.UserCount:input_type -> google.protobuf.Empty
+	23, // 15: api.service.user.v1.User.Register:input_type -> api.service.user.v1.RegisterRequest
+	25, // 16: api.service.user.v1.User.Login:input_type -> api.service.user.v1.LoginRequest
+	27, // 17: api.service.user.v1.User.ChangePassword:input_type -> api.service.user.v1.ChangePasswordRequest
+	30, // 18: api.service.user.v1.User.ListAddress:input_type -> api.service.user.v1.ListAddressRequest
+	32, // 19: api.service.user.v1.User.CreateAddress:input_type -> api.service.user.v1.CreateAddressRequest
+	34, // 20: api.service.user.v1.User.UpdateAddress:input_type -> api.service.user.v1.UpdateAddressRequest
+	36, // 21: api.service.user.v1.User.DeleteAddress:input_type -> api.service.user.v1.DeleteAddressRequest
+	38, // 22: api.service.user.v1.User.SetDefaultAddress:input_type -> api.service.user.v1.SetDefaultAddressRequest
+	2,  // 23: api.service.user.v1.User.CreateUser:output_type -> api.service.user.v1.CreateUserReply
+	4,  // 24: api.service.user.v1.User.UpdateUser:output_type -> api.service.user.v1.UpdateUserReply
+	6,  // 25: api.service.user.v1.User.DeleteUser:output_type -> api.service.user.v1.DeleteUserReply
+	8,  // 26: api.service.user.v1.User.GetUser:output_type -> api.service.user.v1.GetUserReply
+	10, // 27: api.service.user.v1.User.ListUser:output_type -> api.service.user.v1.ListUserReply
+	12, // 28: api.service.user.v1.User.ToggleUserStatus:output_type -> api.service.user.v1.ToggleUserStatusReply
+	13, // 29: api.service.user.v1.User.GetUserStats:output_type -> api.service.user.v1.GetUserStatsReply
+	15, // 30: api.service.user.v1.User.UpdateUserAvatar:output_type -> api.service.user.v1.UpdateUserAvatarReply
+	17, // 31: api.service.user.v1.User.CheckUserExist:output_type -> api.service.user.v1.CheckUserExistReply
+	19, // 32: api.service.user.v1.User.GetUserByUsername:output_type -> api.service.user.v1.GetUserByUsernameReply
+	21, // 33: api.service.user.v1.User.VerifyPassword:output_type -> api.service.user.v1.VerifyPasswordReply
+	22, // 34: api.service.user.v1.User.UserCount:output_type -> api.service.user.v1.UserCountReply
+	24, // 35: api.service.user.v1.User.Register:output_type -> api.service.user.v1.RegisterReply
+	26, // 36: api.service.user.v1.User.Login:output_type -> api.service.user.v1.LoginReply
+	28, // 37: api.service.user.v1.User.ChangePassword:output_type -> api.service.user.v1.ChangePasswordReply
+	31, // 38: api.service.user.v1.User.ListAddress:output_type -> api.service.user.v1.ListAddressReply
+	33, // 39: api.service.user.v1.User.CreateAddress:output_type -> api.service.user.v1.CreateAddressReply
+	35, // 40: api.service.user.v1.User.UpdateAddress:output_type -> api.service.user.v1.UpdateAddressReply
+	37, // 41: api.service.user.v1.User.DeleteAddress:output_type -> api.service.user.v1.DeleteAddressReply
+	39, // 42: api.service.user.v1.User.SetDefaultAddress:output_type -> api.service.user.v1.SetDefaultAddressReply
+	23, // [23:43] is the sub-list for method output_type
+	3,  // [3:23] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_api_service_user_v1_user_proto_init() }
@@ -1842,7 +2733,7 @@ func file_api_service_user_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_service_user_v1_user_proto_rawDesc), len(file_api_service_user_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   27,
+			NumMessages:   40,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

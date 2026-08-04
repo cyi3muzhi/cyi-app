@@ -23,6 +23,7 @@ func NewHTTPServer(s *ts.HttpServer, cinInterface *service.CinInterface, ac *con
 	v1.RegisterUserCouponHTTPServer(s.HttpServer, cinInterface)
 	v1.RegisterSettingsHTTPServer(s.HttpServer, cinInterface)
 	v1.RegisterBannerHTTPServer(s.HttpServer, cinInterface)
+	v1.RegisterUploadHTTPServer(s.HttpServer, cinInterface)
 	registerStreamRoutes(s.HttpServer, cinInterface, ac)
 	return s.HttpServer
 }

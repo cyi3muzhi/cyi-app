@@ -2,6 +2,7 @@ package biz
 
 import (
 	"context"
+	"sort"
 	"strings"
 
 	v1 "cyi-app/api/service/order/v1"
@@ -9,28 +10,63 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 )
 
+// UserOrderStats 用户订单统计（个人中心使用）
+type UserOrderStats struct {
+	TotalOrders    int64 // 总订单数（不含已取消）
+	PendingPay     int64 // 待付款
+	PendingShip    int64 // 待发货
+	PendingReceive int64 // 待收货
+	Complete       int64 // 已完成/待评价
+	RefundCount    int64 // 退款/售后
+	TotalSpent     int64 // 累计消费（已完成订单实付金额之和，单位：分）
+}
+
+// PaymentLog 支付流水记录（Pay 成功后写入，供对账/售后追溯）
+type PaymentLog struct {
+	OrderID       int64
+	PayType       string // 支付方式（当前为模拟支付 mock）
+	TransactionID string // 第三方支付单号（模拟支付为空）
+	Amount        int64  // 支付金额（单位：分）
+	PayStatus     int32  // 支付状态：2=已支付
+	PayMsg        string // 支付结果描述
+}
+
 type OrderRepo interface {
 	CreateOrder(ctx context.Context, in *Order) error
 	UpdateOrder(ctx context.Context, in *Order) error
 	GetOrder(ctx context.Context, id int64) (*Order, error)
 	// BatchGetOrder 批量获取订单详情（含商品明细），1 次查询替代 N 次 GetOrder
 	BatchGetOrder(ctx context.Context, ids []int64) ([]*Order, error)
-	// ListOrder 获取订单列表，支持按订单号模糊搜索、按状态筛选、按日期范围筛选，分页返回并按ID降序
-	ListOrder(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string) ([]*Order, int32, error)
+	// ListOrder 获取订单列表，支持按订单号模糊搜索、按状态筛选、按日期范围筛选、按用户过滤，分页返回并按ID降序
+	ListOrder(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string, userID int64) ([]*Order, int32, error)
 	// OrderStats 统计订单数据：总订单数、待处理数、今日订单数、退款售后数
 	OrderStats(ctx context.Context) (total, pending, today, refund int32, err error)
+	// GetUserOrderStats 统计单个用户的订单数据（个人中心使用）
+	GetUserOrderStats(ctx context.Context, userID int64) (*UserOrderStats, error)
+	// UpdateLogistics 更新订单物流信息（发货时写入物流公司和快递单号）
+	UpdateLogistics(ctx context.Context, orderID int64, logisticsCompany, logisticsNo string) error
+	// UpdateStatusIf 条件更新订单状态（乐观并发控制）：仅当当前状态为 expectStatus 时更新为 newStatus
+	// 解决支付/取消并发时的竞态：落库状态转换原子化，行数=0 表示状态已被并发变更
+	UpdateStatusIf(ctx context.Context, id int64, expectStatus, newStatus int32) error
+	// CreatePaymentLog 写入支付流水（Pay 成功后调用）
+	CreatePaymentLog(ctx context.Context, log *PaymentLog) error
+	// ReleaseCoupon 返还优惠券（订单取消/退款时调用，解除优惠券核销，经 marketing gRPC）
+	ReleaseCoupon(ctx context.Context, recordID, userID, orderID int64) error
+	// ListOverdueWaitPayOrders 分页查询超时未支付的待付款订单（status=1 且创建时间早于 now-timeoutSeconds）
+	ListOverdueWaitPayOrders(ctx context.Context, page, pageSize int32, timeoutSeconds int64) ([]*Order, int32, error)
 }
 
 type OrderUseCase struct {
 	repo      OrderRepo
 	productRe ProductRepo
 	stockRe   StockRepo
+	taskRe    OrderTimeoutTaskRepo
 	log       *log.Helper
 	logger    log.Logger
 }
 
-func NewOrderUseCase(repo OrderRepo, productRe ProductRepo, stockRe StockRepo, logger log.Logger) *OrderUseCase {
-	return &OrderUseCase{repo: repo, productRe: productRe, stockRe: stockRe, log: log.NewHelper(logger), logger: logger}
+func NewOrderUseCase(repo OrderRepo, productRe ProductRepo, stockRe StockRepo, taskRe OrderTimeoutTaskRepo, logger log.Logger) *OrderUseCase {
+	return &OrderUseCase{repo: repo, productRe: productRe, stockRe: stockRe, taskRe: taskRe, log: log.NewHelper(logger), logger: logger}
 }
 
 // Create 创建订单（两阶段：先校验全部商品，再统一预留库存）
@@ -178,6 +214,12 @@ done:
 		}
 		return err
 	}
+
+	// 6. 投递订单超时取消延迟任务（30 分钟未支付自动取消）
+	// 投递失败不影响下单主流程：记录日志即可，消费端会先校验订单状态保证幂等
+	if err := uc.taskRe.EnqueueTimeoutCancel(ctx, in.ID); err != nil {
+		uc.log.Errorf("投递订单超时任务失败, orderID: %d: %v", in.ID, err)
+	}
 	return nil
 }
 
@@ -190,13 +232,18 @@ func (uc *OrderUseCase) Update(ctx context.Context, in *Order) error {
 }
 
 // List 获取订单列表
-func (uc *OrderUseCase) List(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string) ([]*Order, int32, error) {
-	return uc.repo.ListOrder(ctx, page, pageSize, status, keyword, dateFrom, dateTo)
+func (uc *OrderUseCase) List(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string, userID int64) ([]*Order, int32, error) {
+	return uc.repo.ListOrder(ctx, page, pageSize, status, keyword, dateFrom, dateTo, userID)
 }
 
 // Stats 获取订单统计数据
 func (uc *OrderUseCase) Stats(ctx context.Context) (total, pending, today, refund int32, err error) {
 	return uc.repo.OrderStats(ctx)
+}
+
+// UserStats 获取单个用户的订单统计（个人中心使用）
+func (uc *OrderUseCase) UserStats(ctx context.Context, userID int64) (*UserOrderStats, error) {
+	return uc.repo.GetUserOrderStats(ctx, userID)
 }
 
 // Get 查询订单
@@ -215,6 +262,7 @@ func (uc *OrderUseCase) BatchGet(ctx context.Context, ids []int64) ([]*Order, er
 }
 
 // Pay 支付订单（先扣库存，后改状态，避免已支付未扣库存的数据不一致）
+// 幂等：已支付（status=2/3）订单重复支付直接返回成功，避免重复扣库存
 func (uc *OrderUseCase) Pay(ctx context.Context, orderID int64, userID int64) error {
 	order, err := uc.Get(ctx, orderID)
 	if err != nil {
@@ -222,6 +270,12 @@ func (uc *OrderUseCase) Pay(ctx context.Context, orderID int64, userID int64) er
 	}
 	if err := order.VerifyOwner(userID); err != nil {
 		return err
+	}
+
+	// 幂等：已支付/待发货状态重复支付直接返回成功
+	if order.Status == v1.OrderStatus_Pay || order.Status == v1.OrderStatus_WaitShip {
+		uc.log.Infof("订单已支付，重复支付幂等跳过, orderID: %d", orderID)
+		return nil
 	}
 
 	// 1. 先扣减库存（Total-、Reserved-、乐观锁，按SKU维度）
@@ -240,24 +294,125 @@ func (uc *OrderUseCase) Pay(ctx context.Context, orderID int64, userID int64) er
 		}
 	}
 
-	// 2. 再更新订单状态（库存已扣，状态变更失败需人工介入补偿库存）
+	// 2. 再更新订单状态（条件更新保证原子性；失败说明状态已被并发变更，如超时取消，需补偿库存）
 	if err := order.Pay(ctx); err != nil {
-		uc.log.Errorf("order pay failed after stock deducted, need manual compensation, orderID: %d: %v", orderID, err)
+		uc.log.Errorf("order pay failed after stock deducted, compensating stock, orderID: %d: %v", orderID, err)
+		uc.compensateDeductedStock(ctx, order)
 		return err
 	}
 
+	// 3. 写入支付流水（供对账/售后追溯；失败仅记日志不影响支付结果）
+	if err := uc.repo.CreatePaymentLog(ctx, &PaymentLog{
+		OrderID:   orderID,
+		PayType:   "mock", // 当前为模拟支付，后续接入微信/支付宝时替换
+		Amount:    order.PayAmount.Amount,
+		PayStatus: 2, // 已支付
+		PayMsg:    "支付成功",
+	}); err != nil {
+		uc.log.Errorf("create payment log failed, orderID: %d: %v", orderID, err)
+	}
 	return nil
+}
+
+// compensateDeductedStock 支付状态更新失败时，补偿已扣减的库存（AddStock 为 DeductStock 的逆操作）
+func (uc *OrderUseCase) compensateDeductedStock(ctx context.Context, order *Order) {
+	for _, item := range order.Items {
+		skuID := item.SkuID
+		for retry := 0; retry < 3; retry++ {
+			s, e := uc.stockRe.GetStock(ctx, skuID)
+			if e != nil {
+				uc.log.Errorf("compensate get stock failed for skuID %d: %v", skuID, e)
+				continue
+			}
+			if _, e = uc.stockRe.AddStock(ctx, skuID, item.Quantity, s.Version); e != nil {
+				uc.log.Errorf("compensate add stock failed for skuID %d (retry %d): %v", skuID, retry, e)
+				continue
+			}
+			uc.log.Infof("compensate add stock success for skuID %d, qty %d", skuID, item.Quantity)
+			break
+		}
+	}
+}
+
+// Ship 发货（管理端调用）：状态流转（待发货 -> 已发货）+ 写入物流信息
+func (uc *OrderUseCase) Ship(ctx context.Context, orderID int64, logisticsCompany, logisticsNo string) error {
+	order, err := uc.Get(ctx, orderID)
+	if err != nil {
+		return err
+	}
+	if err := order.Ship(ctx); err != nil {
+		uc.log.Errorf("order ship failed, orderID: %d: %v", orderID, err)
+		return err
+	}
+	return uc.repo.UpdateLogistics(ctx, orderID, logisticsCompany, logisticsNo)
+}
+
+// Receive 确认收货（用户端调用）：状态流转（已发货/待收货 -> 已完成）
+func (uc *OrderUseCase) Receive(ctx context.Context, orderID int64, userID int64) error {
+	order, err := uc.Get(ctx, orderID)
+	if err != nil {
+		return err
+	}
+	if err := order.VerifyOwner(userID); err != nil {
+		return err
+	}
+	if err := order.Receive(ctx); err != nil {
+		uc.log.Errorf("order receive failed, orderID: %d: %v", orderID, err)
+		return err
+	}
+	return nil
+}
+
+// Cancel 取消订单（用户端/管理端调用）：待支付/已支付 -> 已取消
+// userID > 0 时校验订单归属（用户端），userID = 0 表示管理端操作
+// 取消成功后自动返还下单时核销的优惠券
+func (uc *OrderUseCase) Cancel(ctx context.Context, orderID int64, userID int64, reason string) error {
+	order, err := uc.Get(ctx, orderID)
+	if err != nil {
+		return err
+	}
+	if userID > 0 {
+		if err := order.VerifyOwner(userID); err != nil {
+			return err
+		}
+	}
+	if reason != "" {
+		uc.log.Infof("cancel order, orderID=%d, userID=%d, reason=%s", orderID, userID, reason)
+	}
+	if err := order.Cancel(ctx); err != nil {
+		uc.log.Errorf("order cancel failed, orderID: %d: %v", orderID, err)
+		return err
+	}
+	// 取消成功后返还优惠券（若下单时核销过；失败仅记日志，可由人工/定时任务补偿）
+	if order.CouponRecordID > 0 {
+		if err := uc.repo.ReleaseCoupon(ctx, order.CouponRecordID, order.UserID, orderID); err != nil {
+			uc.log.Errorf("release coupon failed, orderID: %d, recordID: %d: %v", orderID, order.CouponRecordID, err)
+		}
+	}
+	return nil
+}
+
+// OverdueWaitPayOrders 分页查询超时未支付的待付款订单（task 服务 cron 兜底扫描用）
+// timeoutSeconds 为超时阈值：创建时间早于 now-timeoutSeconds 且仍为待付款的订单
+func (uc *OrderUseCase) OverdueWaitPayOrders(ctx context.Context, page, pageSize int32, timeoutSeconds int64) ([]*Order, int32, error) {
+	return uc.repo.ListOverdueWaitPayOrders(ctx, page, pageSize, timeoutSeconds)
 }
 
 // formatSpecDesc 将规格 map 转换为可读字符串
 // 如 {"颜色":"红色","尺码":"XL"} → "红色/XL"
+// 先对 key 排序再拼接，避免 Go map 遍历顺序随机导致规格顺序跳动
 func formatSpecDesc(spec map[string]string) string {
 	if len(spec) == 0 {
 		return ""
 	}
-	vals := make([]string, 0, len(spec))
-	for _, v := range spec {
-		vals = append(vals, v)
+	keys := make([]string, 0, len(spec))
+	for k := range spec {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	vals := make([]string, 0, len(keys))
+	for _, k := range keys {
+		vals = append(vals, spec[k])
 	}
 	return strings.Join(vals, "/")
 }

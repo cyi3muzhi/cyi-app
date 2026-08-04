@@ -20,15 +20,36 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationUserChangePassword = "/api.cin.interface.v1.User/ChangePassword"
+const OperationUserCreateAddress = "/api.cin.interface.v1.User/CreateAddress"
+const OperationUserDeleteAddress = "/api.cin.interface.v1.User/DeleteAddress"
 const OperationUserGetMyInfo = "/api.cin.interface.v1.User/GetMyInfo"
+const OperationUserGetUserCenter = "/api.cin.interface.v1.User/GetUserCenter"
 const OperationUserGetUserInfo = "/api.cin.interface.v1.User/GetUserInfo"
+const OperationUserListAddress = "/api.cin.interface.v1.User/ListAddress"
+const OperationUserSetDefaultAddress = "/api.cin.interface.v1.User/SetDefaultAddress"
+const OperationUserUpdateAddress = "/api.cin.interface.v1.User/UpdateAddress"
 const OperationUserUpdateUserInfo = "/api.cin.interface.v1.User/UpdateUserInfo"
 
 type UserHTTPServer interface {
+	// ChangePassword 修改密码
+	ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordReply, error)
+	// CreateAddress 新增收货地址
+	CreateAddress(context.Context, *CreateAddressRequest) (*CreateAddressReply, error)
+	// DeleteAddress 删除收货地址
+	DeleteAddress(context.Context, *DeleteAddressRequest) (*DeleteAddressReply, error)
 	// GetMyInfo 获取个人信息
 	GetMyInfo(context.Context, *emptypb.Empty) (*GetMyInfoReply, error)
-	// GetUserInfo 获取用户信息
+	// GetUserCenter 个人中心概览（用户信息 + 订单/优惠券统计）
+	GetUserCenter(context.Context, *emptypb.Empty) (*GetUserCenterReply, error)
+	// GetUserInfo 获取用户信息（带路径参数，需注册在静态路由之后避免抢占）
 	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoReply, error)
+	// ListAddress 收货地址列表
+	ListAddress(context.Context, *emptypb.Empty) (*ListAddressReply, error)
+	// SetDefaultAddress 设置默认收货地址
+	SetDefaultAddress(context.Context, *SetDefaultAddressRequest) (*SetDefaultAddressReply, error)
+	// UpdateAddress 更新收货地址
+	UpdateAddress(context.Context, *UpdateAddressRequest) (*UpdateAddressReply, error)
 	// UpdateUserInfo 更新用户信息
 	UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoReply, error)
 }
@@ -36,8 +57,15 @@ type UserHTTPServer interface {
 func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
 	r := s.Route("/")
 	r.GET("/user/v1/my_info", _User_GetMyInfo0_HTTP_Handler(srv))
-	r.GET("/user/v1/{id}", _User_GetUserInfo0_HTTP_Handler(srv))
 	r.PUT("/user/v1/update", _User_UpdateUserInfo0_HTTP_Handler(srv))
+	r.POST("/user/v1/change_password", _User_ChangePassword0_HTTP_Handler(srv))
+	r.GET("/user/v1/center", _User_GetUserCenter0_HTTP_Handler(srv))
+	r.GET("/user/v1/address/list", _User_ListAddress0_HTTP_Handler(srv))
+	r.GET("/user/v1/{id}", _User_GetUserInfo0_HTTP_Handler(srv))
+	r.POST("/user/v1/address/create", _User_CreateAddress0_HTTP_Handler(srv))
+	r.PUT("/user/v1/address/update", _User_UpdateAddress0_HTTP_Handler(srv))
+	r.DELETE("/user/v1/address/{id}", _User_DeleteAddress0_HTTP_Handler(srv))
+	r.POST("/user/v1/address/{id}/default", _User_SetDefaultAddress0_HTTP_Handler(srv))
 }
 
 func _User_GetMyInfo0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
@@ -55,28 +83,6 @@ func _User_GetMyInfo0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) er
 			return err
 		}
 		reply := out.(*GetMyInfoReply)
-		return ctx.Result(200, reply)
-	}
-}
-
-func _User_GetUserInfo0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in GetUserInfoRequest
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationUserGetUserInfo)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.GetUserInfo(ctx, req.(*GetUserInfoRequest))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*GetUserInfoReply)
 		return ctx.Result(200, reply)
 	}
 }
@@ -103,11 +109,198 @@ func _User_UpdateUserInfo0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Contex
 	}
 }
 
+func _User_ChangePassword0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ChangePasswordRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserChangePassword)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ChangePassword(ctx, req.(*ChangePasswordRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ChangePasswordReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_GetUserCenter0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in emptypb.Empty
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserGetUserCenter)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetUserCenter(ctx, req.(*emptypb.Empty))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetUserCenterReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_ListAddress0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in emptypb.Empty
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserListAddress)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListAddress(ctx, req.(*emptypb.Empty))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListAddressReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_GetUserInfo0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetUserInfoRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserGetUserInfo)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetUserInfo(ctx, req.(*GetUserInfoRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetUserInfoReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_CreateAddress0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CreateAddressRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserCreateAddress)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CreateAddress(ctx, req.(*CreateAddressRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CreateAddressReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_UpdateAddress0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdateAddressRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserUpdateAddress)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateAddress(ctx, req.(*UpdateAddressRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdateAddressReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_DeleteAddress0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DeleteAddressRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserDeleteAddress)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeleteAddress(ctx, req.(*DeleteAddressRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DeleteAddressReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_SetDefaultAddress0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SetDefaultAddressRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserSetDefaultAddress)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.SetDefaultAddress(ctx, req.(*SetDefaultAddressRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SetDefaultAddressReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type UserHTTPClient interface {
+	// ChangePassword 修改密码
+	ChangePassword(ctx context.Context, req *ChangePasswordRequest, opts ...http.CallOption) (rsp *ChangePasswordReply, err error)
+	// CreateAddress 新增收货地址
+	CreateAddress(ctx context.Context, req *CreateAddressRequest, opts ...http.CallOption) (rsp *CreateAddressReply, err error)
+	// DeleteAddress 删除收货地址
+	DeleteAddress(ctx context.Context, req *DeleteAddressRequest, opts ...http.CallOption) (rsp *DeleteAddressReply, err error)
 	// GetMyInfo 获取个人信息
 	GetMyInfo(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *GetMyInfoReply, err error)
-	// GetUserInfo 获取用户信息
+	// GetUserCenter 个人中心概览（用户信息 + 订单/优惠券统计）
+	GetUserCenter(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *GetUserCenterReply, err error)
+	// GetUserInfo 获取用户信息（带路径参数，需注册在静态路由之后避免抢占）
 	GetUserInfo(ctx context.Context, req *GetUserInfoRequest, opts ...http.CallOption) (rsp *GetUserInfoReply, err error)
+	// ListAddress 收货地址列表
+	ListAddress(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *ListAddressReply, err error)
+	// SetDefaultAddress 设置默认收货地址
+	SetDefaultAddress(ctx context.Context, req *SetDefaultAddressRequest, opts ...http.CallOption) (rsp *SetDefaultAddressReply, err error)
+	// UpdateAddress 更新收货地址
+	UpdateAddress(ctx context.Context, req *UpdateAddressRequest, opts ...http.CallOption) (rsp *UpdateAddressReply, err error)
 	// UpdateUserInfo 更新用户信息
 	UpdateUserInfo(ctx context.Context, req *UpdateUserInfoRequest, opts ...http.CallOption) (rsp *UpdateUserInfoReply, err error)
 }
@@ -118,6 +311,48 @@ type UserHTTPClientImpl struct {
 
 func NewUserHTTPClient(client *http.Client) UserHTTPClient {
 	return &UserHTTPClientImpl{client}
+}
+
+// ChangePassword 修改密码
+func (c *UserHTTPClientImpl) ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...http.CallOption) (*ChangePasswordReply, error) {
+	var out ChangePasswordReply
+	pattern := "/user/v1/change_password"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserChangePassword))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// CreateAddress 新增收货地址
+func (c *UserHTTPClientImpl) CreateAddress(ctx context.Context, in *CreateAddressRequest, opts ...http.CallOption) (*CreateAddressReply, error) {
+	var out CreateAddressReply
+	pattern := "/user/v1/address/create"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserCreateAddress))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// DeleteAddress 删除收货地址
+func (c *UserHTTPClientImpl) DeleteAddress(ctx context.Context, in *DeleteAddressRequest, opts ...http.CallOption) (*DeleteAddressReply, error) {
+	var out DeleteAddressReply
+	pattern := "/user/v1/address/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationUserDeleteAddress))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // GetMyInfo 获取个人信息
@@ -134,7 +369,21 @@ func (c *UserHTTPClientImpl) GetMyInfo(ctx context.Context, in *emptypb.Empty, o
 	return &out, nil
 }
 
-// GetUserInfo 获取用户信息
+// GetUserCenter 个人中心概览（用户信息 + 订单/优惠券统计）
+func (c *UserHTTPClientImpl) GetUserCenter(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*GetUserCenterReply, error) {
+	var out GetUserCenterReply
+	pattern := "/user/v1/center"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationUserGetUserCenter))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// GetUserInfo 获取用户信息（带路径参数，需注册在静态路由之后避免抢占）
 func (c *UserHTTPClientImpl) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...http.CallOption) (*GetUserInfoReply, error) {
 	var out GetUserInfoReply
 	pattern := "/user/v1/{id}"
@@ -142,6 +391,48 @@ func (c *UserHTTPClientImpl) GetUserInfo(ctx context.Context, in *GetUserInfoReq
 	opts = append(opts, http.Operation(OperationUserGetUserInfo))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ListAddress 收货地址列表
+func (c *UserHTTPClientImpl) ListAddress(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*ListAddressReply, error) {
+	var out ListAddressReply
+	pattern := "/user/v1/address/list"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationUserListAddress))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// SetDefaultAddress 设置默认收货地址
+func (c *UserHTTPClientImpl) SetDefaultAddress(ctx context.Context, in *SetDefaultAddressRequest, opts ...http.CallOption) (*SetDefaultAddressReply, error) {
+	var out SetDefaultAddressReply
+	pattern := "/user/v1/address/{id}/default"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserSetDefaultAddress))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// UpdateAddress 更新收货地址
+func (c *UserHTTPClientImpl) UpdateAddress(ctx context.Context, in *UpdateAddressRequest, opts ...http.CallOption) (*UpdateAddressReply, error) {
+	var out UpdateAddressReply
+	pattern := "/user/v1/address/update"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserUpdateAddress))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

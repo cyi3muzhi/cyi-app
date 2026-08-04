@@ -101,12 +101,49 @@ func (m *mockOrderRepoForOrder) BatchGetOrder(ctx context.Context, ids []int64) 
 	return nil, nil
 }
 
-func (m *mockOrderRepoForOrder) ListOrder(_ context.Context, _ int32, _ int32, _ string, _ string, _ string, _ string) ([]*Order, int32, error) {
+func (m *mockOrderRepoForOrder) ListOrder(_ context.Context, _ int32, _ int32, _ string, _ string, _ string, _ string, _ int64) ([]*Order, int32, error) {
 	return nil, 0, nil
 }
 
 func (m *mockOrderRepoForOrder) OrderStats(_ context.Context) (int32, int32, int32, int32, error) {
 	return 0, 0, 0, 0, nil
+}
+
+func (m *mockOrderRepoForOrder) GetUserOrderStats(_ context.Context, _ int64) (*UserOrderStats, error) {
+	return &UserOrderStats{}, nil
+}
+
+func (m *mockOrderRepoForOrder) UpdateLogistics(_ context.Context, _ int64, _ string, _ string) error {
+	return nil
+}
+
+// UpdateStatusIf 条件更新订单状态（默认成功）
+func (m *mockOrderRepoForOrder) UpdateStatusIf(_ context.Context, _ int64, _ int32, _ int32) error {
+	return nil
+}
+
+func (m *mockOrderRepoForOrder) CreatePaymentLog(_ context.Context, _ *PaymentLog) error {
+	return nil
+}
+
+func (m *mockOrderRepoForOrder) ReleaseCoupon(_ context.Context, _ int64, _ int64, _ int64) error {
+	return nil
+}
+
+func (m *mockOrderRepoForOrder) ListOverdueWaitPayOrders(_ context.Context, _ int32, _ int32, _ int64) ([]*Order, int32, error) {
+	return nil, 0, nil
+}
+
+// mockOrderTimeoutTaskRepoForOrder 用于 OrderUseCase 测试的超时任务投递 mock
+type mockOrderTimeoutTaskRepoForOrder struct {
+	enqueueTimeoutCancelFn func(ctx context.Context, orderID int64) error
+}
+
+func (m *mockOrderTimeoutTaskRepoForOrder) EnqueueTimeoutCancel(ctx context.Context, orderID int64) error {
+	if m.enqueueTimeoutCancelFn != nil {
+		return m.enqueueTimeoutCancelFn(ctx, orderID)
+	}
+	return nil
 }
 
 // newTestOrderUseCase 快速构建测试用 OrderUseCase
@@ -116,7 +153,7 @@ func newTestOrderUseCase(
 	stockRe *mockStockRepoForOrder,
 ) *OrderUseCase {
 	logger := log.NewStdLogger(io.Discard)
-	return NewOrderUseCase(repo, productRe, stockRe, logger)
+	return NewOrderUseCase(repo, productRe, stockRe, &mockOrderTimeoutTaskRepoForOrder{}, logger)
 }
 
 // ---------------------------------------------------------------------------

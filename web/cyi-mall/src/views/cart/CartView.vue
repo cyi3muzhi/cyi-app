@@ -59,7 +59,7 @@
                 <input
                   type="checkbox"
                   class="cart-checkbox"
-                  :checked="isAllSelected"
+                  :checked="cartStore.isAllSelected"
                   :indeterminate="isIndeterminate"
                   @change="toggleSelectAll"
                 />
@@ -68,12 +68,18 @@
               <span class="selected-count-label">
                 已选 <strong>{{ cartStore.selectedCount }}</strong> 件
               </span>
+              <button class="clear-cart-btn" @click="onClearCart">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+                清空
+              </button>
             </div>
 
             <!-- 商品条目列表 -->
             <div
               v-for="item in cartStore.items"
-              :key="item.id"
+              :key="item.productId + '-' + item.skuId"
               class="cart-item-row"
             >
               <!-- 选中框 -->
@@ -82,14 +88,14 @@
                   type="checkbox"
                   class="cart-checkbox"
                   :checked="item.selected"
-                  @change="cartStore.toggleSelect(item.id)"
+                  @change="cartStore.toggleSelect(item.productId, item.skuId)"
                 />
               </label>
 
               <!-- 缩略图 -->
               <div class="item-image-col">
                 <div class="item-image-wrap">
-                  <img :src="item.image" :alt="item.name" />
+                  <img :src="item.image" :alt="item.name" @error="onImageError" />
                 </div>
               </div>
 
@@ -104,7 +110,7 @@
                     <button
                       class="qty-btn"
                       :disabled="item.quantity <= 1"
-                      @click="cartStore.updateQuantity(item.id, item.quantity - 1)"
+                      @click="cartStore.updateQuantity(item.productId, item.skuId, item.quantity - 1)"
                     >
                       -
                     </button>
@@ -112,13 +118,13 @@
                     <button
                       class="qty-btn"
                       :disabled="item.quantity >= item.stock"
-                      @click="cartStore.updateQuantity(item.id, item.quantity + 1)"
+                      @click="cartStore.updateQuantity(item.productId, item.skuId, item.quantity + 1)"
                     >
                       +
                     </button>
                   </div>
                   <span class="item-subtotal">&yen;{{ (item.price * item.quantity).toFixed(2) }}</span>
-                  <button class="delete-btn" @click="cartStore.removeItem(item.id)" aria-label="删除商品">
+                  <button class="delete-btn" @click="onRemoveItem(item.productId, item.skuId)" aria-label="删除商品">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
@@ -184,6 +190,7 @@
             <button
               class="checkout-btn"
               :disabled="cartStore.selectedCount === 0"
+              @click="onCheckout"
             >
               去结算
             </button>
@@ -217,11 +224,18 @@
  * 购物车视图组件
  * 展示购物车商品列表、选中管理、数量调整、订单结算和推荐商品
  */
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCartStore } from '@/store/cart'
 import ProductCard from '@/components/ProductCard.vue'
 
+const router = useRouter()
 const cartStore = useCartStore()
+
+// 页面加载时拉取购物车（登录读后端，未登录读本地）
+onMounted(() => {
+  cartStore.loadCart()
+})
 
 // ---- 优惠码 ----
 const promoCode = ref('')
@@ -249,11 +263,6 @@ function applyPromo() {
 }
 
 // ---- 全选逻辑 ----
-/** 是否全部选中 */
-const isAllSelected = computed(() => {
-  return cartStore.items.length > 0 && cartStore.items.every(i => i.selected)
-})
-
 /** 是否处于半选状态 */
 const isIndeterminate = computed(() => {
   const checked = cartStore.items.filter(i => i.selected).length
@@ -262,7 +271,39 @@ const isIndeterminate = computed(() => {
 
 /** 切换全选 */
 function toggleSelectAll() {
-  cartStore.toggleSelectAll(!isAllSelected.value)
+  cartStore.toggleSelectAll(!cartStore.isAllSelected)
+}
+
+/**
+ * 删除购物车商品（二次确认）
+ * @param productId 商品ID
+ * @param skuId SKU ID
+ */
+function onRemoveItem(productId: number, skuId: number) {
+  if (!window.confirm('确定将该商品移出购物车吗？')) return
+  cartStore.removeItem(productId, skuId)
+}
+
+/**
+ * 清空购物车（二次确认）
+ */
+function onClearCart() {
+  if (cartStore.items.length === 0) return
+  if (!window.confirm('确定清空购物车吗？')) return
+  cartStore.clear()
+}
+
+/** 商品图片加载失败时的占位处理 */
+function onImageError(e: Event) {
+  ;(e.target as HTMLImageElement).style.display = 'none'
+}
+
+/**
+ * 去结算：跳转确认订单页（携带购物车选中的商品，由结算页读取 store）
+ */
+function onCheckout() {
+  if (cartStore.selectedCount === 0) return
+  router.push('/checkout')
 }
 
 // ---- 运费和合计 ----
@@ -480,6 +521,23 @@ const recommendProducts = [
   font-size: 0.75rem;
   color: var(--shop-muted-foreground);
   margin-left: auto;
+}
+
+.clear-cart-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: none;
+  background: none;
+  color: var(--shop-muted-foreground);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: color var(--shop-transition);
+  font-family: var(--shop-font-sans);
+}
+.clear-cart-btn:hover {
+  color: var(--shop-destructive);
 }
 
 /* ---- 商品条目 ---- */

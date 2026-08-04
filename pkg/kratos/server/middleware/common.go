@@ -25,10 +25,11 @@ type Meter struct {
 type MiddlewareType bool
 
 type MiddlewareOptions struct {
-	Auth     Auth
-	Enforcer EnforcerProvider
-	logger   log.Logger
-	Meter    *Meter
+	Auth      Auth
+	Enforcer  EnforcerProvider
+	logger    log.Logger
+	Meter     *Meter
+	Fallbacks map[string]FallbackFunc // 客户端降级策略：operation -> 兜底函数
 }
 
 type MiddlewareOption func(*MiddlewareOptions)
@@ -58,5 +59,14 @@ func WithMetricsMiddleware(meter*Meter) MiddlewareOption {
 func WithCasbinMiddleware(enforcer EnforcerProvider) MiddlewareOption {
 	return func(o *MiddlewareOptions) {
 		o.Enforcer = enforcer
+	}
+}
+
+// WithFallbackMiddleware 注册客户端降级策略（operation -> 兜底函数）
+// 当调用下游 gRPC 失败或被熔断快速失败时，命中策略的接口返回兜底响应而不是错误。
+// 示例：map[string]FallbackFunc{"/product.v1.Product/GetProduct": fallbackProduct}
+func WithFallbackMiddleware(fallbacks map[string]FallbackFunc) MiddlewareOption {
+	return func(o *MiddlewareOptions) {
+		o.Fallbacks = fallbacks
 	}
 }

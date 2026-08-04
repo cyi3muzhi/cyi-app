@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package api.cin.interface.v1;
+
+option go_package = "cyi-app/api/cin/interface/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.cin.interface.v1";
+
+import "google/api/annotations.proto";
+
+// 文件上传服务（头像等，前端直传 OSS）
+service Upload {
+  // 获取上传凭证（预签名 URL 直传）
+  rpc GetUploadToken (GetUploadTokenRequest) returns (GetUploadTokenReply) {
+    option (google.api.http) = {
+      post: "/user/v1/upload/token"
+      body: "*"
+    };
+  }
+}
+
+message GetUploadTokenRequest {
+  string filename = 1;  // 原始文件名（含扩展名）
+  string directory = 2; // 上传目录，如 "avatar"
+}
+
+message GetUploadTokenReply {
+  string upload_url = 1;  // 预签名 PUT URL（前端直接 PUT 文件到此地址）
+  string object_key = 2;  // 对象存储路径
+  string public_url = 3;  // 文件公开访问 URL（上传完成后可直接使用）
+}

@@ -10,6 +10,8 @@ import (
 	"golang.org/x/sync/singleflight"
 
 	v1 "cyi-app/api/cin/interface/v1"
+	marketingV1 "cyi-app/api/service/marketing/v1"
+	orderV1 "cyi-app/api/service/order/v1"
 	usV1 "cyi-app/api/service/user/v1"
 
 	cr "cyi-app/pkg/util/redis"
@@ -110,6 +112,9 @@ func (r *userRepo) ModifyUser(ctx context.Context, u *biz.User) error {
 		Id:       u.ID,
 		Nickname: u.Nickname,
 		Avatar:   u.Avatar,
+		Email:    u.Email,
+		Gender:   u.Gender,
+		Birthday: u.Birthday,
 	})
 	if err != nil {
 		return err
@@ -157,12 +162,17 @@ func (r *userRepo) GetUser(ctx context.Context, id int64) (*biz.User, error) {
 			return nil, err
 		}
 		return &biz.User{
-			ID:       user.User.Id,
-			Username: user.User.Username,
-			Nickname: user.User.Nickname,
-			Phone:    user.User.Phone,
-			Avatar:   user.User.Avatar,
-			Gender:   user.User.Gender,
+			ID:          user.User.Id,
+			Username:    user.User.Username,
+			Nickname:    user.User.Nickname,
+			Phone:       user.User.Phone,
+			Avatar:      user.User.Avatar,
+			Gender:      user.User.Gender,
+			Email:       user.User.Email,
+			Birthday:    user.User.Birthday,
+			Level:       user.User.Level,
+			GrowthValue: user.User.GrowthValue,
+			CreatedAt:   user.User.CreatedAt,
 		}, nil
 	})
 	if err != nil {
@@ -198,4 +208,136 @@ func (r *userRepo) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginRe
 	return &v1.LoginReply{
 		Token: reply.Token,
 	}, nil
+}
+
+// ChangePassword 修改密码（委托用户服务校验旧密码并更新）
+func (r *userRepo) ChangePassword(ctx context.Context, userID int64, oldPassword, newPassword string) error {
+	_, err := r.data.uc.ChangePassword(ctx, &usV1.ChangePasswordRequest{
+		UserId:      userID,
+		OldPassword: oldPassword,
+		NewPassword: newPassword,
+	})
+	if err != nil {
+		r.log.Errorf("ChangePassword failed, userID=%d: %v", userID, err)
+		return err
+	}
+	return nil
+}
+
+// GetUserCenter 获取个人中心概览：聚合用户信息 + 订单统计 + 可用优惠券数量
+func (r *userRepo) GetUserCenter(ctx context.Context, userID int64) (*biz.UserCenter, error) {
+	// 1. 用户信息（复用带缓存的查询）
+	user, err := r.GetUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	// 2. 订单统计
+	orderStats, err := r.data.oc.GetUserOrderStats(ctx, &orderV1.GetUserOrderStatsRequest{UserId: userID})
+	if err != nil {
+		r.log.Errorf("GetUserOrderStats failed, userID=%d: %v", userID, err)
+		return nil, err
+	}
+	// 3. 可用优惠券数量（未使用状态，只取总数）
+	couponReply, err := r.data.mcc.ListUserCoupons(ctx, &marketingV1.ListUserCouponsRequest{
+		UserId: userID, Status: 1, Page: 1, PageSize: 1,
+	})
+	if err != nil {
+		r.log.Errorf("ListUserCoupons failed, userID=%d: %v", userID, err)
+		return nil, err
+	}
+	stats := &biz.CenterStats{
+		TotalOrders:    orderStats.TotalOrders,
+		PendingPay:     orderStats.PendingPay,
+		PendingShip:    orderStats.PendingShip,
+		PendingReceive: orderStats.PendingReceive,
+		PendingReview:  orderStats.Complete,
+		RefundCount:    orderStats.RefundCount,
+		CouponCount:    int64(couponReply.Total),
+		TotalSpent:     orderStats.TotalSpent,
+	}
+	return &biz.UserCenter{User: user, Stats: stats}, nil
+}
+
+// ListAddress 获取收货地址列表
+func (r *userRepo) ListAddress(ctx context.Context, userID int64) ([]*biz.Address, error) {
+	reply, err := r.data.uc.ListAddress(ctx, &usV1.ListAddressRequest{UserId: userID})
+	if err != nil {
+		r.log.Errorf("ListAddress failed, userID=%d: %v", userID, err)
+		return nil, err
+	}
+	items := make([]*biz.Address, 0, len(reply.Items))
+	for _, item := range reply.Items {
+		items = append(items, &biz.Address{
+			ID:         item.Id,
+			Receiver:   item.Receiver,
+			Phone:      item.Phone,
+			Province:   item.Province,
+			City:       item.City,
+			District:   item.District,
+			Detail:     item.Detail,
+			IsDefault:  item.IsDefault,
+			CreateTime: item.CreateTime,
+		})
+	}
+	return items, nil
+}
+
+// CreateAddress 新增收货地址
+func (r *userRepo) CreateAddress(ctx context.Context, a *biz.Address) (*biz.Address, error) {
+	reply, err := r.data.uc.CreateAddress(ctx, &usV1.CreateAddressRequest{
+		UserId:    a.UserID,
+		Receiver:  a.Receiver,
+		Phone:     a.Phone,
+		Province:  a.Province,
+		City:      a.City,
+		District:  a.District,
+		Detail:    a.Detail,
+		IsDefault: a.IsDefault,
+	})
+	if err != nil {
+		r.log.Errorf("CreateAddress failed, userID=%d: %v", a.UserID, err)
+		return nil, err
+	}
+	a.ID = reply.Id
+	return a, nil
+}
+
+// UpdateAddress 更新收货地址
+func (r *userRepo) UpdateAddress(ctx context.Context, a *biz.Address) error {
+	_, err := r.data.uc.UpdateAddress(ctx, &usV1.UpdateAddressRequest{
+		Id:        a.ID,
+		UserId:    a.UserID,
+		Receiver:  a.Receiver,
+		Phone:     a.Phone,
+		Province:  a.Province,
+		City:      a.City,
+		District:  a.District,
+		Detail:    a.Detail,
+		IsDefault: a.IsDefault,
+	})
+	if err != nil {
+		r.log.Errorf("UpdateAddress failed, id=%d: %v", a.ID, err)
+		return err
+	}
+	return nil
+}
+
+// DeleteAddress 删除收货地址
+func (r *userRepo) DeleteAddress(ctx context.Context, id int64, userID int64) error {
+	_, err := r.data.uc.DeleteAddress(ctx, &usV1.DeleteAddressRequest{Id: id, UserId: userID})
+	if err != nil {
+		r.log.Errorf("DeleteAddress failed, id=%d: %v", id, err)
+		return err
+	}
+	return nil
+}
+
+// SetDefaultAddress 设置默认收货地址
+func (r *userRepo) SetDefaultAddress(ctx context.Context, id int64, userID int64) error {
+	_, err := r.data.uc.SetDefaultAddress(ctx, &usV1.SetDefaultAddressRequest{Id: id, UserId: userID})
+	if err != nil {
+		r.log.Errorf("SetDefaultAddress failed, id=%d: %v", id, err)
+		return err
+	}
+	return nil
 }

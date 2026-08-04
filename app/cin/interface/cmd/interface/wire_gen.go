@@ -40,7 +40,11 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	adminBannerClient := data.NewAdminBannerServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	universalClient := data.NewRedisClient(confData, logger)
 	client := data.NewAsynqClient(universalClient)
-	dataData, cleanup, err := data.NewData(confData, userClient, orderClient, productClient, categoryClient, stockClient, couponServiceClient, adminSettingsClient, adminBannerClient, universalClient, logger, client)
+	rustFSClient, err := data.NewOssClient(confData)
+	if err != nil {
+		return nil, nil, err
+	}
+	dataData, cleanup, err := data.NewData(confData, userClient, orderClient, productClient, categoryClient, stockClient, couponServiceClient, adminSettingsClient, adminBannerClient, universalClient, logger, client, rustFSClient)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -61,7 +65,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	settingsUseCase := biz.NewSettingsUseCase(settingsRepo, logger)
 	bannerRepo := data.NewBannerRepo(adminBannerClient)
 	bannerUseCase := biz.NewBannerUseCase(bannerRepo)
-	cinInterface := service.NewCinInterface(userUseCase, orderUseCase, productUseCase, categoryUseCase, stockUseCase, bladesUseCase, couponUseCase, settingsUseCase, bannerUseCase, logger, auth)
+	cartRepo := data.NewCartRepo(dataData, logger)
+	cartUseCase := biz.NewCartUseCase(cartRepo, productRepo, logger)
+	uploadRepo := data.NewUploadRepo(dataData, logger)
+	cinInterface := service.NewCinInterface(userUseCase, orderUseCase, productUseCase, categoryUseCase, stockUseCase, bladesUseCase, couponUseCase, settingsUseCase, bannerUseCase, cartUseCase, uploadRepo, logger, auth)
 	server2 := server.NewGRPCServer(grpcServer, cinInterface)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	server3 := server.NewHTTPServer(httpServer, cinInterface, auth)

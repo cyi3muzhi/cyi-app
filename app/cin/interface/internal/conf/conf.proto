@@ -42,8 +42,15 @@ message Data {
     google.protobuf.Duration write_timeout = 4;
     string password = 5;
   }
+  message OSS {
+    string endpoint = 1;
+    string public_endpoint = 2;
+    string access_key = 3;
+    string secret_key = 4;
+  }
   Database database = 1;
   Redis redis = 2;
+  OSS oss = 3;
 }
 
 message Registry {

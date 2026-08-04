@@ -188,3 +188,59 @@ func IsDeleteUserFailed(err error) bool {
 func ErrorDeleteUserFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, UserServiceErrorReason_DELETE_USER_FAILED.String(), fmt.Sprintf(format, args...))
 }
+
+// 收货地址不存在
+func IsAddressNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == UserServiceErrorReason_ADDRESS_NOT_FOUND.String() && e.Code == 422
+}
+
+// 收货地址不存在
+func ErrorAddressNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, UserServiceErrorReason_ADDRESS_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+}
+
+// 收货地址新增失败
+func IsAddressCreateFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == UserServiceErrorReason_ADDRESS_CREATE_FAILED.String() && e.Code == 422
+}
+
+// 收货地址新增失败
+func ErrorAddressCreateFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, UserServiceErrorReason_ADDRESS_CREATE_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+// 收货地址更新失败
+func IsAddressUpdateFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == UserServiceErrorReason_ADDRESS_UPDATE_FAILED.String() && e.Code == 422
+}
+
+// 收货地址更新失败
+func ErrorAddressUpdateFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, UserServiceErrorReason_ADDRESS_UPDATE_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+// 收货地址删除失败
+func IsAddressDeleteFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == UserServiceErrorReason_ADDRESS_DELETE_FAILED.String() && e.Code == 422
+}
+
+// 收货地址删除失败
+func ErrorAddressDeleteFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, UserServiceErrorReason_ADDRESS_DELETE_FAILED.String(), fmt.Sprintf(format, args...))
+}

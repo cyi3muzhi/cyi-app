@@ -29,6 +29,7 @@ const (
 	CouponService_ClaimCoupon_FullMethodName        = "/api.service.marketing.v1.CouponService/ClaimCoupon"
 	CouponService_ListUserCoupons_FullMethodName    = "/api.service.marketing.v1.CouponService/ListUserCoupons"
 	CouponService_UseCoupon_FullMethodName          = "/api.service.marketing.v1.CouponService/UseCoupon"
+	CouponService_ReleaseCoupon_FullMethodName      = "/api.service.marketing.v1.CouponService/ReleaseCoupon"
 	CouponService_BatchExpireCoupons_FullMethodName = "/api.service.marketing.v1.CouponService/BatchExpireCoupons"
 	CouponService_ListDistRecords_FullMethodName    = "/api.service.marketing.v1.CouponService/ListDistRecords"
 )
@@ -50,6 +51,8 @@ type CouponServiceClient interface {
 	ListUserCoupons(ctx context.Context, in *ListUserCouponsRequest, opts ...grpc.CallOption) (*ListUserCouponsReply, error)
 	// 使用/核销优惠券
 	UseCoupon(ctx context.Context, in *UseCouponRequest, opts ...grpc.CallOption) (*UseCouponReply, error)
+	// 返还优惠券（订单取消/退款时调用，解除核销）
+	ReleaseCoupon(ctx context.Context, in *ReleaseCouponRequest, opts ...grpc.CallOption) (*ReleaseCouponReply, error)
 	// 批量过期优惠券发放记录（给 job 服务调）
 	BatchExpireCoupons(ctx context.Context, in *BatchExpireCouponsRequest, opts ...grpc.CallOption) (*BatchExpireCouponsReply, error)
 	// 查询优惠券发放记录列表
@@ -164,6 +167,16 @@ func (c *couponServiceClient) UseCoupon(ctx context.Context, in *UseCouponReques
 	return out, nil
 }
 
+func (c *couponServiceClient) ReleaseCoupon(ctx context.Context, in *ReleaseCouponRequest, opts ...grpc.CallOption) (*ReleaseCouponReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReleaseCouponReply)
+	err := c.cc.Invoke(ctx, CouponService_ReleaseCoupon_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *couponServiceClient) BatchExpireCoupons(ctx context.Context, in *BatchExpireCouponsRequest, opts ...grpc.CallOption) (*BatchExpireCouponsReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(BatchExpireCouponsReply)
@@ -201,6 +214,8 @@ type CouponServiceServer interface {
 	ListUserCoupons(context.Context, *ListUserCouponsRequest) (*ListUserCouponsReply, error)
 	// 使用/核销优惠券
 	UseCoupon(context.Context, *UseCouponRequest) (*UseCouponReply, error)
+	// 返还优惠券（订单取消/退款时调用，解除核销）
+	ReleaseCoupon(context.Context, *ReleaseCouponRequest) (*ReleaseCouponReply, error)
 	// 批量过期优惠券发放记录（给 job 服务调）
 	BatchExpireCoupons(context.Context, *BatchExpireCouponsRequest) (*BatchExpireCouponsReply, error)
 	// 查询优惠券发放记录列表
@@ -244,6 +259,9 @@ func (UnimplementedCouponServiceServer) ListUserCoupons(context.Context, *ListUs
 }
 func (UnimplementedCouponServiceServer) UseCoupon(context.Context, *UseCouponRequest) (*UseCouponReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UseCoupon not implemented")
+}
+func (UnimplementedCouponServiceServer) ReleaseCoupon(context.Context, *ReleaseCouponRequest) (*ReleaseCouponReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReleaseCoupon not implemented")
 }
 func (UnimplementedCouponServiceServer) BatchExpireCoupons(context.Context, *BatchExpireCouponsRequest) (*BatchExpireCouponsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchExpireCoupons not implemented")
@@ -452,6 +470,24 @@ func _CouponService_UseCoupon_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CouponService_ReleaseCoupon_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReleaseCouponRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CouponServiceServer).ReleaseCoupon(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CouponService_ReleaseCoupon_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CouponServiceServer).ReleaseCoupon(ctx, req.(*ReleaseCouponRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CouponService_BatchExpireCoupons_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BatchExpireCouponsRequest)
 	if err := dec(in); err != nil {
@@ -534,6 +570,10 @@ var CouponService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UseCoupon",
 			Handler:    _CouponService_UseCoupon_Handler,
+		},
+		{
+			MethodName: "ReleaseCoupon",
+			Handler:    _CouponService_ReleaseCoupon_Handler,
 		},
 		{
 			MethodName: "BatchExpireCoupons",

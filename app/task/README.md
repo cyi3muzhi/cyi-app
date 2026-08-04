@@ -31,6 +31,7 @@ app/task/
 │   │   ├── biz.go       # 业务层依赖注入
 │   │   ├── coupon.go    # 优惠券业务接口（cron 批量过期）
 │   │   ├── export.go    # 订单导出业务逻辑（消费端）
+│   │   ├── order_timeout.go # 订单超时自动取消业务逻辑（消费端）
 │   │   ├── task.go      # 任务业务逻辑
 │   │   └── user.go      # 用户业务逻辑
 │   ├── conf/
@@ -42,7 +43,7 @@ app/task/
 │   │   ├── data.go      # 数据层初始化
 │   │   ├── excel.go     # Excel 生成与上传 OSS
 │   │   ├── export.go    # 导出任务状态仓库（Redis）
-│   │   ├── order.go     # 订单查询（导出用，order+user gRPC）
+│   │   ├── order.go     # 订单查询（导出用）+ 订单超时取消（order gRPC）
 │   │   ├── task.go      # 任务数据访问
 │   │   └── user.go      # 用户数据访问
 │   ├── server/
@@ -84,6 +85,7 @@ app/task/
 | `UserUseCase` | 用户相关异步任务（含 `UserCount` 定时统计） |
 | `ExportUseCase` | 订单导出任务消费（查订单→生成Excel→上传OSS→更新状态） |
 | `CouponRepo` | 优惠券批量过期（cron 定时任务，经 marketing gRPC 调用） |
+| `OrderTimeoutUseCase` | 订单超时自动取消（延迟任务消费 + cron 兜底扫描：校验订单状态后调 order gRPC 取消） |
 
 ### 任务处理
 
@@ -110,6 +112,19 @@ admin 通过 `task_id` 从 Redis 读取任务状态，`completed` 时根据 `obj
 
 > 任务状态结构与 key 前缀由共享包 `pkg/exporttask` 定义，admin 与 task 共同引用以保证一致。
 
+#### 订单超时自动取消任务（由订单服务投递延迟任务）
+
+用户下单后（待付款状态），订单服务通过 asynq 延迟队列投递 `delay:order_timeout_cancel` 任务（`ProcessIn(30min)` + 固定 TaskID `order_timeout:{orderId}` 去重）；task 服务消费时：
+
+1. 解析 payload 获取 `order_id`
+2. 通过 order gRPC `GetOrder` 查询订单状态
+3. 仅当订单仍为**待付款**（status=1）时调 `CancelOrder`（userID=0 系统操作）自动取消并释放预留库存
+4. 已支付/已取消/已完成等状态幂等跳过
+
+> 任务类型与 payload 结构由共享包 `pkg/ordertask` 定义，订单服务与 task 共同引用以保证一致。
+
+此外，还注册了 cron 定时任务 `order_timeout_check`（每分钟）作为**兜底扫描**：调用订单服务 `ListOverdueWaitPayOrders`（status=1 且创建时间早于 now-30min，秒级过滤由数据库下推），把超时未支付的订单自动取消。该机制既覆盖功能上线前的存量待付款订单，也兜底下单时延迟任务丢失的场景，保证超时订单最终一定被取消。
+
 #### cron 定时任务（Scheduler 调度）
 
 服务启动时通过 `NewScheduler` + `RegisterScheduler` 注册配置中的定时任务（`config.yaml` 的 `tasks` 段），按 cron 表达式周期投递到 `critical` 队列并自行消费：
@@ -118,6 +133,7 @@ admin 通过 `task_id` 从 Redis 读取任务状态，`completed` 时根据 `obj
 |--------|------|------|
 | `user_count` | `*/1 * * * *` | 每分钟统计用户数量（调用 user 服务） |
 | `coupon_expire` | `*/5 * * * *` | 每 5 分钟批量过期优惠券发放记录（调用 marketing 服务） |
+| `order_timeout_check` | `*/1 * * * *` | 每分钟扫描并取消超时未支付的待付款订单（调用 order 服务，兜底保障） |
 
 > 定时任务原属于独立 job 服务，已合并进 task 服务统一管理。
 
@@ -126,7 +142,7 @@ admin 通过 `task_id` 从 Redis 读取任务状态，`completed` 时根据 `obj
 task 服务消费以下队列（在 `server/server.go` 的 `NewTaskServer` 中声明）：
 
 - `critical`: cron 定时任务专用队列（`user_count`、`coupon_expire`），权重 5
-- `default`: 默认队列（`email:send`、`create_user` 等异步任务），权重 3
+- `default`: 默认队列（`email:send`、`create_user` 等异步任务 + `delay:order_timeout_cancel` 订单超时延迟任务），权重 3
 - `export`: 导出队列（订单导出任务），权重 2
 
 ## 运行方式

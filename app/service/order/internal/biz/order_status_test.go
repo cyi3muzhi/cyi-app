@@ -13,7 +13,8 @@ import (
 
 // mockOrderRepo 用于状态机测试的内存 mock 仓储
 type mockOrderRepo struct {
-	updateOrderFn func(ctx context.Context, in *Order) error
+	updateOrderFn     func(ctx context.Context, in *Order) error
+	updateStatusIfFn  func(ctx context.Context, id int64, expectStatus, newStatus int32) error
 }
 
 func (m *mockOrderRepo) CreateOrder(_ context.Context, _ *Order) error { return nil }
@@ -29,12 +30,40 @@ func (m *mockOrderRepo) GetOrder(_ context.Context, _ int64) (*Order, error) { r
 func (m *mockOrderRepo) BatchGetOrder(_ context.Context, _ []int64) ([]*Order, error) {
 	return nil, nil
 }
-func (m *mockOrderRepo) ListOrder(_ context.Context, _ int32, _ int32, _ string, _ string, _ string, _ string) ([]*Order, int32, error) {
+func (m *mockOrderRepo) ListOrder(_ context.Context, _ int32, _ int32, _ string, _ string, _ string, _ string, _ int64) ([]*Order, int32, error) {
 	return nil, 0, nil
 }
 
 func (m *mockOrderRepo) OrderStats(_ context.Context) (int32, int32, int32, int32, error) {
 	return 0, 0, 0, 0, nil
+}
+
+func (m *mockOrderRepo) GetUserOrderStats(_ context.Context, _ int64) (*UserOrderStats, error) {
+	return &UserOrderStats{}, nil
+}
+
+func (m *mockOrderRepo) UpdateLogistics(_ context.Context, _ int64, _ string, _ string) error {
+	return nil
+}
+
+// UpdateStatusIf 条件更新订单状态（状态机测试可注入 updateStatusIfFn 模拟 DB 失败/冲突）
+func (m *mockOrderRepo) UpdateStatusIf(ctx context.Context, id int64, expectStatus, newStatus int32) error {
+	if m.updateStatusIfFn != nil {
+		return m.updateStatusIfFn(ctx, id, expectStatus, newStatus)
+	}
+	return nil
+}
+
+func (m *mockOrderRepo) CreatePaymentLog(_ context.Context, _ *PaymentLog) error {
+	return nil
+}
+
+func (m *mockOrderRepo) ReleaseCoupon(_ context.Context, _ int64, _ int64, _ int64) error {
+	return nil
+}
+
+func (m *mockOrderRepo) ListOverdueWaitPayOrders(_ context.Context, _ int32, _ int32, _ int64) ([]*Order, int32, error) {
+	return nil, 0, nil
 }
 
 // mockStockRepo 用于状态机测试的 mock 库存仓储
@@ -486,24 +515,21 @@ func TestOrder_DefaultHandlerRejectsUnknown(t *testing.T) {
 	}
 }
 
-// TestOrder_TransitionDBFailure 验证数据库失败时状态回滚
+// TestOrder_TransitionDBFailure 验证数据库失败时状态转换返回错误，且内存状态不被污染
 func TestOrder_TransitionDBFailure(t *testing.T) {
-	// 模拟 UpdateOrder 失败
+	// 模拟 UpdateStatusIf（条件更新）失败
 	repo := &mockOrderRepo{
-		updateOrderFn: func(_ context.Context, _ *Order) error {
+		updateStatusIfFn: func(_ context.Context, _ int64, _ int32, _ int32) error {
 			return v1.ErrorOrderStatusInvalid("db error")
 		},
 	}
 	order := createTestOrder(v1.OrderStatus_WaitPay, repo)
 
-	// 状态转换应该失败，且状态应该被回滚
+	// 状态转换应该失败，且内存状态保持原状（成功后才切换状态处理器）
 	oldStatus := order.Status
 	err := order.Pay(context.Background())
 	assertError(t, err)
-	// 注意：由于 transitionTo 先调用 SetStatus 再 UpdateOrder，
-	// 失败后内存状态已被修改。这是当前设计的一个已知行为。
-	// 如果需要严格的回滚语义，需要引入事务补偿机制。
-	_ = oldStatus
+	assertStatus(t, order.Status, oldStatus)
 }
 
 // TestOrder_SetStatus 验证 SetStatus 正确切换处理器

@@ -240,6 +240,12 @@ func (r *orderRepo) GetOrder(ctx context.Context, orderID int64) (*biz.Order, er
 		StatusText:  statusText,
 		Freight:     reply.Freight,
 		DiscountAmt: reply.DiscountAmount,
+		// 物流信息（发货后展示）
+		LogisticsCompany: reply.LogisticsCompany,
+		LogisticsNo:      reply.LogisticsNo,
+		Receiver:         reply.Receiver,
+		Phone:            reply.Phone,
+		Address:          reply.Address,
 	}
 
 	for _, item := range reply.Items {
@@ -260,16 +266,30 @@ func (r *orderRepo) resolveImageURL(ctx context.Context, image string) string {
 	return r.data.resolvePresignedURL(ctx, image, 3600*24*30)
 }
 
-// ShipOrder 通过 gRPC 调用订单服务发货（待实现订单服务端的发货接口）
+// ShipOrder 通过 gRPC 调用订单服务发货（状态流转 + 写入物流信息）
 func (r *orderRepo) ShipOrder(ctx context.Context, orderID int64, logisticsCompany string, logisticsNo string) error {
-	// TODO: 订单服务端暂未实现发货 RPC，后续扩展
-	r.log.Infof("ship order %d: company=%s, no=%s", orderID, logisticsCompany, logisticsNo)
+	_, err := r.data.oc.ShipOrder(ctx, &orderRpc.ShipOrderRequest{
+		OrderId:          orderID,
+		LogisticsCompany: logisticsCompany,
+		LogisticsNo:      logisticsNo,
+	})
+	if err != nil {
+		r.log.Errorf("ship order failed, orderID=%d: %v", orderID, err)
+		return err
+	}
 	return nil
 }
 
-// CancelOrder 通过 gRPC 调用订单服务取消订单（暂以更新订单状态方式实现）
+// CancelOrder 通过 gRPC 调用订单服务取消订单（userID=0 表示管理端操作，不校验归属）
 func (r *orderRepo) CancelOrder(ctx context.Context, orderID int64, reason string) error {
-	// TODO: 订单服务端暂未实现取消 RPC，后续扩展
-	r.log.Infof("cancel order %d: reason=%s", orderID, reason)
+	_, err := r.data.oc.CancelOrder(ctx, &orderRpc.CancelOrderRequest{
+		OrderId: orderID,
+		UserId:  0,
+		Reason:  reason,
+	})
+	if err != nil {
+		r.log.Errorf("cancel order failed, orderID=%d: %v", orderID, err)
+		return err
+	}
 	return nil
 }

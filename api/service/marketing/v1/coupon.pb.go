@@ -1529,6 +1529,111 @@ func (x *UseCouponReply) GetDiscountAmount() int64 {
 	return 0
 }
 
+// 返还优惠券请求（订单取消/退款时调用）
+type ReleaseCouponRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RecordId      int64                  `protobuf:"varint,1,opt,name=record_id,json=recordId,proto3" json:"record_id,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	OrderId       int64                  `protobuf:"varint,3,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"` // 核销时的订单ID，用于归属校验
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReleaseCouponRequest) Reset() {
+	*x = ReleaseCouponRequest{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReleaseCouponRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReleaseCouponRequest) ProtoMessage() {}
+
+func (x *ReleaseCouponRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReleaseCouponRequest.ProtoReflect.Descriptor instead.
+func (*ReleaseCouponRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *ReleaseCouponRequest) GetRecordId() int64 {
+	if x != nil {
+		return x.RecordId
+	}
+	return 0
+}
+
+func (x *ReleaseCouponRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *ReleaseCouponRequest) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+type ReleaseCouponReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReleaseCouponReply) Reset() {
+	*x = ReleaseCouponReply{}
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReleaseCouponReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReleaseCouponReply) ProtoMessage() {}
+
+func (x *ReleaseCouponReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReleaseCouponReply.ProtoReflect.Descriptor instead.
+func (*ReleaseCouponReply) Descriptor() ([]byte, []int) {
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *ReleaseCouponReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 // 批量过期请求
 type BatchExpireCouponsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1539,7 +1644,7 @@ type BatchExpireCouponsRequest struct {
 
 func (x *BatchExpireCouponsRequest) Reset() {
 	*x = BatchExpireCouponsRequest{}
-	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[22]
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1551,7 +1656,7 @@ func (x *BatchExpireCouponsRequest) String() string {
 func (*BatchExpireCouponsRequest) ProtoMessage() {}
 
 func (x *BatchExpireCouponsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[22]
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1564,7 +1669,7 @@ func (x *BatchExpireCouponsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchExpireCouponsRequest.ProtoReflect.Descriptor instead.
 func (*BatchExpireCouponsRequest) Descriptor() ([]byte, []int) {
-	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{22}
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *BatchExpireCouponsRequest) GetBatchSize() int64 {
@@ -1583,7 +1688,7 @@ type BatchExpireCouponsReply struct {
 
 func (x *BatchExpireCouponsReply) Reset() {
 	*x = BatchExpireCouponsReply{}
-	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[23]
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1595,7 +1700,7 @@ func (x *BatchExpireCouponsReply) String() string {
 func (*BatchExpireCouponsReply) ProtoMessage() {}
 
 func (x *BatchExpireCouponsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[23]
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1608,7 +1713,7 @@ func (x *BatchExpireCouponsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchExpireCouponsReply.ProtoReflect.Descriptor instead.
 func (*BatchExpireCouponsReply) Descriptor() ([]byte, []int) {
-	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{23}
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *BatchExpireCouponsReply) GetAffectedCount() int32 {
@@ -1630,7 +1735,7 @@ type ListDistRecordsRequest struct {
 
 func (x *ListDistRecordsRequest) Reset() {
 	*x = ListDistRecordsRequest{}
-	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[24]
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1642,7 +1747,7 @@ func (x *ListDistRecordsRequest) String() string {
 func (*ListDistRecordsRequest) ProtoMessage() {}
 
 func (x *ListDistRecordsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[24]
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1655,7 +1760,7 @@ func (x *ListDistRecordsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDistRecordsRequest.ProtoReflect.Descriptor instead.
 func (*ListDistRecordsRequest) Descriptor() ([]byte, []int) {
-	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{24}
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ListDistRecordsRequest) GetCouponId() int64 {
@@ -1697,7 +1802,7 @@ type DistRecord struct {
 
 func (x *DistRecord) Reset() {
 	*x = DistRecord{}
-	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[25]
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1709,7 +1814,7 @@ func (x *DistRecord) String() string {
 func (*DistRecord) ProtoMessage() {}
 
 func (x *DistRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[25]
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1722,7 +1827,7 @@ func (x *DistRecord) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DistRecord.ProtoReflect.Descriptor instead.
 func (*DistRecord) Descriptor() ([]byte, []int) {
-	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{25}
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *DistRecord) GetId() int64 {
@@ -1798,7 +1903,7 @@ type ListDistRecordsReply struct {
 
 func (x *ListDistRecordsReply) Reset() {
 	*x = ListDistRecordsReply{}
-	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[26]
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1810,7 +1915,7 @@ func (x *ListDistRecordsReply) String() string {
 func (*ListDistRecordsReply) ProtoMessage() {}
 
 func (x *ListDistRecordsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[26]
+	mi := &file_api_service_marketing_v1_coupon_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1823,7 +1928,7 @@ func (x *ListDistRecordsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDistRecordsReply.ProtoReflect.Descriptor instead.
 func (*ListDistRecordsReply) Descriptor() ([]byte, []int) {
-	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{26}
+	return file_api_service_marketing_v1_coupon_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *ListDistRecordsReply) GetItems() []*DistRecord {
@@ -1978,7 +2083,13 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\forder_amount\x18\x04 \x01(\x03R\vorderAmount\"S\n" +
 	"\x0eUseCouponReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12'\n" +
-	"\x0fdiscount_amount\x18\x02 \x01(\x03R\x0ediscountAmount\":\n" +
+	"\x0fdiscount_amount\x18\x02 \x01(\x03R\x0ediscountAmount\"\x82\x01\n" +
+	"\x14ReleaseCouponRequest\x12$\n" +
+	"\trecord_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\brecordId\x12 \n" +
+	"\auser_id\x18\x02 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x12\"\n" +
+	"\border_id\x18\x03 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aorderId\".\n" +
+	"\x12ReleaseCouponReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\":\n" +
 	"\x19BatchExpireCouponsRequest\x12\x1d\n" +
 	"\n" +
 	"batch_size\x18\x01 \x01(\x03R\tbatchSize\"@\n" +
@@ -2003,8 +2114,7 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\tvalid_end\x18\t \x01(\x03R\bvalidEnd\"h\n" +
 	"\x14ListDistRecordsReply\x12:\n" +
 	"\x05items\x18\x01 \x03(\v2$.api.service.marketing.v1.DistRecordR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total2\xb7\n" +
-	"\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total2\xa6\v\n" +
 	"\rCouponService\x12j\n" +
 	"\fCreateCoupon\x12-.api.service.marketing.v1.CreateCouponRequest\x1a+.api.service.marketing.v1.CreateCouponReply\x12j\n" +
 	"\fUpdateCoupon\x12-.api.service.marketing.v1.UpdateCouponRequest\x1a+.api.service.marketing.v1.UpdateCouponReply\x12j\n" +
@@ -2016,7 +2126,8 @@ const file_api_service_marketing_v1_coupon_proto_rawDesc = "" +
 	"\vCouponStats\x12,.api.service.marketing.v1.CouponStatsRequest\x1a*.api.service.marketing.v1.CouponStatsReply\x12g\n" +
 	"\vClaimCoupon\x12,.api.service.marketing.v1.ClaimCouponRequest\x1a*.api.service.marketing.v1.ClaimCouponReply\x12s\n" +
 	"\x0fListUserCoupons\x120.api.service.marketing.v1.ListUserCouponsRequest\x1a..api.service.marketing.v1.ListUserCouponsReply\x12a\n" +
-	"\tUseCoupon\x12*.api.service.marketing.v1.UseCouponRequest\x1a(.api.service.marketing.v1.UseCouponReply\x12|\n" +
+	"\tUseCoupon\x12*.api.service.marketing.v1.UseCouponRequest\x1a(.api.service.marketing.v1.UseCouponReply\x12m\n" +
+	"\rReleaseCoupon\x12..api.service.marketing.v1.ReleaseCouponRequest\x1a,.api.service.marketing.v1.ReleaseCouponReply\x12|\n" +
 	"\x12BatchExpireCoupons\x123.api.service.marketing.v1.BatchExpireCouponsRequest\x1a1.api.service.marketing.v1.BatchExpireCouponsReply\x12s\n" +
 	"\x0fListDistRecords\x120.api.service.marketing.v1.ListDistRecordsRequest\x1a..api.service.marketing.v1.ListDistRecordsReplyBA\n" +
 	"\x18api.service.marketing.v1P\x01Z#cyi-app/api/service/marketing/v1;v1b\x06proto3"
@@ -2033,7 +2144,7 @@ func file_api_service_marketing_v1_coupon_proto_rawDescGZIP() []byte {
 	return file_api_service_marketing_v1_coupon_proto_rawDescData
 }
 
-var file_api_service_marketing_v1_coupon_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
+var file_api_service_marketing_v1_coupon_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
 var file_api_service_marketing_v1_coupon_proto_goTypes = []any{
 	(*Coupon)(nil),                    // 0: api.service.marketing.v1.Coupon
 	(*CreateCouponRequest)(nil),       // 1: api.service.marketing.v1.CreateCouponRequest
@@ -2057,17 +2168,19 @@ var file_api_service_marketing_v1_coupon_proto_goTypes = []any{
 	(*ListUserCouponsReply)(nil),      // 19: api.service.marketing.v1.ListUserCouponsReply
 	(*UseCouponRequest)(nil),          // 20: api.service.marketing.v1.UseCouponRequest
 	(*UseCouponReply)(nil),            // 21: api.service.marketing.v1.UseCouponReply
-	(*BatchExpireCouponsRequest)(nil), // 22: api.service.marketing.v1.BatchExpireCouponsRequest
-	(*BatchExpireCouponsReply)(nil),   // 23: api.service.marketing.v1.BatchExpireCouponsReply
-	(*ListDistRecordsRequest)(nil),    // 24: api.service.marketing.v1.ListDistRecordsRequest
-	(*DistRecord)(nil),                // 25: api.service.marketing.v1.DistRecord
-	(*ListDistRecordsReply)(nil),      // 26: api.service.marketing.v1.ListDistRecordsReply
+	(*ReleaseCouponRequest)(nil),      // 22: api.service.marketing.v1.ReleaseCouponRequest
+	(*ReleaseCouponReply)(nil),        // 23: api.service.marketing.v1.ReleaseCouponReply
+	(*BatchExpireCouponsRequest)(nil), // 24: api.service.marketing.v1.BatchExpireCouponsRequest
+	(*BatchExpireCouponsReply)(nil),   // 25: api.service.marketing.v1.BatchExpireCouponsReply
+	(*ListDistRecordsRequest)(nil),    // 26: api.service.marketing.v1.ListDistRecordsRequest
+	(*DistRecord)(nil),                // 27: api.service.marketing.v1.DistRecord
+	(*ListDistRecordsReply)(nil),      // 28: api.service.marketing.v1.ListDistRecordsReply
 }
 var file_api_service_marketing_v1_coupon_proto_depIdxs = []int32{
 	0,  // 0: api.service.marketing.v1.GetCouponReply.coupon:type_name -> api.service.marketing.v1.Coupon
 	0,  // 1: api.service.marketing.v1.ListCouponReply.items:type_name -> api.service.marketing.v1.Coupon
 	18, // 2: api.service.marketing.v1.ListUserCouponsReply.items:type_name -> api.service.marketing.v1.UserCouponItem
-	25, // 3: api.service.marketing.v1.ListDistRecordsReply.items:type_name -> api.service.marketing.v1.DistRecord
+	27, // 3: api.service.marketing.v1.ListDistRecordsReply.items:type_name -> api.service.marketing.v1.DistRecord
 	1,  // 4: api.service.marketing.v1.CouponService.CreateCoupon:input_type -> api.service.marketing.v1.CreateCouponRequest
 	3,  // 5: api.service.marketing.v1.CouponService.UpdateCoupon:input_type -> api.service.marketing.v1.UpdateCouponRequest
 	5,  // 6: api.service.marketing.v1.CouponService.DeleteCoupon:input_type -> api.service.marketing.v1.DeleteCouponRequest
@@ -2078,22 +2191,24 @@ var file_api_service_marketing_v1_coupon_proto_depIdxs = []int32{
 	15, // 11: api.service.marketing.v1.CouponService.ClaimCoupon:input_type -> api.service.marketing.v1.ClaimCouponRequest
 	17, // 12: api.service.marketing.v1.CouponService.ListUserCoupons:input_type -> api.service.marketing.v1.ListUserCouponsRequest
 	20, // 13: api.service.marketing.v1.CouponService.UseCoupon:input_type -> api.service.marketing.v1.UseCouponRequest
-	22, // 14: api.service.marketing.v1.CouponService.BatchExpireCoupons:input_type -> api.service.marketing.v1.BatchExpireCouponsRequest
-	24, // 15: api.service.marketing.v1.CouponService.ListDistRecords:input_type -> api.service.marketing.v1.ListDistRecordsRequest
-	2,  // 16: api.service.marketing.v1.CouponService.CreateCoupon:output_type -> api.service.marketing.v1.CreateCouponReply
-	4,  // 17: api.service.marketing.v1.CouponService.UpdateCoupon:output_type -> api.service.marketing.v1.UpdateCouponReply
-	6,  // 18: api.service.marketing.v1.CouponService.DeleteCoupon:output_type -> api.service.marketing.v1.DeleteCouponReply
-	8,  // 19: api.service.marketing.v1.CouponService.GetCoupon:output_type -> api.service.marketing.v1.GetCouponReply
-	10, // 20: api.service.marketing.v1.CouponService.ListCoupon:output_type -> api.service.marketing.v1.ListCouponReply
-	12, // 21: api.service.marketing.v1.CouponService.ToggleCouponStatus:output_type -> api.service.marketing.v1.ToggleCouponStatusReply
-	14, // 22: api.service.marketing.v1.CouponService.CouponStats:output_type -> api.service.marketing.v1.CouponStatsReply
-	16, // 23: api.service.marketing.v1.CouponService.ClaimCoupon:output_type -> api.service.marketing.v1.ClaimCouponReply
-	19, // 24: api.service.marketing.v1.CouponService.ListUserCoupons:output_type -> api.service.marketing.v1.ListUserCouponsReply
-	21, // 25: api.service.marketing.v1.CouponService.UseCoupon:output_type -> api.service.marketing.v1.UseCouponReply
-	23, // 26: api.service.marketing.v1.CouponService.BatchExpireCoupons:output_type -> api.service.marketing.v1.BatchExpireCouponsReply
-	26, // 27: api.service.marketing.v1.CouponService.ListDistRecords:output_type -> api.service.marketing.v1.ListDistRecordsReply
-	16, // [16:28] is the sub-list for method output_type
-	4,  // [4:16] is the sub-list for method input_type
+	22, // 14: api.service.marketing.v1.CouponService.ReleaseCoupon:input_type -> api.service.marketing.v1.ReleaseCouponRequest
+	24, // 15: api.service.marketing.v1.CouponService.BatchExpireCoupons:input_type -> api.service.marketing.v1.BatchExpireCouponsRequest
+	26, // 16: api.service.marketing.v1.CouponService.ListDistRecords:input_type -> api.service.marketing.v1.ListDistRecordsRequest
+	2,  // 17: api.service.marketing.v1.CouponService.CreateCoupon:output_type -> api.service.marketing.v1.CreateCouponReply
+	4,  // 18: api.service.marketing.v1.CouponService.UpdateCoupon:output_type -> api.service.marketing.v1.UpdateCouponReply
+	6,  // 19: api.service.marketing.v1.CouponService.DeleteCoupon:output_type -> api.service.marketing.v1.DeleteCouponReply
+	8,  // 20: api.service.marketing.v1.CouponService.GetCoupon:output_type -> api.service.marketing.v1.GetCouponReply
+	10, // 21: api.service.marketing.v1.CouponService.ListCoupon:output_type -> api.service.marketing.v1.ListCouponReply
+	12, // 22: api.service.marketing.v1.CouponService.ToggleCouponStatus:output_type -> api.service.marketing.v1.ToggleCouponStatusReply
+	14, // 23: api.service.marketing.v1.CouponService.CouponStats:output_type -> api.service.marketing.v1.CouponStatsReply
+	16, // 24: api.service.marketing.v1.CouponService.ClaimCoupon:output_type -> api.service.marketing.v1.ClaimCouponReply
+	19, // 25: api.service.marketing.v1.CouponService.ListUserCoupons:output_type -> api.service.marketing.v1.ListUserCouponsReply
+	21, // 26: api.service.marketing.v1.CouponService.UseCoupon:output_type -> api.service.marketing.v1.UseCouponReply
+	23, // 27: api.service.marketing.v1.CouponService.ReleaseCoupon:output_type -> api.service.marketing.v1.ReleaseCouponReply
+	25, // 28: api.service.marketing.v1.CouponService.BatchExpireCoupons:output_type -> api.service.marketing.v1.BatchExpireCouponsReply
+	28, // 29: api.service.marketing.v1.CouponService.ListDistRecords:output_type -> api.service.marketing.v1.ListDistRecordsReply
+	17, // [17:30] is the sub-list for method output_type
+	4,  // [4:17] is the sub-list for method input_type
 	4,  // [4:4] is the sub-list for extension type_name
 	4,  // [4:4] is the sub-list for extension extendee
 	0,  // [0:4] is the sub-list for field type_name
@@ -2110,7 +2225,7 @@ func file_api_service_marketing_v1_coupon_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_service_marketing_v1_coupon_proto_rawDesc), len(file_api_service_marketing_v1_coupon_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   27,
+			NumMessages:   29,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -28,7 +28,12 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *v1.CreateOrderReque
 	in := &biz.Order{}
 	convert.Convert(req, in)
 	in.UserID = req.UserId
-	in.CouponRecordID = req.CouponRecordId // 优惠券发放记录ID，0=未使用优惠券
+	in.CouponRecordID = req.CouponRecordId                       // 优惠券发放记录ID，0=未使用优惠券
+	in.Freight = biz.Money{Amount: req.Freight, Currency: "CNY"} // 运费（单位：分）
+	in.AddressID = req.AddressId                                 // 收货地址快照
+	in.Receiver = req.Receiver
+	in.Phone = req.Phone
+	in.Address = req.Address
 	in.Items = nil // 清空 convert.Convert 错误填充的 Items（类型不匹配导致重复）
 
 	// 支持两种模式：立即购买（单商品）和购物车结算（多商品）
@@ -95,15 +100,20 @@ func (s *OrderService) BatchGetOrder(ctx context.Context, req *v1.BatchGetOrderR
 // orderToReply 将 biz.Order 转换为 proto GetOrderReply（GetOrder/BatchGetOrder 共用）
 func orderToReply(order *biz.Order) *v1.GetOrderReply {
 	reply := &v1.GetOrderReply{
-		OrderId:        order.ID,
-		UserId:         order.UserID,
-		OrderNo:        order.OrderNo,
-		Status:         int32(order.Status),
-		TotalPrice:     order.TotalPrice.Amount,
-		PayAmount:      order.PayAmount.Amount,
-		Freight:        order.Freight.Amount,
-		DiscountAmount: order.Discount.Amount,
-		CreatedAt:      order.CreateTime,
+		OrderId:          order.ID,
+		UserId:           order.UserID,
+		OrderNo:          order.OrderNo,
+		Status:           int32(order.Status),
+		TotalPrice:       order.TotalPrice.Amount,
+		PayAmount:        order.PayAmount.Amount,
+		Freight:          order.Freight.Amount,
+		DiscountAmount:   order.Discount.Amount,
+		CreatedAt:        order.CreateTime,
+		LogisticsCompany: order.LogisticsCompany,
+		LogisticsNo:      order.LogisticsNo,
+		Receiver:         order.Receiver,
+		Phone:            order.Phone,
+		Address:          order.Address,
 	}
 	for _, item := range order.Items {
 		reply.Items = append(reply.Items, &v1.OrderItemProto{
@@ -120,7 +130,7 @@ func orderToReply(order *biz.Order) *v1.GetOrderReply {
 }
 
 func (s *OrderService) ListOrder(ctx context.Context, req *v1.ListOrderRequest) (*v1.ListOrderReply, error) {
-	items, total, err := s.uc.List(ctx, req.Page, req.PageSize, req.Status, req.Keyword, req.DateFrom, req.DateTo)
+	items, total, err := s.uc.List(ctx, req.Page, req.PageSize, req.Status, req.Keyword, req.DateFrom, req.DateTo, req.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -158,6 +168,23 @@ func (s *OrderService) OrderStats(ctx context.Context, req *v1.OrderStatsRequest
 	}, nil
 }
 
+// GetUserOrderStats 获取单个用户的订单统计（个人中心使用）
+func (s *OrderService) GetUserOrderStats(ctx context.Context, req *v1.GetUserOrderStatsRequest) (*v1.GetUserOrderStatsReply, error) {
+	stats, err := s.uc.UserStats(ctx, req.UserId)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.GetUserOrderStatsReply{
+		TotalOrders:    stats.TotalOrders,
+		PendingPay:     stats.PendingPay,
+		PendingShip:    stats.PendingShip,
+		PendingReceive: stats.PendingReceive,
+		Complete:       stats.Complete,
+		RefundCount:    stats.RefundCount,
+		TotalSpent:     stats.TotalSpent,
+	}, nil
+}
+
 // payAmount / freight / discount 在 service 层从 biz.Money 获取 Amount
 
 func (s *OrderService) PayOrder(ctx context.Context, req *v1.PayOrderRequest) (*v1.PayOrderReply, error) {
@@ -165,4 +192,50 @@ func (s *OrderService) PayOrder(ctx context.Context, req *v1.PayOrderRequest) (*
 		return nil, err
 	}
 	return &v1.PayOrderReply{}, nil
+}
+
+// ShipOrder 发货（管理端调用）：待发货 -> 已发货，并写入物流信息
+func (s *OrderService) ShipOrder(ctx context.Context, req *v1.ShipOrderRequest) (*v1.ShipOrderReply, error) {
+	if err := s.uc.Ship(ctx, req.OrderId, req.LogisticsCompany, req.LogisticsNo); err != nil {
+		return nil, err
+	}
+	return &v1.ShipOrderReply{}, nil
+}
+
+// ReceiveOrder 确认收货（用户端调用）：已发货/待收货 -> 已完成
+func (s *OrderService) ReceiveOrder(ctx context.Context, req *v1.ReceiveOrderRequest) (*v1.ReceiveOrderReply, error) {
+	if err := s.uc.Receive(ctx, req.OrderId, req.UserId); err != nil {
+		return nil, err
+	}
+	return &v1.ReceiveOrderReply{}, nil
+}
+
+// CancelOrder 取消订单（用户端/管理端调用）：待支付/已支付 -> 已取消
+func (s *OrderService) CancelOrder(ctx context.Context, req *v1.CancelOrderRequest) (*v1.CancelOrderReply, error) {
+	if err := s.uc.Cancel(ctx, req.OrderId, req.UserId, req.Reason); err != nil {
+		return nil, err
+	}
+	return &v1.CancelOrderReply{}, nil
+}
+
+// ListOverdueWaitPayOrders 查询超时未支付的待付款订单（task 服务 cron 兜底扫描用）
+func (s *OrderService) ListOverdueWaitPayOrders(ctx context.Context, req *v1.ListOverdueWaitPayOrdersRequest) (*v1.ListOverdueWaitPayOrdersReply, error) {
+	orders, total, err := s.uc.OverdueWaitPayOrders(ctx, req.Page, req.PageSize, req.TimeoutSeconds)
+	if err != nil {
+		return nil, err
+	}
+	replyItems := make([]*v1.ListOrderItem, 0, len(orders))
+	for _, item := range orders {
+		replyItems = append(replyItems, &v1.ListOrderItem{
+			OrderId:   item.ID,
+			OrderNo:   item.OrderNo,
+			UserId:    item.UserID,
+			Status:    int32(item.Status),
+			CreatedAt: item.CreateTime,
+		})
+	}
+	return &v1.ListOverdueWaitPayOrdersReply{
+		Items: replyItems,
+		Total: total,
+	}, nil
 }

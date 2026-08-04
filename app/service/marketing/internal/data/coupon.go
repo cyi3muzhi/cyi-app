@@ -440,6 +440,41 @@ func (r *couponRepo) UseCoupon(ctx context.Context, recordID, userID, orderID in
 	return err
 }
 
+// ReleaseCoupon 返还优惠券（订单取消/退款时调用）：解除核销，恢复为未使用
+// 校验：记录归属该用户、状态为已使用（1）、核销订单与传入订单一致；成功则递减 used_count
+func (r *couponRepo) ReleaseCoupon(ctx context.Context, recordID, userID, orderID int64) error {
+	return curd.Q.Transaction(func(tx *curd.Query) error {
+		// 1. 查询已核销的发放记录（状态=1 已使用，且绑定该订单）
+		record, err := tx.CouponDistRecord.WithContext(ctx).
+			Where(tx.CouponDistRecord.ID.Eq(recordID)).
+			Where(tx.CouponDistRecord.UserID.Eq(userID)).
+			Where(tx.CouponDistRecord.Status.Eq(1)). // 已使用
+			Where(tx.CouponDistRecord.OrderID.Eq(orderID)).
+			First()
+		if err != nil {
+			return v1.ErrorCouponInvalidValue("coupon record not found or not bound to order")
+		}
+
+		// 2. 恢复为未使用，清空核销信息
+		_, err = tx.CouponDistRecord.WithContext(ctx).
+			Where(tx.CouponDistRecord.ID.Eq(recordID)).
+			Updates(map[string]interface{}{
+				"status":   0, // 未使用
+				"used_time": 0,
+				"order_id": 0,
+			})
+		if err != nil {
+			return err
+		}
+
+		// 3. 递减 coupon 表的 used_count
+		_, err = tx.Coupon.WithContext(ctx).
+			Where(tx.Coupon.ID.Eq(record.CouponID)).
+			UpdateColumn(tx.Coupon.UsedCount, tx.Coupon.UsedCount.Sub(1))
+		return err
+	})
+}
+
 // BatchExpireCoupons 批量过期已过期的优惠券发放记录
 // 找出所有已过期（record.valid_end < now 且 valid_end > 0）但状态还是"未使用"的发放记录，批量更新状态为"已过期"
 func (r *couponRepo) BatchExpireCoupons(ctx context.Context, batchSize int64) (int32, error) {
