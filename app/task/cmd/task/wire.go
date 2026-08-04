@@ -26,6 +26,6 @@ func provideTracerProvider(tp *tracesdk.TracerProvider) trace.TracerProvider {
 }
 
 // wireApp init kratos application.
-func wireApp(*conf.Server, *conf.Data,*conf.Registry, log.Logger, *tracesdk.TracerProvider, *conf.Auth, *mid.Meter) (*kratos.App, func(), error) {
+func wireApp(*conf.Server, *conf.Data, *conf.Registry, log.Logger, *tracesdk.TracerProvider, []*conf.Task, *conf.Auth, *mid.Meter) (*kratos.App, func(), error) {
 	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet, newApp, provideTracerProvider))
 }

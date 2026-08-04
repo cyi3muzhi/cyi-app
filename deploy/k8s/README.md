@@ -294,9 +294,9 @@ kubectl apply -f monitoring/grafana/
 ```
 service-interface → service-user → MySQL
                  ↓
-          service-job → Redis
+          service-task → Redis
                  ↓
-          service-task
+          service-nats → NATS
 
 service-blades → Redis (会话管理)
 

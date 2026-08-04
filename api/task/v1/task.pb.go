@@ -26,15 +26,23 @@ type TaskName int32
 const (
 	// 创建用户
 	TaskName_create_user TaskName = 0
+	// 定时统计用户数量
+	TaskName_user_count TaskName = 1
+	// 批量过期优惠券发放记录
+	TaskName_coupon_expire TaskName = 2
 )
 
 // Enum value maps for TaskName.
 var (
 	TaskName_name = map[int32]string{
 		0: "create_user",
+		1: "user_count",
+		2: "coupon_expire",
 	}
 	TaskName_value = map[string]int32{
-		"create_user": 0,
+		"create_user":   0,
+		"user_count":    1,
+		"coupon_expire": 2,
 	}
 )
 
@@ -124,9 +132,12 @@ const file_api_task_v1_task_proto_rawDesc = "" +
 	"\x16api/task/v1/task.proto\x12\vapi.task.v1\"H\n" +
 	"\x0eCreateUserTask\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword*\x1b\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword*>\n" +
 	"\bTaskName\x12\x0f\n" +
-	"\vcreate_user\x10\x00B'\n" +
+	"\vcreate_user\x10\x00\x12\x0e\n" +
+	"\n" +
+	"user_count\x10\x01\x12\x11\n" +
+	"\rcoupon_expire\x10\x02B'\n" +
 	"\vapi.task.v1P\x01Z\x16cyi-app/api/task/v1;v1b\x06proto3"
 
 var (

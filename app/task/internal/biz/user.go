@@ -13,6 +13,7 @@ type User struct {
 
 type UserRepo interface {
 	CreateUser(ctx context.Context, user *User) error
+	UserCount(ctx context.Context) (int64, error)
 }
 
 type UserUseCase struct {
@@ -30,4 +31,9 @@ func NewUserUseCase(repo UserRepo, logger log.Logger) *UserUseCase {
 func (uc *UserUseCase) CreateUser(ctx context.Context, user *User) error {
 	uc.log.Infof("CreateUser: %v", user)
 	return uc.repo.CreateUser(ctx, user)
+}
+
+// UserCount 统计用户数量（cron 定时任务调用）
+func (uc *UserUseCase) UserCount(ctx context.Context) (int64, error) {
+	return uc.repo.UserCount(ctx)
 }

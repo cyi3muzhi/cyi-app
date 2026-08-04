@@ -26,7 +26,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, auth *conf.Auth, meter *middleware.Meter) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, arg []*conf.Task, auth *conf.Auth, meter *middleware.Meter) (*kratos.App, func(), error) {
 	traceTracerProvider := provideTracerProvider(tracerProvider)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, meter, logger)
 	universalClient := data.NewRedisClient(confData, logger)
@@ -37,11 +37,12 @@ func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Regist
 	discovery := server.NewDiscovery(registry)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	couponServiceClient := data.NewMarketingCouponServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	rustFSClient, err := data.NewOssClient(confData)
 	if err != nil {
 		return nil, nil, err
 	}
-	dataData, cleanup, err := data.NewData(confData, universalClient, logger, asynqServer, userClient, orderClient, rustFSClient)
+	dataData, cleanup, err := data.NewData(confData, universalClient, logger, asynqServer, userClient, orderClient, couponServiceClient, rustFSClient)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -49,13 +50,16 @@ func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Regist
 	taskUseCase := biz.NewTaskUseCase(taskRepo)
 	userRepo := data.NewUserRepo(dataData)
 	userUseCase := biz.NewUserUseCase(userRepo, logger)
+	couponRepo := data.NewCouponRepo(dataData)
 	exportRepo := data.NewExportRepo(dataData, universalClient, logger)
 	excelGenerator := data.NewExcelGenerator(rustFSClient, logger)
 	orderQueryRepo := data.NewOrderRepo(dataData, logger)
 	exportUseCase := biz.NewExportUseCase(exportRepo, excelGenerator, orderQueryRepo, logger)
-	taskService := service.NewTaskService(taskUseCase, userUseCase, exportUseCase, logger)
+	taskService := service.NewTaskService(taskUseCase, userUseCase, couponRepo, exportUseCase, logger)
 	serveMux := server.ProcessTask(taskServer, taskService)
-	app := newApp(logger, server2, registrar, asynqServer, serveMux)
+	scheduler := server.NewScheduler(universalClient, logger)
+	asynqScheduler := server.RegisterScheduler(arg, scheduler, taskServer)
+	app := newApp(logger, server2, registrar, asynqServer, serveMux, asynqScheduler)
 	return app, func() {
 		cleanup()
 	}, nil

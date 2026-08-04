@@ -12,6 +12,7 @@ message Bootstrap {
   Trace trace = 3;
   Log log = 4;
   Auth auth = 5;
+  repeated Task tasks = 6;
 }
 
 message Server {
@@ -81,6 +82,21 @@ message Log {
     string log_dir = 4; // 日志目录
     string time_format = 5; // 时间格式
     bool enable_color = 6; // 是否启用颜色
+}
+
+// 定时任务配置（cron 调度）
+message Task {
+    string cron = 1; // 定时任务表达式
+    string name = 2; // 任务名称
+    message Options {
+      // 任务队列 优先级：critical > default > low
+      string queue = 1;
+      // 最大重试次数
+      int32 max_retry = 2;
+      // 超时时间
+      google.protobuf.Duration timeout = 3;
+    }
+    Options options = 3;
 }
 
 message Auth {

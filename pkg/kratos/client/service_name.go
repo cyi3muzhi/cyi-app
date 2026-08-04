@@ -11,7 +11,6 @@ const (
 	ORDER_SERVICE = "order.service"
 	MARKETING_SERVICE = "marketing.service"
 	TASK = "task"
-	JOB = "job"
 	RMQ_SERVICE = "rmq.service"
 	NATS_SERVICE = "nats.service"
 	BLADES_SERVICE = "blades.service"
@@ -26,7 +25,6 @@ const (
 	MARKETING_VERSION = "v1"
 
 	TASK_VERSION = "v1"
-	JOB_VERSION = "v1"
 	BLADES_VERSION = "v1"
 	RMQ_VERSION = "v1"
 	NATS_VERSION = "v1"

@@ -33,12 +33,6 @@ scrape_configs:
       - targets: ['service-user:9000']
     metrics_path: '/metrics'
 
-  # 监控 Job 服务
-  - job_name: 'job-service'
-    static_configs:
-      - targets: ['service-job:8000']
-    metrics_path: '/metrics'
-
   # 监控 Task 服务
   - job_name: 'task-service'
     static_configs:

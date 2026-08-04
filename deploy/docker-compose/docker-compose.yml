@@ -277,27 +277,6 @@ services:
     networks:
       - cyi-network
 
-  # job 任务服务
-  service-job:
-    # 使用本地生成的镜像
-    image: cyi3muz/job:0.1.0
-    container_name: service-job
-    restart: always
-    ports:
-      - "${JOB_PORT}:8000"  # HTTP 端口
-    volumes:
-      - ../logs/job-service:/app/logs
-    environment:
-      - CONSUL_ADDR=consul:8500  # 通过服务名访问 Consul
-      - CONSUL_PATHS=/develop/common,/develop/cyi-app/job
-      - SERVICE_ENV=dev
-    depends_on:
-      - consul
-      - jaeger
-      - redis
-    networks:
-      - cyi-network
-
   # User 服务 - 技术微服务
   service-user:
     # 使用本地生成的镜像

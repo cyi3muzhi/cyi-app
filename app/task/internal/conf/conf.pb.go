@@ -29,6 +29,7 @@ type Bootstrap struct {
 	Trace         *Trace                 `protobuf:"bytes,3,opt,name=trace,proto3" json:"trace,omitempty"`
 	Log           *Log                   `protobuf:"bytes,4,opt,name=log,proto3" json:"log,omitempty"`
 	Auth          *Auth                  `protobuf:"bytes,5,opt,name=auth,proto3" json:"auth,omitempty"`
+	Tasks         []*Task                `protobuf:"bytes,6,rep,name=tasks,proto3" json:"tasks,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -94,6 +95,13 @@ func (x *Bootstrap) GetLog() *Log {
 func (x *Bootstrap) GetAuth() *Auth {
 	if x != nil {
 		return x.Auth
+	}
+	return nil
+}
+
+func (x *Bootstrap) GetTasks() []*Task {
+	if x != nil {
+		return x.Tasks
 	}
 	return nil
 }
@@ -446,6 +454,67 @@ func (x *Log) GetEnableColor() bool {
 	return false
 }
 
+// 定时任务配置（cron 调度）
+type Task struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Cron          string                 `protobuf:"bytes,1,opt,name=cron,proto3" json:"cron,omitempty"` // 定时任务表达式
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"` // 任务名称
+	Options       *Task_Options          `protobuf:"bytes,3,opt,name=options,proto3" json:"options,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Task) Reset() {
+	*x = Task{}
+	mi := &file_conf_conf_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Task) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Task) ProtoMessage() {}
+
+func (x *Task) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_conf_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Task.ProtoReflect.Descriptor instead.
+func (*Task) Descriptor() ([]byte, []int) {
+	return file_conf_conf_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *Task) GetCron() string {
+	if x != nil {
+		return x.Cron
+	}
+	return ""
+}
+
+func (x *Task) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Task) GetOptions() *Task_Options {
+	if x != nil {
+		return x.Options
+	}
+	return nil
+}
+
 type Auth struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 服务名对应密钥
@@ -456,7 +525,7 @@ type Auth struct {
 
 func (x *Auth) Reset() {
 	*x = Auth{}
-	mi := &file_conf_conf_proto_msgTypes[7]
+	mi := &file_conf_conf_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -468,7 +537,7 @@ func (x *Auth) String() string {
 func (*Auth) ProtoMessage() {}
 
 func (x *Auth) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[7]
+	mi := &file_conf_conf_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -481,7 +550,7 @@ func (x *Auth) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Auth.ProtoReflect.Descriptor instead.
 func (*Auth) Descriptor() ([]byte, []int) {
-	return file_conf_conf_proto_rawDescGZIP(), []int{7}
+	return file_conf_conf_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Auth) GetServiceKey() map[string]string {
@@ -502,7 +571,7 @@ type Server_HTTP struct {
 
 func (x *Server_HTTP) Reset() {
 	*x = Server_HTTP{}
-	mi := &file_conf_conf_proto_msgTypes[8]
+	mi := &file_conf_conf_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -514,7 +583,7 @@ func (x *Server_HTTP) String() string {
 func (*Server_HTTP) ProtoMessage() {}
 
 func (x *Server_HTTP) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[8]
+	mi := &file_conf_conf_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -562,7 +631,7 @@ type Server_GRPC struct {
 
 func (x *Server_GRPC) Reset() {
 	*x = Server_GRPC{}
-	mi := &file_conf_conf_proto_msgTypes[9]
+	mi := &file_conf_conf_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -574,7 +643,7 @@ func (x *Server_GRPC) String() string {
 func (*Server_GRPC) ProtoMessage() {}
 
 func (x *Server_GRPC) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[9]
+	mi := &file_conf_conf_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -628,7 +697,7 @@ type Data_Redis struct {
 
 func (x *Data_Redis) Reset() {
 	*x = Data_Redis{}
-	mi := &file_conf_conf_proto_msgTypes[10]
+	mi := &file_conf_conf_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -640,7 +709,7 @@ func (x *Data_Redis) String() string {
 func (*Data_Redis) ProtoMessage() {}
 
 func (x *Data_Redis) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[10]
+	mi := &file_conf_conf_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -706,7 +775,7 @@ type Registry_Consul struct {
 
 func (x *Registry_Consul) Reset() {
 	*x = Registry_Consul{}
-	mi := &file_conf_conf_proto_msgTypes[11]
+	mi := &file_conf_conf_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -718,7 +787,7 @@ func (x *Registry_Consul) String() string {
 func (*Registry_Consul) ProtoMessage() {}
 
 func (x *Registry_Consul) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[11]
+	mi := &file_conf_conf_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -783,17 +852,81 @@ func (x *Registry_Consul) GetCheckInterval() int32 {
 	return 0
 }
 
+type Task_Options struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 任务队列 优先级：critical > default > low
+	Queue string `protobuf:"bytes,1,opt,name=queue,proto3" json:"queue,omitempty"`
+	// 最大重试次数
+	MaxRetry int32 `protobuf:"varint,2,opt,name=max_retry,json=maxRetry,proto3" json:"max_retry,omitempty"`
+	// 超时时间
+	Timeout       *durationpb.Duration `protobuf:"bytes,3,opt,name=timeout,proto3" json:"timeout,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Task_Options) Reset() {
+	*x = Task_Options{}
+	mi := &file_conf_conf_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Task_Options) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Task_Options) ProtoMessage() {}
+
+func (x *Task_Options) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_conf_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Task_Options.ProtoReflect.Descriptor instead.
+func (*Task_Options) Descriptor() ([]byte, []int) {
+	return file_conf_conf_proto_rawDescGZIP(), []int{7, 0}
+}
+
+func (x *Task_Options) GetQueue() string {
+	if x != nil {
+		return x.Queue
+	}
+	return ""
+}
+
+func (x *Task_Options) GetMaxRetry() int32 {
+	if x != nil {
+		return x.MaxRetry
+	}
+	return 0
+}
+
+func (x *Task_Options) GetTimeout() *durationpb.Duration {
+	if x != nil {
+		return x.Timeout
+	}
+	return nil
+}
+
 var File_conf_conf_proto protoreflect.FileDescriptor
 
 const file_conf_conf_proto_rawDesc = "" +
 	"\n" +
-	"\x0fconf/conf.proto\x12\x19cyi.app.service.task.conf\x1a\x1egoogle/protobuf/duration.proto\"\x9a\x02\n" +
+	"\x0fconf/conf.proto\x12\x19cyi.app.service.task.conf\x1a\x1egoogle/protobuf/duration.proto\"\xd1\x02\n" +
 	"\tBootstrap\x129\n" +
 	"\x06server\x18\x01 \x01(\v2!.cyi.app.service.task.conf.ServerR\x06server\x123\n" +
 	"\x04data\x18\x02 \x01(\v2\x1f.cyi.app.service.task.conf.DataR\x04data\x126\n" +
 	"\x05trace\x18\x03 \x01(\v2 .cyi.app.service.task.conf.TraceR\x05trace\x120\n" +
 	"\x03log\x18\x04 \x01(\v2\x1e.cyi.app.service.task.conf.LogR\x03log\x123\n" +
-	"\x04auth\x18\x05 \x01(\v2\x1f.cyi.app.service.task.conf.AuthR\x04auth\"\xd6\x02\n" +
+	"\x04auth\x18\x05 \x01(\v2\x1f.cyi.app.service.task.conf.AuthR\x04auth\x125\n" +
+	"\x05tasks\x18\x06 \x03(\v2\x1f.cyi.app.service.task.conf.TaskR\x05tasks\"\xd6\x02\n" +
 	"\x06Server\x12:\n" +
 	"\x04http\x18\x01 \x01(\v2&.cyi.app.service.task.conf.Server.HTTPR\x04http\x12:\n" +
 	"\x04grpc\x18\x02 \x01(\v2&.cyi.app.service.task.conf.Server.GRPCR\x04grpc\x1ai\n" +
@@ -841,7 +974,15 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\alog_dir\x18\x04 \x01(\tR\x06logDir\x12\x1f\n" +
 	"\vtime_format\x18\x05 \x01(\tR\n" +
 	"timeFormat\x12!\n" +
-	"\fenable_color\x18\x06 \x01(\bR\venableColor\"\x97\x01\n" +
+	"\fenable_color\x18\x06 \x01(\bR\venableColor\"\xe4\x01\n" +
+	"\x04Task\x12\x12\n" +
+	"\x04cron\x18\x01 \x01(\tR\x04cron\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12A\n" +
+	"\aoptions\x18\x03 \x01(\v2'.cyi.app.service.task.conf.Task.OptionsR\aoptions\x1aq\n" +
+	"\aOptions\x12\x14\n" +
+	"\x05queue\x18\x01 \x01(\tR\x05queue\x12\x1b\n" +
+	"\tmax_retry\x18\x02 \x01(\x05R\bmaxRetry\x123\n" +
+	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\x97\x01\n" +
 	"\x04Auth\x12P\n" +
 	"\vservice_key\x18\x01 \x03(\v2/.cyi.app.service.task.conf.Auth.ServiceKeyEntryR\n" +
 	"serviceKey\x1a=\n" +
@@ -861,7 +1002,7 @@ func file_conf_conf_proto_rawDescGZIP() []byte {
 	return file_conf_conf_proto_rawDescData
 }
 
-var file_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_conf_conf_proto_goTypes = []any{
 	(*Bootstrap)(nil),           // 0: cyi.app.service.task.conf.Bootstrap
 	(*Server)(nil),              // 1: cyi.app.service.task.conf.Server
@@ -870,35 +1011,40 @@ var file_conf_conf_proto_goTypes = []any{
 	(*Registry)(nil),            // 4: cyi.app.service.task.conf.Registry
 	(*Trace)(nil),               // 5: cyi.app.service.task.conf.Trace
 	(*Log)(nil),                 // 6: cyi.app.service.task.conf.Log
-	(*Auth)(nil),                // 7: cyi.app.service.task.conf.Auth
-	(*Server_HTTP)(nil),         // 8: cyi.app.service.task.conf.Server.HTTP
-	(*Server_GRPC)(nil),         // 9: cyi.app.service.task.conf.Server.GRPC
-	(*Data_Redis)(nil),          // 10: cyi.app.service.task.conf.Data.Redis
-	(*Registry_Consul)(nil),     // 11: cyi.app.service.task.conf.Registry.Consul
-	nil,                         // 12: cyi.app.service.task.conf.Auth.ServiceKeyEntry
-	(*durationpb.Duration)(nil), // 13: google.protobuf.Duration
+	(*Task)(nil),                // 7: cyi.app.service.task.conf.Task
+	(*Auth)(nil),                // 8: cyi.app.service.task.conf.Auth
+	(*Server_HTTP)(nil),         // 9: cyi.app.service.task.conf.Server.HTTP
+	(*Server_GRPC)(nil),         // 10: cyi.app.service.task.conf.Server.GRPC
+	(*Data_Redis)(nil),          // 11: cyi.app.service.task.conf.Data.Redis
+	(*Registry_Consul)(nil),     // 12: cyi.app.service.task.conf.Registry.Consul
+	(*Task_Options)(nil),        // 13: cyi.app.service.task.conf.Task.Options
+	nil,                         // 14: cyi.app.service.task.conf.Auth.ServiceKeyEntry
+	(*durationpb.Duration)(nil), // 15: google.protobuf.Duration
 }
 var file_conf_conf_proto_depIdxs = []int32{
 	1,  // 0: cyi.app.service.task.conf.Bootstrap.server:type_name -> cyi.app.service.task.conf.Server
 	2,  // 1: cyi.app.service.task.conf.Bootstrap.data:type_name -> cyi.app.service.task.conf.Data
 	5,  // 2: cyi.app.service.task.conf.Bootstrap.trace:type_name -> cyi.app.service.task.conf.Trace
 	6,  // 3: cyi.app.service.task.conf.Bootstrap.log:type_name -> cyi.app.service.task.conf.Log
-	7,  // 4: cyi.app.service.task.conf.Bootstrap.auth:type_name -> cyi.app.service.task.conf.Auth
-	8,  // 5: cyi.app.service.task.conf.Server.http:type_name -> cyi.app.service.task.conf.Server.HTTP
-	9,  // 6: cyi.app.service.task.conf.Server.grpc:type_name -> cyi.app.service.task.conf.Server.GRPC
-	10, // 7: cyi.app.service.task.conf.Data.redis:type_name -> cyi.app.service.task.conf.Data.Redis
-	3,  // 8: cyi.app.service.task.conf.Data.oss:type_name -> cyi.app.service.task.conf.OSS
-	11, // 9: cyi.app.service.task.conf.Registry.consul:type_name -> cyi.app.service.task.conf.Registry.Consul
-	12, // 10: cyi.app.service.task.conf.Auth.service_key:type_name -> cyi.app.service.task.conf.Auth.ServiceKeyEntry
-	13, // 11: cyi.app.service.task.conf.Server.HTTP.timeout:type_name -> google.protobuf.Duration
-	13, // 12: cyi.app.service.task.conf.Server.GRPC.timeout:type_name -> google.protobuf.Duration
-	13, // 13: cyi.app.service.task.conf.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
-	13, // 14: cyi.app.service.task.conf.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
-	15, // [15:15] is the sub-list for method output_type
-	15, // [15:15] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	8,  // 4: cyi.app.service.task.conf.Bootstrap.auth:type_name -> cyi.app.service.task.conf.Auth
+	7,  // 5: cyi.app.service.task.conf.Bootstrap.tasks:type_name -> cyi.app.service.task.conf.Task
+	9,  // 6: cyi.app.service.task.conf.Server.http:type_name -> cyi.app.service.task.conf.Server.HTTP
+	10, // 7: cyi.app.service.task.conf.Server.grpc:type_name -> cyi.app.service.task.conf.Server.GRPC
+	11, // 8: cyi.app.service.task.conf.Data.redis:type_name -> cyi.app.service.task.conf.Data.Redis
+	3,  // 9: cyi.app.service.task.conf.Data.oss:type_name -> cyi.app.service.task.conf.OSS
+	12, // 10: cyi.app.service.task.conf.Registry.consul:type_name -> cyi.app.service.task.conf.Registry.Consul
+	13, // 11: cyi.app.service.task.conf.Task.options:type_name -> cyi.app.service.task.conf.Task.Options
+	14, // 12: cyi.app.service.task.conf.Auth.service_key:type_name -> cyi.app.service.task.conf.Auth.ServiceKeyEntry
+	15, // 13: cyi.app.service.task.conf.Server.HTTP.timeout:type_name -> google.protobuf.Duration
+	15, // 14: cyi.app.service.task.conf.Server.GRPC.timeout:type_name -> google.protobuf.Duration
+	15, // 15: cyi.app.service.task.conf.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
+	15, // 16: cyi.app.service.task.conf.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
+	15, // 17: cyi.app.service.task.conf.Task.Options.timeout:type_name -> google.protobuf.Duration
+	18, // [18:18] is the sub-list for method output_type
+	18, // [18:18] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_conf_conf_proto_init() }
@@ -912,7 +1058,7 @@ func file_conf_conf_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_conf_conf_proto_rawDesc), len(file_conf_conf_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

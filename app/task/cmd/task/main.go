@@ -60,11 +60,17 @@ func init() {
 	}
 }
 
-func newApp(logger log.Logger, hp *http.Server, reg registry.Registrar, server *asynq.Server, mux *asynq.ServeMux) *kratos.App {
+func newApp(logger log.Logger, hp *http.Server, reg registry.Registrar, server *asynq.Server, mux *asynq.ServeMux, scheduler *asynq.Scheduler) *kratos.App {
 	go func() {
 		if err := server.Run(mux); err != nil {
 			log.NewHelper(logger).Errorf("asynq server failed: %v", err)
 
+		}
+	}()
+	go func() {
+		if err := scheduler.Run(); err != nil {
+			log.NewHelper(logger).Errorf("asynq scheduler failed: %v", err)
+			panic(err)
 		}
 	}()
 	return kratos.New(
@@ -124,7 +130,7 @@ func main() {
 	// 创建TracerProvider
 	tp := tr.NewTracerProvider(Name, bc.Trace.Endpoint)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, &cb, logger, tp, bc.Auth, meteric)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, &cb, logger, tp, bc.Tasks, bc.Auth, meteric)
 	if err != nil {
 		panic(err)
 	}

@@ -17,15 +17,16 @@
 
 ```
 app/service/order/
-├── cmd/order/
-│   ├── main.go              # 服务入口
-│   ├── wire.go              # 依赖注入配置
-│   └── wire_gen.go          # Wire 生成文件
+├── cmd/
+│   └── order/
+│       ├── main.go              # gRPC 服务入口
+│       ├── wire.go              # 依赖注入配置
+│       └── wire_gen.go          # Wire 生成文件
 ├── internal/
 │   ├── biz/
 │   │   ├── biz.go                       # 业务层依赖注入
 │   │   ├── order.go                     # 订单聚合根
-│   │   ├── order_handle.go              # OrderUseCase 业务逻辑
+│   │   ├── order_handle.go              # OrderUseCase 业务逻辑（含 CancelExpired 超时取消）
 │   │   ├── order_handle_test.go         # OrderUseCase 单元测试
 │   │   ├── order_item.go                # 订单行项目实体
 │   │   ├── order_value.go               # Money 值对象
@@ -44,7 +45,7 @@ app/service/order/
 │   │   ├── conf.proto       # 配置定义
 │   │   └── conf.pb.go       # 配置结构体
 │   ├── data/
-│   │   ├── data.go          # 数据层初始化（MySQL、Redis、GORM Gen）
+│   │   ├── data.go          # 数据层初始化（MySQL、Redis、NATS、GORM Gen）
 │   │   ├── client_conn.go   # 商品/库存服务 gRPC 客户端连接
 │   │   ├── order.go         # 订单数据访问
 │   │   ├── product.go       # 商品仓储实现（远程调用商品服务）
@@ -61,7 +62,7 @@ app/service/order/
 │   │       ├── logistics.go     # 物流模型
 │   │       └── payment_log.go   # 支付日志模型
 │   ├── server/
-│   │   ├── server.go       # 服务器配置（Consul 注册/发现、gRPC 服务器）
+│   │   ├── server.go       # 服务器配置（Consul 注册/发现、gRPC/HTTP 服务器）
 │   │   └── grpc.go         # gRPC 服务注册
 │   └── service/
 │       ├── service.go      # 服务层依赖注入

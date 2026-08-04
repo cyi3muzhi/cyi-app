@@ -17,19 +17,21 @@ import (
 // TaskService asynq 任务处理服务
 // ec 处理订单导出任务（由 admin 投递，task 消费）
 type TaskService struct {
-	uc     *biz.TaskUseCase
-	userUc *biz.UserUseCase
-	ec     *biz.ExportUseCase
-	log    *log.Helper
+	uc       *biz.TaskUseCase
+	userUc   *biz.UserUseCase
+	couponUc biz.CouponRepo
+	ec       *biz.ExportUseCase
+	log      *log.Helper
 }
 
 // NewTaskService 创建任务处理服务
-func NewTaskService(uc *biz.TaskUseCase, userUc *biz.UserUseCase, ec *biz.ExportUseCase, logger log.Logger) *TaskService {
+func NewTaskService(uc *biz.TaskUseCase, userUc *biz.UserUseCase, couponUc biz.CouponRepo, ec *biz.ExportUseCase, logger log.Logger) *TaskService {
 	return &TaskService{
-		uc:     uc,
-		userUc: userUc,
-		ec:     ec,
-		log:    log.NewHelper(logger),
+		uc:       uc,
+		userUc:   userUc,
+		couponUc: couponUc,
+		ec:       ec,
+		log:      log.NewHelper(logger),
 	}
 }
 
@@ -71,4 +73,25 @@ func (s *TaskService) HandleExportOrderTask(ctx context.Context, t *asynq.Task) 
 		return fmt.Errorf("解析export payload失败: %w", err)
 	}
 	return s.ec.ProcessExport(ctx, payload)
+}
+
+// UserCount 定时统计用户数量（cron 定时任务，迁移自原 job 服务）
+func (s *TaskService) UserCount(ctx context.Context, _ *asynq.Task) error {
+	count, err := s.userUc.UserCount(ctx)
+	if err != nil {
+		return err
+	}
+	s.log.Infof("UserCount: %d", count)
+	return nil
+}
+
+// CouponExpire 批量过期优惠券发放记录（cron 定时任务，迁移自原 job 服务）
+func (s *TaskService) CouponExpire(ctx context.Context, _ *asynq.Task) error {
+	affected, err := s.couponUc.BatchExpireCoupons(ctx, 100)
+	if err != nil {
+		s.log.Errorf("优惠券过期失败: %v", err)
+		return err
+	}
+	s.log.Infof("CouponExpire: 已过期 %d 条优惠券记录", affected)
+	return nil
 }

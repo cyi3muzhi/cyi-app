@@ -768,67 +768,6 @@ spec:
 ```
 **用途**：为接口服务创建网络访问配置，提供外部访问端口
 
-### job 目录
-
-#### deployment.yaml
-```yaml
-apiVersion: apps/v1  # Kubernetes API 版本
-kind: Deployment  # 资源类型：部署
-metadata:
-  name: service-job  # 部署名称
-  namespace: default  # 命名空间
-spec:
-  replicas: 1  # 副本数
-  selector:
-    matchLabels:
-      app: service-job  # 选择标签
-  template:
-    metadata:
-      labels:
-        app: service-job  # Pod 标签
-    spec:
-      containers:
-      - name: service-job  # 容器名称
-        image: go-kratos/cin-job:0.1.0  # 容器镜像
-        ports:
-        - containerPort: 8000  # 端口
-        env:
-        - name: CONSUL_ADDR  # Consul 地址
-          value: "consul:8500"
-        - nameCONSUL_PATHS  # Consul 路径
-          value: "/develop/cyi-app/cin/job"
-        - name: SERVICE_ENV  # 服务环境
-          value: "dev"
-        - name: LOG_LEVEL  # 日志级别
-          value: "debug"
-        volumeMounts:
-        - name: logs  # 日志卷
-          mountPath: /app/logs  # 挂载路径
-      volumes:
-      - name: logs
-        hostPath:
-          path: /mnt/e/me/cyi-app/deploy/logs/job  # 主机路径
-          type: DirectoryOrCreate  # 目录不存在则创建
-```
-**用途**：部署任务服务，处理定时任务和后台任务
-
-#### service.yaml
-```yaml
-apiVersion: v1  # Kubernetes API 版本
-kind: Service  # 资源类型：服务
-metadata:
-  name: service-job  # 服务名称
-  namespace: default  # 命名空间
-spec:
-  selector:
-    app: service-job  # 选择标签
-  ports:
-  - port: 8000  # 服务端口
-    targetPort: 8000  # 容器端口
-  type: ClusterIP  # 服务类型：ClusterIP
-```
-**用途**：为任务服务创建网络访问配置，提供集群内部访问
-
 ### task 目录
 
 #### deployment.yaml

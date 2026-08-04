@@ -9,6 +9,10 @@ option java_package = "api.task.v1";
 enum TaskName {
 	// 创建用户
 	create_user = 0 ;
+	// 定时统计用户数量
+	user_count = 1 ;
+	// 批量过期优惠券发放记录
+	coupon_expire = 2 ;
 }
 
 message CreateUserTask {

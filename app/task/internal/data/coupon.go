@@ -4,7 +4,7 @@ import (
 	"context"
 
 	marketingV1 "cyi-app/api/service/marketing/v1"
-	"cyi-app/app/job/internal/biz"
+	"cyi-app/app/task/internal/biz"
 )
 
 // couponRepo 优惠券数据仓库实现

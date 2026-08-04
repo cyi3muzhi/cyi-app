@@ -15,5 +15,8 @@ func ProcessTask(m *ts.TaskServer, task *service.TaskService) *asynq.ServeMux {
 	m.AsyncHandleFunc(v1.TaskName_create_user.String(), task.CreateUserTask)
 	// 订单导出任务（由 admin 投递到 export 队列，task 消费）
 	m.AsyncHandleFunc(exporttask.ExportOrderTaskName, task.HandleExportOrderTask)
+	// cron 定时任务（由 Scheduler 投递到 critical 队列，task 消费）
+	m.CronHandleFunc(v1.TaskName_user_count.String(), task.UserCount)
+	m.CronHandleFunc(v1.TaskName_coupon_expire.String(), task.CouponExpire)
 	return m.TaskServer
 }

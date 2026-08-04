@@ -46,7 +46,6 @@ $Services = @{
     "admin"     = @{ Path = "app\cin\admin";         Image = "cyi3muz/cin-admin:0.1.0";      Compose = "service-admin" }
     "interface" = @{ Path = "app\cin\interface";     Image = "cyi3muz/cin-interface:0.1.0";  Compose = "service-interface" }
     "user"      = @{ Path = "app\service\user";      Image = "cyi3muz/service-user:0.1.0";   Compose = "service-user" }
-    "job"       = @{ Path = "app\job";               Image = "cyi3muz/job:0.1.0";            Compose = "service-job" }
     "task"      = @{ Path = "app\task";              Image = "cyi3muz/task:0.1.0";           Compose = "service-task" }
 }
 
@@ -132,12 +131,12 @@ if ($Service -eq "all" -or $Service -eq "frontend") {
 # ======================== 4. 微服务构建 + 传输 ========================
 $toDeploy = @()
 if ($Service -eq "all") {
-    $toDeploy = @("blades", "admin", "interface", "user", "job", "task")
+    $toDeploy = @("blades", "admin", "interface", "user", "task")
 } elseif ($Services.ContainsKey($Service)) {
     $toDeploy = @($Service)
 } else {
     Write-Err "未知的服务名: $Service"
-    Write-Host "可选: all, infra, frontend, blades, admin, interface, user, job, task"
+    Write-Host "可选: all, infra, frontend, blades, admin, interface, user, task"
     exit 1
 }
 

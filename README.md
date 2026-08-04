@@ -106,8 +106,7 @@
 
 | 服务 | 目录 | 说明 | 文档 |
 |------|------|------|------|
-| Job Service | `app/job` | 定时任务（Asynq Scheduler，消费 critical 队列） | [README](app/job/README.md) |
-| Task Service | `app/task` | 异步任务（Asynq Server，消费 default/export 队列，含订单导出） | [README](app/task/README.md) |
+| Task Service | `app/task` | 异步任务 + 定时任务（Asynq Server + Scheduler，消费 default/export/critical 队列，含订单导出与 cron 定时任务） | [README](app/task/README.md) |
 | NATS Consumer | `app/nats` | NATS 消息消费者 | [README](app/nats/README.md) |
 | RabbitMQ Consumer | `app/rabbit` | RabbitMQ 消息消费者 | [README](app/rabbit/README.md) |
 
