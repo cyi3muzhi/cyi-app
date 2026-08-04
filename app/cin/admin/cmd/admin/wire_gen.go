@@ -38,6 +38,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	adminUserClient := data.NewAdminUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	operationLogClient := data.NewOperationLogClient(discovery, confServer, auth, traceTracerProvider, meter)
 	couponServiceClient := data.NewCouponServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	bladesClient := data.NewBladesClient(discovery, confServer, auth, traceTracerProvider, meter)
 	rustFSClient, err := data.NewOssClient(confData)
@@ -46,8 +47,9 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	}
 	client := data.NewRedisClient(confData)
 	universalClient := data.ProvideUniversalClient(client)
+	natsConn := data.NewNATSConn()
 	asynqClient := data.NewAsynqClient(confData, logger)
-	dataData, cleanup, err := data.NewData(productClient, categoryClient, adminUserClient, orderClient, userClient, couponServiceClient, bladesClient, rustFSClient, client, asynqClient, logger)
+	dataData, cleanup, err := data.NewData(productClient, categoryClient, adminUserClient, orderClient, userClient, operationLogClient, couponServiceClient, bladesClient, rustFSClient, client, natsConn, asynqClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -78,11 +80,15 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	bannerRepo := data.NewBannerRepo(adminBannerClient)
 	userRepo := data.NewUserRepo(dataData, logger)
 	userUseCase := biz.NewUserUseCase(userRepo, logger)
+	operationLogRepo := data.NewOperationLogRepo(dataData, logger)
+	operationLogUseCase := biz.NewOperationLogUseCase(operationLogRepo, logger)
 	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, staffUseCase, categoryUseCase, orderUseCase, exportUseCase, couponUseCase, uploadRepo, agentUseCase, settingsUseCase, bannerRepo, userUseCase, logger)
+	logsService := service.NewLogsService(operationLogUseCase, logger)
 	server2 := server.NewGRPCServer(grpcServer, adminService)
 	tokenValidator := data.NewTokenValidator(client)
-	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth, tokenValidator, enforcerProvider)
-	server3 := server.NewHTTPServer(httpServer, adminService, auth)
+	operationLogPublisher := data.NewOperationLogPublisher(natsConn, logger)
+	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth, tokenValidator, enforcerProvider, operationLogPublisher)
+	server3 := server.NewHTTPServer(httpServer, adminService, logsService, auth)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, server2, server3, registrar)
 	return app, func() {

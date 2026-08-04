@@ -802,6 +802,76 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.GetDashboardStatsReply'
+    /admin/v1/logs:
+        get:
+            tags:
+                - AdminLogs
+            description: 分页查询操作日志
+            operationId: AdminLogs_ListOperationLogs
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: startDate
+                  in: query
+                  schema:
+                    type: string
+                - name: endDate
+                  in: query
+                  schema:
+                    type: string
+                - name: operator
+                  in: query
+                  schema:
+                    type: string
+                - name: module
+                  in: query
+                  schema:
+                    type: string
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ListOperationLogsReply'
+    /admin/v1/logs/operators:
+        get:
+            tags:
+                - AdminLogs
+            description: 操作人列表（筛选下拉）
+            operationId: AdminLogs_ListOperationLogOperators
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ListOperationLogOperatorsReply'
+    /admin/v1/logs/stats:
+        get:
+            tags:
+                - AdminLogs
+            description: 操作日志统计（今日/本周/本月/累计）
+            operationId: AdminLogs_CountOperationLogs
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.CountOperationLogsReply'
     /admin/v1/orders:
         get:
             tags:
@@ -2461,6 +2531,36 @@ components:
                         type: string
                     description: 自定义标签
             description: AdminKnowledgeDocInfo 文档信息
+        api.cin.admin.v1.AdminLogItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                operator:
+                    type: string
+                role:
+                    type: string
+                module:
+                    type: string
+                action:
+                    type: string
+                content:
+                    type: string
+                method:
+                    type: string
+                path:
+                    type: string
+                ip:
+                    type: string
+                userAgent:
+                    type: string
+                result:
+                    type: integer
+                    format: int32
+                createdAt:
+                    type: string
+                avatar:
+                    type: string
         api.cin.admin.v1.BannerCopyOption:
             type: object
             properties:
@@ -2586,6 +2686,17 @@ components:
         api.cin.admin.v1.ClearChatHistoryRequest:
             type: object
             properties: {}
+        api.cin.admin.v1.CountOperationLogsReply:
+            type: object
+            properties:
+                today:
+                    type: string
+                week:
+                    type: string
+                month:
+                    type: string
+                total:
+                    type: string
         api.cin.admin.v1.CouponCreateReply:
             type: object
             properties:
@@ -3315,6 +3426,23 @@ components:
                         $ref: '#/components/schemas/api.cin.admin.v1.AdminKnowledgeDocInfo'
                     description: 文档列表
             description: ListKnowledgeReply 列出知识库文档响应
+        api.cin.admin.v1.ListOperationLogOperatorsReply:
+            type: object
+            properties:
+                operators:
+                    type: array
+                    items:
+                        type: string
+        api.cin.admin.v1.ListOperationLogsReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.AdminLogItem'
+                total:
+                    type: integer
+                    format: int32
         api.cin.admin.v1.ListOrderReply:
             type: object
             properties:
@@ -4892,6 +5020,10 @@ tags:
       description: 管理后台 - 商品分类管理服务
     - name: AdminCoupon
       description: 优惠券管理服务
+    - name: AdminLogs
+      description: |-
+        操作日志服务（管理端查询）
+         日志写入由 HTTP 中间件发布 NATS 事件，user 服务订阅落库
     - name: AdminOrder
       description: 管理后台 - 订单管理服务
     - name: AdminProduct
@@ -4905,9 +5037,9 @@ tags:
     - name: Auth
       description: 用户认证服务
     - name: Banner
-      description: 管理后台 - Banner 管理服务
-    - name: Banner
       description: 公开 Banner 服务
+    - name: Banner
+      description: 管理后台 - Banner 管理服务
     - name: Blades
       description: AI 智能助手服务
     - name: Cart

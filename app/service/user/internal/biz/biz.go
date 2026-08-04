@@ -14,6 +14,7 @@ var ProviderSet = wire.NewSet(
 	NewRoleUseCase,
 	NewSettingsUseCase,
 	NewBannerUseCase,
+	NewOperationLogUseCase,
 	ProvideApiKey,
 )
 

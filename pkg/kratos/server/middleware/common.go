@@ -25,11 +25,12 @@ type Meter struct {
 type MiddlewareType bool
 
 type MiddlewareOptions struct {
-	Auth      Auth
-	Enforcer  EnforcerProvider
-	logger    log.Logger
-	Meter     *Meter
-	Fallbacks map[string]FallbackFunc // 客户端降级策略：operation -> 兜底函数
+	Auth          Auth
+	Enforcer      EnforcerProvider
+	logger        log.Logger
+	Meter         *Meter
+	Fallbacks     map[string]FallbackFunc // 客户端降级策略：operation -> 兜底函数
+	operationLog  OperationLogRecorder    // 操作日志落库接口（服务端）
 }
 
 type MiddlewareOption func(*MiddlewareOptions)
@@ -68,5 +69,13 @@ func WithCasbinMiddleware(enforcer EnforcerProvider) MiddlewareOption {
 func WithFallbackMiddleware(fallbacks map[string]FallbackFunc) MiddlewareOption {
 	return func(o *MiddlewareOptions) {
 		o.Fallbacks = fallbacks
+	}
+}
+
+// WithOperationLogMiddleware 添加操作日志中间件（记录服务端非 GET 写操作）
+// recorder 由业务侧实现（如发布到 NATS），需在认证中间件之后执行以获取操作人
+func WithOperationLogMiddleware(recorder OperationLogRecorder) MiddlewareOption {
+	return func(o *MiddlewareOptions) {
+		o.operationLog = recorder
 	}
 }

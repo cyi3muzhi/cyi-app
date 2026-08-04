@@ -23,7 +23,7 @@ import (
 )
 
 // NewHTTPServer new an HTTP server. 注册管理后台的多个接口服务
-func NewHTTPServer(s *ts.HttpServer, adminService *service.AdminService, ac *conf.Auth) *kratosHttp.Server {
+func NewHTTPServer(s *ts.HttpServer, adminService *service.AdminService, logsService *service.LogsService, ac *conf.Auth) *kratosHttp.Server {
 	adminv1.RegisterDashboardHTTPServer(s.HttpServer, adminService)
 	adminv1.RegisterAdminProductHTTPServer(s.HttpServer, adminService)
 	adminv1.RegisterAdminOrderHTTPServer(s.HttpServer, adminService)
@@ -38,6 +38,8 @@ func NewHTTPServer(s *ts.HttpServer, adminService *service.AdminService, ac *con
 	adminv1.RegisterBannerHTTPServer(s.HttpServer, adminService)
 	// 注册 Agent proto 接口（替代 registerAgentRoutes 中除 SSE 外的所有路由）
 	adminv1.RegisterAgentHTTPServer(s.HttpServer, adminService)
+	// 注册操作日志查询接口（独立服务）
+	adminv1.RegisterAdminLogsHTTPServer(s.HttpServer, logsService)
 	// 注册 SSE 流式聊天路由（proto 不支持流式，手动注册）
 	registerAgentSSEServer(s.HttpServer, adminService, ac)
 	// 注册知识库文件上传路由（proto 不支持 multipart，手动注册）

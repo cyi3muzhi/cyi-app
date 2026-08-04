@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"cyi-app/app/service/user/internal/conf"
+	"cyi-app/app/service/user/internal/data"
 
 	cgrpc "cyi-app/pkg/kratos/client"
 	consulConfig "cyi-app/pkg/kratos/config"
@@ -64,7 +65,9 @@ func init() {
 	}
 }
 
-func newApp(logger log.Logger, gs *grpc.Server, reg registry.Registrar) *kratos.App {
+func newApp(logger log.Logger, gs *grpc.Server, reg registry.Registrar, consumer *data.OperationLogConsumer) *kratos.App {
+	// 启动 NATS 操作日志消费者（订阅 admin.operation 写库）
+	go consumer.Start()
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),

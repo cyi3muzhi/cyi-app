@@ -80,6 +80,10 @@ func Middlewares(tp trace.TracerProvider, middlewareType MiddlewareType, opts ..
 			Validate(),
 			ratelimit.Server(),
 		)
+		// 操作日志（记录写操作；需在认证之后，能拿到 JWT claims）
+		if options.operationLog != nil {
+			middlewareList = append(middlewareList, OperationLog(options.operationLog, options.logger))
+		}
 	}
 
 	return middlewareList

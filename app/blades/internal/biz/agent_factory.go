@@ -268,16 +268,25 @@ func (f *AgentFactory) getSourceConfig(source string) (prompt, knowledgeTag stri
 3. 如果工具查询失败，请告知用户暂时无法查询
 4. 当用户告诉你关于他们自己的信息（如昵称、称呼）时，使用 save_user_preference 工具保存
 5. 用户问权限 → 使用权限查询工具
-6. 请用友好的语气简洁回答问题`, dateStr), "admin"
+6. 请用友好的语气简洁回答问题%s`, dateStr, formatRules), "admin"
 	case "user":
 		return fmt.Sprintf(`当前日期：%s
 
 你是商城购物助手，帮助用户解答购物问题。
 你可以帮用户搜索商品、查询商品详情、查找平台规则和指南。
-请用热情、友好的语气回答。对于不确定的信息，请引导用户联系客服。`, dateStr), "user"
+请用热情、友好的语气回答。对于不确定的信息，请引导用户联系客服。%s`, dateStr, formatRules), "user"
 	default:
 		return fmt.Sprintf(`当前日期：%s
 
-你是商城通用助手。请用友好、简洁的方式回答用户的问题。`, dateStr), "public"
+你是商城通用助手。请用友好、简洁的方式回答用户的问题。%s`, dateStr, formatRules), "public"
 	}
 }
+
+// formatRules 统一的输出格式规范，拼接在各场景提示词之后，保证 AI 回复结构清晰、易于阅读
+const formatRules = `
+输出格式要求（必须遵守）：
+1. 使用 Markdown 结构化输出：重点小节用 ## 标题，要点用 - 或 1. 列表，强调用 **加粗**
+2. 查询类结果（订单、商品、用户等数据）优先用 Markdown 表格展示。表格语法：每行以 | 开头和结尾，列之间用 | 分隔，表头下方必须有一行 |---|---| 分隔行，表头用中文，列数不超过 5 列。严禁使用 Tab 制表符或空格分隔的文本表格
+3. 先直接给出结论，再补充细节；不要客套寒暄，结尾不要写"还有什么可以帮您"之类的套话
+4. 内容分点表述，每点尽量一句话；避免一大段文字堆砌
+5. 整个回答不要用代码块包裹，除非是给用户的命令示例`

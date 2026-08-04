@@ -12,6 +12,7 @@ import (
 // ProviderSet is service providers.
 var ProviderSet = wire.NewSet(
 	NewAdminService,
+	NewLogsService,
 )
 
 // AdminService 实现了管理后台所有接口服务

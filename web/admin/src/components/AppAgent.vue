@@ -224,9 +224,55 @@ function scrollToBottom() {
   })
 }
 
+/** 判断一行是否为 Tab/多空格分隔的文本表格行，返回列数组（不是则返回 null） */
+function splitTableRow(line: string): string[] | null {
+  if (!line || line.includes('|')) return null
+  const byTab = line.split(/\t+/).map(c => c.trim()).filter(Boolean)
+  if (byTab.length >= 2) return byTab
+  // 宽松匹配 2 个及以上空格分隔（避免误伤普通句子）
+  const bySpace = line.split(/\s{2,}/).map(c => c.trim()).filter(Boolean)
+  if (bySpace.length >= 2) return bySpace
+  return null
+}
+
+/** 把 AI 输出的 Tab/空格文本表格转换为 Markdown 表格语法（marked 才能渲染成 <table>） */
+function convertTextTable(content: string): string {
+  const lines = content.split('\n')
+  const out: string[] = []
+  let i = 0
+  while (i < lines.length) {
+    const first = splitTableRow(lines[i])
+    if (first && first.length >= 2) {
+      // 收集连续的表头 + 数据行
+      const rows: string[][] = []
+      let j = i
+      while (j < lines.length) {
+        const cells = splitTableRow(lines[j])
+        if (!cells) break
+        rows.push(cells)
+        j++
+      }
+      // 至少表头 + 1 行数据才当作表格
+      if (rows.length >= 2) {
+        out.push('| ' + rows[0].join(' | ') + ' |')
+        out.push('| ' + rows[0].map(() => '---').join(' | ') + ' |')
+        for (let k = 1; k < rows.length; k++) {
+          out.push('| ' + rows[k].join(' | ') + ' |')
+        }
+        i = j
+        continue
+      }
+    }
+    out.push(lines[i])
+    i++
+  }
+  return out.join('\n')
+}
+
 function formatMessage(content: string): string {
   try {
-    return marked.parse(content) as string
+    // 先转换文本表格，再交给 marked 渲染
+    return marked.parse(convertTextTable(content)) as string
   } catch {
     // 流式渲染时内容可能不完整，解析失败则原样返回
     return content
@@ -851,12 +897,14 @@ function handleScroll() {
 
 /* Markdown 表格样式 */
 .message-text table {
+  display: block;
   width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
   font-size: 0.8125rem;
   margin: 8px 0;
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
   border: 1px solid #e2e8f0;
 }
 

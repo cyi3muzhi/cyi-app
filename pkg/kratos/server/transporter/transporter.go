@@ -10,6 +10,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	khttp "github.com/go-kratos/kratos/v2/transport/http"
@@ -38,6 +39,10 @@ type MiddlewareOpt struct {
 
 	// Casbin 权限校验 可选
 	Enforcer mid.EnforcerProvider
+
+	// ExtraMiddlewares 附加中间件（合并进服务中间件链末尾执行，如操作日志）
+	// 注意：不能通过第二个 http.Middleware() 追加，matcher.Use 是覆盖式赋值
+	ExtraMiddlewares []middleware.Middleware
 
 	// 链路追踪 *
 	TracerProvider trace.TracerProvider
@@ -72,6 +77,10 @@ func NewHttpServerOpt(httpOpt *TransporterOpt, midOpt *MiddlewareOpt) []khttp.Se
 	}
 	mids = append(mids, mid.WithMetricsMiddleware(midOpt.Meter))
 	middlewares := mid.ServerMiddlewares(midOpt.TracerProvider, mids...)
+	// 合并附加中间件（与主链同一个 khttp.Middleware，避免覆盖 matcher.defaults）
+	if len(midOpt.ExtraMiddlewares) > 0 {
+		middlewares = append(middlewares, midOpt.ExtraMiddlewares...)
+	}
 
 	opts := []khttp.ServerOption{
 		khttp.Middleware(middlewares...),

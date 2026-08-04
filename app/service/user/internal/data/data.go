@@ -20,6 +20,7 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
+	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -31,6 +32,9 @@ var ProviderSet = wire.NewSet(
 	NewRoleRepo,
 	NewSettingsRepo,
 	NewBannerRepo,
+	NewOperationLogRepo,
+	NewOperationLogConsumer,
+	NewNATSConn,
 	NewData,
 	NewDB,
 	NewRedisClient,
@@ -43,13 +47,17 @@ type Data struct {
 	cache    *redis.Client
 	oss      *rustfs.RustFSClient
 	enforcer *casbin.Enforcer
+	nc       *nats.Conn
 }
 
 // NewData .
-func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, oss *rustfs.RustFSClient, enforcer *casbin.Enforcer, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, oss *rustfs.RustFSClient, enforcer *casbin.Enforcer, nc *nats.Conn, logger log.Logger) (*Data, func(), error) {
 
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
+		if nc != nil {
+			nc.Close()
+		}
 	}
 	curd.SetDefault(db)
 	return &Data{
@@ -57,7 +65,22 @@ func NewData(c *conf.Data, db *gorm.DB, cache *redis.Client, oss *rustfs.RustFSC
 		cache:    cache,
 		oss:      oss,
 		enforcer: enforcer,
+		nc:       nc,
 	}, cleanup, nil
+}
+
+// NewNATSConn 创建 NATS 连接（单例）
+// 优先从环境变量 NATS_URL 读取地址，默认使用 localhost（本地开发）
+func NewNATSConn() *nats.Conn {
+	natsURL := os.Getenv("NATS_URL")
+	if natsURL == "" {
+		natsURL = "nats://localhost:4222"
+	}
+	nc, err := nats.Connect(natsURL)
+	if err != nil {
+		panic(err)
+	}
+	return nc
 }
 
 func NewDB(c *conf.Data) *gorm.DB {
@@ -76,7 +99,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 	// 仅在非生产环境自动迁移表结构（生产环境禁止使用 AutoMigrate）
 	env := os.Getenv("SERVICE_ENV")
 	if env != "production" {
-		if err := db.AutoMigrate(&mod.User{}, &mod.Address{}, &mod.AdminUser{}, &mod.CasbinRule{}, &mod.RoleMeta{}, &mod.SettingsRow{}, &mod.BannersRow{}); err != nil {
+		if err := db.AutoMigrate(&mod.User{}, &mod.Address{}, &mod.AdminUser{}, &mod.CasbinRule{}, &mod.RoleMeta{}, &mod.SettingsRow{}, &mod.BannersRow{}, &mod.AdminOperationLog{}); err != nil {
 			panic(err)
 		}
 

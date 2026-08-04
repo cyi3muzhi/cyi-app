@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+
+import "google/api/annotations.proto";
+
+// 操作日志服务（管理端查询）
+// 日志写入由 HTTP 中间件发布 NATS 事件，user 服务订阅落库
+service AdminLogs {
+  // 分页查询操作日志
+  rpc ListOperationLogs (ListOperationLogsRequest) returns (ListOperationLogsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/logs"
+    };
+  }
+  // 操作日志统计（今日/本周/本月/累计）
+  rpc CountOperationLogs (CountOperationLogsRequest) returns (CountOperationLogsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/logs/stats"
+    };
+  }
+  // 操作人列表（筛选下拉）
+  rpc ListOperationLogOperators (ListOperationLogOperatorsRequest) returns (ListOperationLogOperatorsReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/logs/operators"
+    };
+  }
+}
+
+message ListOperationLogsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string start_date = 3; // 开始日期（2006-01-02）
+  string end_date = 4;   // 结束日期（2006-01-02）
+  string operator = 5;   // 操作人姓名
+  string module = 6;     // 操作模块
+  string keyword = 7;    // 关键词（匹配操作内容）
+}
+
+message ListOperationLogsReply {
+  repeated AdminLogItem items = 1;
+  int32 total = 2;
+}
+
+message AdminLogItem {
+  int64 id = 1;
+  string operator = 2;    // 操作人姓名
+  string role = 3;        // 角色标识（如 super_admin）
+  string module = 4;      // 操作模块
+  string action = 5;      // 动作
+  string content = 6;     // 操作内容
+  string method = 7;      // HTTP 方法
+  string path = 8;        // 请求路径
+  string ip = 9;          // 来源 IP
+  string user_agent = 10; // User-Agent
+  int32 result = 11;      // 执行结果：1-成功 0-失败
+  int64 created_at = 12;  // 操作时间（Unix 秒）
+  string avatar = 13;     // 操作人头像（公开 URL）
+}
+
+message CountOperationLogsRequest {}
+
+message CountOperationLogsReply {
+  int64 today = 1;  // 今日操作数
+  int64 week = 2;   // 本周操作数
+  int64 month = 3;  // 本月操作数
+  int64 total = 4;  // 累计操作数
+}
+
+message ListOperationLogOperatorsRequest {}
+
+message ListOperationLogOperatorsReply {
+  repeated string operators = 1; // 操作人姓名列表（去重）
+}

@@ -15,6 +15,7 @@ import (
 type UserClaims struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
+	Name     string `json:"name"` // 显示名（管理员姓名/用户昵称），可能为空
 	Role     string `json:"role"`
 	jwt2.RegisteredClaims
 }

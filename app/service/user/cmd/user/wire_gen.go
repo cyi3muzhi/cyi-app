@@ -39,7 +39,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	if err != nil {
 		return nil, nil, err
 	}
-	dataData, cleanup, err := data.NewData(confData, db, client, rustFSClient, enforcer, logger)
+	conn := data.NewNATSConn()
+	dataData, cleanup, err := data.NewData(confData, db, client, rustFSClient, enforcer, conn, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -61,9 +62,13 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	bannerRepo := data.NewBannerRepo(dataData, logger)
 	bannerUseCase := biz.NewBannerUseCase(bannerRepo, logger)
 	adminBannerService := service.NewAdminBannerService(bannerUseCase)
-	server2 := server.NewServer(grpcServer, userService, adminUserService, adminRoleService, adminSettingsService, adminBannerService)
+	operationLogRepo := data.NewOperationLogRepo(dataData, logger)
+	operationLogUseCase := biz.NewOperationLogUseCase(operationLogRepo)
+	operationLogService := service.NewOperationLogService(operationLogUseCase, logger)
+	server2 := server.NewServer(grpcServer, userService, adminUserService, adminRoleService, adminSettingsService, adminBannerService, operationLogService)
 	registrar := server.NewRegistrar(registry)
-	app := newApp(logger, server2, registrar)
+	operationLogConsumer := data.NewOperationLogConsumer(conn, operationLogUseCase, logger)
+	app := newApp(logger, server2, registrar, operationLogConsumer)
 	return app, func() {
 		cleanup()
 	}, nil

@@ -71,6 +71,7 @@ func (uc *AuthUseCase) Login(ctx context.Context, username, password string) (*A
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, server.UserClaims{
 		ID:       admin.ID,
 		Username: admin.Username,
+		Name:     admin.Name,
 		Role:     admin.Role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),

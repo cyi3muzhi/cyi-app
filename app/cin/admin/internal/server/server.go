@@ -9,6 +9,7 @@ import (
 	ts "cyi-app/pkg/kratos/server/transporter"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -46,23 +47,32 @@ func NewHTTPServerConf(
 	metric *mid.Meter,
 	auth *conf.Auth,
 	tokenValidator mid.TokenValidator,
-	enforcer mid.EnforcerProvider) *ts.HttpServer {
+	enforcer mid.EnforcerProvider,
+	operationLogRecorder mid.OperationLogRecorder) *ts.HttpServer {
 
-	srv := http.NewServer(ts.NewHttpServerOpt(
+	// 附加中间件（合并进服务中间件链末尾执行；不能再用 http.Middleware 追加，matcher.Use 会覆盖整条链）
+	var extraMiddlewares []middleware.Middleware
+	if operationLogRecorder != nil {
+		extraMiddlewares = append(extraMiddlewares, mid.OperationLog(operationLogRecorder, logger))
+	}
+
+	opts := ts.NewHttpServerOpt(
 		&ts.TransporterOpt{
 			Network: c.Http.Network,
 			Addr:    c.Http.Addr,
 			Timeout: c.Http.Timeout,
 		},
 		&ts.MiddlewareOpt{
-			ApiKey:         auth.ApiKey,
-			WhiteList:      auth.WhiteList,
-			TokenValidator: tokenValidator,
-			Enforcer:       enforcer,
-			Logger:         logger,
-			TracerProvider: tp,
-			Meter:          metric,
-		})...)
+			ApiKey:           auth.ApiKey,
+			WhiteList:        auth.WhiteList,
+			TokenValidator:   tokenValidator,
+			Enforcer:         enforcer,
+			Logger:           logger,
+			TracerProvider:   tp,
+			Meter:            metric,
+			ExtraMiddlewares: extraMiddlewares,
+		})
+	srv := http.NewServer(opts...)
 	srv.Handle("/metrics", promhttp.Handler())
 	log.NewHelper(logger).Infof("Current IP: %s", getLocalIP())
 	return &ts.HttpServer{HttpServer: srv}
