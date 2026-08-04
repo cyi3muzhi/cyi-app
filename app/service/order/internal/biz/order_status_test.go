@@ -38,6 +38,14 @@ func (m *mockOrderRepo) OrderStats(_ context.Context) (int32, int32, int32, int3
 	return 0, 0, 0, 0, nil
 }
 
+func (m *mockOrderRepo) GetOrderTrend(_ context.Context, _ int32) ([]*TrendItem, error) {
+	return nil, nil
+}
+
+func (m *mockOrderRepo) GetOrderRevenueStats(_ context.Context) (int64, int64, error) {
+	return 0, 0, nil
+}
+
 func (m *mockOrderRepo) GetUserOrderStats(_ context.Context, _ int64) (*UserOrderStats, error) {
 	return &UserOrderStats{}, nil
 }

@@ -51,11 +51,32 @@
           <span>首页轮播效果预览</span>
         </div>
         <div class="preview-header-right">
+          <!-- 设备宽度切换：与用户端响应式布局保持一致 -->
+          <div class="preview-devices">
+            <button
+              class="device-btn"
+              :class="{ 'device-btn--active': deviceMode === 'desktop' }"
+              @click="deviceMode = 'desktop'"
+              title="桌面端"
+            >
+              <el-icon :size="13"><Monitor /></el-icon>
+              桌面
+            </button>
+            <button
+              class="device-btn"
+              :class="{ 'device-btn--active': deviceMode === 'mobile' }"
+              @click="deviceMode = 'mobile'"
+              title="手机端"
+            >
+              <el-icon :size="13"><Iphone /></el-icon>
+              手机
+            </button>
+          </div>
           <span class="preview-slide-count">{{ previewSlide + 1 }} / {{ enabledBanners.length }}</span>
           <el-tag size="small" effect="plain" round>{{ getTemplateInfo(enabledBanners[previewSlide]?.template).name }}</el-tag>
         </div>
       </div>
-      <div class="preview-browser">
+      <div class="preview-browser" :class="{ 'preview-browser--mobile': deviceMode === 'mobile' }">
         <!-- 浏览器模拟顶栏 -->
         <div class="browser-bar">
           <div class="browser-dots">
@@ -249,12 +270,15 @@
           >
             <!-- 模板缩略图预览 -->
             <div class="template-thumb" :class="'tthumb--' + tpl.key">
+              <div class="tthumb-glow" />
               <div class="tthumb-body">
-                <div class="tthumb-title">T</div>
-                <div class="tthumb-sub" v-if="tpl.key !== 'minimal'">D</div>
-                <div class="tthumb-btn" v-if="tpl.key !== 'minimal'">B</div>
+                <div class="tthumb-text">
+                  <div class="tthumb-title">T</div>
+                  <div class="tthumb-sub" v-if="tpl.key !== 'minimal'">D</div>
+                  <div class="tthumb-btn" v-if="tpl.key !== 'minimal'">B</div>
+                </div>
+                <div class="tthumb-img" v-if="tpl.key === 'classic' || tpl.key === 'centered'" />
               </div>
-              <div class="tthumb-img" v-if="tpl.key === 'classic' || tpl.key === 'centered'" />
               <div class="tthumb-accent" v-if="tpl.key === 'minimal'" />
             </div>
             <div class="template-name">{{ tpl.name }}</div>
@@ -453,7 +477,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus, Refresh, Check, EditPen, Delete,
   CaretTop, CaretBottom, Picture, PictureFilled,
-  Link, Upload, VideoCameraFilled
+  Link, Upload, VideoCameraFilled, Monitor, Iphone
 } from '@element-plus/icons-vue'
 import { listBanners, saveBanners } from '../../api/banner'
 import type { BannerItem } from '../../api/banner'
@@ -618,6 +642,8 @@ const enabledBanners = computed(() =>
 )
 
 const previewSlide = ref(0)
+/** 预览设备宽度：desktop 桌面端 / mobile 手机端 */
+const deviceMode = ref<'desktop' | 'mobile'>('desktop')
 let previewTimer: ReturnType<typeof setInterval> | null = null
 
 /** 启动/重置轮播预览 */
@@ -1092,6 +1118,39 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
   font-variant-numeric: tabular-nums;
 }
 
+/* 设备宽度切换按钮 */
+.preview-devices {
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+.device-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 11px;
+  color: var(--shop-muted-foreground, #94a3b8);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.6;
+}
+.device-btn:hover {
+  color: var(--shop-primary, #409eff);
+}
+.device-btn--active {
+  background: #fff;
+  color: var(--shop-primary, #409eff);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
 /* 浏览器模拟窗口 */
 .preview-browser {
   background: #fff;
@@ -1099,6 +1158,13 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
   overflow: hidden;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--shop-border, #e2e8f0);
+}
+
+/* 手机端：模拟用户端移动端宽度 */
+.preview-browser--mobile {
+  max-width: 392px;
+  margin: 0 auto;
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.14);
 }
 
 .browser-bar {
@@ -1159,7 +1225,7 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 
 .preview-slide {
   min-width: 100%;
-  min-height: 220px;
+  min-height: 260px;
   display: flex;
   align-items: center;
   position: relative;
@@ -1191,8 +1257,8 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 36px 44px;
-  gap: 28px;
+  padding: 40px 48px;
+  gap: 36px;
   position: relative;
   z-index: 2;
 }
@@ -1213,44 +1279,44 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 }
 
 .ps-title {
-  font-size: 26px;
+  font-size: 34px;
   font-weight: 700;
   color: #fff;
-  line-height: 1.3;
-  margin: 0 0 6px;
+  line-height: 1.2;
+  margin: 0 0 10px;
   letter-spacing: -0.02em;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
   white-space: pre-line;
   word-break: break-word;
 }
 
 .ps-subtitle {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.85);
-  margin: 0 0 14px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0 0 18px;
   white-space: pre-line;
   word-break: break-word;
 }
 
 .ps-btn {
   display: inline-block;
-  padding: 7px 24px;
-  border-radius: 999px;
+  padding: 11px 34px;
+  border-radius: 9999px;
   background: #fff;
   color: var(--shop-primary, #409eff);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .ps-image {
-  width: 160px;
-  height: 120px;
-  border-radius: 10px;
+  width: 220px;
+  height: 165px;
+  border-radius: 14px;
   overflow: hidden;
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 .ps-image img {
   width: 100%;
@@ -1259,9 +1325,9 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 }
 
 .ps-image-placeholder {
-  width: 160px;
-  height: 120px;
-  border-radius: 10px;
+  width: 220px;
+  height: 165px;
+  border-radius: 14px;
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.08);
   display: flex;
@@ -1287,6 +1353,53 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 }
 .ps--full-image .ps-body {
   background: rgba(0, 0, 0, 0.15);
+}
+
+/* ===== 手机端预览：对齐用户端移动端布局（图在上、文字在下、居中） ===== */
+.preview-browser--mobile .preview-slide {
+  min-height: 320px;
+}
+.preview-browser--mobile .ps-body {
+  flex-direction: column-reverse;
+  justify-content: center;
+  text-align: center;
+  padding: 36px 22px;
+  gap: 20px;
+}
+.preview-browser--mobile .ps-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.preview-browser--mobile .ps-title {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+.preview-browser--mobile .ps-subtitle {
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+.preview-browser--mobile .ps-btn {
+  padding: 9px 26px;
+  font-size: 13px;
+}
+.preview-browser--mobile .ps-image,
+.preview-browser--mobile .ps-image-placeholder {
+  width: 180px;
+  height: 135px;
+}
+.preview-browser--mobile .ps--full-image .ps-body {
+  flex-direction: column;
+  justify-content: flex-end;
+  text-align: center;
+  padding-bottom: 44px;
+}
+.preview-browser--mobile .ps--full-image .ps-text {
+  align-items: center;
+}
+.preview-browser--mobile .ps-accent {
+  bottom: 26px;
 }
 
 /* 指示器圆点 */
@@ -1411,7 +1524,7 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 
 .card-banner {
   width: 240px;
-  height: 78px;
+  height: 88px;
   border-radius: 10px;
   overflow: hidden;
   position: relative;
@@ -1469,7 +1582,7 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 }
 
 .cb-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: #fff;
   line-height: 1.3;
@@ -1484,7 +1597,7 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 }
 
 .cb-subtitle {
-  font-size: 10px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 4px;
   white-space: nowrap;
@@ -1494,13 +1607,13 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 
 .cb-btn {
   display: inline-block;
-  padding: 2px 10px;
+  padding: 2px 11px;
   border-radius: 999px;
   background: #fff;
   color: var(--shop-primary, #409eff);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .cb-img {
@@ -1756,35 +1869,59 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
   color: #fff;
 }
 
-/* 模板缩略图 */
+/* 模板缩略图：迷你 Banner 骨架示意 */
 .template-thumb {
   width: 100%;
-  height: 44px;
+  height: 48px;
   border-radius: 8px;
   overflow: hidden;
   display: flex;
   align-items: center;
   position: relative;
-  background: var(--shop-primary, #409eff);
-  transition: transform 0.3s ease;
+  background: linear-gradient(135deg, #409eff, #79b6ff);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .template-item:hover .template-thumb {
   transform: scale(1.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .template-item--active .template-thumb {
   transform: scale(1.04);
 }
 
+/* 装饰光斑：增强质感 */
+.tthumb-glow {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.38), transparent 68%);
+  top: -24px;
+  right: -12px;
+  z-index: 0;
+  pointer-events: none;
+}
+
 .tthumb-body {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   padding: 0 10px;
   width: 100%;
   position: relative;
   z-index: 1;
+}
+
+/* 文字块（左侧） */
+.tthumb-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .tthumb-title {
@@ -1793,76 +1930,98 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
   color: #fff;
   line-height: 1;
   letter-spacing: 0.02em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
 
 .tthumb-sub {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.78);
   line-height: 1;
 }
 
 .tthumb-btn {
-  margin-left: auto;
-  font-size: 8px;
-  padding: 2px 8px;
+  align-self: flex-start;
+  font-size: 7px;
+  padding: 1px 7px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   color: var(--shop-primary, #409eff);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.5;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
+/* 图片块（右侧） */
 .tthumb-img {
-  width: 20px;
-  height: 16px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.2);
+  width: 24px;
+  height: 20px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.28);
   flex-shrink: 0;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* 各模板缩略图风格 */
-.tthumb--full-image {
-  background: linear-gradient(135deg, #2d3748, #4a5568);
+.tthumb--classic {
+  background: linear-gradient(135deg, #409eff, #79b6ff);
 }
 
-.tthumb--centered .tthumb-body {
-  justify-content: center;
+.tthumb--full-image {
+  background: linear-gradient(160deg, #223044 0%, #52637a 100%);
+}
+.tthumb--full-image .tthumb-body {
+  align-items: flex-end;
+  height: 100%;
+  padding-bottom: 5px;
 }
 
 .tthumb--centered {
-  background: linear-gradient(135deg, #4a5568, #718096);
+  background: linear-gradient(135deg, #66707f, #94a0b1);
 }
-
+.tthumb--centered .tthumb-body {
+  justify-content: center;
+  text-align: center;
+}
+.tthumb--centered .tthumb-text {
+  align-items: center;
+}
 .tthumb--centered .tthumb-sub {
+  display: none;
+}
+.tthumb--centered .tthumb-img {
   display: none;
 }
 
 .tthumb--dark {
-  background: linear-gradient(135deg, #1a1a2e, #0f172a);
+  background: linear-gradient(135deg, #1f2140, #0f1124);
 }
 
 .tthumb--minimal {
-  background: linear-gradient(135deg, #64748b, #94a3b8);
+  background: linear-gradient(135deg, #5a6472, #7c8897);
 }
-
 .tthumb--minimal .tthumb-body {
   justify-content: center;
+  text-align: center;
 }
-
+.tthumb--minimal .tthumb-text {
+  align-items: center;
+}
 .tthumb--minimal .tthumb-sub,
-.tthumb--minimal .tthumb-btn {
+.tthumb--minimal .tthumb-btn,
+.tthumb--minimal .tthumb-img {
   display: none;
 }
 
 .tthumb-accent {
   position: absolute;
-  bottom: 7px;
+  bottom: 8px;
   left: 50%;
   transform: translateX(-50%);
   width: 18px;
   height: 2px;
-  background: rgba(255, 255, 255, 0.45);
-  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 2px;
   z-index: 1;
 }
 
@@ -1919,7 +2078,7 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 .live-preview {
   border-radius: 12px;
   overflow: hidden;
-  height: 100px;
+  height: 130px;
   display: flex;
   align-items: center;
   position: relative;
@@ -1984,34 +2143,36 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 }
 
 .live-preview-title {
-  font-size: 16px;
+  font-size: 26px;
   font-weight: 700;
   color: #fff;
-  line-height: 1.3;
-  margin-bottom: 4px;
+  line-height: 1.2;
+  margin-bottom: 6px;
   white-space: pre-line;
   word-break: break-word;
   transition: font-size 0.3s ease;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
 }
 
 .live-preview-subtitle {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.85);
-  margin-bottom: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 10px;
   white-space: pre-line;
   word-break: break-word;
 }
 
 .live-preview-btn {
   display: inline-block;
-  padding: 5px 16px;
+  padding: 9px 26px;
   border-radius: 999px;
   background: #fff;
   color: var(--shop-primary, #409eff);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
   transition: transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .live-preview-btn:hover {
@@ -2019,13 +2180,13 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 }
 
 .live-preview-image {
-  width: 70px;
-  height: 52px;
-  border-radius: 6px;
+  width: 120px;
+  height: 90px;
+  border-radius: 10px;
   overflow: hidden;
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
   animation: previewFade 0.35s ease both;
 }
 
@@ -2036,9 +2197,9 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 }
 
 .live-preview-img-placeholder {
-  width: 70px;
-  height: 52px;
-  border-radius: 6px;
+  width: 120px;
+  height: 90px;
+  border-radius: 10px;
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.08);
   display: flex;
@@ -2298,7 +2459,7 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
   }
 
   .live-preview {
-    height: 80px;
+    height: 110px;
   }
 }
 
@@ -2386,7 +2547,7 @@ onUnmounted(() => { if (previewTimer) clearInterval(previewTimer) })
 
   .card-banner {
     width: 100%;
-    height: 72px;
+    height: 82px;
   }
 
   .card-actions {

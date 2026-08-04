@@ -67,7 +67,7 @@
         <div class="donut-wrap">
           <div class="donut" :style="{ background: donutGradient }">
             <div class="donut-hole">
-              <span class="donut-total">&yen;45.6K</span>
+              <span class="donut-total">&yen;{{ formatDonutRevenue(dashboardStats.todayRevenue.value) }}</span>
               <span class="donut-total-label">今日营收</span>
             </div>
           </div>
@@ -211,8 +211,7 @@ onMounted(async () => {
 
 /**
  * 获取仪表盘统计数据
- * 真实字段：todayOrders / totalUsers / totalProducts
- * Mock 字段：todayRevenue / growth 系列（后端暂无数据源）
+ * 真实字段：todayOrders / todayRevenue / totalUsers / totalProducts / 增长率
  */
 async function fetchStats() {
   try {
@@ -224,14 +223,22 @@ async function fetchStats() {
       : MOCK_STATS.todayRevenue.value
     dashboardStats.totalUsers.value = res.totalUsers ?? MOCK_STATS.totalUsers.value
     dashboardStats.totalProducts.value = res.totalProducts ?? MOCK_STATS.totalProducts.value
+    // 增长率优先使用后端真实值（今日 vs 昨日），未提供时保留 mock
+    if (res.ordersGrowth != null) dashboardStats.todayOrders.growth = res.ordersGrowth
+    if (res.revenueGrowth != null) dashboardStats.todayRevenue.growth = res.revenueGrowth
   } catch (e) {
     console.warn('获取仪表盘统计数据失败，使用 mock 降级', e)
   }
 }
 
+/** 今日营收环形图格式化：过千显示 K（如 45680 → 45.7K） */
+function formatDonutRevenue(value: number): string {
+  if (value >= 1000) return (value / 1000).toFixed(1) + 'K'
+  return String(value)
+}
+
 /**
- * 获取近14日订单趋势
- * TODO: 后端目前返回 mock 数据，待 order service 支持按日统计后替换
+ * 获取近14日订单趋势（真实数据：order service 按日统计订单数）
  */
 async function fetchTrend() {
   try {
@@ -245,8 +252,7 @@ async function fetchTrend() {
 }
 
 /**
- * 获取营收分类占比
- * TODO: 后端目前返回 mock 数据，待 order service 支持分类营收统计后替换
+ * 获取营收分类占比（真实数据：近30天已完成订单按商品分类聚合）
  */
 async function fetchCategories() {
   try {

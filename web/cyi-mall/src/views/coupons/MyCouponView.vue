@@ -210,11 +210,12 @@ function goClaim() {
   router.push('/coupons')
 }
 
-/** 面值块配色：折扣券红橙渐变，过期灰色，其余蓝色 */
+/** 面值块配色：与管理端统一（立减红、折扣橙、满减蓝），过期灰色 */
 function faceClass(c: MyCouponItem): string {
   if (c.recordStatus === 2) return 'face-gray'
-  if (c.type === 2) return 'face-red'
-  return 'face-blue'
+  if (c.type === 2) return 'face-orange'
+  if (c.type === 3) return 'face-blue'
+  return 'face-red'
 }
 
 /**
@@ -453,11 +454,15 @@ onMounted(() => {
   background: var(--shop-background);
   box-shadow: inset 0 0 0 1px var(--shop-border);
 }
+/* 面值块类型配色：与管理端一致（立减红、折扣橙、满减蓝） */
 .face-blue {
-  background: linear-gradient(135deg, var(--shop-primary) 0%, var(--shop-primary-light) 100%);
+  background: linear-gradient(135deg, #667eea 0%, #409eff 100%);
 }
 .face-red {
-  background: linear-gradient(135deg, hsl(0, 84%, 60%) 0%, hsl(24, 90%, 56%) 100%);
+  background: linear-gradient(135deg, #f56c6c 0%, #e74c3c 100%);
+}
+.face-orange {
+  background: linear-gradient(135deg, #e6a23c 0%, #d4890a 100%);
 }
 .face-gray {
   background: linear-gradient(135deg, hsl(220, 10%, 68%), hsl(220, 10%, 80%));

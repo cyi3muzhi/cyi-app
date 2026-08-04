@@ -31,6 +31,12 @@ type PaymentLog struct {
 	PayMsg        string // 支付结果描述
 }
 
+// TrendItem 订单趋势项（管理端仪表盘按日统计）
+type TrendItem struct {
+	Date       string // 日期（MM-DD）
+	OrderCount int32  // 当日订单数
+}
+
 type OrderRepo interface {
 	CreateOrder(ctx context.Context, in *Order) error
 	UpdateOrder(ctx context.Context, in *Order) error
@@ -41,6 +47,10 @@ type OrderRepo interface {
 	ListOrder(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string, userID int64) ([]*Order, int32, error)
 	// OrderStats 统计订单数据：总订单数、待处理数、今日订单数、退款售后数
 	OrderStats(ctx context.Context) (total, pending, today, refund int32, err error)
+	// GetOrderTrend 获取近 N 日每日订单数（管理端仪表盘，按创建时间分组）
+	GetOrderTrend(ctx context.Context, days int32) ([]*TrendItem, error)
+	// GetOrderRevenueStats 获取今日/昨日营收（已完成订单实付金额之和，单位：分）
+	GetOrderRevenueStats(ctx context.Context) (todayRevenue, yesterdayRevenue int64, err error)
 	// GetUserOrderStats 统计单个用户的订单数据（个人中心使用）
 	GetUserOrderStats(ctx context.Context, userID int64) (*UserOrderStats, error)
 	// UpdateLogistics 更新订单物流信息（发货时写入物流公司和快递单号）
@@ -239,6 +249,16 @@ func (uc *OrderUseCase) List(ctx context.Context, page, pageSize int32, status s
 // Stats 获取订单统计数据
 func (uc *OrderUseCase) Stats(ctx context.Context) (total, pending, today, refund int32, err error) {
 	return uc.repo.OrderStats(ctx)
+}
+
+// OrderTrend 获取近 N 日订单趋势（管理端仪表盘）
+func (uc *OrderUseCase) OrderTrend(ctx context.Context, days int32) ([]*TrendItem, error) {
+	return uc.repo.GetOrderTrend(ctx, days)
+}
+
+// RevenueStats 获取今日/昨日营收（管理端仪表盘）
+func (uc *OrderUseCase) RevenueStats(ctx context.Context) (todayRevenue, yesterdayRevenue int64, err error) {
+	return uc.repo.GetOrderRevenueStats(ctx)
 }
 
 // UserStats 获取单个用户的订单统计（个人中心使用）

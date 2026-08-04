@@ -84,9 +84,9 @@
             <div class="coupon-info">
               <h3 class="coupon-name">
                 {{ c.name }}
-                <span v-if="c.type === 2" class="coupon-tag hot">折扣</span>
-                <span v-else-if="c.minAmount > 0" class="coupon-tag">满减</span>
-                <span v-else class="coupon-tag">立减</span>
+                <span v-if="c.type === 2" class="coupon-tag tag-orange">折扣</span>
+                <span v-else-if="c.type === 3" class="coupon-tag tag-blue">满减</span>
+                <span v-else class="coupon-tag tag-red">立减</span>
               </h3>
               <p class="coupon-desc">{{ typeDesc(c) }}</p>
               <p class="coupon-valid">
@@ -170,11 +170,12 @@ async function onClaim(c: AvailableCouponItem) {
   }
 }
 
-/** 面值块配色：折扣券红橙渐变，已领完灰色，其余蓝色 */
+/** 面值块配色：与管理端统一（立减红、折扣橙、满减蓝），已领完灰色 */
 function faceClass(c: AvailableCouponItem): string {
   if (isSoldOut(c)) return 'face-gray'
-  if (c.type === 2) return 'face-red'
-  return 'face-blue'
+  if (c.type === 2) return 'face-orange'
+  if (c.type === 3) return 'face-blue'
+  return 'face-red'
 }
 
 /**
@@ -420,11 +421,15 @@ onMounted(loadCoupons)
   background: var(--shop-background);
   box-shadow: inset 0 0 0 1px var(--shop-border);
 }
+/* 面值块类型配色：与管理端一致（立减红、折扣橙、满减蓝） */
 .face-blue {
-  background: linear-gradient(135deg, var(--shop-primary) 0%, var(--shop-primary-light) 100%);
+  background: linear-gradient(135deg, #667eea 0%, #409eff 100%);
 }
 .face-red {
-  background: linear-gradient(135deg, hsl(0, 84%, 60%) 0%, hsl(24, 90%, 56%) 100%);
+  background: linear-gradient(135deg, #f56c6c 0%, #e74c3c 100%);
+}
+.face-orange {
+  background: linear-gradient(135deg, #e6a23c 0%, #d4890a 100%);
 }
 .face-gray {
   background: linear-gradient(135deg, hsl(220, 10%, 68%), hsl(220, 10%, 80%));
@@ -479,10 +484,20 @@ onMounted(loadCoupons)
   color: var(--shop-primary);
   border: 1px solid hsl(217, 91%, 84%);
 }
-.coupon-tag.hot {
+.coupon-tag.tag-red {
   background: hsl(0, 84%, 95%);
   color: hsl(0, 84%, 55%);
   border-color: hsl(0, 84%, 85%);
+}
+.coupon-tag.tag-orange {
+  background: hsl(38, 92%, 94%);
+  color: hsl(38, 92%, 45%);
+  border-color: hsl(38, 92%, 84%);
+}
+.coupon-tag.tag-blue {
+  background: var(--shop-primary-bg);
+  color: var(--shop-primary);
+  border-color: hsl(217, 91%, 84%);
 }
 .coupon-desc {
   font-size: 0.75rem;

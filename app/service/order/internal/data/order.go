@@ -265,6 +265,81 @@ func (r *orderRepo) OrderStats(ctx context.Context) (total, pending, today, refu
 	return total, pending, today, refund, nil
 }
 
+// GetOrderTrend 获取近 N 日每日订单数（管理端仪表盘）
+// 按订单创建时间分组统计，缺失日期补 0，返回近 N 天数据（日期升序）
+func (r *orderRepo) GetOrderTrend(ctx context.Context, days int32) ([]*biz.TrendItem, error) {
+	if days <= 0 {
+		days = 14
+	}
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	now := time.Now().In(loc)
+	start := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc).AddDate(0, 0, -int(days)+1).Unix()
+
+	// 按天分组统计订单数（原生 SQL 按日期分组）
+	type dayCount struct {
+		Day string
+		Cnt int32
+	}
+	var rows []dayCount
+	if err := curd.Order.WithContext(ctx).UnderlyingDB().Model(&mod.Order{}).
+		Select("DATE_FORMAT(FROM_UNIXTIME(create_time), '%Y-%m-%d') AS day, COUNT(*) AS cnt").
+		Where("create_time >= ? AND deleted_at IS NULL", start).
+		Group("day").
+		Order("day").
+		Scan(&rows).Error; err != nil {
+		return nil, err
+	}
+
+	// 组装近 N 天数据，无订单的日期补 0
+	countMap := make(map[string]int32, len(rows))
+	for _, row := range rows {
+		countMap[row.Day] = row.Cnt
+	}
+	items := make([]*biz.TrendItem, 0, days)
+	for i := 0; i < int(days); i++ {
+		day := now.AddDate(0, 0, -int(days)+1+i)
+		key := day.Format("2006-01-02")
+		items = append(items, &biz.TrendItem{
+			Date:       day.Format("01-02"),
+			OrderCount: countMap[key],
+		})
+	}
+	return items, nil
+}
+
+// GetOrderRevenueStats 获取今日/昨日营收（已完成订单实付金额之和，单位：分）
+func (r *orderRepo) GetOrderRevenueStats(ctx context.Context) (todayRevenue, yesterdayRevenue int64, err error) {
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	now := time.Now().In(loc)
+	startToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc).Unix()
+	endToday := startToday + 24*60*60 - 1
+	startYesterday := startToday - 24*60*60
+	endYesterday := startToday - 1
+
+	todayRevenue, err = r.revenueInRange(ctx, startToday, endToday)
+	if err != nil {
+		return 0, 0, err
+	}
+	yesterdayRevenue, err = r.revenueInRange(ctx, startYesterday, endYesterday)
+	if err != nil {
+		return 0, 0, err
+	}
+	return todayRevenue, yesterdayRevenue, nil
+}
+
+// revenueInRange 统计指定时间范围内已完成订单（status=6）的实付金额之和
+func (r *orderRepo) revenueInRange(ctx context.Context, start, end int64) (int64, error) {
+	var total int64
+	if err := curd.Order.WithContext(ctx).UnderlyingDB().Model(&mod.Order{}).
+		Select("COALESCE(SUM(pay_amount), 0)").
+		Where("status = ? AND create_time >= ? AND create_time <= ? AND deleted_at IS NULL",
+			int32(v1.OrderStatus_Complete), start, end).
+		Scan(&total).Error; err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
 // GetUserOrderStats 统计单个用户的订单数据（个人中心使用）
 // 各状态计数 + 累计消费（已完成订单实付金额之和）
 func (r *orderRepo) GetUserOrderStats(ctx context.Context, userID int64) (*biz.UserOrderStats, error) {

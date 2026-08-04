@@ -16,6 +16,8 @@ service Order {
 	rpc PayOrder (PayOrderRequest) returns (PayOrderReply);
 	// 订单统计（按状态分组计数）
 	rpc OrderStats (OrderStatsRequest) returns (OrderStatsReply);
+	// 获取近 N 日订单趋势（管理端仪表盘按日统计）
+	rpc GetOrderTrend (GetOrderTrendRequest) returns (GetOrderTrendReply);
 	// 批量获取订单详情（含商品明细），用于导出等场景，1 次调用替代 N 次 GetOrder
 	rpc BatchGetOrder (BatchGetOrderRequest) returns (BatchGetOrderReply);
 	// 用户订单统计（个人中心使用）：按状态计数 + 累计消费
@@ -133,6 +135,25 @@ message OrderStatsReply {
 	int32 pending_count = 2; // 待处理数（待支付+待发货: status=1,2,3）
 	int32 today_count = 3; // 今日订单数
 	int32 refund_count = 4; // 退款/售后数（退款中+已退款: status=8,9）
+	int32 yesterday_count = 5; // 昨日订单数（增长率对比用）
+	int64 today_revenue = 6; // 今日营收（今日支付/完成订单实付金额，单位：分）
+	int64 yesterday_revenue = 7; // 昨日营收（单位：分）
+}
+
+// 获取订单趋势请求
+message GetOrderTrendRequest {
+	int32 days = 1; // 统计天数（默认 14）
+}
+
+// 获取订单趋势响应
+message GetOrderTrendReply {
+	repeated TrendItem items = 1; // 按日期升序
+}
+
+// 订单趋势项
+message TrendItem {
+	string date = 1; // 日期（MM-DD）
+	int32 order_count = 2; // 当日订单数
 }
 
 // 批量获取订单详情请求

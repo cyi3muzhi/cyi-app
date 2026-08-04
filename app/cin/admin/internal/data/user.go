@@ -42,7 +42,7 @@ func (r *userRepo) ListUser(ctx context.Context, req *biz.UserListRequest) (*biz
 
 	items := make([]*biz.UserInfo, 0, len(resp.Items))
 	for _, u := range resp.Items {
-		items = append(items, protoUserInfoToBiz(u))
+		items = append(items, r.protoUserInfoToBiz(ctx, u))
 	}
 
 	return &biz.UserListReply{
@@ -60,7 +60,7 @@ func (r *userRepo) GetUser(ctx context.Context, id int64) (*biz.UserInfo, error)
 	if resp.User == nil {
 		return nil, fmt.Errorf("用户不存在")
 	}
-	return protoUserInfoToBiz(resp.User), nil
+	return r.protoUserInfoToBiz(ctx, resp.User), nil
 }
 
 // CreateUser 创建用户（通过 user service 创建用户端账号）
@@ -131,8 +131,9 @@ func (r *userRepo) GetUserStats(ctx context.Context) (*biz.UserStats, error) {
 }
 
 // protoUserInfoToBiz 将 user service 的 proto.UserInfo 转换为 admin biz.UserInfo
-// 字段一一映射，丢弃 admin 不需要的字段（如 growth_value/birthday 等）
-func protoUserInfoToBiz(u *userRpc.UserInfo) *biz.UserInfo {
+// 字段一一映射，丢弃 admin 不需要的字段（如 growth_value/birthday 等）；
+// 头像为 OSS 路径时解析为可访问的公开 URL
+func (r *userRepo) protoUserInfoToBiz(ctx context.Context, u *userRpc.UserInfo) *biz.UserInfo {
 	if u == nil {
 		return nil
 	}
@@ -142,7 +143,7 @@ func protoUserInfoToBiz(u *userRpc.UserInfo) *biz.UserInfo {
 		Nickname:       u.Nickname,
 		Phone:          u.Phone,
 		Email:          u.Email,
-		Avatar:         u.Avatar,
+		Avatar:         r.data.resolvePresignedURL(ctx, u.Avatar, 3600*24*30),
 		Gender:         u.Gender,
 		Level:          u.Level,
 		LastLoginAt:    u.LastLoginAt,

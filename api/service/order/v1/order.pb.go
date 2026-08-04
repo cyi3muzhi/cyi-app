@@ -1082,13 +1082,16 @@ func (*OrderStatsRequest) Descriptor() ([]byte, []int) {
 
 // 订单统计响应
 type OrderStatsReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TotalCount    int32                  `protobuf:"varint,1,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`       // 总订单数
-	PendingCount  int32                  `protobuf:"varint,2,opt,name=pending_count,json=pendingCount,proto3" json:"pending_count,omitempty"` // 待处理数（待支付+待发货: status=1,2,3）
-	TodayCount    int32                  `protobuf:"varint,3,opt,name=today_count,json=todayCount,proto3" json:"today_count,omitempty"`       // 今日订单数
-	RefundCount   int32                  `protobuf:"varint,4,opt,name=refund_count,json=refundCount,proto3" json:"refund_count,omitempty"`    // 退款/售后数（退款中+已退款: status=8,9）
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	TotalCount       int32                  `protobuf:"varint,1,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`                   // 总订单数
+	PendingCount     int32                  `protobuf:"varint,2,opt,name=pending_count,json=pendingCount,proto3" json:"pending_count,omitempty"`             // 待处理数（待支付+待发货: status=1,2,3）
+	TodayCount       int32                  `protobuf:"varint,3,opt,name=today_count,json=todayCount,proto3" json:"today_count,omitempty"`                   // 今日订单数
+	RefundCount      int32                  `protobuf:"varint,4,opt,name=refund_count,json=refundCount,proto3" json:"refund_count,omitempty"`                // 退款/售后数（退款中+已退款: status=8,9）
+	YesterdayCount   int32                  `protobuf:"varint,5,opt,name=yesterday_count,json=yesterdayCount,proto3" json:"yesterday_count,omitempty"`       // 昨日订单数（增长率对比用）
+	TodayRevenue     int64                  `protobuf:"varint,6,opt,name=today_revenue,json=todayRevenue,proto3" json:"today_revenue,omitempty"`             // 今日营收（今日支付/完成订单实付金额，单位：分）
+	YesterdayRevenue int64                  `protobuf:"varint,7,opt,name=yesterday_revenue,json=yesterdayRevenue,proto3" json:"yesterday_revenue,omitempty"` // 昨日营收（单位：分）
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *OrderStatsReply) Reset() {
@@ -1149,6 +1152,170 @@ func (x *OrderStatsReply) GetRefundCount() int32 {
 	return 0
 }
 
+func (x *OrderStatsReply) GetYesterdayCount() int32 {
+	if x != nil {
+		return x.YesterdayCount
+	}
+	return 0
+}
+
+func (x *OrderStatsReply) GetTodayRevenue() int64 {
+	if x != nil {
+		return x.TodayRevenue
+	}
+	return 0
+}
+
+func (x *OrderStatsReply) GetYesterdayRevenue() int64 {
+	if x != nil {
+		return x.YesterdayRevenue
+	}
+	return 0
+}
+
+// 获取订单趋势请求
+type GetOrderTrendRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Days          int32                  `protobuf:"varint,1,opt,name=days,proto3" json:"days,omitempty"` // 统计天数（默认 14）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetOrderTrendRequest) Reset() {
+	*x = GetOrderTrendRequest{}
+	mi := &file_api_service_order_v1_order_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetOrderTrendRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetOrderTrendRequest) ProtoMessage() {}
+
+func (x *GetOrderTrendRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_order_v1_order_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetOrderTrendRequest.ProtoReflect.Descriptor instead.
+func (*GetOrderTrendRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *GetOrderTrendRequest) GetDays() int32 {
+	if x != nil {
+		return x.Days
+	}
+	return 0
+}
+
+// 获取订单趋势响应
+type GetOrderTrendReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*TrendItem           `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"` // 按日期升序
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetOrderTrendReply) Reset() {
+	*x = GetOrderTrendReply{}
+	mi := &file_api_service_order_v1_order_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetOrderTrendReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetOrderTrendReply) ProtoMessage() {}
+
+func (x *GetOrderTrendReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_order_v1_order_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetOrderTrendReply.ProtoReflect.Descriptor instead.
+func (*GetOrderTrendReply) Descriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *GetOrderTrendReply) GetItems() []*TrendItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+// 订单趋势项
+type TrendItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Date          string                 `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`                                // 日期（MM-DD）
+	OrderCount    int32                  `protobuf:"varint,2,opt,name=order_count,json=orderCount,proto3" json:"order_count,omitempty"` // 当日订单数
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TrendItem) Reset() {
+	*x = TrendItem{}
+	mi := &file_api_service_order_v1_order_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TrendItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TrendItem) ProtoMessage() {}
+
+func (x *TrendItem) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_order_v1_order_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TrendItem.ProtoReflect.Descriptor instead.
+func (*TrendItem) Descriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *TrendItem) GetDate() string {
+	if x != nil {
+		return x.Date
+	}
+	return ""
+}
+
+func (x *TrendItem) GetOrderCount() int32 {
+	if x != nil {
+		return x.OrderCount
+	}
+	return 0
+}
+
 // 批量获取订单详情请求
 type BatchGetOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1159,7 +1326,7 @@ type BatchGetOrderRequest struct {
 
 func (x *BatchGetOrderRequest) Reset() {
 	*x = BatchGetOrderRequest{}
-	mi := &file_api_service_order_v1_order_proto_msgTypes[16]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1171,7 +1338,7 @@ func (x *BatchGetOrderRequest) String() string {
 func (*BatchGetOrderRequest) ProtoMessage() {}
 
 func (x *BatchGetOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_order_v1_order_proto_msgTypes[16]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1184,7 +1351,7 @@ func (x *BatchGetOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetOrderRequest.ProtoReflect.Descriptor instead.
 func (*BatchGetOrderRequest) Descriptor() ([]byte, []int) {
-	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{16}
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *BatchGetOrderRequest) GetOrderIds() []int64 {
@@ -1204,7 +1371,7 @@ type BatchGetOrderReply struct {
 
 func (x *BatchGetOrderReply) Reset() {
 	*x = BatchGetOrderReply{}
-	mi := &file_api_service_order_v1_order_proto_msgTypes[17]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1216,7 +1383,7 @@ func (x *BatchGetOrderReply) String() string {
 func (*BatchGetOrderReply) ProtoMessage() {}
 
 func (x *BatchGetOrderReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_order_v1_order_proto_msgTypes[17]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1229,7 +1396,7 @@ func (x *BatchGetOrderReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetOrderReply.ProtoReflect.Descriptor instead.
 func (*BatchGetOrderReply) Descriptor() ([]byte, []int) {
-	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{17}
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *BatchGetOrderReply) GetOrders() []*GetOrderReply {
@@ -1249,7 +1416,7 @@ type GetUserOrderStatsRequest struct {
 
 func (x *GetUserOrderStatsRequest) Reset() {
 	*x = GetUserOrderStatsRequest{}
-	mi := &file_api_service_order_v1_order_proto_msgTypes[18]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1261,7 +1428,7 @@ func (x *GetUserOrderStatsRequest) String() string {
 func (*GetUserOrderStatsRequest) ProtoMessage() {}
 
 func (x *GetUserOrderStatsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_order_v1_order_proto_msgTypes[18]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1274,7 +1441,7 @@ func (x *GetUserOrderStatsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserOrderStatsRequest.ProtoReflect.Descriptor instead.
 func (*GetUserOrderStatsRequest) Descriptor() ([]byte, []int) {
-	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{18}
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *GetUserOrderStatsRequest) GetUserId() int64 {
@@ -1300,7 +1467,7 @@ type GetUserOrderStatsReply struct {
 
 func (x *GetUserOrderStatsReply) Reset() {
 	*x = GetUserOrderStatsReply{}
-	mi := &file_api_service_order_v1_order_proto_msgTypes[19]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1312,7 +1479,7 @@ func (x *GetUserOrderStatsReply) String() string {
 func (*GetUserOrderStatsReply) ProtoMessage() {}
 
 func (x *GetUserOrderStatsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_order_v1_order_proto_msgTypes[19]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1325,7 +1492,7 @@ func (x *GetUserOrderStatsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserOrderStatsReply.ProtoReflect.Descriptor instead.
 func (*GetUserOrderStatsReply) Descriptor() ([]byte, []int) {
-	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{19}
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *GetUserOrderStatsReply) GetTotalOrders() int64 {
@@ -1389,7 +1556,7 @@ type ShipOrderRequest struct {
 
 func (x *ShipOrderRequest) Reset() {
 	*x = ShipOrderRequest{}
-	mi := &file_api_service_order_v1_order_proto_msgTypes[20]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1401,7 +1568,7 @@ func (x *ShipOrderRequest) String() string {
 func (*ShipOrderRequest) ProtoMessage() {}
 
 func (x *ShipOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_order_v1_order_proto_msgTypes[20]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1414,7 +1581,7 @@ func (x *ShipOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ShipOrderRequest.ProtoReflect.Descriptor instead.
 func (*ShipOrderRequest) Descriptor() ([]byte, []int) {
-	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{20}
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *ShipOrderRequest) GetOrderId() int64 {
@@ -1447,7 +1614,7 @@ type ShipOrderReply struct {
 
 func (x *ShipOrderReply) Reset() {
 	*x = ShipOrderReply{}
-	mi := &file_api_service_order_v1_order_proto_msgTypes[21]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1459,7 +1626,7 @@ func (x *ShipOrderReply) String() string {
 func (*ShipOrderReply) ProtoMessage() {}
 
 func (x *ShipOrderReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_order_v1_order_proto_msgTypes[21]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1472,7 +1639,7 @@ func (x *ShipOrderReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ShipOrderReply.ProtoReflect.Descriptor instead.
 func (*ShipOrderReply) Descriptor() ([]byte, []int) {
-	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{21}
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{24}
 }
 
 // 确认收货请求（用户端调用）
@@ -1486,7 +1653,7 @@ type ReceiveOrderRequest struct {
 
 func (x *ReceiveOrderRequest) Reset() {
 	*x = ReceiveOrderRequest{}
-	mi := &file_api_service_order_v1_order_proto_msgTypes[22]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1498,7 +1665,7 @@ func (x *ReceiveOrderRequest) String() string {
 func (*ReceiveOrderRequest) ProtoMessage() {}
 
 func (x *ReceiveOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_order_v1_order_proto_msgTypes[22]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1511,7 +1678,7 @@ func (x *ReceiveOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReceiveOrderRequest.ProtoReflect.Descriptor instead.
 func (*ReceiveOrderRequest) Descriptor() ([]byte, []int) {
-	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{22}
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *ReceiveOrderRequest) GetOrderId() int64 {
@@ -1537,7 +1704,7 @@ type ReceiveOrderReply struct {
 
 func (x *ReceiveOrderReply) Reset() {
 	*x = ReceiveOrderReply{}
-	mi := &file_api_service_order_v1_order_proto_msgTypes[23]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1549,7 +1716,7 @@ func (x *ReceiveOrderReply) String() string {
 func (*ReceiveOrderReply) ProtoMessage() {}
 
 func (x *ReceiveOrderReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_order_v1_order_proto_msgTypes[23]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1562,7 +1729,7 @@ func (x *ReceiveOrderReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReceiveOrderReply.ProtoReflect.Descriptor instead.
 func (*ReceiveOrderReply) Descriptor() ([]byte, []int) {
-	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{23}
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{26}
 }
 
 // 取消订单请求（用户端/管理端调用）
@@ -1577,7 +1744,7 @@ type CancelOrderRequest struct {
 
 func (x *CancelOrderRequest) Reset() {
 	*x = CancelOrderRequest{}
-	mi := &file_api_service_order_v1_order_proto_msgTypes[24]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1589,7 +1756,7 @@ func (x *CancelOrderRequest) String() string {
 func (*CancelOrderRequest) ProtoMessage() {}
 
 func (x *CancelOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_order_v1_order_proto_msgTypes[24]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1602,7 +1769,7 @@ func (x *CancelOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelOrderRequest.ProtoReflect.Descriptor instead.
 func (*CancelOrderRequest) Descriptor() ([]byte, []int) {
-	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{24}
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *CancelOrderRequest) GetOrderId() int64 {
@@ -1635,7 +1802,7 @@ type CancelOrderReply struct {
 
 func (x *CancelOrderReply) Reset() {
 	*x = CancelOrderReply{}
-	mi := &file_api_service_order_v1_order_proto_msgTypes[25]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1647,7 +1814,7 @@ func (x *CancelOrderReply) String() string {
 func (*CancelOrderReply) ProtoMessage() {}
 
 func (x *CancelOrderReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_order_v1_order_proto_msgTypes[25]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1660,7 +1827,7 @@ func (x *CancelOrderReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelOrderReply.ProtoReflect.Descriptor instead.
 func (*CancelOrderReply) Descriptor() ([]byte, []int) {
-	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{25}
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{28}
 }
 
 // 超时待付款订单查询请求
@@ -1675,7 +1842,7 @@ type ListOverdueWaitPayOrdersRequest struct {
 
 func (x *ListOverdueWaitPayOrdersRequest) Reset() {
 	*x = ListOverdueWaitPayOrdersRequest{}
-	mi := &file_api_service_order_v1_order_proto_msgTypes[26]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1687,7 +1854,7 @@ func (x *ListOverdueWaitPayOrdersRequest) String() string {
 func (*ListOverdueWaitPayOrdersRequest) ProtoMessage() {}
 
 func (x *ListOverdueWaitPayOrdersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_order_v1_order_proto_msgTypes[26]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1700,7 +1867,7 @@ func (x *ListOverdueWaitPayOrdersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOverdueWaitPayOrdersRequest.ProtoReflect.Descriptor instead.
 func (*ListOverdueWaitPayOrdersRequest) Descriptor() ([]byte, []int) {
-	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{26}
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *ListOverdueWaitPayOrdersRequest) GetPage() int32 {
@@ -1734,7 +1901,7 @@ type ListOverdueWaitPayOrdersReply struct {
 
 func (x *ListOverdueWaitPayOrdersReply) Reset() {
 	*x = ListOverdueWaitPayOrdersReply{}
-	mi := &file_api_service_order_v1_order_proto_msgTypes[27]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1746,7 +1913,7 @@ func (x *ListOverdueWaitPayOrdersReply) String() string {
 func (*ListOverdueWaitPayOrdersReply) ProtoMessage() {}
 
 func (x *ListOverdueWaitPayOrdersReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_service_order_v1_order_proto_msgTypes[27]
+	mi := &file_api_service_order_v1_order_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1759,7 +1926,7 @@ func (x *ListOverdueWaitPayOrdersReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOverdueWaitPayOrdersReply.ProtoReflect.Descriptor instead.
 func (*ListOverdueWaitPayOrdersReply) Descriptor() ([]byte, []int) {
-	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{27}
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *ListOverdueWaitPayOrdersReply) GetItems() []*ListOrderItem {
@@ -1862,14 +2029,25 @@ const file_api_service_order_v1_order_proto_rawDesc = "" +
 	"\border_id\x18\x01 \x01(\x03R\aorderId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\x03R\x06userId\"\x0f\n" +
 	"\rPayOrderReply\"\x13\n" +
-	"\x11OrderStatsRequest\"\x9b\x01\n" +
+	"\x11OrderStatsRequest\"\x96\x02\n" +
 	"\x0fOrderStatsReply\x12\x1f\n" +
 	"\vtotal_count\x18\x01 \x01(\x05R\n" +
 	"totalCount\x12#\n" +
 	"\rpending_count\x18\x02 \x01(\x05R\fpendingCount\x12\x1f\n" +
 	"\vtoday_count\x18\x03 \x01(\x05R\n" +
 	"todayCount\x12!\n" +
-	"\frefund_count\x18\x04 \x01(\x05R\vrefundCount\"3\n" +
+	"\frefund_count\x18\x04 \x01(\x05R\vrefundCount\x12'\n" +
+	"\x0fyesterday_count\x18\x05 \x01(\x05R\x0eyesterdayCount\x12#\n" +
+	"\rtoday_revenue\x18\x06 \x01(\x03R\ftodayRevenue\x12+\n" +
+	"\x11yesterday_revenue\x18\a \x01(\x03R\x10yesterdayRevenue\"*\n" +
+	"\x14GetOrderTrendRequest\x12\x12\n" +
+	"\x04days\x18\x01 \x01(\x05R\x04days\"K\n" +
+	"\x12GetOrderTrendReply\x125\n" +
+	"\x05items\x18\x01 \x03(\v2\x1f.api.service.order.v1.TrendItemR\x05items\"@\n" +
+	"\tTrendItem\x12\x12\n" +
+	"\x04date\x18\x01 \x01(\tR\x04date\x12\x1f\n" +
+	"\vorder_count\x18\x02 \x01(\x05R\n" +
+	"orderCount\"3\n" +
 	"\x14BatchGetOrderRequest\x12\x1b\n" +
 	"\torder_ids\x18\x01 \x03(\x03R\borderIds\"Q\n" +
 	"\x12BatchGetOrderReply\x12;\n" +
@@ -1918,7 +2096,7 @@ const file_api_service_order_v1_order_proto_rawDesc = "" +
 	"\n" +
 	"\x06Cancel\x10\a\x12\r\n" +
 	"\tRefunding\x10\b\x12\f\n" +
-	"\bRefunded\x10\t2\x96\n" +
+	"\bRefunded\x10\t2\xfd\n" +
 	"\n" +
 	"\x05Order\x12_\n" +
 	"\vCreateOrder\x12(.api.service.order.v1.CreateOrderRequest\x1a&.api.service.order.v1.CreateOrderReply\x12_\n" +
@@ -1929,6 +2107,7 @@ const file_api_service_order_v1_order_proto_rawDesc = "" +
 	"\bPayOrder\x12%.api.service.order.v1.PayOrderRequest\x1a#.api.service.order.v1.PayOrderReply\x12\\\n" +
 	"\n" +
 	"OrderStats\x12'.api.service.order.v1.OrderStatsRequest\x1a%.api.service.order.v1.OrderStatsReply\x12e\n" +
+	"\rGetOrderTrend\x12*.api.service.order.v1.GetOrderTrendRequest\x1a(.api.service.order.v1.GetOrderTrendReply\x12e\n" +
 	"\rBatchGetOrder\x12*.api.service.order.v1.BatchGetOrderRequest\x1a(.api.service.order.v1.BatchGetOrderReply\x12q\n" +
 	"\x11GetUserOrderStats\x12..api.service.order.v1.GetUserOrderStatsRequest\x1a,.api.service.order.v1.GetUserOrderStatsReply\x12Y\n" +
 	"\tShipOrder\x12&.api.service.order.v1.ShipOrderRequest\x1a$.api.service.order.v1.ShipOrderReply\x12b\n" +
@@ -1950,7 +2129,7 @@ func file_api_service_order_v1_order_proto_rawDescGZIP() []byte {
 }
 
 var file_api_service_order_v1_order_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_service_order_v1_order_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
+var file_api_service_order_v1_order_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
 var file_api_service_order_v1_order_proto_goTypes = []any{
 	(OrderStatus)(0),                        // 0: api.service.order.v1.OrderStatus
 	(*CreateOrderRequest)(nil),              // 1: api.service.order.v1.CreateOrderRequest
@@ -1969,56 +2148,62 @@ var file_api_service_order_v1_order_proto_goTypes = []any{
 	(*PayOrderReply)(nil),                   // 14: api.service.order.v1.PayOrderReply
 	(*OrderStatsRequest)(nil),               // 15: api.service.order.v1.OrderStatsRequest
 	(*OrderStatsReply)(nil),                 // 16: api.service.order.v1.OrderStatsReply
-	(*BatchGetOrderRequest)(nil),            // 17: api.service.order.v1.BatchGetOrderRequest
-	(*BatchGetOrderReply)(nil),              // 18: api.service.order.v1.BatchGetOrderReply
-	(*GetUserOrderStatsRequest)(nil),        // 19: api.service.order.v1.GetUserOrderStatsRequest
-	(*GetUserOrderStatsReply)(nil),          // 20: api.service.order.v1.GetUserOrderStatsReply
-	(*ShipOrderRequest)(nil),                // 21: api.service.order.v1.ShipOrderRequest
-	(*ShipOrderReply)(nil),                  // 22: api.service.order.v1.ShipOrderReply
-	(*ReceiveOrderRequest)(nil),             // 23: api.service.order.v1.ReceiveOrderRequest
-	(*ReceiveOrderReply)(nil),               // 24: api.service.order.v1.ReceiveOrderReply
-	(*CancelOrderRequest)(nil),              // 25: api.service.order.v1.CancelOrderRequest
-	(*CancelOrderReply)(nil),                // 26: api.service.order.v1.CancelOrderReply
-	(*ListOverdueWaitPayOrdersRequest)(nil), // 27: api.service.order.v1.ListOverdueWaitPayOrdersRequest
-	(*ListOverdueWaitPayOrdersReply)(nil),   // 28: api.service.order.v1.ListOverdueWaitPayOrdersReply
+	(*GetOrderTrendRequest)(nil),            // 17: api.service.order.v1.GetOrderTrendRequest
+	(*GetOrderTrendReply)(nil),              // 18: api.service.order.v1.GetOrderTrendReply
+	(*TrendItem)(nil),                       // 19: api.service.order.v1.TrendItem
+	(*BatchGetOrderRequest)(nil),            // 20: api.service.order.v1.BatchGetOrderRequest
+	(*BatchGetOrderReply)(nil),              // 21: api.service.order.v1.BatchGetOrderReply
+	(*GetUserOrderStatsRequest)(nil),        // 22: api.service.order.v1.GetUserOrderStatsRequest
+	(*GetUserOrderStatsReply)(nil),          // 23: api.service.order.v1.GetUserOrderStatsReply
+	(*ShipOrderRequest)(nil),                // 24: api.service.order.v1.ShipOrderRequest
+	(*ShipOrderReply)(nil),                  // 25: api.service.order.v1.ShipOrderReply
+	(*ReceiveOrderRequest)(nil),             // 26: api.service.order.v1.ReceiveOrderRequest
+	(*ReceiveOrderReply)(nil),               // 27: api.service.order.v1.ReceiveOrderReply
+	(*CancelOrderRequest)(nil),              // 28: api.service.order.v1.CancelOrderRequest
+	(*CancelOrderReply)(nil),                // 29: api.service.order.v1.CancelOrderReply
+	(*ListOverdueWaitPayOrdersRequest)(nil), // 30: api.service.order.v1.ListOverdueWaitPayOrdersRequest
+	(*ListOverdueWaitPayOrdersReply)(nil),   // 31: api.service.order.v1.ListOverdueWaitPayOrdersReply
 }
 var file_api_service_order_v1_order_proto_depIdxs = []int32{
 	9,  // 0: api.service.order.v1.CreateOrderRequest.items:type_name -> api.service.order.v1.OrderItemProto
 	9,  // 1: api.service.order.v1.GetOrderReply.items:type_name -> api.service.order.v1.OrderItemProto
 	12, // 2: api.service.order.v1.ListOrderReply.items:type_name -> api.service.order.v1.ListOrderItem
-	8,  // 3: api.service.order.v1.BatchGetOrderReply.orders:type_name -> api.service.order.v1.GetOrderReply
-	12, // 4: api.service.order.v1.ListOverdueWaitPayOrdersReply.items:type_name -> api.service.order.v1.ListOrderItem
-	1,  // 5: api.service.order.v1.Order.CreateOrder:input_type -> api.service.order.v1.CreateOrderRequest
-	3,  // 6: api.service.order.v1.Order.UpdateOrder:input_type -> api.service.order.v1.UpdateOrderRequest
-	5,  // 7: api.service.order.v1.Order.DeleteOrder:input_type -> api.service.order.v1.DeleteOrderRequest
-	7,  // 8: api.service.order.v1.Order.GetOrder:input_type -> api.service.order.v1.GetOrderRequest
-	10, // 9: api.service.order.v1.Order.ListOrder:input_type -> api.service.order.v1.ListOrderRequest
-	13, // 10: api.service.order.v1.Order.PayOrder:input_type -> api.service.order.v1.PayOrderRequest
-	15, // 11: api.service.order.v1.Order.OrderStats:input_type -> api.service.order.v1.OrderStatsRequest
-	17, // 12: api.service.order.v1.Order.BatchGetOrder:input_type -> api.service.order.v1.BatchGetOrderRequest
-	19, // 13: api.service.order.v1.Order.GetUserOrderStats:input_type -> api.service.order.v1.GetUserOrderStatsRequest
-	21, // 14: api.service.order.v1.Order.ShipOrder:input_type -> api.service.order.v1.ShipOrderRequest
-	23, // 15: api.service.order.v1.Order.ReceiveOrder:input_type -> api.service.order.v1.ReceiveOrderRequest
-	25, // 16: api.service.order.v1.Order.CancelOrder:input_type -> api.service.order.v1.CancelOrderRequest
-	27, // 17: api.service.order.v1.Order.ListOverdueWaitPayOrders:input_type -> api.service.order.v1.ListOverdueWaitPayOrdersRequest
-	2,  // 18: api.service.order.v1.Order.CreateOrder:output_type -> api.service.order.v1.CreateOrderReply
-	4,  // 19: api.service.order.v1.Order.UpdateOrder:output_type -> api.service.order.v1.UpdateOrderReply
-	6,  // 20: api.service.order.v1.Order.DeleteOrder:output_type -> api.service.order.v1.DeleteOrderReply
-	8,  // 21: api.service.order.v1.Order.GetOrder:output_type -> api.service.order.v1.GetOrderReply
-	11, // 22: api.service.order.v1.Order.ListOrder:output_type -> api.service.order.v1.ListOrderReply
-	14, // 23: api.service.order.v1.Order.PayOrder:output_type -> api.service.order.v1.PayOrderReply
-	16, // 24: api.service.order.v1.Order.OrderStats:output_type -> api.service.order.v1.OrderStatsReply
-	18, // 25: api.service.order.v1.Order.BatchGetOrder:output_type -> api.service.order.v1.BatchGetOrderReply
-	20, // 26: api.service.order.v1.Order.GetUserOrderStats:output_type -> api.service.order.v1.GetUserOrderStatsReply
-	22, // 27: api.service.order.v1.Order.ShipOrder:output_type -> api.service.order.v1.ShipOrderReply
-	24, // 28: api.service.order.v1.Order.ReceiveOrder:output_type -> api.service.order.v1.ReceiveOrderReply
-	26, // 29: api.service.order.v1.Order.CancelOrder:output_type -> api.service.order.v1.CancelOrderReply
-	28, // 30: api.service.order.v1.Order.ListOverdueWaitPayOrders:output_type -> api.service.order.v1.ListOverdueWaitPayOrdersReply
-	18, // [18:31] is the sub-list for method output_type
-	5,  // [5:18] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	19, // 3: api.service.order.v1.GetOrderTrendReply.items:type_name -> api.service.order.v1.TrendItem
+	8,  // 4: api.service.order.v1.BatchGetOrderReply.orders:type_name -> api.service.order.v1.GetOrderReply
+	12, // 5: api.service.order.v1.ListOverdueWaitPayOrdersReply.items:type_name -> api.service.order.v1.ListOrderItem
+	1,  // 6: api.service.order.v1.Order.CreateOrder:input_type -> api.service.order.v1.CreateOrderRequest
+	3,  // 7: api.service.order.v1.Order.UpdateOrder:input_type -> api.service.order.v1.UpdateOrderRequest
+	5,  // 8: api.service.order.v1.Order.DeleteOrder:input_type -> api.service.order.v1.DeleteOrderRequest
+	7,  // 9: api.service.order.v1.Order.GetOrder:input_type -> api.service.order.v1.GetOrderRequest
+	10, // 10: api.service.order.v1.Order.ListOrder:input_type -> api.service.order.v1.ListOrderRequest
+	13, // 11: api.service.order.v1.Order.PayOrder:input_type -> api.service.order.v1.PayOrderRequest
+	15, // 12: api.service.order.v1.Order.OrderStats:input_type -> api.service.order.v1.OrderStatsRequest
+	17, // 13: api.service.order.v1.Order.GetOrderTrend:input_type -> api.service.order.v1.GetOrderTrendRequest
+	20, // 14: api.service.order.v1.Order.BatchGetOrder:input_type -> api.service.order.v1.BatchGetOrderRequest
+	22, // 15: api.service.order.v1.Order.GetUserOrderStats:input_type -> api.service.order.v1.GetUserOrderStatsRequest
+	24, // 16: api.service.order.v1.Order.ShipOrder:input_type -> api.service.order.v1.ShipOrderRequest
+	26, // 17: api.service.order.v1.Order.ReceiveOrder:input_type -> api.service.order.v1.ReceiveOrderRequest
+	28, // 18: api.service.order.v1.Order.CancelOrder:input_type -> api.service.order.v1.CancelOrderRequest
+	30, // 19: api.service.order.v1.Order.ListOverdueWaitPayOrders:input_type -> api.service.order.v1.ListOverdueWaitPayOrdersRequest
+	2,  // 20: api.service.order.v1.Order.CreateOrder:output_type -> api.service.order.v1.CreateOrderReply
+	4,  // 21: api.service.order.v1.Order.UpdateOrder:output_type -> api.service.order.v1.UpdateOrderReply
+	6,  // 22: api.service.order.v1.Order.DeleteOrder:output_type -> api.service.order.v1.DeleteOrderReply
+	8,  // 23: api.service.order.v1.Order.GetOrder:output_type -> api.service.order.v1.GetOrderReply
+	11, // 24: api.service.order.v1.Order.ListOrder:output_type -> api.service.order.v1.ListOrderReply
+	14, // 25: api.service.order.v1.Order.PayOrder:output_type -> api.service.order.v1.PayOrderReply
+	16, // 26: api.service.order.v1.Order.OrderStats:output_type -> api.service.order.v1.OrderStatsReply
+	18, // 27: api.service.order.v1.Order.GetOrderTrend:output_type -> api.service.order.v1.GetOrderTrendReply
+	21, // 28: api.service.order.v1.Order.BatchGetOrder:output_type -> api.service.order.v1.BatchGetOrderReply
+	23, // 29: api.service.order.v1.Order.GetUserOrderStats:output_type -> api.service.order.v1.GetUserOrderStatsReply
+	25, // 30: api.service.order.v1.Order.ShipOrder:output_type -> api.service.order.v1.ShipOrderReply
+	27, // 31: api.service.order.v1.Order.ReceiveOrder:output_type -> api.service.order.v1.ReceiveOrderReply
+	29, // 32: api.service.order.v1.Order.CancelOrder:output_type -> api.service.order.v1.CancelOrderReply
+	31, // 33: api.service.order.v1.Order.ListOverdueWaitPayOrders:output_type -> api.service.order.v1.ListOverdueWaitPayOrdersReply
+	20, // [20:34] is the sub-list for method output_type
+	6,  // [6:20] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_api_service_order_v1_order_proto_init() }
@@ -2032,7 +2217,7 @@ func file_api_service_order_v1_order_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_service_order_v1_order_proto_rawDesc), len(file_api_service_order_v1_order_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   28,
+			NumMessages:   31,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

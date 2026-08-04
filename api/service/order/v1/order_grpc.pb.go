@@ -26,6 +26,7 @@ const (
 	Order_ListOrder_FullMethodName                = "/api.service.order.v1.Order/ListOrder"
 	Order_PayOrder_FullMethodName                 = "/api.service.order.v1.Order/PayOrder"
 	Order_OrderStats_FullMethodName               = "/api.service.order.v1.Order/OrderStats"
+	Order_GetOrderTrend_FullMethodName            = "/api.service.order.v1.Order/GetOrderTrend"
 	Order_BatchGetOrder_FullMethodName            = "/api.service.order.v1.Order/BatchGetOrder"
 	Order_GetUserOrderStats_FullMethodName        = "/api.service.order.v1.Order/GetUserOrderStats"
 	Order_ShipOrder_FullMethodName                = "/api.service.order.v1.Order/ShipOrder"
@@ -47,6 +48,8 @@ type OrderClient interface {
 	PayOrder(ctx context.Context, in *PayOrderRequest, opts ...grpc.CallOption) (*PayOrderReply, error)
 	// 订单统计（按状态分组计数）
 	OrderStats(ctx context.Context, in *OrderStatsRequest, opts ...grpc.CallOption) (*OrderStatsReply, error)
+	// 获取近 N 日订单趋势（管理端仪表盘按日统计）
+	GetOrderTrend(ctx context.Context, in *GetOrderTrendRequest, opts ...grpc.CallOption) (*GetOrderTrendReply, error)
 	// 批量获取订单详情（含商品明细），用于导出等场景，1 次调用替代 N 次 GetOrder
 	BatchGetOrder(ctx context.Context, in *BatchGetOrderRequest, opts ...grpc.CallOption) (*BatchGetOrderReply, error)
 	// 用户订单统计（个人中心使用）：按状态计数 + 累计消费
@@ -139,6 +142,16 @@ func (c *orderClient) OrderStats(ctx context.Context, in *OrderStatsRequest, opt
 	return out, nil
 }
 
+func (c *orderClient) GetOrderTrend(ctx context.Context, in *GetOrderTrendRequest, opts ...grpc.CallOption) (*GetOrderTrendReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetOrderTrendReply)
+	err := c.cc.Invoke(ctx, Order_GetOrderTrend_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *orderClient) BatchGetOrder(ctx context.Context, in *BatchGetOrderRequest, opts ...grpc.CallOption) (*BatchGetOrderReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(BatchGetOrderReply)
@@ -212,6 +225,8 @@ type OrderServer interface {
 	PayOrder(context.Context, *PayOrderRequest) (*PayOrderReply, error)
 	// 订单统计（按状态分组计数）
 	OrderStats(context.Context, *OrderStatsRequest) (*OrderStatsReply, error)
+	// 获取近 N 日订单趋势（管理端仪表盘按日统计）
+	GetOrderTrend(context.Context, *GetOrderTrendRequest) (*GetOrderTrendReply, error)
 	// 批量获取订单详情（含商品明细），用于导出等场景，1 次调用替代 N 次 GetOrder
 	BatchGetOrder(context.Context, *BatchGetOrderRequest) (*BatchGetOrderReply, error)
 	// 用户订单统计（个人中心使用）：按状态计数 + 累计消费
@@ -254,6 +269,9 @@ func (UnimplementedOrderServer) PayOrder(context.Context, *PayOrderRequest) (*Pa
 }
 func (UnimplementedOrderServer) OrderStats(context.Context, *OrderStatsRequest) (*OrderStatsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OrderStats not implemented")
+}
+func (UnimplementedOrderServer) GetOrderTrend(context.Context, *GetOrderTrendRequest) (*GetOrderTrendReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOrderTrend not implemented")
 }
 func (UnimplementedOrderServer) BatchGetOrder(context.Context, *BatchGetOrderRequest) (*BatchGetOrderReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchGetOrder not implemented")
@@ -420,6 +438,24 @@ func _Order_OrderStats_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Order_GetOrderTrend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetOrderTrendRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServer).GetOrderTrend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Order_GetOrderTrend_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServer).GetOrderTrend(ctx, req.(*GetOrderTrendRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Order_BatchGetOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BatchGetOrderRequest)
 	if err := dec(in); err != nil {
@@ -562,6 +598,10 @@ var Order_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "OrderStats",
 			Handler:    _Order_OrderStats_Handler,
+		},
+		{
+			MethodName: "GetOrderTrend",
+			Handler:    _Order_GetOrderTrend_Handler,
 		},
 		{
 			MethodName: "BatchGetOrder",

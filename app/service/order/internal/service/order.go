@@ -160,11 +160,36 @@ func (s *OrderService) OrderStats(ctx context.Context, req *v1.OrderStatsRequest
 	if err != nil {
 		return nil, err
 	}
+	// 营收统计（今日/昨日已完成订单实付金额）
+	todayRevenue, yesterdayRevenue, err := s.uc.RevenueStats(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return &v1.OrderStatsReply{
-		TotalCount:   total,
-		PendingCount: pending,
-		TodayCount:   today,
-		RefundCount:  refund,
+		TotalCount:       total,
+		PendingCount:     pending,
+		TodayCount:       today,
+		RefundCount:      refund,
+		TodayRevenue:     todayRevenue,
+		YesterdayRevenue: yesterdayRevenue,
+	}, nil
+}
+
+// GetOrderTrend 获取近 N 日订单趋势（管理端仪表盘）
+func (s *OrderService) GetOrderTrend(ctx context.Context, req *v1.GetOrderTrendRequest) (*v1.GetOrderTrendReply, error) {
+	items, err := s.uc.OrderTrend(ctx, req.GetDays())
+	if err != nil {
+		return nil, err
+	}
+	replyItems := make([]*v1.TrendItem, 0, len(items))
+	for _, item := range items {
+		replyItems = append(replyItems, &v1.TrendItem{
+			Date:       item.Date,
+			OrderCount: item.OrderCount,
+		})
+	}
+	return &v1.GetOrderTrendReply{
+		Items: replyItems,
 	}, nil
 }
 

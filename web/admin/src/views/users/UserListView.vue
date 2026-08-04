@@ -59,8 +59,13 @@
     <el-table :data="userList" stripe style="width: 100%" size="small" v-loading="loading">
       <el-table-column label="用户" width="64">
         <template #default="{ row }">
-          <div class="user-avatar" :style="{ background: avatarColor(row.nickname || row.username) }">
-            {{ avatarLetter(row) }}
+          <!-- 有真实头像显示图片，否则显示首字母占位头像 -->
+          <div
+            class="user-avatar"
+            :style="{ background: row.avatar?.startsWith('http') ? 'transparent' : avatarColor(row.nickname || row.username) }"
+          >
+            <img v-if="row.avatar?.startsWith('http')" :src="row.avatar" class="user-avatar-img" alt="头像" />
+            <template v-else>{{ avatarLetter(row) }}</template>
           </div>
         </template>
       </el-table-column>
@@ -606,6 +611,16 @@ onMounted(() => {
   color: #fff;
   font-size: 0.875rem;
   font-weight: 600;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* 真实头像图片 */
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 /* 状态指示器 */
