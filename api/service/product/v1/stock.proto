@@ -6,38 +6,77 @@ option go_package = "cyi-app/api/service/product/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.service.product.v1";
 
+// 库存服务
 service Stock {
+	// 创建库存
 	rpc CreateStock (CreateStockRequest) returns (CreateStockReply);
+	// 更新库存
 	rpc UpdateStock (UpdateStockRequest) returns (UpdateStockReply);
+	// 按 SKU 批量设置库存（管理端按 SKU 明细补货）
+	rpc UpdateSkuStocks (UpdateSkuStocksRequest) returns (UpdateSkuStocksReply);
+	// 预留库存（下单时预占库存）
 	rpc ReserveStock (ReserveStockRequest) returns (ReserveStockReply);
+	// 扣减库存（支付成功后实际扣减）
 	rpc DeductStock (DeductStockRequest) returns (DeductStockReply);
+	// 释放预留库存（取消未支付订单时）
 	rpc ReleaseStock (ReleaseStockRequest) returns (ReleaseStockReply);
+	// 增加库存（退款或取消已支付订单时）
 	rpc AddStock (AddStockRequest) returns (AddStockReply);
+	// 删除库存
 	rpc DeleteStock (DeleteStockRequest) returns (DeleteStockReply);
+	// 获取库存详情
 	rpc GetStock (GetStockRequest) returns (GetStockReply);
+	// 库存列表
 	rpc ListStock (ListStockRequest) returns (ListStockReply);
 }
 
+// CreateStockRequest 创建库存请求
 message CreateStockRequest {}
+// CreateStockReply 创建库存响应
 message CreateStockReply {}
 
+// UpdateStockRequest 更新库存请求
 message UpdateStockRequest {
 	int64 product_id = 1;   // 商品ID
 	int32 total = 2;        // 总库存数量
 }
 
+// UpdateStockReply 更新库存响应
 message UpdateStockReply {
+	// 是否成功
 	bool success = 1;
 }
 
+// 按 SKU 批量设置库存的请求项
+message SkuStockItem {
+	int64 sku_id = 1; // SKU ID
+	int32 total = 2; // 该 SKU 的总库存数量
+}
+
+// UpdateSkuStocksRequest 按 SKU 批量设置库存请求
+message UpdateSkuStocksRequest {
+	int64 product_id = 1; // 商品ID（用于校验 SKU 归属，防止越权更新）
+	repeated SkuStockItem items = 2; // 各 SKU 的新库存
+}
+
+// UpdateSkuStocksReply 按 SKU 批量设置库存响应
+message UpdateSkuStocksReply {
+	// 是否成功
+	bool success = 1;
+}
+
+// DeleteStockRequest 删除库存请求
 message DeleteStockRequest {}
+// DeleteStockReply 删除库存响应
 message DeleteStockReply {}
 
+// GetStockRequest 获取库存详情请求
 message GetStockRequest {
 	int64 product_id = 1 [deprecated = true];   // 已废弃，改用 sku_id
 	int64 sku_id = 2;                           // SKU ID
 }
 
+// GetStockReply 获取库存详情响应
 message GetStockReply {
 	int64 product_id = 1;   // 商品ID
 	int32 total = 2;        // 总库存
@@ -46,6 +85,7 @@ message GetStockReply {
 	int32 version = 5;      // 乐观锁版本号
 }
 
+// ReserveStockRequest 预留库存请求
 message ReserveStockRequest {
 	int64 product_id = 1 [deprecated = true];   // 已废弃，改用 sku_id
 	int32 count = 2;                            // 预留数量
@@ -53,7 +93,9 @@ message ReserveStockRequest {
 	int64 sku_id = 4;                           // SKU ID
 }
 
+// ReserveStockReply 预留库存响应
 message ReserveStockReply {
+	// 是否成功
 	bool success = 1;
 	int32 new_version = 2;  // 新版本号
 }
@@ -66,7 +108,9 @@ message DeductStockRequest {
 	int64 sku_id = 4;                           // SKU ID
 }
 
+// DeductStockReply 扣减库存响应
 message DeductStockReply {
+	// 是否成功
 	bool success = 1;
 	int32 new_version = 2;  // 新版本号
 }
@@ -81,7 +125,9 @@ message ReleaseStockRequest {
 	int64 sku_id = 4;                           // SKU ID
 }
 
+// ReleaseStockReply 释放预留库存响应
 message ReleaseStockReply {
+	// 是否成功
 	bool success = 1;
 	int32 new_version = 2;  // 新版本号
 }
@@ -96,10 +142,14 @@ message AddStockRequest {
 	int64 sku_id = 4;                           // SKU ID
 }
 
+// AddStockReply 增加库存响应
 message AddStockReply {
+	// 是否成功
 	bool success = 1;
 	int32 new_version = 2;  // 新版本号
 }
 
+// ListStockRequest 库存列表请求
 message ListStockRequest {}
+// ListStockReply 库存列表响应
 message ListStockReply {}

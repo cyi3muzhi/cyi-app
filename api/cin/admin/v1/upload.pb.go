@@ -22,6 +22,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// GetUploadTokenRequest 获取上传凭证请求
 type GetUploadTokenRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`   // 原始文件名（含扩展名）
@@ -74,6 +75,7 @@ func (x *GetUploadTokenRequest) GetDirectory() string {
 	return ""
 }
 
+// GetUploadTokenReply 获取上传凭证响应
 type GetUploadTokenReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UploadUrl     string                 `protobuf:"bytes,1,opt,name=upload_url,json=uploadUrl,proto3" json:"upload_url,omitempty"` // 预签名 PUT URL（前端直接 PUT 文件到此地址）

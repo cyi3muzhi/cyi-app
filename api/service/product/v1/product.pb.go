@@ -311,6 +311,7 @@ func (x *ProductItem) GetImages() []string {
 	return nil
 }
 
+// CreateProductRequest 创建商品请求
 type CreateProductRequest struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
 	Name        string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`               // 商品名称
@@ -429,6 +430,7 @@ func (x *CreateProductRequest) GetImages() []string {
 	return nil
 }
 
+// CreateProductReply 创建商品响应
 type CreateProductReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 创建后返回的商品ID
@@ -473,6 +475,7 @@ func (x *CreateProductReply) GetProductId() int64 {
 	return 0
 }
 
+// UpdateProductRequest 更新商品请求
 type UpdateProductRequest struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
 	ProductId   int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 商品ID
@@ -607,6 +610,7 @@ func (x *UpdateProductRequest) GetImages() []string {
 	return nil
 }
 
+// UpdateProductReply 更新商品响应
 type UpdateProductReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"` // 是否成功
@@ -651,6 +655,7 @@ func (x *UpdateProductReply) GetSuccess() bool {
 	return false
 }
 
+// DeleteProductRequest 删除商品请求
 type DeleteProductRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 商品ID
@@ -695,6 +700,7 @@ func (x *DeleteProductRequest) GetProductId() int64 {
 	return 0
 }
 
+// DeleteProductReply 删除商品响应
 type DeleteProductReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"` // 是否成功
@@ -739,6 +745,7 @@ func (x *DeleteProductReply) GetSuccess() bool {
 	return false
 }
 
+// GetProductRequest 获取商品详情请求
 type GetProductRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 商品ID
@@ -783,6 +790,7 @@ func (x *GetProductRequest) GetProductId() int64 {
 	return 0
 }
 
+// GetProductReply 获取商品详情响应
 type GetProductReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Product       *ProductItem           `protobuf:"bytes,1,opt,name=product,proto3" json:"product,omitempty"` // 商品详情（含 specs 和 skus）
@@ -827,6 +835,7 @@ func (x *GetProductReply) GetProduct() *ProductItem {
 	return nil
 }
 
+// ListProductRequest 商品列表请求
 type ListProductRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	Page     int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`                         // 页码（从1开始）
@@ -837,6 +846,7 @@ type ListProductRequest struct {
 	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`                            // 状态筛选
 	CategoryId    int64                  `protobuf:"varint,6,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"` // 分类ID筛选
 	StockEq       *wrapperspb.Int32Value `protobuf:"bytes,7,opt,name=stock_eq,json=stockEq,proto3" json:"stock_eq,omitempty"`           // 按可用库存数量筛选（如 {value: 0}=缺货，不传=不筛选）
+	StockLte      *wrapperspb.Int32Value `protobuf:"bytes,8,opt,name=stock_lte,json=stockLte,proto3" json:"stock_lte,omitempty"`        // 按可用库存上限筛选（库存 <= value，用于库存预警，不传=不筛选）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -921,6 +931,14 @@ func (x *ListProductRequest) GetStockEq() *wrapperspb.Int32Value {
 	return nil
 }
 
+func (x *ListProductRequest) GetStockLte() *wrapperspb.Int32Value {
+	if x != nil {
+		return x.StockLte
+	}
+	return nil
+}
+
+// ListProductReply 商品列表响应
 type ListProductReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*ProductItem         `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`  // 商品列表
@@ -1150,7 +1168,7 @@ const file_api_service_product_v1_product_proto_rawDesc = "" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03R\tproductId\"P\n" +
 	"\x0fGetProductReply\x12=\n" +
-	"\aproduct\x18\x01 \x01(\v2#.api.service.product.v1.ProductItemR\aproduct\"\xf0\x01\n" +
+	"\aproduct\x18\x01 \x01(\v2#.api.service.product.v1.ProductItemR\aproduct\"\xaa\x02\n" +
 	"\x12ListProductRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x18\n" +
@@ -1159,7 +1177,8 @@ const file_api_service_product_v1_product_proto_rawDesc = "" +
 	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1f\n" +
 	"\vcategory_id\x18\x06 \x01(\x03R\n" +
 	"categoryId\x126\n" +
-	"\bstock_eq\x18\a \x01(\v2\x1b.google.protobuf.Int32ValueR\astockEq\"c\n" +
+	"\bstock_eq\x18\a \x01(\v2\x1b.google.protobuf.Int32ValueR\astockEq\x128\n" +
+	"\tstock_lte\x18\b \x01(\v2\x1b.google.protobuf.Int32ValueR\bstockLte\"c\n" +
 	"\x10ListProductReply\x129\n" +
 	"\x05items\x18\x01 \x03(\v2#.api.service.product.v1.ProductItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\"G\n" +
@@ -1220,24 +1239,25 @@ var file_api_service_product_v1_product_proto_depIdxs = []int32{
 	1,  // 6: api.service.product.v1.UpdateProductRequest.skus:type_name -> api.service.product.v1.SkuInfo
 	2,  // 7: api.service.product.v1.GetProductReply.product:type_name -> api.service.product.v1.ProductItem
 	16, // 8: api.service.product.v1.ListProductRequest.stock_eq:type_name -> google.protobuf.Int32Value
-	2,  // 9: api.service.product.v1.ListProductReply.items:type_name -> api.service.product.v1.ProductItem
-	3,  // 10: api.service.product.v1.Product.CreateProduct:input_type -> api.service.product.v1.CreateProductRequest
-	5,  // 11: api.service.product.v1.Product.UpdateProduct:input_type -> api.service.product.v1.UpdateProductRequest
-	7,  // 12: api.service.product.v1.Product.DeleteProduct:input_type -> api.service.product.v1.DeleteProductRequest
-	9,  // 13: api.service.product.v1.Product.GetProduct:input_type -> api.service.product.v1.GetProductRequest
-	11, // 14: api.service.product.v1.Product.ListProduct:input_type -> api.service.product.v1.ListProductRequest
-	13, // 15: api.service.product.v1.Product.SuggestProduct:input_type -> api.service.product.v1.SuggestProductRequest
-	4,  // 16: api.service.product.v1.Product.CreateProduct:output_type -> api.service.product.v1.CreateProductReply
-	6,  // 17: api.service.product.v1.Product.UpdateProduct:output_type -> api.service.product.v1.UpdateProductReply
-	8,  // 18: api.service.product.v1.Product.DeleteProduct:output_type -> api.service.product.v1.DeleteProductReply
-	10, // 19: api.service.product.v1.Product.GetProduct:output_type -> api.service.product.v1.GetProductReply
-	12, // 20: api.service.product.v1.Product.ListProduct:output_type -> api.service.product.v1.ListProductReply
-	14, // 21: api.service.product.v1.Product.SuggestProduct:output_type -> api.service.product.v1.SuggestProductReply
-	16, // [16:22] is the sub-list for method output_type
-	10, // [10:16] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	16, // 9: api.service.product.v1.ListProductRequest.stock_lte:type_name -> google.protobuf.Int32Value
+	2,  // 10: api.service.product.v1.ListProductReply.items:type_name -> api.service.product.v1.ProductItem
+	3,  // 11: api.service.product.v1.Product.CreateProduct:input_type -> api.service.product.v1.CreateProductRequest
+	5,  // 12: api.service.product.v1.Product.UpdateProduct:input_type -> api.service.product.v1.UpdateProductRequest
+	7,  // 13: api.service.product.v1.Product.DeleteProduct:input_type -> api.service.product.v1.DeleteProductRequest
+	9,  // 14: api.service.product.v1.Product.GetProduct:input_type -> api.service.product.v1.GetProductRequest
+	11, // 15: api.service.product.v1.Product.ListProduct:input_type -> api.service.product.v1.ListProductRequest
+	13, // 16: api.service.product.v1.Product.SuggestProduct:input_type -> api.service.product.v1.SuggestProductRequest
+	4,  // 17: api.service.product.v1.Product.CreateProduct:output_type -> api.service.product.v1.CreateProductReply
+	6,  // 18: api.service.product.v1.Product.UpdateProduct:output_type -> api.service.product.v1.UpdateProductReply
+	8,  // 19: api.service.product.v1.Product.DeleteProduct:output_type -> api.service.product.v1.DeleteProductReply
+	10, // 20: api.service.product.v1.Product.GetProduct:output_type -> api.service.product.v1.GetProductReply
+	12, // 21: api.service.product.v1.Product.ListProduct:output_type -> api.service.product.v1.ListProductReply
+	14, // 22: api.service.product.v1.Product.SuggestProduct:output_type -> api.service.product.v1.SuggestProductReply
+	17, // [17:23] is the sub-list for method output_type
+	11, // [11:17] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_api_service_product_v1_product_proto_init() }

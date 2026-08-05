@@ -22,10 +22,13 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// UserServiceErrorReason 用户服务错误码定义
 type UserServiceErrorReason int32
 
 const (
-	UserServiceErrorReason_USER_NOT_FOUND  UserServiceErrorReason = 0
+	// 用户不存在
+	UserServiceErrorReason_USER_NOT_FOUND UserServiceErrorReason = 0
+	// 请求内容缺失
 	UserServiceErrorReason_CONTENT_MISSING UserServiceErrorReason = 1
 	// 密码不一致
 	UserServiceErrorReason_PASSWORD_NOT_MATCH UserServiceErrorReason = 2

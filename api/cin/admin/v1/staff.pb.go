@@ -22,21 +22,35 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// StaffInfo 员工信息
 type StaffInfo struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Username      string                 `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
-	Phone         string                 `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
-	Email         string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
-	Role          string                 `protobuf:"bytes,6,opt,name=role,proto3" json:"role,omitempty"`
-	Department    string                 `protobuf:"bytes,7,opt,name=department,proto3" json:"department,omitempty"`
-	Position      string                 `protobuf:"bytes,8,opt,name=position,proto3" json:"position,omitempty"`
-	Bio           string                 `protobuf:"bytes,9,opt,name=bio,proto3" json:"bio,omitempty"`
-	Avatar        string                 `protobuf:"bytes,10,opt,name=avatar,proto3" json:"avatar,omitempty"`
-	Status        int32                  `protobuf:"varint,11,opt,name=status,proto3" json:"status,omitempty"`
-	LastLogin     string                 `protobuf:"bytes,12,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 员工ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 姓名
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 登录账号
+	Username string `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
+	// 手机号
+	Phone string `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 邮箱
+	Email string `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
+	// 角色
+	Role string `protobuf:"bytes,6,opt,name=role,proto3" json:"role,omitempty"`
+	// 部门
+	Department string `protobuf:"bytes,7,opt,name=department,proto3" json:"department,omitempty"`
+	// 职位
+	Position string `protobuf:"bytes,8,opt,name=position,proto3" json:"position,omitempty"`
+	// 个人简介
+	Bio string `protobuf:"bytes,9,opt,name=bio,proto3" json:"bio,omitempty"`
+	// 头像
+	Avatar string `protobuf:"bytes,10,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	// 状态（1=正常 2=冻结）
+	Status int32 `protobuf:"varint,11,opt,name=status,proto3" json:"status,omitempty"`
+	// 最后登录时间
+	LastLogin string `protobuf:"bytes,12,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
+	// 创建时间
+	CreatedAt     string `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -162,13 +176,19 @@ func (x *StaffInfo) GetCreatedAt() string {
 	return ""
 }
 
+// ListStaffRequest 员工列表请求
 type ListStaffRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	Keyword       string                 `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`
-	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
-	Role          string                 `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 页码
+	Page int32 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	// 每页数量
+	PageSize int32 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	// 搜索关键词
+	Keyword string `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`
+	// 状态筛选
+	Status string `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	// 角色筛选
+	Role          string `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -238,10 +258,13 @@ func (x *ListStaffRequest) GetRole() string {
 	return ""
 }
 
+// ListStaffReply 员工列表响应
 type ListStaffReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*StaffInfo           `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 员工列表
+	Items []*StaffInfo `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	// 总数
+	Total         int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -290,15 +313,23 @@ func (x *ListStaffReply) GetTotal() int32 {
 	return 0
 }
 
+// CreateStaffRequest 创建员工请求
 type CreateStaffRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
-	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
-	Email         string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
-	Phone         string                 `protobuf:"bytes,6,opt,name=phone,proto3" json:"phone,omitempty"`
-	Department    string                 `protobuf:"bytes,7,opt,name=department,proto3" json:"department,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 登录账号
+	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	// 密码
+	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	// 姓名
+	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	// 角色
+	Role string `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
+	// 邮箱
+	Email string `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
+	// 手机号
+	Phone string `protobuf:"bytes,6,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 部门
+	Department    string `protobuf:"bytes,7,opt,name=department,proto3" json:"department,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -382,9 +413,11 @@ func (x *CreateStaffRequest) GetDepartment() string {
 	return ""
 }
 
+// CreateStaffReply 创建员工响应
 type CreateStaffReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 员工ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -426,16 +459,25 @@ func (x *CreateStaffReply) GetId() int64 {
 	return 0
 }
 
+// UpdateStaffRequest 更新员工请求
 type UpdateStaffRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
-	Email         string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
-	Phone         string                 `protobuf:"bytes,5,opt,name=phone,proto3" json:"phone,omitempty"`
-	Department    string                 `protobuf:"bytes,6,opt,name=department,proto3" json:"department,omitempty"`
-	Position      string                 `protobuf:"bytes,7,opt,name=position,proto3" json:"position,omitempty"`
-	Bio           string                 `protobuf:"bytes,8,opt,name=bio,proto3" json:"bio,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 员工ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 姓名
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 角色
+	Role string `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
+	// 邮箱
+	Email string `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
+	// 手机号
+	Phone string `protobuf:"bytes,5,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 部门
+	Department string `protobuf:"bytes,6,opt,name=department,proto3" json:"department,omitempty"`
+	// 职位
+	Position string `protobuf:"bytes,7,opt,name=position,proto3" json:"position,omitempty"`
+	// 个人简介
+	Bio           string `protobuf:"bytes,8,opt,name=bio,proto3" json:"bio,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -526,9 +568,11 @@ func (x *UpdateStaffRequest) GetBio() string {
 	return ""
 }
 
+// UpdateStaffReply 更新员工响应
 type UpdateStaffReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -570,9 +614,11 @@ func (x *UpdateStaffReply) GetSuccess() bool {
 	return false
 }
 
+// ToggleStaffStatusRequest 切换员工状态请求
 type ToggleStaffStatusRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 员工ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -614,10 +660,13 @@ func (x *ToggleStaffStatusRequest) GetId() int64 {
 	return 0
 }
 
+// ToggleStaffStatusReply 切换员工状态响应
 type ToggleStaffStatusReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	NewStatus     int32                  `protobuf:"varint,2,opt,name=new_status,json=newStatus,proto3" json:"new_status,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	// 切换后的状态
+	NewStatus     int32 `protobuf:"varint,2,opt,name=new_status,json=newStatus,proto3" json:"new_status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -666,6 +715,7 @@ func (x *ToggleStaffStatusReply) GetNewStatus() int32 {
 	return 0
 }
 
+// GetRoleNameMapRequest 获取角色名称映射请求（无入参）
 type GetRoleNameMapRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -702,6 +752,7 @@ func (*GetRoleNameMapRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_staff_proto_rawDescGZIP(), []int{9}
 }
 
+// GetRoleNameMapReply 获取角色名称映射响应
 type GetRoleNameMapReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         map[string]string      `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // slug → name

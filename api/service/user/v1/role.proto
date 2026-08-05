@@ -28,96 +28,157 @@ service AdminRole {
   rpc HasPolicyForOperation (HasPolicyForOperationRequest) returns (HasPolicyForOperationReply);
 }
 
+// RoleItem 角色信息项
 message RoleItem {
+  // 角色名称
   string name = 1;
+  // 角色标识（英文唯一 slug，如 super_admin）
   string slug = 2;
+  // 角色描述
   string desc = 3;
+  // 关联用户数量
   int32 users = 4;
+  // 是否启用
   bool enabled = 5;
+  // 是否系统内置角色（不可删除）
   bool is_system = 6;
+  // 创建时间
   string created_at = 7;
+  // 角色颜色标识
   string color = 8;
 }
 
+// PermItem 权限项
 message PermItem {
+  // 权限键（如 user:create）
   string key = 1;
+  // 权限显示名称
   string label = 2;
 }
 
+// PermModule 权限模块（分组）
 message PermModule {
+  // 模块键（如 user）
   string key = 1;
+  // 模块标题
   string title = 2;
+  // 模块下的权限项列表
   repeated PermItem items = 3;
 }
 
+// PermissionValue 单个权限模块的取值集合（键为权限 key，值为是否勾选）
 message PermissionValue {
+  // 权限 key -> 是否允许
   map<string, bool> values = 1;
 }
 
+// ListRolesRequest 获取角色列表请求（无参数）
 message ListRolesRequest {}
+// ListRolesReply 获取角色列表响应
 message ListRolesReply {
+  // 角色列表
   repeated RoleItem items = 1;
 }
 
+// CreateRoleRequest 创建角色请求
 message CreateRoleRequest {
+  // 角色名称
   string name = 1;
+  // 角色标识（英文唯一 slug）
   string slug = 2;
+  // 角色描述
   string desc = 3;
+  // 角色颜色标识
   string color = 4;
 }
+// CreateRoleReply 创建角色响应
 message CreateRoleReply {
+  // 是否创建成功
   bool success = 1;
 }
 
+// UpdateRoleRequest 更新角色请求
 message UpdateRoleRequest {
+  // 角色标识（定位要更新的角色）
   string slug = 1;
+  // 角色名称
   string name = 2;
+  // 角色描述
   string desc = 3;
+  // 角色颜色标识
   string color = 4;
 }
+// UpdateRoleReply 更新角色响应
 message UpdateRoleReply {
+  // 是否更新成功
   bool success = 1;
 }
 
+// DeleteRoleRequest 删除角色请求
 message DeleteRoleRequest {
+  // 角色标识
   string slug = 1;
 }
+// DeleteRoleReply 删除角色响应
 message DeleteRoleReply {
+  // 是否删除成功
   bool success = 1;
 }
 
+// GetRolePermissionsRequest 获取角色权限请求
 message GetRolePermissionsRequest {
+  // 角色标识
   string role = 1;
 }
+// GetRolePermissionsReply 获取角色权限响应
 message GetRolePermissionsReply {
+  // 权限模块 key -> 权限取值集合
   map<string, PermissionValue> permissions = 1;
 }
 
+// UpdateRolePermissionsRequest 更新角色权限请求
 message UpdateRolePermissionsRequest {
+  // 角色标识
   string role = 1;
+  // 权限模块 key -> 权限取值集合
   map<string, PermissionValue> permissions = 2;
 }
+// UpdateRolePermissionsReply 更新角色权限响应
 message UpdateRolePermissionsReply {
+  // 是否更新成功
   bool success = 1;
 }
 
+// ListAllPermissionsRequest 获取所有权限模块请求（无参数）
 message ListAllPermissionsRequest {}
+// ListAllPermissionsReply 获取所有权限模块响应
 message ListAllPermissionsReply {
+  // 权限模块列表
   repeated PermModule modules = 1;
 }
 
+// CheckPermissionRequest 校验权限请求
 message CheckPermissionRequest {
+  // 角色标识
   string role = 1;
+  // 资源对象（object）
   string object = 2;
+  // 操作动作（action）
   string action = 3;
 }
+// CheckPermissionReply 校验权限响应
 message CheckPermissionReply {
+  // 是否允许
   bool allowed = 1;
 }
 
+// HasPolicyForOperationRequest 检查操作是否有策略定义请求
 message HasPolicyForOperationRequest {
+  // 操作标识
   string operation = 1;
 }
+// HasPolicyForOperationReply 检查操作是否有策略定义响应
 message HasPolicyForOperationReply {
+  // 是否存在策略定义
   bool has = 1;
 }

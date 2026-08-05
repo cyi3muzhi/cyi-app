@@ -59,65 +59,95 @@ service Cart {
   }
 }
 
+// AddCartItemRequest 加入购物车请求
 message AddCartItemRequest {
+  // 商品 ID
   int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 加入数量
   int32 quantity = 2 [(validate.rules).int32 = {gt: 0}];
   int64 sku_id = 3; // SKU ID（0 表示取商品默认 SKU）
 }
 
+// AddCartItemReply 加入购物车响应
 message AddCartItemReply {
+  // 是否成功
   bool success = 1;
 }
 
+// GetCartRequest 获取购物车请求
 message GetCartRequest {}
 
+// GetCartReply 获取购物车响应
 message GetCartReply {
+  // 购物车商品列表
   repeated CartProductItem items = 1;
 }
 
+// UpdateCartItemRequest 修改购物车商品数量请求
 message UpdateCartItemRequest {
+  // 商品 ID
   int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 修改后的数量
   int32 quantity = 2 [(validate.rules).int32 = {gt: 0}];
   int64 sku_id = 3; // SKU ID（0 表示取商品默认 SKU）
 }
 
+// UpdateCartItemReply 修改购物车商品数量响应
 message UpdateCartItemReply {
+  // 是否成功
   bool success = 1;
 }
 
+// ToggleCartItemRequest 选中/取消选中单个商品请求
 message ToggleCartItemRequest {
+  // 商品 ID
   int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 是否选中
   bool selected = 2;
   int64 sku_id = 3; // SKU ID（0 表示商品默认 SKU）
 }
 
+// ToggleCartItemReply 选中/取消选中单个商品响应
 message ToggleCartItemReply {
+  // 是否成功
   bool success = 1;
 }
 
+// SelectAllCartRequest 全选/取消全选请求
 message SelectAllCartRequest {
+  // 是否全选
   bool selected = 1;
 }
 
+// SelectAllCartReply 全选/取消全选响应
 message SelectAllCartReply {
+  // 是否成功
   bool success = 1;
 }
 
+// DeleteCartItemRequest 删除购物车商品请求
 message DeleteCartItemRequest {
+  // 商品 ID
   int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
   int64 sku_id = 2; // SKU ID（0 表示商品默认 SKU，query 参数）
 }
 
+// DeleteCartItemReply 删除购物车商品响应
 message DeleteCartItemReply {
+  // 是否成功
   bool success = 1;
 }
 
+// ClearCartRequest 清空购物车请求
 message ClearCartRequest {}
 
+// ClearCartReply 清空购物车响应
 message ClearCartReply {
+  // 是否成功
   bool success = 1;
 }
 
+// CartProductItem 购物车商品项
 message CartProductItem {
   int64 product_id = 1;   // 商品ID
   string name = 2;        // 商品名称

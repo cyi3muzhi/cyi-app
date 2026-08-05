@@ -9,6 +9,7 @@ option java_package = "api.cin.interface.v1";
 import "validate/validate.proto";
 import "google/api/annotations.proto";
 
+// 用户优惠券服务
 service UserCoupon {
   // 用户领取优惠券
   rpc ClaimCoupon (ClaimCouponRequest) returns (ClaimCouponReply) {
@@ -37,44 +38,71 @@ service UserCoupon {
   }
 }
 
+// ClaimCouponRequest 领取优惠券请求
 message ClaimCouponRequest {
+  // 优惠券 ID
   int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 领取来源（如领券中心、活动页等）
   string source = 2;
 }
 
+// ClaimCouponReply 领取优惠券响应
 message ClaimCouponReply {
+  // 优惠券发放记录 ID
   int64 record_id = 1;
 }
 
+// ListMyCouponsRequest 我的优惠券列表请求
 message ListMyCouponsRequest {
   int32 status = 1; // 0=全部 1=未使用 2=已使用 3=已过期
+  // 页码
   int32 page = 2;
+  // 每页数量
   int32 page_size = 3;
 }
 
+// MyCouponItem 我的优惠券项
 message MyCouponItem {
+  // 发放记录 ID
   int64 record_id = 1;
+  // 优惠券 ID
   int64 coupon_id = 2;
+  // 优惠券名称
   string name = 3;
+  // 类型：1-立减 2-折扣 3-满减
   int32 type = 4;
+  // 面值（分）或折扣百分比
   int64 value = 5;
+  // 使用门槛（分）
   int64 min_amount = 6;
+  // 有效期开始时间
   string valid_start = 7;
+  // 有效期结束时间
   string valid_end = 8;
   int32 record_status = 9; // 0=未使用 1=已使用 2=已过期
+  // 使用时间（Unix 秒，未使用为 0）
   int64 used_time = 10;
+  // 使用的订单 ID（未使用为 0）
   int64 order_id = 11;
+  // 领取来源
   string source = 12;
+  // 领取时间
   string create_time = 13;
 }
 
+// ListMyCouponsReply 我的优惠券列表响应
 message ListMyCouponsReply {
+  // 优惠券列表
   repeated MyCouponItem items = 1;
+  // 总数
   int32 total = 2;
 }
 
+// ListAvailableCouponsRequest 领券中心列表请求
 message ListAvailableCouponsRequest {
+  // 页码
   int32 page = 1;
+  // 每页数量
   int32 page_size = 2;
 }
 
@@ -94,13 +122,17 @@ message AvailableCouponItem {
   int32 limit_per_user = 12; // 每人限领数量，0=不限制
 }
 
+// ListAvailableCouponsReply 领券中心列表响应
 message ListAvailableCouponsReply {
+  // 可领取优惠券列表
   repeated AvailableCouponItem items = 1;
+  // 总数
   int32 total = 2;
 }
 
 // 结算可用券请求：amount 为订单商品金额（分）
 message ListUsableCouponsRequest {
+  // 订单商品金额（分）
   int64 amount = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
@@ -118,6 +150,8 @@ message UsableCouponItem {
   int64 gap_amount = 10;   // 不可用时还差多少金额可用（分）
 }
 
+// ListUsableCouponsReply 结算可用优惠券响应
 message ListUsableCouponsReply {
+  // 可用优惠券列表
   repeated UsableCouponItem items = 1;
 }

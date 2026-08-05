@@ -6,6 +6,7 @@ option go_package = "cyi-app/api/task/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.task.v1";
 
+// TaskName 异步任务类型定义
 enum TaskName {
 	// 创建用户
 	create_user = 0 ;
@@ -15,7 +16,10 @@ enum TaskName {
 	coupon_expire = 2 ;
 }
 
+// CreateUserTask 创建用户任务
 message CreateUserTask {
+	// 用户名
 	string username = 1;
+	// 密码
 	string password = 2;
 }

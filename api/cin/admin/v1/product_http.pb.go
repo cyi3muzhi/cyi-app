@@ -25,6 +25,8 @@ const OperationAdminProductDeleteProduct = "/api.cin.admin.v1.AdminProduct/Delet
 const OperationAdminProductGetProduct = "/api.cin.admin.v1.AdminProduct/GetProduct"
 const OperationAdminProductListProduct = "/api.cin.admin.v1.AdminProduct/ListProduct"
 const OperationAdminProductUpdateProduct = "/api.cin.admin.v1.AdminProduct/UpdateProduct"
+const OperationAdminProductUpdateSkuStocks = "/api.cin.admin.v1.AdminProduct/UpdateSkuStocks"
+const OperationAdminProductUpdateStock = "/api.cin.admin.v1.AdminProduct/UpdateStock"
 
 type AdminProductHTTPServer interface {
 	// BatchOperation 批量操作（上架/下架/删除）
@@ -39,6 +41,10 @@ type AdminProductHTTPServer interface {
 	ListProduct(context.Context, *ListProductRequest) (*ListProductReply, error)
 	// UpdateProduct 更新商品
 	UpdateProduct(context.Context, *UpdateProductRequest) (*UpdateProductReply, error)
+	// UpdateSkuStocks 按 SKU 明细批量更新商品库存（有规格商品按 SKU 精确补货）
+	UpdateSkuStocks(context.Context, *UpdateSkuStocksRequest) (*UpdateSkuStocksReply, error)
+	// UpdateStock 更新商品库存（补货/调库存）
+	UpdateStock(context.Context, *UpdateStockRequest) (*UpdateStockReply, error)
 }
 
 func RegisterAdminProductHTTPServer(s *http.Server, srv AdminProductHTTPServer) {
@@ -49,6 +55,8 @@ func RegisterAdminProductHTTPServer(s *http.Server, srv AdminProductHTTPServer) 
 	r.DELETE("/admin/v1/products/{id}", _AdminProduct_DeleteProduct0_HTTP_Handler(srv))
 	r.GET("/admin/v1/products/{id}", _AdminProduct_GetProduct0_HTTP_Handler(srv))
 	r.POST("/admin/v1/products/batch", _AdminProduct_BatchOperation0_HTTP_Handler(srv))
+	r.PUT("/admin/v1/products/{id}/stock", _AdminProduct_UpdateStock0_HTTP_Handler(srv))
+	r.PUT("/admin/v1/products/{id}/sku-stock", _AdminProduct_UpdateSkuStocks0_HTTP_Handler(srv))
 }
 
 func _AdminProduct_ListProduct0_HTTP_Handler(srv AdminProductHTTPServer) func(ctx http.Context) error {
@@ -183,6 +191,56 @@ func _AdminProduct_BatchOperation0_HTTP_Handler(srv AdminProductHTTPServer) func
 	}
 }
 
+func _AdminProduct_UpdateStock0_HTTP_Handler(srv AdminProductHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdateStockRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminProductUpdateStock)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateStock(ctx, req.(*UpdateStockRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdateStockReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _AdminProduct_UpdateSkuStocks0_HTTP_Handler(srv AdminProductHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdateSkuStocksRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminProductUpdateSkuStocks)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateSkuStocks(ctx, req.(*UpdateSkuStocksRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdateSkuStocksReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type AdminProductHTTPClient interface {
 	// BatchOperation 批量操作（上架/下架/删除）
 	BatchOperation(ctx context.Context, req *BatchOperationRequest, opts ...http.CallOption) (rsp *BatchOperationReply, err error)
@@ -196,6 +254,10 @@ type AdminProductHTTPClient interface {
 	ListProduct(ctx context.Context, req *ListProductRequest, opts ...http.CallOption) (rsp *ListProductReply, err error)
 	// UpdateProduct 更新商品
 	UpdateProduct(ctx context.Context, req *UpdateProductRequest, opts ...http.CallOption) (rsp *UpdateProductReply, err error)
+	// UpdateSkuStocks 按 SKU 明细批量更新商品库存（有规格商品按 SKU 精确补货）
+	UpdateSkuStocks(ctx context.Context, req *UpdateSkuStocksRequest, opts ...http.CallOption) (rsp *UpdateSkuStocksReply, err error)
+	// UpdateStock 更新商品库存（补货/调库存）
+	UpdateStock(ctx context.Context, req *UpdateStockRequest, opts ...http.CallOption) (rsp *UpdateStockReply, err error)
 }
 
 type AdminProductHTTPClientImpl struct {
@@ -282,6 +344,34 @@ func (c *AdminProductHTTPClientImpl) UpdateProduct(ctx context.Context, in *Upda
 	pattern := "/admin/v1/products/{id}"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminProductUpdateProduct))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// UpdateSkuStocks 按 SKU 明细批量更新商品库存（有规格商品按 SKU 精确补货）
+func (c *AdminProductHTTPClientImpl) UpdateSkuStocks(ctx context.Context, in *UpdateSkuStocksRequest, opts ...http.CallOption) (*UpdateSkuStocksReply, error) {
+	var out UpdateSkuStocksReply
+	pattern := "/admin/v1/products/{id}/sku-stock"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminProductUpdateSkuStocks))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// UpdateStock 更新商品库存（补货/调库存）
+func (c *AdminProductHTTPClientImpl) UpdateStock(ctx context.Context, in *UpdateStockRequest, opts ...http.CallOption) (*UpdateStockReply, error) {
+	var out UpdateStockReply
+	pattern := "/admin/v1/products/{id}/stock"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminProductUpdateStock))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {

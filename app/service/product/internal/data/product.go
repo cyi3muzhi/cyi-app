@@ -103,7 +103,7 @@ func (r *productRepo) GetProduct(ctx context.Context, productID int64) (*biz.Pro
 }
 
 // ListProduct 获取商品列表（分页 + 关键词搜索 + 分类筛选 + 库存筛选 + 按ID降序）
-func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*biz.Product, int32, error) {
+func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ, stockLTE int32) ([]*biz.Product, int32, error) {
 	// 从 gorm gen 获取底层 *gorm.DB，确保 OR 条件正确分组
 	baseQuery := curd.Product.WithContext(ctx)
 	db := baseQuery.UnderlyingDB().Model(&mod.Product{})
@@ -147,6 +147,12 @@ func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, key
 		// 使用 COALESCE 处理无库存记录的情况（SUM(NULL)=NULL，COALESCE 转为 0）
 		subquery := "(SELECT COALESCE(SUM(available), 0) FROM stock WHERE stock.product_id = product.id AND stock.deleted_at IS NULL) = ?"
 		db = db.Where(subquery, stockEQ)
+	}
+
+	// 库存上限筛选（库存预警用：可用库存 <= 阈值）
+	if stockLTE >= 0 {
+		subquery := "(SELECT COALESCE(SUM(available), 0) FROM stock WHERE stock.product_id = product.id AND stock.deleted_at IS NULL) <= ?"
+		db = db.Where(subquery, stockLTE)
 	}
 
 	// 计算总数

@@ -81,41 +81,59 @@ service Order {
   }
 }
 
+// PlaceOrderRequest 下单请求
 message PlaceOrderRequest {
+  // 商品 ID
   int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 购买数量
   int32 count = 2 [(validate.rules).int32 = {gt: 0}];
   int64 sku_id = 3; // SKU ID（多SKU商品必传）
 }
 
+// PlaceOrderReply 下单响应
 message PlaceOrderReply {
+  // 订单 ID
   int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// PayOrderRequest 支付订单请求
 message PayOrderRequest {
+  // 订单 ID
   int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// PayOrderReply 支付订单响应
 message PayOrderReply {
+  // 是否支付成功
   bool success = 1;
 }
 
+// ReceiveOrderRequest 确认收货请求
 message ReceiveOrderRequest {
+  // 订单 ID
   int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// ReceiveOrderReply 确认收货响应
 message ReceiveOrderReply {
+  // 是否成功
   bool success = 1;
 }
 
+// CancelOrderRequest 取消订单请求
 message CancelOrderRequest {
+  // 订单 ID
   int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
   string reason = 2; // 取消原因（可选）
 }
 
+// CancelOrderReply 取消订单响应
 message CancelOrderReply {
+  // 是否成功
   bool success = 1;
 }
 
+// CartCheckoutRequest 购物车结算请求
 message CartCheckoutRequest {
   repeated CartItem items = 1 [(validate.rules).repeated = {min_items: 1}];
   int64 address_id = 2; // 收货地址ID
@@ -126,37 +144,60 @@ message CartCheckoutRequest {
   int64 coupon_id = 7; // 优惠券发放记录ID（0=不使用优惠券）
 }
 
+// CartCheckoutReply 购物车结算响应
 message CartCheckoutReply {
+  // 订单 ID
   int64 order_id = 1;
 }
 
+// CartItem 购物车商品项（结算用）
 message CartItem {
+  // 商品 ID
   int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 购买数量
   int32 quantity = 2 [(validate.rules).int32 = {gt: 0}];
   int64 sku_id = 3; // SKU ID（多SKU商品必传）
 }
 
+// ListOrderRequest 订单列表请求
 message ListOrderRequest {
+  // 页码
   int32 page = 1;
+  // 每页数量
   int32 page_size = 2;
+  // 订单状态筛选
   string status = 3;
+  // 搜索关键词（订单号/商品名等）
   string keyword = 4;
 }
 
+// ListOrderReply 订单列表响应
 message ListOrderReply {
+  // 订单列表
   repeated OrderItem items = 1;
+  // 订单总数
   int32 total = 2;
 }
 
+// OrderItem 订单项
 message OrderItem {
+  // 订单 ID
   int64 id = 1;
+  // 订单号
   string order_no = 2;
+  // 下单时间
   string created_at = 3;
+  // 下单用户
   string user_name = 4;
+  // 订单金额（分）
   int64 amount = 5;
+  // 支付方式
   string payment = 6;
+  // 订单状态（状态码）
   string status = 7;
+  // 订单状态文本
   string status_text = 8;
+  // 订单商品列表
   repeated OrderProduct products = 9;
   string logistics_company = 10; // 物流公司（发货后）
   string logistics_no = 11; // 快递单号（发货后）
@@ -166,45 +207,61 @@ message OrderItem {
   int64 pay_deadline = 15; // 支付截止时间（Unix 秒，待付款订单为下单时间+30分钟，其余为 0）
 }
 
+// OrderProduct 订单商品项
 message OrderProduct {
+  // 商品名称
   string name = 1;
+  // 规格描述
   string spec = 2;
+  // 购买数量
   int32 qty = 3;
+  // 单价（分）
   int64 price = 4;
+  // 商品图片
   string image = 5;
   int64 product_id = 6; // 商品ID（再次购买用）
   int64 sku_id = 7; // SKU ID（再次购买用）
 }
 
+// GetOrderRequest 订单详情请求
 message GetOrderRequest {
+  // 订单 ID
   int64 order_id = 1;
 }
 
+// GetOrderReply 订单详情响应
 message GetOrderReply {
+  // 订单详情
   OrderItem order = 1;
 }
 
 // 申请退款请求
 message ApplyRefundRequest {
+  // 订单 ID
   int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
   string reason = 2; // 退款原因
 }
 
 // 申请退款响应
 message ApplyRefundReply {
+  // 退款单 ID
   int64 refund_id = 1;
 }
 
 // 我的退款记录请求
 message ListRefundRequest {
+  // 页码
   int32 page = 1;
+  // 每页数量
   int32 page_size = 2;
   string status = 3; // 按退款单状态筛选（1-待审核 2-已通过 3-已拒绝；空字符串表示全部）
 }
 
 // 我的退款记录响应
 message ListRefundReply {
+  // 退款记录列表
   repeated RefundItem items = 1;
+  // 退款记录总数
   int32 total = 2;
 }
 
@@ -223,6 +280,7 @@ message RefundItem {
 
 // 查询物流轨迹请求
 message GetLogisticsRequest {
+  // 订单 ID
   int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 

@@ -21,6 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ListOperationLogRequest 操作日志分页查询请求
 type ListOperationLogRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
@@ -113,10 +114,13 @@ func (x *ListOperationLogRequest) GetKeyword() string {
 	return ""
 }
 
+// ListOperationLogReply 操作日志分页查询响应
 type ListOperationLogReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*OperationLogItem    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 操作日志列表
+	Items []*OperationLogItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	// 总数
+	Total         int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -165,6 +169,7 @@ func (x *ListOperationLogReply) GetTotal() int32 {
 	return 0
 }
 
+// OperationLogItem 操作日志项
 type OperationLogItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -305,6 +310,7 @@ func (x *OperationLogItem) GetAvatar() string {
 	return ""
 }
 
+// CountOperationLogRequest 操作日志统计请求（无参数）
 type CountOperationLogRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -341,6 +347,7 @@ func (*CountOperationLogRequest) Descriptor() ([]byte, []int) {
 	return file_api_service_user_v1_operation_log_proto_rawDescGZIP(), []int{3}
 }
 
+// CountOperationLogReply 操作日志统计响应
 type CountOperationLogReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Today         int64                  `protobuf:"varint,1,opt,name=today,proto3" json:"today,omitempty"` // 今日操作数
@@ -409,6 +416,7 @@ func (x *CountOperationLogReply) GetTotal() int64 {
 	return 0
 }
 
+// ListOperationLogOperatorsRequest 操作人列表请求（无参数）
 type ListOperationLogOperatorsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -445,6 +453,7 @@ func (*ListOperationLogOperatorsRequest) Descriptor() ([]byte, []int) {
 	return file_api_service_user_v1_operation_log_proto_rawDescGZIP(), []int{5}
 }
 
+// ListOperationLogOperatorsReply 操作人列表响应
 type ListOperationLogOperatorsReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Operators     []string               `protobuf:"bytes,1,rep,name=operators,proto3" json:"operators,omitempty"` // 操作人姓名列表（去重）

@@ -47,76 +47,127 @@ service Product {
   }
 }
 
+// CreateProductRequest 创建商品请求
 message CreateProductRequest {
+  // 商品名称
   string name = 1 [(validate.rules).string = {min_len: 2, max_len: 64}];
+  // 商品描述
   string description = 2 [(validate.rules).string = {max_len: 256}];
+  // 价格（分）
   int64 price = 3 [(validate.rules).int64 = {gte: 0}];
 }
 
+// CreateProductReply 创建商品响应
 message CreateProductReply {
+  // 商品 ID
   int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// UpdateProductRequest 更新商品请求
 message UpdateProductRequest {
+  // 商品 ID
   int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 商品名称
   string name = 2 [(validate.rules).string = {min_len: 2, max_len: 64}];
+  // 商品描述
   string description = 3 [(validate.rules).string = {max_len: 256}];
+  // 价格（分）
   int64 price = 4 [(validate.rules).int64 = {gte: 0}];
 }
 
+// UpdateProductReply 更新商品响应
 message UpdateProductReply {
+  // 是否成功
   bool success = 1;
 }
 
+// ListProductRequest 商品列表请求
 message ListProductRequest {
+  // 页码
   int32 page = 1;
+  // 每页数量
   int32 page_size = 2;
+  // 搜索关键词
   string keyword = 3;
+  // 分类筛选（分类名或标识）
   string category = 4;
 }
 
+// ListProductReply 商品列表响应
 message ListProductReply {
+  // 商品列表
   repeated ProductItem items = 1;
+  // 商品总数
   int32 total = 2;
 }
 
+// ProductItem 商品项
 message ProductItem {
+  // 商品 ID
   int64 id = 1;
+  // 商品名称
   string name = 2;
+  // 商品描述
   string description = 3;
+  // 价格（分）
   int64 price = 4;
+  // 库存
   int32 stock = 5;
+  // 分类名称
   string category = 6;
+  // 商品状态
   string status = 7;
+  // 商品主图
   string image = 8;
+  // 销量
   int32 sales = 9;
+  // 分类 ID
   int64 category_id = 10;
+  // 商品图集
   repeated string images = 11;
+  // 规格组列表
   repeated SpecGroupInfo specs = 12;
+  // SKU 列表
   repeated SkuInfo skus = 13;
 }
 
+// SpecGroupInfo 规格组信息
 message SpecGroupInfo {
+  // 规格组 ID
   int64 id = 1;
+  // 规格组名称（如颜色、尺码）
   string name = 2;
+  // 规格值列表
   repeated string values = 3;
 }
 
+// SkuInfo SKU 信息
 message SkuInfo {
+  // SKU ID
   int64 id = 1;
+  // SKU 编码
   string sku_code = 2;
+  // SKU 价格（分）
   int64 price = 3;
+  // SKU 库存
   int32 stock = 4;
+  // SKU 销量
   int32 sales = 5;
+  // 规格键值对（如 颜色: 红色）
   map<string, string> spec = 6;
+  // SKU 图片
   string image = 7;
 }
 
+// GetProductRequest 商品详情请求
 message GetProductRequest {
+  // 商品 ID
   int64 id = 1;
 }
 
+// GetProductReply 商品详情响应
 message GetProductReply {
+  // 商品详情
   ProductItem product = 1;
 }
 

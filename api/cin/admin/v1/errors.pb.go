@@ -27,28 +27,47 @@ type AdminErrorReason int32
 
 const (
 	// 通用 0-99
+	// 未授权（401）
 	AdminErrorReason_UNAUTHORIZED AdminErrorReason = 0
-	AdminErrorReason_FORBIDDEN    AdminErrorReason = 1
-	AdminErrorReason_NOT_FOUND    AdminErrorReason = 2
+	// 无权限（403）
+	AdminErrorReason_FORBIDDEN AdminErrorReason = 1
+	// 资源不存在（404）
+	AdminErrorReason_NOT_FOUND AdminErrorReason = 2
 	// 商品模块 100-199
-	AdminErrorReason_PRODUCT_NOT_FOUND     AdminErrorReason = 100
+	// 商品不存在
+	AdminErrorReason_PRODUCT_NOT_FOUND AdminErrorReason = 100
+	// 商品创建失败
 	AdminErrorReason_PRODUCT_CREATE_FAILED AdminErrorReason = 101
+	// 商品更新失败
 	AdminErrorReason_PRODUCT_UPDATE_FAILED AdminErrorReason = 102
+	// 商品删除失败
 	AdminErrorReason_PRODUCT_DELETE_FAILED AdminErrorReason = 103
 	// 订单模块 200-299
-	AdminErrorReason_ORDER_NOT_FOUND     AdminErrorReason = 200
-	AdminErrorReason_ORDER_SHIP_FAILED   AdminErrorReason = 201
+	// 订单不存在
+	AdminErrorReason_ORDER_NOT_FOUND AdminErrorReason = 200
+	// 订单发货失败
+	AdminErrorReason_ORDER_SHIP_FAILED AdminErrorReason = 201
+	// 订单取消失败
 	AdminErrorReason_ORDER_CANCEL_FAILED AdminErrorReason = 202
 	// 用户模块 300-399
-	AdminErrorReason_USER_NOT_FOUND_ADMIN      AdminErrorReason = 300
-	AdminErrorReason_USER_CREATE_FAILED        AdminErrorReason = 301
-	AdminErrorReason_USER_UPDATE_FAILED_ADMIN  AdminErrorReason = 302
+	// 用户不存在
+	AdminErrorReason_USER_NOT_FOUND_ADMIN AdminErrorReason = 300
+	// 用户创建失败
+	AdminErrorReason_USER_CREATE_FAILED AdminErrorReason = 301
+	// 用户更新失败
+	AdminErrorReason_USER_UPDATE_FAILED_ADMIN AdminErrorReason = 302
+	// 用户状态切换失败
 	AdminErrorReason_USER_TOGGLE_STATUS_FAILED AdminErrorReason = 303
 	// 优惠券模块 400-499
-	AdminErrorReason_COUPON_NOT_FOUND      AdminErrorReason = 400
-	AdminErrorReason_COUPON_CREATE_FAILED  AdminErrorReason = 401
-	AdminErrorReason_COUPON_UPDATE_FAILED  AdminErrorReason = 402
-	AdminErrorReason_COUPON_DELETE_FAILED  AdminErrorReason = 403
+	// 优惠券不存在
+	AdminErrorReason_COUPON_NOT_FOUND AdminErrorReason = 400
+	// 优惠券创建失败
+	AdminErrorReason_COUPON_CREATE_FAILED AdminErrorReason = 401
+	// 优惠券更新失败
+	AdminErrorReason_COUPON_UPDATE_FAILED AdminErrorReason = 402
+	// 优惠券删除失败
+	AdminErrorReason_COUPON_DELETE_FAILED AdminErrorReason = 403
+	// 优惠券状态无效
 	AdminErrorReason_COUPON_STATUS_INVALID AdminErrorReason = 404
 )
 

@@ -28,10 +28,10 @@ type StockHTTPServer interface {
 
 func RegisterStockHTTPServer(s *http.Server, srv StockHTTPServer) {
 	r := s.Route("/")
-	r.PUT("/product/v1/stock/update", _Stock_UpdateStock0_HTTP_Handler(srv))
+	r.PUT("/product/v1/stock/update", _Stock_UpdateStock1_HTTP_Handler(srv))
 }
 
-func _Stock_UpdateStock0_HTTP_Handler(srv StockHTTPServer) func(ctx http.Context) error {
+func _Stock_UpdateStock1_HTTP_Handler(srv StockHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in UpdateStockRequest
 		if err := ctx.Bind(&in); err != nil {

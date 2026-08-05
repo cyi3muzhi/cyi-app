@@ -40,6 +40,7 @@ var ProviderSet = wire.NewSet(
 	NewAdminBannerClient,
 	NewProductServiceClient,
 	NewCategoryServiceClient,
+	NewStockServiceClient,
 	NewAdminUserServiceClient,
 	NewAdminRoleClient,
 	NewAdminSettingsClient,
@@ -67,6 +68,7 @@ var ProviderSet = wire.NewSet(
 type Data struct {
 	pc          productRpc.ProductClient
 	cc          productRpc.CategoryClient
+	sc          productRpc.StockClient
 	auc         userRpc.AdminUserClient
 	oc          orderRpc.OrderClient
 	uc          userRpc.UserClient
@@ -82,7 +84,7 @@ type Data struct {
 // NewData 创建数据层实例
 // admin 仅持有 asynq.Client 用于投递任务，不持有 asynq.Server；
 // cleanup 时关闭 asynq 客户端连接。
-func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, auc userRpc.AdminUserClient, oc orderRpc.OrderClient, uc userRpc.UserClient, olc userRpc.OperationLogClient, mc marketingRpc.CouponServiceClient, bc bladesRpc.BladesClient, oss *rustfs.RustFSClient, redis *redis.Client, nc *nats.Conn, asynqClient *asynq.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, sc productRpc.StockClient, auc userRpc.AdminUserClient, oc orderRpc.OrderClient, uc userRpc.UserClient, olc userRpc.OperationLogClient, mc marketingRpc.CouponServiceClient, bc bladesRpc.BladesClient, oss *rustfs.RustFSClient, redis *redis.Client, nc *nats.Conn, asynqClient *asynq.Client, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		asynqClient.Close()
 		if nc != nil {
@@ -90,7 +92,7 @@ func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, auc user
 		}
 		log.NewHelper(logger).Info("closing the admin data resources")
 	}
-	return &Data{pc: pc, cc: cc, auc: auc, oc: oc, uc: uc, olc: olc, mc: mc, bc: bc, oss: oss, redis: redis, nc: nc, asynqClient: asynqClient}, cleanup, nil
+	return &Data{pc: pc, cc: cc, sc: sc, auc: auc, oc: oc, uc: uc, olc: olc, mc: mc, bc: bc, oss: oss, redis: redis, nc: nc, asynqClient: asynqClient}, cleanup, nil
 }
 
 // NewOssClient 创建 OSS 客户端

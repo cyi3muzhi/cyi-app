@@ -43,7 +43,7 @@ type SkuItem struct {
 // ProductRepo 商品数据仓库接口
 type ProductRepo interface {
 	// ListProduct 获取商品列表
-	ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*Product, int32, error)
+	ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ, stockLTE int32) ([]*Product, int32, error)
 	// CreateProduct 创建商品
 	CreateProduct(ctx context.Context, in *Product) (int64, error)
 	// UpdateProduct 更新商品
@@ -54,6 +54,10 @@ type ProductRepo interface {
 	GetProduct(ctx context.Context, id int64) (*Product, error)
 	// BatchOperation 批量操作商品
 	BatchOperation(ctx context.Context, action string, ids []int64) (int32, error)
+	// UpdateStock 更新商品库存（补货/调库存）
+	UpdateStock(ctx context.Context, productID int64, total int32) error
+	// UpdateSkuStocks 按 SKU 明细批量更新商品库存（按 SKU 精确补货）
+	UpdateSkuStocks(ctx context.Context, productID int64, items map[int64]int32) error
 }
 
 // ProductUseCase 商品管理业务用例
@@ -71,8 +75,8 @@ func NewProductUseCase(repo ProductRepo, logger log.Logger) *ProductUseCase {
 }
 
 // ListProduct 获取商品列表
-func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*Product, int32, error) {
-	return uc.repo.ListProduct(ctx, page, pageSize, keyword, categoryID, status, stockEQ)
+func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ, stockLTE int32) ([]*Product, int32, error) {
+	return uc.repo.ListProduct(ctx, page, pageSize, keyword, categoryID, status, stockEQ, stockLTE)
 }
 
 // CreateProduct 创建商品
@@ -98,4 +102,14 @@ func (uc *ProductUseCase) GetProduct(ctx context.Context, id int64) (*Product, e
 // BatchOperation 批量操作商品
 func (uc *ProductUseCase) BatchOperation(ctx context.Context, action string, ids []int64) (int32, error) {
 	return uc.repo.BatchOperation(ctx, action, ids)
+}
+
+// UpdateStock 更新商品库存（补货/调库存）
+func (uc *ProductUseCase) UpdateStock(ctx context.Context, productID int64, total int32) error {
+	return uc.repo.UpdateStock(ctx, productID, total)
+}
+
+// UpdateSkuStocks 按 SKU 明细批量更新商品库存（按 SKU 精确补货）
+func (uc *ProductUseCase) UpdateSkuStocks(ctx context.Context, productID int64, items map[int64]int32) error {
+	return uc.repo.UpdateSkuStocks(ctx, productID, items)
 }

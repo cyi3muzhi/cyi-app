@@ -30,38 +30,61 @@ service Dashboard {
   }
 }
 
+// GetDashboardStatsRequest 获取仪表盘统计数据请求
 message GetDashboardStatsRequest {}
 
+// GetDashboardStatsReply 获取仪表盘统计数据响应
 message GetDashboardStatsReply {
+  // 今日订单数
   int64 today_orders = 1;
+  // 今日营收（字符串，避免精度问题）
   string today_revenue = 2;
+  // 用户总数
   int64 total_users = 3;
+  // 商品总数
   int64 total_products = 4;
+  // 订单数增长率
   double orders_growth = 5;
+  // 营收增长率
   double revenue_growth = 6;
+  // 用户增长率
   double users_growth = 7;
+  // 商品增长率
   double products_growth = 8;
 }
 
+// GetOrderTrendRequest 获取近14日订单趋势请求
 message GetOrderTrendRequest {}
 
+// GetOrderTrendReply 获取近14日订单趋势响应
 message GetOrderTrendReply {
+  // 订单趋势数据列表
   repeated TrendItem items = 1;
 }
 
+// TrendItem 订单趋势数据项
 message TrendItem {
+  // 日期
   string date = 1;
+  // 订单数量
   int32 value = 2;
 }
 
+// GetRevenueCategoriesRequest 获取营收分类占比请求
 message GetRevenueCategoriesRequest {}
 
+// GetRevenueCategoriesReply 获取营收分类占比响应
 message GetRevenueCategoriesReply {
+  // 营收分类占比列表
   repeated RevenueCategory categories = 1;
 }
 
+// RevenueCategory 营收分类占比
 message RevenueCategory {
+  // 分类名称
   string name = 1;
+  // 占比（百分比）
   double percentage = 2;
+  // 展示颜色
   string color = 3;
 }

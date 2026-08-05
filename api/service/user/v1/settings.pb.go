@@ -21,6 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// GetSettingsRequest 获取系统设置请求（无参数）
 type GetSettingsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -57,32 +58,56 @@ func (*GetSettingsRequest) Descriptor() ([]byte, []int) {
 	return file_api_service_user_v1_settings_proto_rawDescGZIP(), []int{0}
 }
 
+// GetSettingsReply 系统设置信息响应
 type GetSettingsReply struct {
-	state                  protoimpl.MessageState `protogen:"open.v1"`
-	ShopName               string                 `protobuf:"bytes,1,opt,name=shop_name,json=shopName,proto3" json:"shop_name,omitempty"`
-	ShopLogo               string                 `protobuf:"bytes,2,opt,name=shop_logo,json=shopLogo,proto3" json:"shop_logo,omitempty"`
-	ShopDescription        string                 `protobuf:"bytes,3,opt,name=shop_description,json=shopDescription,proto3" json:"shop_description,omitempty"`
-	ContactPhone           string                 `protobuf:"bytes,4,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`
-	ContactEmail           string                 `protobuf:"bytes,5,opt,name=contact_email,json=contactEmail,proto3" json:"contact_email,omitempty"`
-	IcpRecord              string                 `protobuf:"bytes,6,opt,name=icp_record,json=icpRecord,proto3" json:"icp_record,omitempty"`
-	AutoConfirmDays        int32                  `protobuf:"varint,7,opt,name=auto_confirm_days,json=autoConfirmDays,proto3" json:"auto_confirm_days,omitempty"`
-	AutoCloseMinutes       int32                  `protobuf:"varint,8,opt,name=auto_close_minutes,json=autoCloseMinutes,proto3" json:"auto_close_minutes,omitempty"`
-	RefundTimeoutDays      int32                  `protobuf:"varint,9,opt,name=refund_timeout_days,json=refundTimeoutDays,proto3" json:"refund_timeout_days,omitempty"`
-	StockAlertThreshold    int32                  `protobuf:"varint,10,opt,name=stock_alert_threshold,json=stockAlertThreshold,proto3" json:"stock_alert_threshold,omitempty"`
-	NewProductOnline       bool                   `protobuf:"varint,11,opt,name=new_product_online,json=newProductOnline,proto3" json:"new_product_online,omitempty"`
-	ProductApproval        bool                   `protobuf:"varint,12,opt,name=product_approval,json=productApproval,proto3" json:"product_approval,omitempty"`
-	NewOrderNotify         bool                   `protobuf:"varint,13,opt,name=new_order_notify,json=newOrderNotify,proto3" json:"new_order_notify,omitempty"`
-	RefundNotify           bool                   `protobuf:"varint,14,opt,name=refund_notify,json=refundNotify,proto3" json:"refund_notify,omitempty"`
-	UserRegisterNotify     bool                   `protobuf:"varint,15,opt,name=user_register_notify,json=userRegisterNotify,proto3" json:"user_register_notify,omitempty"`
-	StockAlertNotify       bool                   `protobuf:"varint,16,opt,name=stock_alert_notify,json=stockAlertNotify,proto3" json:"stock_alert_notify,omitempty"`
-	LoginAttemptLimit      bool                   `protobuf:"varint,17,opt,name=login_attempt_limit,json=loginAttemptLimit,proto3" json:"login_attempt_limit,omitempty"`
-	LoginCaptcha           bool                   `protobuf:"varint,18,opt,name=login_captcha,json=loginCaptcha,proto3" json:"login_captcha,omitempty"`
-	SessionTimeoutMinutes  int32                  `protobuf:"varint,19,opt,name=session_timeout_minutes,json=sessionTimeoutMinutes,proto3" json:"session_timeout_minutes,omitempty"`
-	EnabledPayments        []string               `protobuf:"bytes,20,rep,name=enabled_payments,json=enabledPayments,proto3" json:"enabled_payments,omitempty"`
-	DefaultPayment         string                 `protobuf:"bytes,21,opt,name=default_payment,json=defaultPayment,proto3" json:"default_payment,omitempty"`
-	FreeShippingThreshold  float64                `protobuf:"fixed64,22,opt,name=free_shipping_threshold,json=freeShippingThreshold,proto3" json:"free_shipping_threshold,omitempty"`
-	DefaultShippingCompany string                 `protobuf:"bytes,23,opt,name=default_shipping_company,json=defaultShippingCompany,proto3" json:"default_shipping_company,omitempty"`
-	HotKeywords            []string               `protobuf:"bytes,24,rep,name=hot_keywords,json=hotKeywords,proto3" json:"hot_keywords,omitempty"` // 热门搜索词（用户端搜索框联想展示）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 店铺名称
+	ShopName string `protobuf:"bytes,1,opt,name=shop_name,json=shopName,proto3" json:"shop_name,omitempty"`
+	// 店铺 Logo 图片地址
+	ShopLogo string `protobuf:"bytes,2,opt,name=shop_logo,json=shopLogo,proto3" json:"shop_logo,omitempty"`
+	// 店铺描述
+	ShopDescription string `protobuf:"bytes,3,opt,name=shop_description,json=shopDescription,proto3" json:"shop_description,omitempty"`
+	// 联系电话
+	ContactPhone string `protobuf:"bytes,4,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`
+	// 联系邮箱
+	ContactEmail string `protobuf:"bytes,5,opt,name=contact_email,json=contactEmail,proto3" json:"contact_email,omitempty"`
+	// ICP 备案号
+	IcpRecord string `protobuf:"bytes,6,opt,name=icp_record,json=icpRecord,proto3" json:"icp_record,omitempty"`
+	// 自动确认收货天数
+	AutoConfirmDays int32 `protobuf:"varint,7,opt,name=auto_confirm_days,json=autoConfirmDays,proto3" json:"auto_confirm_days,omitempty"`
+	// 自动关闭订单分钟数
+	AutoCloseMinutes int32 `protobuf:"varint,8,opt,name=auto_close_minutes,json=autoCloseMinutes,proto3" json:"auto_close_minutes,omitempty"`
+	// 退款超时天数
+	RefundTimeoutDays int32 `protobuf:"varint,9,opt,name=refund_timeout_days,json=refundTimeoutDays,proto3" json:"refund_timeout_days,omitempty"`
+	// 库存预警阈值
+	StockAlertThreshold int32 `protobuf:"varint,10,opt,name=stock_alert_threshold,json=stockAlertThreshold,proto3" json:"stock_alert_threshold,omitempty"`
+	// 是否开启新品自动上架
+	NewProductOnline bool `protobuf:"varint,11,opt,name=new_product_online,json=newProductOnline,proto3" json:"new_product_online,omitempty"`
+	// 是否开启商品审核
+	ProductApproval bool `protobuf:"varint,12,opt,name=product_approval,json=productApproval,proto3" json:"product_approval,omitempty"`
+	// 是否开启新订单通知
+	NewOrderNotify bool `protobuf:"varint,13,opt,name=new_order_notify,json=newOrderNotify,proto3" json:"new_order_notify,omitempty"`
+	// 是否开启退款通知
+	RefundNotify bool `protobuf:"varint,14,opt,name=refund_notify,json=refundNotify,proto3" json:"refund_notify,omitempty"`
+	// 是否开启用户注册通知
+	UserRegisterNotify bool `protobuf:"varint,15,opt,name=user_register_notify,json=userRegisterNotify,proto3" json:"user_register_notify,omitempty"`
+	// 是否开启库存预警通知
+	StockAlertNotify bool `protobuf:"varint,16,opt,name=stock_alert_notify,json=stockAlertNotify,proto3" json:"stock_alert_notify,omitempty"`
+	// 是否开启登录失败次数限制
+	LoginAttemptLimit bool `protobuf:"varint,17,opt,name=login_attempt_limit,json=loginAttemptLimit,proto3" json:"login_attempt_limit,omitempty"`
+	// 是否开启登录验证码
+	LoginCaptcha bool `protobuf:"varint,18,opt,name=login_captcha,json=loginCaptcha,proto3" json:"login_captcha,omitempty"`
+	// 会话超时分钟数
+	SessionTimeoutMinutes int32 `protobuf:"varint,19,opt,name=session_timeout_minutes,json=sessionTimeoutMinutes,proto3" json:"session_timeout_minutes,omitempty"`
+	// 已启用的支付方式列表
+	EnabledPayments []string `protobuf:"bytes,20,rep,name=enabled_payments,json=enabledPayments,proto3" json:"enabled_payments,omitempty"`
+	// 默认支付方式
+	DefaultPayment string `protobuf:"bytes,21,opt,name=default_payment,json=defaultPayment,proto3" json:"default_payment,omitempty"`
+	// 免运费门槛金额
+	FreeShippingThreshold float64 `protobuf:"fixed64,22,opt,name=free_shipping_threshold,json=freeShippingThreshold,proto3" json:"free_shipping_threshold,omitempty"`
+	// 默认物流公司
+	DefaultShippingCompany string   `protobuf:"bytes,23,opt,name=default_shipping_company,json=defaultShippingCompany,proto3" json:"default_shipping_company,omitempty"`
+	HotKeywords            []string `protobuf:"bytes,24,rep,name=hot_keywords,json=hotKeywords,proto3" json:"hot_keywords,omitempty"` // 热门搜索词（用户端搜索框联想展示）
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
@@ -285,32 +310,56 @@ func (x *GetSettingsReply) GetHotKeywords() []string {
 	return nil
 }
 
+// UpdateSettingsRequest 更新系统设置请求
 type UpdateSettingsRequest struct {
-	state                  protoimpl.MessageState `protogen:"open.v1"`
-	ShopName               string                 `protobuf:"bytes,1,opt,name=shop_name,json=shopName,proto3" json:"shop_name,omitempty"`
-	ShopLogo               string                 `protobuf:"bytes,2,opt,name=shop_logo,json=shopLogo,proto3" json:"shop_logo,omitempty"`
-	ShopDescription        string                 `protobuf:"bytes,3,opt,name=shop_description,json=shopDescription,proto3" json:"shop_description,omitempty"`
-	ContactPhone           string                 `protobuf:"bytes,4,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`
-	ContactEmail           string                 `protobuf:"bytes,5,opt,name=contact_email,json=contactEmail,proto3" json:"contact_email,omitempty"`
-	IcpRecord              string                 `protobuf:"bytes,6,opt,name=icp_record,json=icpRecord,proto3" json:"icp_record,omitempty"`
-	AutoConfirmDays        int32                  `protobuf:"varint,7,opt,name=auto_confirm_days,json=autoConfirmDays,proto3" json:"auto_confirm_days,omitempty"`
-	AutoCloseMinutes       int32                  `protobuf:"varint,8,opt,name=auto_close_minutes,json=autoCloseMinutes,proto3" json:"auto_close_minutes,omitempty"`
-	RefundTimeoutDays      int32                  `protobuf:"varint,9,opt,name=refund_timeout_days,json=refundTimeoutDays,proto3" json:"refund_timeout_days,omitempty"`
-	StockAlertThreshold    int32                  `protobuf:"varint,10,opt,name=stock_alert_threshold,json=stockAlertThreshold,proto3" json:"stock_alert_threshold,omitempty"`
-	NewProductOnline       bool                   `protobuf:"varint,11,opt,name=new_product_online,json=newProductOnline,proto3" json:"new_product_online,omitempty"`
-	ProductApproval        bool                   `protobuf:"varint,12,opt,name=product_approval,json=productApproval,proto3" json:"product_approval,omitempty"`
-	NewOrderNotify         bool                   `protobuf:"varint,13,opt,name=new_order_notify,json=newOrderNotify,proto3" json:"new_order_notify,omitempty"`
-	RefundNotify           bool                   `protobuf:"varint,14,opt,name=refund_notify,json=refundNotify,proto3" json:"refund_notify,omitempty"`
-	UserRegisterNotify     bool                   `protobuf:"varint,15,opt,name=user_register_notify,json=userRegisterNotify,proto3" json:"user_register_notify,omitempty"`
-	StockAlertNotify       bool                   `protobuf:"varint,16,opt,name=stock_alert_notify,json=stockAlertNotify,proto3" json:"stock_alert_notify,omitempty"`
-	LoginAttemptLimit      bool                   `protobuf:"varint,17,opt,name=login_attempt_limit,json=loginAttemptLimit,proto3" json:"login_attempt_limit,omitempty"`
-	LoginCaptcha           bool                   `protobuf:"varint,18,opt,name=login_captcha,json=loginCaptcha,proto3" json:"login_captcha,omitempty"`
-	SessionTimeoutMinutes  int32                  `protobuf:"varint,19,opt,name=session_timeout_minutes,json=sessionTimeoutMinutes,proto3" json:"session_timeout_minutes,omitempty"`
-	EnabledPayments        []string               `protobuf:"bytes,20,rep,name=enabled_payments,json=enabledPayments,proto3" json:"enabled_payments,omitempty"`
-	DefaultPayment         string                 `protobuf:"bytes,21,opt,name=default_payment,json=defaultPayment,proto3" json:"default_payment,omitempty"`
-	FreeShippingThreshold  float64                `protobuf:"fixed64,22,opt,name=free_shipping_threshold,json=freeShippingThreshold,proto3" json:"free_shipping_threshold,omitempty"`
-	DefaultShippingCompany string                 `protobuf:"bytes,23,opt,name=default_shipping_company,json=defaultShippingCompany,proto3" json:"default_shipping_company,omitempty"`
-	HotKeywords            []string               `protobuf:"bytes,24,rep,name=hot_keywords,json=hotKeywords,proto3" json:"hot_keywords,omitempty"` // 热门搜索词
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 店铺名称
+	ShopName string `protobuf:"bytes,1,opt,name=shop_name,json=shopName,proto3" json:"shop_name,omitempty"`
+	// 店铺 Logo 图片地址
+	ShopLogo string `protobuf:"bytes,2,opt,name=shop_logo,json=shopLogo,proto3" json:"shop_logo,omitempty"`
+	// 店铺描述
+	ShopDescription string `protobuf:"bytes,3,opt,name=shop_description,json=shopDescription,proto3" json:"shop_description,omitempty"`
+	// 联系电话
+	ContactPhone string `protobuf:"bytes,4,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`
+	// 联系邮箱
+	ContactEmail string `protobuf:"bytes,5,opt,name=contact_email,json=contactEmail,proto3" json:"contact_email,omitempty"`
+	// ICP 备案号
+	IcpRecord string `protobuf:"bytes,6,opt,name=icp_record,json=icpRecord,proto3" json:"icp_record,omitempty"`
+	// 自动确认收货天数
+	AutoConfirmDays int32 `protobuf:"varint,7,opt,name=auto_confirm_days,json=autoConfirmDays,proto3" json:"auto_confirm_days,omitempty"`
+	// 自动关闭订单分钟数
+	AutoCloseMinutes int32 `protobuf:"varint,8,opt,name=auto_close_minutes,json=autoCloseMinutes,proto3" json:"auto_close_minutes,omitempty"`
+	// 退款超时天数
+	RefundTimeoutDays int32 `protobuf:"varint,9,opt,name=refund_timeout_days,json=refundTimeoutDays,proto3" json:"refund_timeout_days,omitempty"`
+	// 库存预警阈值
+	StockAlertThreshold int32 `protobuf:"varint,10,opt,name=stock_alert_threshold,json=stockAlertThreshold,proto3" json:"stock_alert_threshold,omitempty"`
+	// 是否开启新品自动上架
+	NewProductOnline bool `protobuf:"varint,11,opt,name=new_product_online,json=newProductOnline,proto3" json:"new_product_online,omitempty"`
+	// 是否开启商品审核
+	ProductApproval bool `protobuf:"varint,12,opt,name=product_approval,json=productApproval,proto3" json:"product_approval,omitempty"`
+	// 是否开启新订单通知
+	NewOrderNotify bool `protobuf:"varint,13,opt,name=new_order_notify,json=newOrderNotify,proto3" json:"new_order_notify,omitempty"`
+	// 是否开启退款通知
+	RefundNotify bool `protobuf:"varint,14,opt,name=refund_notify,json=refundNotify,proto3" json:"refund_notify,omitempty"`
+	// 是否开启用户注册通知
+	UserRegisterNotify bool `protobuf:"varint,15,opt,name=user_register_notify,json=userRegisterNotify,proto3" json:"user_register_notify,omitempty"`
+	// 是否开启库存预警通知
+	StockAlertNotify bool `protobuf:"varint,16,opt,name=stock_alert_notify,json=stockAlertNotify,proto3" json:"stock_alert_notify,omitempty"`
+	// 是否开启登录失败次数限制
+	LoginAttemptLimit bool `protobuf:"varint,17,opt,name=login_attempt_limit,json=loginAttemptLimit,proto3" json:"login_attempt_limit,omitempty"`
+	// 是否开启登录验证码
+	LoginCaptcha bool `protobuf:"varint,18,opt,name=login_captcha,json=loginCaptcha,proto3" json:"login_captcha,omitempty"`
+	// 会话超时分钟数
+	SessionTimeoutMinutes int32 `protobuf:"varint,19,opt,name=session_timeout_minutes,json=sessionTimeoutMinutes,proto3" json:"session_timeout_minutes,omitempty"`
+	// 已启用的支付方式列表
+	EnabledPayments []string `protobuf:"bytes,20,rep,name=enabled_payments,json=enabledPayments,proto3" json:"enabled_payments,omitempty"`
+	// 默认支付方式
+	DefaultPayment string `protobuf:"bytes,21,opt,name=default_payment,json=defaultPayment,proto3" json:"default_payment,omitempty"`
+	// 免运费门槛金额
+	FreeShippingThreshold float64 `protobuf:"fixed64,22,opt,name=free_shipping_threshold,json=freeShippingThreshold,proto3" json:"free_shipping_threshold,omitempty"`
+	// 默认物流公司
+	DefaultShippingCompany string   `protobuf:"bytes,23,opt,name=default_shipping_company,json=defaultShippingCompany,proto3" json:"default_shipping_company,omitempty"`
+	HotKeywords            []string `protobuf:"bytes,24,rep,name=hot_keywords,json=hotKeywords,proto3" json:"hot_keywords,omitempty"` // 热门搜索词
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
@@ -513,9 +562,11 @@ func (x *UpdateSettingsRequest) GetHotKeywords() []string {
 	return nil
 }
 
+// UpdateSettingsReply 更新系统设置响应
 type UpdateSettingsReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否更新成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

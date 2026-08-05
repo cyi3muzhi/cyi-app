@@ -59,103 +59,150 @@ service AdminRole {
 
 // 角色项
 message RoleItem {
+  // 角色名称
   string name = 1;
+  // 角色标识
   string slug = 2;
+  // 角色描述
   string desc = 3;
+  // 关联用户数
   int32 users = 4;
+  // 是否启用
   bool enabled = 5;
+  // 是否系统内置角色
   bool is_system = 6;
+  // 创建时间
   string created_at = 7;
+  // 角色颜色标识
   string color = 8;
 }
 
 // 权限项
 message PermItem {
+  // 权限标识
   string key = 1;
+  // 权限名称
   string label = 2;
 }
 
 // 权限模块
 message PermModule {
+  // 模块标识
   string key = 1;
+  // 模块标题
   string title = 2;
+  // 权限项列表
   repeated PermItem items = 3;
 }
 
 // 权限值（模块 -> {权限项 -> bool}）
 message PermissionValue {
+  // 权限值映射（权限项标识 -> 是否授权）
   map<string, bool> values = 1;
 }
 
 // --- 列表 ---
 
+// ListRolesRequest 角色列表请求（无入参）
 message ListRolesRequest {}
 
+// ListRolesReply 角色列表响应
 message ListRolesReply {
+  // 角色列表
   repeated RoleItem items = 1;
 }
 
 // --- 创建 ---
 
+// CreateRoleRequest 创建角色请求
 message CreateRoleRequest {
+  // 角色名称
   string name = 1;
+  // 角色标识
   string slug = 2;
+  // 角色描述
   string desc = 3;
+  // 角色颜色标识
   string color = 4;
 }
 
+// CreateRoleReply 创建角色响应
 message CreateRoleReply {
+  // 是否成功
   bool success = 1;
 }
 
 // --- 更新 ---
 
+// UpdateRoleRequest 更新角色请求
 message UpdateRoleRequest {
+  // 角色标识
   string slug = 1;
+  // 角色名称
   string name = 2;
+  // 角色描述
   string desc = 3;
+  // 角色颜色标识
   string color = 4;
 }
 
+// UpdateRoleReply 更新角色响应
 message UpdateRoleReply {
+  // 是否成功
   bool success = 1;
 }
 
 // --- 删除 ---
 
+// DeleteRoleRequest 删除角色请求
 message DeleteRoleRequest {
+  // 角色标识
   string slug = 1;
 }
 
+// DeleteRoleReply 删除角色响应
 message DeleteRoleReply {
+  // 是否成功
   bool success = 1;
 }
 
 // --- 获取权限 ---
 
+// GetRolePermissionsRequest 获取角色权限请求
 message GetRolePermissionsRequest {
+  // 角色标识
   string role = 1;
 }
 
+// GetRolePermissionsReply 获取角色权限响应
 message GetRolePermissionsReply {
+  // 权限映射（模块标识 -> 权限值）
   map<string, PermissionValue> permissions = 1;
 }
 
 // --- 更新权限 ---
 
+// UpdateRolePermissionsRequest 更新角色权限请求
 message UpdateRolePermissionsRequest {
+  // 角色标识
   string role = 1;
+  // 权限映射（模块标识 -> 权限值）
   map<string, PermissionValue> permissions = 2;
 }
 
+// UpdateRolePermissionsReply 更新角色权限响应
 message UpdateRolePermissionsReply {
+  // 是否成功
   bool success = 1;
 }
 
 // --- 权限模块定义 ---
 
+// ListAllPermissionsRequest 获取所有权限模块定义请求（无入参）
 message ListAllPermissionsRequest {}
 
+// ListAllPermissionsReply 获取所有权限模块定义响应
 message ListAllPermissionsReply {
+  // 权限模块列表
   repeated PermModule modules = 1;
 }

@@ -66,6 +66,7 @@ service AdminCoupon {
 
 // 优惠券信息
 message CouponItem {
+  // 优惠券 ID
   int64 id = 1;
   string name = 2; // 优惠券名称
   string type = 3; // 优惠类型：立减/折扣/满减
@@ -88,6 +89,7 @@ message CouponItem {
 
 // 优惠券发放记录
 message DistRecord {
+  // 发放记录 ID
   int64 id = 1;
   int64 user_id = 2; // 领取用户 ID
   string source = 3; // 领取来源
@@ -120,11 +122,13 @@ message CouponListReply {
 
 // 获取单个优惠券请求
 message CouponGetRequest {
+  // 优惠券 ID
   int64 coupon_id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
 // 获取单个优惠券响应
 message CouponGetReply {
+  // 优惠券信息
   CouponItem coupon = 1;
 }
 
@@ -165,6 +169,7 @@ message CouponUpdateRequest {
 
 // 更新优惠券响应
 message CouponUpdateReply {
+  // 是否更新成功
   bool success = 1;
 }
 
@@ -175,6 +180,7 @@ message CouponDeleteRequest {
 
 // 删除优惠券响应
 message CouponDeleteReply {
+  // 是否删除成功
   bool success = 1;
 }
 
@@ -186,6 +192,7 @@ message CouponToggleStatusRequest {
 
 // 切换优惠券状态响应
 message CouponToggleStatusReply {
+  // 是否切换成功
   bool success = 1;
 }
 

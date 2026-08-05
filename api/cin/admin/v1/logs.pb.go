@@ -22,15 +22,18 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ListOperationLogsRequest 分页查询操作日志请求
 type ListOperationLogsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	StartDate     string                 `protobuf:"bytes,3,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"` // 开始日期（2006-01-02）
-	EndDate       string                 `protobuf:"bytes,4,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`       // 结束日期（2006-01-02）
-	Operator      string                 `protobuf:"bytes,5,opt,name=operator,proto3" json:"operator,omitempty"`                    // 操作人姓名
-	Module        string                 `protobuf:"bytes,6,opt,name=module,proto3" json:"module,omitempty"`                        // 操作模块
-	Keyword       string                 `protobuf:"bytes,7,opt,name=keyword,proto3" json:"keyword,omitempty"`                      // 关键词（匹配操作内容）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 页码
+	Page int32 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	// 每页数量
+	PageSize      int32  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	StartDate     string `protobuf:"bytes,3,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"` // 开始日期（2006-01-02）
+	EndDate       string `protobuf:"bytes,4,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`       // 结束日期（2006-01-02）
+	Operator      string `protobuf:"bytes,5,opt,name=operator,proto3" json:"operator,omitempty"`                    // 操作人姓名
+	Module        string `protobuf:"bytes,6,opt,name=module,proto3" json:"module,omitempty"`                        // 操作模块
+	Keyword       string `protobuf:"bytes,7,opt,name=keyword,proto3" json:"keyword,omitempty"`                      // 关键词（匹配操作内容）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -114,10 +117,13 @@ func (x *ListOperationLogsRequest) GetKeyword() string {
 	return ""
 }
 
+// ListOperationLogsReply 分页查询操作日志响应
 type ListOperationLogsReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*AdminLogItem        `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 操作日志列表
+	Items []*AdminLogItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	// 总记录数
+	Total         int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -166,21 +172,23 @@ func (x *ListOperationLogsReply) GetTotal() int32 {
 	return 0
 }
 
+// AdminLogItem 操作日志条目
 type AdminLogItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Operator      string                 `protobuf:"bytes,2,opt,name=operator,proto3" json:"operator,omitempty"`                      // 操作人姓名
-	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`                              // 角色标识（如 super_admin）
-	Module        string                 `protobuf:"bytes,4,opt,name=module,proto3" json:"module,omitempty"`                          // 操作模块
-	Action        string                 `protobuf:"bytes,5,opt,name=action,proto3" json:"action,omitempty"`                          // 动作
-	Content       string                 `protobuf:"bytes,6,opt,name=content,proto3" json:"content,omitempty"`                        // 操作内容
-	Method        string                 `protobuf:"bytes,7,opt,name=method,proto3" json:"method,omitempty"`                          // HTTP 方法
-	Path          string                 `protobuf:"bytes,8,opt,name=path,proto3" json:"path,omitempty"`                              // 请求路径
-	Ip            string                 `protobuf:"bytes,9,opt,name=ip,proto3" json:"ip,omitempty"`                                  // 来源 IP
-	UserAgent     string                 `protobuf:"bytes,10,opt,name=user_agent,json=userAgent,proto3" json:"user_agent,omitempty"`  // User-Agent
-	Result        int32                  `protobuf:"varint,11,opt,name=result,proto3" json:"result,omitempty"`                        // 执行结果：1-成功 0-失败
-	CreatedAt     int64                  `protobuf:"varint,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"` // 操作时间（Unix 秒）
-	Avatar        string                 `protobuf:"bytes,13,opt,name=avatar,proto3" json:"avatar,omitempty"`                         // 操作人头像（公开 URL）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 日志 ID
+	Id            int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Operator      string `protobuf:"bytes,2,opt,name=operator,proto3" json:"operator,omitempty"`                      // 操作人姓名
+	Role          string `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`                              // 角色标识（如 super_admin）
+	Module        string `protobuf:"bytes,4,opt,name=module,proto3" json:"module,omitempty"`                          // 操作模块
+	Action        string `protobuf:"bytes,5,opt,name=action,proto3" json:"action,omitempty"`                          // 动作
+	Content       string `protobuf:"bytes,6,opt,name=content,proto3" json:"content,omitempty"`                        // 操作内容
+	Method        string `protobuf:"bytes,7,opt,name=method,proto3" json:"method,omitempty"`                          // HTTP 方法
+	Path          string `protobuf:"bytes,8,opt,name=path,proto3" json:"path,omitempty"`                              // 请求路径
+	Ip            string `protobuf:"bytes,9,opt,name=ip,proto3" json:"ip,omitempty"`                                  // 来源 IP
+	UserAgent     string `protobuf:"bytes,10,opt,name=user_agent,json=userAgent,proto3" json:"user_agent,omitempty"`  // User-Agent
+	Result        int32  `protobuf:"varint,11,opt,name=result,proto3" json:"result,omitempty"`                        // 执行结果：1-成功 0-失败
+	CreatedAt     int64  `protobuf:"varint,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"` // 操作时间（Unix 秒）
+	Avatar        string `protobuf:"bytes,13,opt,name=avatar,proto3" json:"avatar,omitempty"`                         // 操作人头像（公开 URL）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -306,6 +314,7 @@ func (x *AdminLogItem) GetAvatar() string {
 	return ""
 }
 
+// CountOperationLogsRequest 操作日志统计请求
 type CountOperationLogsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -342,6 +351,7 @@ func (*CountOperationLogsRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_logs_proto_rawDescGZIP(), []int{3}
 }
 
+// CountOperationLogsReply 操作日志统计响应
 type CountOperationLogsReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Today         int64                  `protobuf:"varint,1,opt,name=today,proto3" json:"today,omitempty"` // 今日操作数
@@ -410,6 +420,7 @@ func (x *CountOperationLogsReply) GetTotal() int64 {
 	return 0
 }
 
+// ListOperationLogOperatorsRequest 操作人列表请求
 type ListOperationLogOperatorsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -446,6 +457,7 @@ func (*ListOperationLogOperatorsRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_logs_proto_rawDescGZIP(), []int{5}
 }
 
+// ListOperationLogOperatorsReply 操作人列表响应
 type ListOperationLogOperatorsReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Operators     []string               `protobuf:"bytes,1,rep,name=operators,proto3" json:"operators,omitempty"` // 操作人姓名列表（去重）

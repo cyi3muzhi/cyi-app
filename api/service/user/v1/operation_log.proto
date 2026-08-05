@@ -15,6 +15,7 @@ service OperationLog {
   rpc ListOperationLogOperators (ListOperationLogOperatorsRequest) returns (ListOperationLogOperatorsReply);
 }
 
+// ListOperationLogRequest 操作日志分页查询请求
 message ListOperationLogRequest {
   int32 page = 1;
   int32 page_size = 2;
@@ -25,11 +26,15 @@ message ListOperationLogRequest {
   string keyword = 7; // 关键词（匹配操作内容）
 }
 
+// ListOperationLogReply 操作日志分页查询响应
 message ListOperationLogReply {
+  // 操作日志列表
   repeated OperationLogItem items = 1;
+  // 总数
   int32 total = 2;
 }
 
+// OperationLogItem 操作日志项
 message OperationLogItem {
   int64 id = 1;
   string operator = 2; // 操作人姓名
@@ -46,8 +51,10 @@ message OperationLogItem {
   string avatar = 13; // 操作人头像（OSS 路径，由 admin 服务转公开 URL）
 }
 
+// CountOperationLogRequest 操作日志统计请求（无参数）
 message CountOperationLogRequest {}
 
+// CountOperationLogReply 操作日志统计响应
 message CountOperationLogReply {
   int64 today = 1; // 今日操作数
   int64 week = 2; // 本周操作数
@@ -55,8 +62,10 @@ message CountOperationLogReply {
   int64 total = 4; // 累计操作数
 }
 
+// ListOperationLogOperatorsRequest 操作人列表请求（无参数）
 message ListOperationLogOperatorsRequest {}
 
+// ListOperationLogOperatorsReply 操作人列表响应
 message ListOperationLogOperatorsReply {
   repeated string operators = 1; // 操作人姓名列表（去重）
 }

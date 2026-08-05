@@ -23,11 +23,15 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// CreateProductRequest 创建商品请求
 type CreateProductRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	Price         int64                  `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品名称
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// 商品描述
+	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	// 价格（分）
+	Price         int64 `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -83,9 +87,11 @@ func (x *CreateProductRequest) GetPrice() int64 {
 	return 0
 }
 
+// CreateProductReply 创建商品响应
 type CreateProductReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品 ID
+	ProductId     int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -127,12 +133,17 @@ func (x *CreateProductReply) GetProductId() int64 {
 	return 0
 }
 
+// UpdateProductRequest 更新商品请求
 type UpdateProductRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Price         int64                  `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品 ID
+	ProductId int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	// 商品名称
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 商品描述
+	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	// 价格（分）
+	Price         int64 `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -195,9 +206,11 @@ func (x *UpdateProductRequest) GetPrice() int64 {
 	return 0
 }
 
+// UpdateProductReply 更新商品响应
 type UpdateProductReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -239,12 +252,17 @@ func (x *UpdateProductReply) GetSuccess() bool {
 	return false
 }
 
+// ListProductRequest 商品列表请求
 type ListProductRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	Keyword       string                 `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`
-	Category      string                 `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 页码
+	Page int32 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	// 每页数量
+	PageSize int32 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	// 搜索关键词
+	Keyword string `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`
+	// 分类筛选（分类名或标识）
+	Category      string `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -307,10 +325,13 @@ func (x *ListProductRequest) GetCategory() string {
 	return ""
 }
 
+// ListProductReply 商品列表响应
 type ListProductReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*ProductItem         `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品列表
+	Items []*ProductItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	// 商品总数
+	Total         int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -359,21 +380,35 @@ func (x *ListProductReply) GetTotal() int32 {
 	return 0
 }
 
+// ProductItem 商品项
 type ProductItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Price         int64                  `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
-	Stock         int32                  `protobuf:"varint,5,opt,name=stock,proto3" json:"stock,omitempty"`
-	Category      string                 `protobuf:"bytes,6,opt,name=category,proto3" json:"category,omitempty"`
-	Status        string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
-	Image         string                 `protobuf:"bytes,8,opt,name=image,proto3" json:"image,omitempty"`
-	Sales         int32                  `protobuf:"varint,9,opt,name=sales,proto3" json:"sales,omitempty"`
-	CategoryId    int64                  `protobuf:"varint,10,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
-	Images        []string               `protobuf:"bytes,11,rep,name=images,proto3" json:"images,omitempty"`
-	Specs         []*SpecGroupInfo       `protobuf:"bytes,12,rep,name=specs,proto3" json:"specs,omitempty"`
-	Skus          []*SkuInfo             `protobuf:"bytes,13,rep,name=skus,proto3" json:"skus,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 商品名称
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 商品描述
+	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	// 价格（分）
+	Price int64 `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
+	// 库存
+	Stock int32 `protobuf:"varint,5,opt,name=stock,proto3" json:"stock,omitempty"`
+	// 分类名称
+	Category string `protobuf:"bytes,6,opt,name=category,proto3" json:"category,omitempty"`
+	// 商品状态
+	Status string `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
+	// 商品主图
+	Image string `protobuf:"bytes,8,opt,name=image,proto3" json:"image,omitempty"`
+	// 销量
+	Sales int32 `protobuf:"varint,9,opt,name=sales,proto3" json:"sales,omitempty"`
+	// 分类 ID
+	CategoryId int64 `protobuf:"varint,10,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	// 商品图集
+	Images []string `protobuf:"bytes,11,rep,name=images,proto3" json:"images,omitempty"`
+	// 规格组列表
+	Specs []*SpecGroupInfo `protobuf:"bytes,12,rep,name=specs,proto3" json:"specs,omitempty"`
+	// SKU 列表
+	Skus          []*SkuInfo `protobuf:"bytes,13,rep,name=skus,proto3" json:"skus,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -499,11 +534,15 @@ func (x *ProductItem) GetSkus() []*SkuInfo {
 	return nil
 }
 
+// SpecGroupInfo 规格组信息
 type SpecGroupInfo struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Values        []string               `protobuf:"bytes,3,rep,name=values,proto3" json:"values,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 规格组 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 规格组名称（如颜色、尺码）
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 规格值列表
+	Values        []string `protobuf:"bytes,3,rep,name=values,proto3" json:"values,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -559,15 +598,23 @@ func (x *SpecGroupInfo) GetValues() []string {
 	return nil
 }
 
+// SkuInfo SKU 信息
 type SkuInfo struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	SkuCode       string                 `protobuf:"bytes,2,opt,name=sku_code,json=skuCode,proto3" json:"sku_code,omitempty"`
-	Price         int64                  `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
-	Stock         int32                  `protobuf:"varint,4,opt,name=stock,proto3" json:"stock,omitempty"`
-	Sales         int32                  `protobuf:"varint,5,opt,name=sales,proto3" json:"sales,omitempty"`
-	Spec          map[string]string      `protobuf:"bytes,6,rep,name=spec,proto3" json:"spec,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Image         string                 `protobuf:"bytes,7,opt,name=image,proto3" json:"image,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// SKU ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// SKU 编码
+	SkuCode string `protobuf:"bytes,2,opt,name=sku_code,json=skuCode,proto3" json:"sku_code,omitempty"`
+	// SKU 价格（分）
+	Price int64 `protobuf:"varint,3,opt,name=price,proto3" json:"price,omitempty"`
+	// SKU 库存
+	Stock int32 `protobuf:"varint,4,opt,name=stock,proto3" json:"stock,omitempty"`
+	// SKU 销量
+	Sales int32 `protobuf:"varint,5,opt,name=sales,proto3" json:"sales,omitempty"`
+	// 规格键值对（如 颜色: 红色）
+	Spec map[string]string `protobuf:"bytes,6,rep,name=spec,proto3" json:"spec,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// SKU 图片
+	Image         string `protobuf:"bytes,7,opt,name=image,proto3" json:"image,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -651,9 +698,11 @@ func (x *SkuInfo) GetImage() string {
 	return ""
 }
 
+// GetProductRequest 商品详情请求
 type GetProductRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品 ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -695,9 +744,11 @@ func (x *GetProductRequest) GetId() int64 {
 	return 0
 }
 
+// GetProductReply 商品详情响应
 type GetProductReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Product       *ProductItem           `protobuf:"bytes,1,opt,name=product,proto3" json:"product,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品详情
+	Product       *ProductItem `protobuf:"bytes,1,opt,name=product,proto3" json:"product,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

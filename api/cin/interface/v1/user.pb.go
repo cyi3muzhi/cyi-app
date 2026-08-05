@@ -24,9 +24,11 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// GetUserInfoRequest 获取用户信息请求
 type GetUserInfoRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户 ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -68,12 +70,17 @@ func (x *GetUserInfoRequest) GetId() int64 {
 	return 0
 }
 
+// GetUserInfoReply 获取用户信息响应
 type GetUserInfoReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
-	Avatar        string                 `protobuf:"bytes,3,opt,name=avatar,proto3" json:"avatar,omitempty"`
-	Phone         string                 `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 昵称
+	Nickname string `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	// 头像 URL
+	Avatar string `protobuf:"bytes,3,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	// 手机号
+	Phone         string `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -136,19 +143,27 @@ func (x *GetUserInfoReply) GetPhone() string {
 	return ""
 }
 
+// GetMyInfoReply 个人信息响应
 type GetMyInfoReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
-	Nickname      string                 `protobuf:"bytes,3,opt,name=nickname,proto3" json:"nickname,omitempty"`
-	Avatar        string                 `protobuf:"bytes,4,opt,name=avatar,proto3" json:"avatar,omitempty"`
-	Phone         string                 `protobuf:"bytes,5,opt,name=phone,proto3" json:"phone,omitempty"`
-	Gender        int32                  `protobuf:"varint,6,opt,name=gender,proto3" json:"gender,omitempty"`
-	Email         string                 `protobuf:"bytes,7,opt,name=email,proto3" json:"email,omitempty"`
-	Birthday      string                 `protobuf:"bytes,8,opt,name=birthday,proto3" json:"birthday,omitempty"`                            // YYYY-MM-DD
-	Level         string                 `protobuf:"bytes,9,opt,name=level,proto3" json:"level,omitempty"`                                  // 会员等级 regular/gold/diamond
-	GrowthValue   int64                  `protobuf:"varint,10,opt,name=growth_value,json=growthValue,proto3" json:"growth_value,omitempty"` // 成长值
-	CreatedAt     int64                  `protobuf:"varint,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`       // 注册时间（Unix 秒）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 登录账号
+	Username string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	// 昵称
+	Nickname string `protobuf:"bytes,3,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	// 头像 URL
+	Avatar string `protobuf:"bytes,4,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	// 手机号
+	Phone string `protobuf:"bytes,5,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 性别（0=未知 1=男 2=女）
+	Gender int32 `protobuf:"varint,6,opt,name=gender,proto3" json:"gender,omitempty"`
+	// 邮箱
+	Email         string `protobuf:"bytes,7,opt,name=email,proto3" json:"email,omitempty"`
+	Birthday      string `protobuf:"bytes,8,opt,name=birthday,proto3" json:"birthday,omitempty"`                            // YYYY-MM-DD
+	Level         string `protobuf:"bytes,9,opt,name=level,proto3" json:"level,omitempty"`                                  // 会员等级 regular/gold/diamond
+	GrowthValue   int64  `protobuf:"varint,10,opt,name=growth_value,json=growthValue,proto3" json:"growth_value,omitempty"` // 成长值
+	CreatedAt     int64  `protobuf:"varint,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`       // 注册时间（Unix 秒）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -260,14 +275,19 @@ func (x *GetMyInfoReply) GetCreatedAt() int64 {
 	return 0
 }
 
+// UpdateUserInfoRequest 更新用户信息请求
 type UpdateUserInfoRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
-	Avatar        string                 `protobuf:"bytes,3,opt,name=avatar,proto3" json:"avatar,omitempty"`
-	Email         string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
-	Gender        int32                  `protobuf:"varint,5,opt,name=gender,proto3" json:"gender,omitempty"`    // 0=未知 1=男 2=女
-	Birthday      string                 `protobuf:"bytes,6,opt,name=birthday,proto3" json:"birthday,omitempty"` // YYYY-MM-DD
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 昵称
+	Nickname string `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	// 头像 URL
+	Avatar string `protobuf:"bytes,3,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	// 邮箱
+	Email         string `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
+	Gender        int32  `protobuf:"varint,5,opt,name=gender,proto3" json:"gender,omitempty"`    // 0=未知 1=男 2=女
+	Birthday      string `protobuf:"bytes,6,opt,name=birthday,proto3" json:"birthday,omitempty"` // YYYY-MM-DD
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -344,9 +364,11 @@ func (x *UpdateUserInfoRequest) GetBirthday() string {
 	return ""
 }
 
+// UpdateUserInfoReply 更新用户信息响应
 type UpdateUserInfoReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -389,10 +411,13 @@ func (x *UpdateUserInfoReply) GetSuccess() bool {
 }
 
 // ========== 修改密码 ==========
+// ChangePasswordRequest 修改密码请求
 type ChangePasswordRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OldPassword   string                 `protobuf:"bytes,1,opt,name=old_password,json=oldPassword,proto3" json:"old_password,omitempty"`
-	NewPassword   string                 `protobuf:"bytes,2,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 原密码
+	OldPassword string `protobuf:"bytes,1,opt,name=old_password,json=oldPassword,proto3" json:"old_password,omitempty"`
+	// 新密码
+	NewPassword   string `protobuf:"bytes,2,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -441,9 +466,11 @@ func (x *ChangePasswordRequest) GetNewPassword() string {
 	return ""
 }
 
+// ChangePasswordReply 修改密码响应
 type ChangePasswordReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -486,17 +513,20 @@ func (x *ChangePasswordReply) GetSuccess() bool {
 }
 
 // ========== 收货地址 ==========
+// AddressItem 收货地址项
 type AddressItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Receiver      string                 `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver,omitempty"`                     // 收货人姓名
-	Phone         string                 `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`                           // 收货人手机号
-	Province      string                 `protobuf:"bytes,4,opt,name=province,proto3" json:"province,omitempty"`                     // 省份
-	City          string                 `protobuf:"bytes,5,opt,name=city,proto3" json:"city,omitempty"`                             // 城市
-	District      string                 `protobuf:"bytes,6,opt,name=district,proto3" json:"district,omitempty"`                     // 区县
-	Detail        string                 `protobuf:"bytes,7,opt,name=detail,proto3" json:"detail,omitempty"`                         // 详细地址
-	IsDefault     int32                  `protobuf:"varint,8,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"` // 是否默认地址 0=否 1=是
-	CreateTime    int64                  `protobuf:"varint,9,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 地址 ID
+	Id        int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Receiver  string `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver,omitempty"`                     // 收货人姓名
+	Phone     string `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`                           // 收货人手机号
+	Province  string `protobuf:"bytes,4,opt,name=province,proto3" json:"province,omitempty"`                     // 省份
+	City      string `protobuf:"bytes,5,opt,name=city,proto3" json:"city,omitempty"`                             // 城市
+	District  string `protobuf:"bytes,6,opt,name=district,proto3" json:"district,omitempty"`                     // 区县
+	Detail    string `protobuf:"bytes,7,opt,name=detail,proto3" json:"detail,omitempty"`                         // 详细地址
+	IsDefault int32  `protobuf:"varint,8,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"` // 是否默认地址 0=否 1=是
+	// 创建时间（Unix 秒）
+	CreateTime    int64 `protobuf:"varint,9,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -594,9 +624,11 @@ func (x *AddressItem) GetCreateTime() int64 {
 	return 0
 }
 
+// ListAddressReply 收货地址列表响应
 type ListAddressReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*AddressItem         `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 地址列表
+	Items         []*AddressItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -638,15 +670,22 @@ func (x *ListAddressReply) GetItems() []*AddressItem {
 	return nil
 }
 
+// CreateAddressRequest 新增收货地址请求
 type CreateAddressRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Receiver      string                 `protobuf:"bytes,1,opt,name=receiver,proto3" json:"receiver,omitempty"`
-	Phone         string                 `protobuf:"bytes,2,opt,name=phone,proto3" json:"phone,omitempty"`
-	Province      string                 `protobuf:"bytes,3,opt,name=province,proto3" json:"province,omitempty"`
-	City          string                 `protobuf:"bytes,4,opt,name=city,proto3" json:"city,omitempty"`
-	District      string                 `protobuf:"bytes,5,opt,name=district,proto3" json:"district,omitempty"`
-	Detail        string                 `protobuf:"bytes,6,opt,name=detail,proto3" json:"detail,omitempty"`
-	IsDefault     int32                  `protobuf:"varint,7,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"` // 1=设为默认地址
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 收货人姓名
+	Receiver string `protobuf:"bytes,1,opt,name=receiver,proto3" json:"receiver,omitempty"`
+	// 收货人手机号
+	Phone string `protobuf:"bytes,2,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 省份
+	Province string `protobuf:"bytes,3,opt,name=province,proto3" json:"province,omitempty"`
+	// 城市
+	City string `protobuf:"bytes,4,opt,name=city,proto3" json:"city,omitempty"`
+	// 区县
+	District string `protobuf:"bytes,5,opt,name=district,proto3" json:"district,omitempty"`
+	// 详细地址
+	Detail        string `protobuf:"bytes,6,opt,name=detail,proto3" json:"detail,omitempty"`
+	IsDefault     int32  `protobuf:"varint,7,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"` // 1=设为默认地址
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -730,9 +769,11 @@ func (x *CreateAddressRequest) GetIsDefault() int32 {
 	return 0
 }
 
+// CreateAddressReply 新增收货地址响应
 type CreateAddressReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 新地址 ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -774,16 +815,25 @@ func (x *CreateAddressReply) GetId() int64 {
 	return 0
 }
 
+// UpdateAddressRequest 更新收货地址请求
 type UpdateAddressRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Receiver      string                 `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver,omitempty"`
-	Phone         string                 `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
-	Province      string                 `protobuf:"bytes,4,opt,name=province,proto3" json:"province,omitempty"`
-	City          string                 `protobuf:"bytes,5,opt,name=city,proto3" json:"city,omitempty"`
-	District      string                 `protobuf:"bytes,6,opt,name=district,proto3" json:"district,omitempty"`
-	Detail        string                 `protobuf:"bytes,7,opt,name=detail,proto3" json:"detail,omitempty"`
-	IsDefault     int32                  `protobuf:"varint,8,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 地址 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 收货人姓名
+	Receiver string `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver,omitempty"`
+	// 收货人手机号
+	Phone string `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 省份
+	Province string `protobuf:"bytes,4,opt,name=province,proto3" json:"province,omitempty"`
+	// 城市
+	City string `protobuf:"bytes,5,opt,name=city,proto3" json:"city,omitempty"`
+	// 区县
+	District string `protobuf:"bytes,6,opt,name=district,proto3" json:"district,omitempty"`
+	// 详细地址
+	Detail string `protobuf:"bytes,7,opt,name=detail,proto3" json:"detail,omitempty"`
+	// 是否默认地址（0=否 1=是）
+	IsDefault     int32 `protobuf:"varint,8,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -874,9 +924,11 @@ func (x *UpdateAddressRequest) GetIsDefault() int32 {
 	return 0
 }
 
+// UpdateAddressReply 更新收货地址响应
 type UpdateAddressReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -918,9 +970,11 @@ func (x *UpdateAddressReply) GetSuccess() bool {
 	return false
 }
 
+// DeleteAddressRequest 删除收货地址请求
 type DeleteAddressRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 地址 ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -962,9 +1016,11 @@ func (x *DeleteAddressRequest) GetId() int64 {
 	return 0
 }
 
+// DeleteAddressReply 删除收货地址响应
 type DeleteAddressReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1006,9 +1062,11 @@ func (x *DeleteAddressReply) GetSuccess() bool {
 	return false
 }
 
+// SetDefaultAddressRequest 设置默认收货地址请求
 type SetDefaultAddressRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 地址 ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1050,9 +1108,11 @@ func (x *SetDefaultAddressRequest) GetId() int64 {
 	return 0
 }
 
+// SetDefaultAddressReply 设置默认收货地址响应
 type SetDefaultAddressReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1095,6 +1155,7 @@ func (x *SetDefaultAddressReply) GetSuccess() bool {
 }
 
 // ========== 个人中心概览 ==========
+// UserCenterStats 个人中心统计
 type UserCenterStats struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	TotalOrders    int64                  `protobuf:"varint,1,opt,name=total_orders,json=totalOrders,proto3" json:"total_orders,omitempty"`          // 总订单数
@@ -1195,10 +1256,13 @@ func (x *UserCenterStats) GetTotalSpent() int64 {
 	return 0
 }
 
+// GetUserCenterReply 个人中心概览响应
 type GetUserCenterReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	User          *GetMyInfoReply        `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	Stats         *UserCenterStats       `protobuf:"bytes,2,opt,name=stats,proto3" json:"stats,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户基本信息
+	User *GetMyInfoReply `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	// 订单/优惠券统计
+	Stats         *UserCenterStats `protobuf:"bytes,2,opt,name=stats,proto3" json:"stats,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

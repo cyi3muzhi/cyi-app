@@ -97,7 +97,12 @@ func (s *ProductService) ListProduct(ctx context.Context, req *v1.ListProductReq
 	if sw := req.GetStockEq(); sw != nil {
 		stockEQ = sw.GetValue()
 	}
-	items, total, err := s.uc.ListProduct(ctx, req.Page, req.PageSize, req.Keyword, req.GetCategoryId(), req.Status, stockEQ)
+	// 库存上限筛选（库存预警用，库存 <= value）
+	var stockLTE int32 = -1
+	if sw := req.GetStockLte(); sw != nil {
+		stockLTE = sw.GetValue()
+	}
+	items, total, err := s.uc.ListProduct(ctx, req.Page, req.PageSize, req.Keyword, req.GetCategoryId(), req.Status, stockEQ, stockLTE)
 	if err != nil {
 		return nil, err
 	}

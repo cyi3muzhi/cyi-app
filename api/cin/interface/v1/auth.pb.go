@@ -23,6 +23,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// LoginRequest 登录请求
 type LoginRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 手机号或用户名
@@ -86,9 +87,11 @@ func (x *LoginRequest) GetClientIp() string {
 	return ""
 }
 
+// LoginReply 登录响应
 type LoginReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 登录令牌（后续请求需携带）
+	Token         string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -130,6 +133,7 @@ func (x *LoginReply) GetToken() string {
 	return ""
 }
 
+// RegisterReq 注册请求
 type RegisterReq struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 登录账号（注册时 = 手机号）
@@ -211,9 +215,11 @@ func (x *RegisterReq) GetClientIp() string {
 	return ""
 }
 
+// RegisterReply 注册响应
 type RegisterReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否注册成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

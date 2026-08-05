@@ -81,7 +81,7 @@ func (r *productRepo) resolveImageURL(ctx context.Context, image string) string 
 }
 
 // ListProduct 通过 gRPC 调用商品服务获取商品列表
-func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*biz.Product, int32, error) {
+func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ, stockLTE int32) ([]*biz.Product, int32, error) {
 	gRPCReq := &productRpc.ListProductRequest{
 		Page:       page,
 		PageSize:   pageSize,
@@ -92,6 +92,10 @@ func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, key
 	// 只在明确设置了库存筛选时传值（-1 表示未设置）
 	if stockEQ >= 0 {
 		gRPCReq.StockEq = wrapperspb.Int32(stockEQ)
+	}
+	// 库存上限筛选（库存预警用）
+	if stockLTE >= 0 {
+		gRPCReq.StockLte = wrapperspb.Int32(stockLTE)
 	}
 	reply, err := r.data.pc.ListProduct(ctx, gRPCReq)
 	if err != nil {
@@ -327,4 +331,30 @@ func (r *productRepo) GetProduct(ctx context.Context, id int64) (*biz.Product, e
 	p := protoToBizProduct(reply.GetProduct())
 	p.Image = r.resolveImageURL(ctx, p.Image)
 	return p, nil
+}
+
+// UpdateStock 通过 gRPC 调用商品服务更新商品库存（补货/调库存）
+// 商品服务按 product_id 将 total 均分到该商品的所有 SKU 库存记录
+func (r *productRepo) UpdateStock(ctx context.Context, productID int64, total int32) error {
+	_, err := r.data.sc.UpdateStock(ctx, &productRpc.UpdateStockRequest{
+		ProductId: productID,
+		Total:     total,
+	})
+	return err
+}
+
+// UpdateSkuStocks 通过 gRPC 调用商品服务按 SKU 明细批量更新库存（按 SKU 精确补货）
+func (r *productRepo) UpdateSkuStocks(ctx context.Context, productID int64, items map[int64]int32) error {
+	req := &productRpc.UpdateSkuStocksRequest{
+		ProductId: productID,
+		Items:     make([]*productRpc.SkuStockItem, 0, len(items)),
+	}
+	for skuID, total := range items {
+		req.Items = append(req.Items, &productRpc.SkuStockItem{
+			SkuId: skuID,
+			Total: total,
+		})
+	}
+	_, err := r.data.sc.UpdateSkuStocks(ctx, req)
+	return err
 }

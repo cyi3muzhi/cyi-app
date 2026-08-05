@@ -23,11 +23,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// AddCartItemRequest 加入购物车请求
 type AddCartItemRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
-	Quantity      int32                  `protobuf:"varint,2,opt,name=quantity,proto3" json:"quantity,omitempty"`
-	SkuId         int64                  `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（0 表示取商品默认 SKU）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品 ID
+	ProductId int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	// 加入数量
+	Quantity      int32 `protobuf:"varint,2,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	SkuId         int64 `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（0 表示取商品默认 SKU）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -83,9 +86,11 @@ func (x *AddCartItemRequest) GetSkuId() int64 {
 	return 0
 }
 
+// AddCartItemReply 加入购物车响应
 type AddCartItemReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -127,6 +132,7 @@ func (x *AddCartItemReply) GetSuccess() bool {
 	return false
 }
 
+// GetCartRequest 获取购物车请求
 type GetCartRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -163,9 +169,11 @@ func (*GetCartRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_interface_v1_cart_proto_rawDescGZIP(), []int{2}
 }
 
+// GetCartReply 获取购物车响应
 type GetCartReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*CartProductItem     `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 购物车商品列表
+	Items         []*CartProductItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -207,11 +215,14 @@ func (x *GetCartReply) GetItems() []*CartProductItem {
 	return nil
 }
 
+// UpdateCartItemRequest 修改购物车商品数量请求
 type UpdateCartItemRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
-	Quantity      int32                  `protobuf:"varint,2,opt,name=quantity,proto3" json:"quantity,omitempty"`
-	SkuId         int64                  `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（0 表示取商品默认 SKU）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品 ID
+	ProductId int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	// 修改后的数量
+	Quantity      int32 `protobuf:"varint,2,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	SkuId         int64 `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（0 表示取商品默认 SKU）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -267,9 +278,11 @@ func (x *UpdateCartItemRequest) GetSkuId() int64 {
 	return 0
 }
 
+// UpdateCartItemReply 修改购物车商品数量响应
 type UpdateCartItemReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -311,11 +324,14 @@ func (x *UpdateCartItemReply) GetSuccess() bool {
 	return false
 }
 
+// ToggleCartItemRequest 选中/取消选中单个商品请求
 type ToggleCartItemRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
-	Selected      bool                   `protobuf:"varint,2,opt,name=selected,proto3" json:"selected,omitempty"`
-	SkuId         int64                  `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（0 表示商品默认 SKU）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品 ID
+	ProductId int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	// 是否选中
+	Selected      bool  `protobuf:"varint,2,opt,name=selected,proto3" json:"selected,omitempty"`
+	SkuId         int64 `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（0 表示商品默认 SKU）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -371,9 +387,11 @@ func (x *ToggleCartItemRequest) GetSkuId() int64 {
 	return 0
 }
 
+// ToggleCartItemReply 选中/取消选中单个商品响应
 type ToggleCartItemReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -415,9 +433,11 @@ func (x *ToggleCartItemReply) GetSuccess() bool {
 	return false
 }
 
+// SelectAllCartRequest 全选/取消全选请求
 type SelectAllCartRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Selected      bool                   `protobuf:"varint,1,opt,name=selected,proto3" json:"selected,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否全选
+	Selected      bool `protobuf:"varint,1,opt,name=selected,proto3" json:"selected,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -459,9 +479,11 @@ func (x *SelectAllCartRequest) GetSelected() bool {
 	return false
 }
 
+// SelectAllCartReply 全选/取消全选响应
 type SelectAllCartReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -503,10 +525,12 @@ func (x *SelectAllCartReply) GetSuccess() bool {
 	return false
 }
 
+// DeleteCartItemRequest 删除购物车商品请求
 type DeleteCartItemRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
-	SkuId         int64                  `protobuf:"varint,2,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（0 表示商品默认 SKU，query 参数）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品 ID
+	ProductId     int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	SkuId         int64 `protobuf:"varint,2,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（0 表示商品默认 SKU，query 参数）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -555,9 +579,11 @@ func (x *DeleteCartItemRequest) GetSkuId() int64 {
 	return 0
 }
 
+// DeleteCartItemReply 删除购物车商品响应
 type DeleteCartItemReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -599,6 +625,7 @@ func (x *DeleteCartItemReply) GetSuccess() bool {
 	return false
 }
 
+// ClearCartRequest 清空购物车请求
 type ClearCartRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -635,9 +662,11 @@ func (*ClearCartRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_interface_v1_cart_proto_rawDescGZIP(), []int{12}
 }
 
+// ClearCartReply 清空购物车响应
 type ClearCartReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -679,6 +708,7 @@ func (x *ClearCartReply) GetSuccess() bool {
 	return false
 }
 
+// CartProductItem 购物车商品项
 type CartProductItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 商品ID

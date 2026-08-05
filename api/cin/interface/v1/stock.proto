@@ -20,11 +20,16 @@ service Stock {
   }
 }
 
+// UpdateStockRequest 更新库存请求
 message UpdateStockRequest {
+  // 商品 ID
   int64 product_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 库存总量
   int32 total = 2 [(validate.rules).int32 = {gte: 0}];
 }
 
+// UpdateStockReply 更新库存响应
 message UpdateStockReply {
+  // 是否成功
   bool success = 1;
 }

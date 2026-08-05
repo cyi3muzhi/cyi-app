@@ -19,29 +19,43 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Stock_CreateStock_FullMethodName  = "/api.service.product.v1.Stock/CreateStock"
-	Stock_UpdateStock_FullMethodName  = "/api.service.product.v1.Stock/UpdateStock"
-	Stock_ReserveStock_FullMethodName = "/api.service.product.v1.Stock/ReserveStock"
-	Stock_DeductStock_FullMethodName  = "/api.service.product.v1.Stock/DeductStock"
-	Stock_ReleaseStock_FullMethodName = "/api.service.product.v1.Stock/ReleaseStock"
-	Stock_AddStock_FullMethodName     = "/api.service.product.v1.Stock/AddStock"
-	Stock_DeleteStock_FullMethodName  = "/api.service.product.v1.Stock/DeleteStock"
-	Stock_GetStock_FullMethodName     = "/api.service.product.v1.Stock/GetStock"
-	Stock_ListStock_FullMethodName    = "/api.service.product.v1.Stock/ListStock"
+	Stock_CreateStock_FullMethodName     = "/api.service.product.v1.Stock/CreateStock"
+	Stock_UpdateStock_FullMethodName     = "/api.service.product.v1.Stock/UpdateStock"
+	Stock_UpdateSkuStocks_FullMethodName = "/api.service.product.v1.Stock/UpdateSkuStocks"
+	Stock_ReserveStock_FullMethodName    = "/api.service.product.v1.Stock/ReserveStock"
+	Stock_DeductStock_FullMethodName     = "/api.service.product.v1.Stock/DeductStock"
+	Stock_ReleaseStock_FullMethodName    = "/api.service.product.v1.Stock/ReleaseStock"
+	Stock_AddStock_FullMethodName        = "/api.service.product.v1.Stock/AddStock"
+	Stock_DeleteStock_FullMethodName     = "/api.service.product.v1.Stock/DeleteStock"
+	Stock_GetStock_FullMethodName        = "/api.service.product.v1.Stock/GetStock"
+	Stock_ListStock_FullMethodName       = "/api.service.product.v1.Stock/ListStock"
 )
 
 // StockClient is the client API for Stock service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// 库存服务
 type StockClient interface {
+	// 创建库存
 	CreateStock(ctx context.Context, in *CreateStockRequest, opts ...grpc.CallOption) (*CreateStockReply, error)
+	// 更新库存
 	UpdateStock(ctx context.Context, in *UpdateStockRequest, opts ...grpc.CallOption) (*UpdateStockReply, error)
+	// 按 SKU 批量设置库存（管理端按 SKU 明细补货）
+	UpdateSkuStocks(ctx context.Context, in *UpdateSkuStocksRequest, opts ...grpc.CallOption) (*UpdateSkuStocksReply, error)
+	// 预留库存（下单时预占库存）
 	ReserveStock(ctx context.Context, in *ReserveStockRequest, opts ...grpc.CallOption) (*ReserveStockReply, error)
+	// 扣减库存（支付成功后实际扣减）
 	DeductStock(ctx context.Context, in *DeductStockRequest, opts ...grpc.CallOption) (*DeductStockReply, error)
+	// 释放预留库存（取消未支付订单时）
 	ReleaseStock(ctx context.Context, in *ReleaseStockRequest, opts ...grpc.CallOption) (*ReleaseStockReply, error)
+	// 增加库存（退款或取消已支付订单时）
 	AddStock(ctx context.Context, in *AddStockRequest, opts ...grpc.CallOption) (*AddStockReply, error)
+	// 删除库存
 	DeleteStock(ctx context.Context, in *DeleteStockRequest, opts ...grpc.CallOption) (*DeleteStockReply, error)
+	// 获取库存详情
 	GetStock(ctx context.Context, in *GetStockRequest, opts ...grpc.CallOption) (*GetStockReply, error)
+	// 库存列表
 	ListStock(ctx context.Context, in *ListStockRequest, opts ...grpc.CallOption) (*ListStockReply, error)
 }
 
@@ -67,6 +81,16 @@ func (c *stockClient) UpdateStock(ctx context.Context, in *UpdateStockRequest, o
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpdateStockReply)
 	err := c.cc.Invoke(ctx, Stock_UpdateStock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stockClient) UpdateSkuStocks(ctx context.Context, in *UpdateSkuStocksRequest, opts ...grpc.CallOption) (*UpdateSkuStocksReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateSkuStocksReply)
+	err := c.cc.Invoke(ctx, Stock_UpdateSkuStocks_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -146,15 +170,28 @@ func (c *stockClient) ListStock(ctx context.Context, in *ListStockRequest, opts 
 // StockServer is the server API for Stock service.
 // All implementations must embed UnimplementedStockServer
 // for forward compatibility.
+//
+// 库存服务
 type StockServer interface {
+	// 创建库存
 	CreateStock(context.Context, *CreateStockRequest) (*CreateStockReply, error)
+	// 更新库存
 	UpdateStock(context.Context, *UpdateStockRequest) (*UpdateStockReply, error)
+	// 按 SKU 批量设置库存（管理端按 SKU 明细补货）
+	UpdateSkuStocks(context.Context, *UpdateSkuStocksRequest) (*UpdateSkuStocksReply, error)
+	// 预留库存（下单时预占库存）
 	ReserveStock(context.Context, *ReserveStockRequest) (*ReserveStockReply, error)
+	// 扣减库存（支付成功后实际扣减）
 	DeductStock(context.Context, *DeductStockRequest) (*DeductStockReply, error)
+	// 释放预留库存（取消未支付订单时）
 	ReleaseStock(context.Context, *ReleaseStockRequest) (*ReleaseStockReply, error)
+	// 增加库存（退款或取消已支付订单时）
 	AddStock(context.Context, *AddStockRequest) (*AddStockReply, error)
+	// 删除库存
 	DeleteStock(context.Context, *DeleteStockRequest) (*DeleteStockReply, error)
+	// 获取库存详情
 	GetStock(context.Context, *GetStockRequest) (*GetStockReply, error)
+	// 库存列表
 	ListStock(context.Context, *ListStockRequest) (*ListStockReply, error)
 	mustEmbedUnimplementedStockServer()
 }
@@ -171,6 +208,9 @@ func (UnimplementedStockServer) CreateStock(context.Context, *CreateStockRequest
 }
 func (UnimplementedStockServer) UpdateStock(context.Context, *UpdateStockRequest) (*UpdateStockReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateStock not implemented")
+}
+func (UnimplementedStockServer) UpdateSkuStocks(context.Context, *UpdateSkuStocksRequest) (*UpdateSkuStocksReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateSkuStocks not implemented")
 }
 func (UnimplementedStockServer) ReserveStock(context.Context, *ReserveStockRequest) (*ReserveStockReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReserveStock not implemented")
@@ -246,6 +286,24 @@ func _Stock_UpdateStock_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StockServer).UpdateStock(ctx, req.(*UpdateStockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Stock_UpdateSkuStocks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateSkuStocksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StockServer).UpdateSkuStocks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Stock_UpdateSkuStocks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StockServer).UpdateSkuStocks(ctx, req.(*UpdateSkuStocksRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -390,6 +448,10 @@ var Stock_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateStock",
 			Handler:    _Stock_UpdateStock_Handler,
+		},
+		{
+			MethodName: "UpdateSkuStocks",
+			Handler:    _Stock_UpdateSkuStocks_Handler,
 		},
 		{
 			MethodName: "ReserveStock",

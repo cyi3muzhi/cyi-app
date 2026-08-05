@@ -59,7 +59,10 @@ const productBadge = computed(() => store.productOnlineCount)
 /** 侧边栏从 store 读取待处理订单数量 */
 const orderBadge = computed(() => store.orderPendingCount)
 
-function onProductChanged() { store.fetchProductOnlineCount() }
+/** 侧边栏从 store 读取低库存预警数量 */
+const stockAlertBadge = computed(() => store.stockAlertCount)
+
+function onProductChanged() { store.fetchProductOnlineCount(); store.fetchStockAlertCount() }
 window.addEventListener('product-changed', onProductChanged)
 onUnmounted(() => window.removeEventListener('product-changed', onProductChanged))
 
@@ -70,6 +73,7 @@ onUnmounted(() => window.removeEventListener('order-changed', onOrderChanged))
 onMounted(() => {
   store.fetchProductOnlineCount()
   store.fetchOrderPendingCount()
+  store.fetchStockAlertCount()
   store.fetchShopName()
 })
 
@@ -117,6 +121,13 @@ const menuGroups = computed<MenuGroup[]>(() => [
         label: '商品分类',
         icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
         perm: 'categories.view'
+      },
+      {
+        path: '/stock-alert',
+        label: '库存预警',
+        badge: stockAlertBadge.value || undefined,
+        icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+        perm: 'products.view'
       }
     ])
   },

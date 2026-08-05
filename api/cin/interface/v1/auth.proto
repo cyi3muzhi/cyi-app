@@ -27,6 +27,7 @@ service Auth {
   }
 }
 
+// LoginRequest 登录请求
 message LoginRequest {
   // 手机号或用户名
   string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24}];
@@ -36,10 +37,13 @@ message LoginRequest {
   string client_ip = 5;
 }
 
+// LoginReply 登录响应
 message LoginReply {
+  // 登录令牌（后续请求需携带）
   string token = 1;
 }
 
+// RegisterReq 注册请求
 message RegisterReq {
   // 登录账号（注册时 = 手机号）
   string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24}];
@@ -53,6 +57,8 @@ message RegisterReq {
   string client_ip = 5;
 }
 
+// RegisterReply 注册响应
 message RegisterReply {
+  // 是否注册成功
   bool success = 1;
 }

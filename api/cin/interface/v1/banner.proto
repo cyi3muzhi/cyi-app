@@ -20,6 +20,8 @@ service Banner {
   }
 }
 
+// ListBannersReply 公开 Banner 列表响应
 message ListBannersReply {
+  // Banner 列表
   repeated api.service.user.v1.BannerItem banners = 1;
 }

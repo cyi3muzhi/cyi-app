@@ -25,33 +25,54 @@ service Category {
   }
 }
 
+// ListCategoryTreeRequest 获取分类树请求
 message ListCategoryTreeRequest {
+  // 父分类 ID（0 表示顶级分类）
   int64 parent_id = 1;
 }
 
+// ListCategoryTreeReply 获取分类树响应
 message ListCategoryTreeReply {
+  // 分类节点列表
   repeated CategoryNode items = 1;
+  // 分类总数
   int32 total = 2;
 }
 
+// GetCategoryRequest 获取分类详情请求
 message GetCategoryRequest {
+  // 分类 ID
   int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// GetCategoryReply 获取分类详情响应
 message GetCategoryReply {
+  // 分类详情节点
   CategoryNode item = 1;
 }
 
+// CategoryNode 分类节点
 message CategoryNode {
+  // 分类 ID
   int64 id = 1;
+  // 分类名称
   string name = 2;
+  // 分类标识（URL 友好的英文别名）
   string slug = 3;
+  // 分类图标
   string icon = 4;
+  // 排序权重（数值越大越靠前）
   int32 sort = 5;
+  // 是否启用
   bool status = 6;
+  // 是否在首页展示
   bool showcase = 7;
+  // 分类下商品数量
   int32 count = 8;
+  // 分类图片
   string image = 9;
+  // 父分类 ID（0 表示顶级分类）
   int64 parent_id = 10;
+  // 子分类节点列表
   repeated CategoryNode children = 11;
 }

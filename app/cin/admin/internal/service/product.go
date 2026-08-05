@@ -14,7 +14,12 @@ func (s *AdminService) ListProduct(ctx context.Context, req *adminv1.ListProduct
 	if sw := req.GetStockEq(); sw != nil {
 		stockEQ = sw.GetValue()
 	}
-	items, total, err := s.pc.ListProduct(ctx, req.Page, req.PageSize, req.Keyword, req.CategoryId, req.Status, stockEQ)
+	// 库存上限筛选（库存预警用，库存 <= value）
+	var stockLTE int32 = -1
+	if sw := req.GetStockLte(); sw != nil {
+		stockLTE = sw.GetValue()
+	}
+	items, total, err := s.pc.ListProduct(ctx, req.Page, req.PageSize, req.Keyword, req.CategoryId, req.Status, stockEQ, stockLTE)
 	if err != nil {
 		return nil, err
 	}
@@ -105,6 +110,30 @@ func (s *AdminService) BatchOperation(ctx context.Context, req *adminv1.BatchOpe
 	return &adminv1.BatchOperationReply{
 		Success:       true,
 		AffectedCount: affected,
+	}, nil
+}
+
+// UpdateStock 更新商品库存（补货/调库存）
+func (s *AdminService) UpdateStock(ctx context.Context, req *adminv1.UpdateStockRequest) (*adminv1.UpdateStockReply, error) {
+	if err := s.pc.UpdateStock(ctx, req.Id, req.Total); err != nil {
+		return nil, err
+	}
+	return &adminv1.UpdateStockReply{
+		Success: true,
+	}, nil
+}
+
+// UpdateSkuStocks 按 SKU 明细批量更新商品库存（有规格商品按 SKU 精确补货）
+func (s *AdminService) UpdateSkuStocks(ctx context.Context, req *adminv1.UpdateSkuStocksRequest) (*adminv1.UpdateSkuStocksReply, error) {
+	items := make(map[int64]int32, len(req.Items))
+	for _, it := range req.Items {
+		items[it.SkuId] = it.Total
+	}
+	if err := s.pc.UpdateSkuStocks(ctx, req.Id, items); err != nil {
+		return nil, err
+	}
+	return &adminv1.UpdateSkuStocksReply{
+		Success: true,
 	}, nil
 }
 

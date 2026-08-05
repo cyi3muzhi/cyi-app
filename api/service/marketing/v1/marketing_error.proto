@@ -5,16 +5,26 @@ package api.service.marketing.v1;
 option go_package = "cyi-app/api/service/marketing/v1;v1";
 import "errors/errors.proto";
 
+// MarketingErrorReason 营销服务错误码
 enum MarketingErrorReason {
   option (errors.default_code) = 500;
 
+  // 优惠券不存在
   COUPON_NOT_FOUND = 0 [(errors.code) = 422];
+  // 优惠券已作废
   COUPON_VOIDED = 1 [(errors.code) = 422];
+  // 优惠券类型无效
   COUPON_INVALID_TYPE = 2 [(errors.code) = 422];
+  // 优惠券面值无效
   COUPON_INVALID_VALUE = 3 [(errors.code) = 422];
+  // 优惠券有效期无效
   COUPON_DATE_INVALID = 4 [(errors.code) = 422];
+  // 优惠券状态无效
   COUPON_STATUS_INVALID = 5 [(errors.code) = 422];
+  // 创建优惠券失败
   COUPON_CREATE_FAILED = 6 [(errors.code) = 422];
+  // 更新优惠券失败
   COUPON_UPDATE_FAILED = 7 [(errors.code) = 422];
+  // 删除优惠券失败
   COUPON_DELETE_FAILED = 8 [(errors.code) = 422];
 }

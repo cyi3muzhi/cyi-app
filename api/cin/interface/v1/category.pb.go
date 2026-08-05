@@ -23,9 +23,11 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ListCategoryTreeRequest 获取分类树请求
 type ListCategoryTreeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ParentId      int64                  `protobuf:"varint,1,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 父分类 ID（0 表示顶级分类）
+	ParentId      int64 `protobuf:"varint,1,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -67,10 +69,13 @@ func (x *ListCategoryTreeRequest) GetParentId() int64 {
 	return 0
 }
 
+// ListCategoryTreeReply 获取分类树响应
 type ListCategoryTreeReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*CategoryNode        `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类节点列表
+	Items []*CategoryNode `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	// 分类总数
+	Total         int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -119,9 +124,11 @@ func (x *ListCategoryTreeReply) GetTotal() int32 {
 	return 0
 }
 
+// GetCategoryRequest 获取分类详情请求
 type GetCategoryRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类 ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -163,9 +170,11 @@ func (x *GetCategoryRequest) GetId() int64 {
 	return 0
 }
 
+// GetCategoryReply 获取分类详情响应
 type GetCategoryReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Item          *CategoryNode          `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类详情节点
+	Item          *CategoryNode `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -207,19 +216,31 @@ func (x *GetCategoryReply) GetItem() *CategoryNode {
 	return nil
 }
 
+// CategoryNode 分类节点
 type CategoryNode struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Slug          string                 `protobuf:"bytes,3,opt,name=slug,proto3" json:"slug,omitempty"`
-	Icon          string                 `protobuf:"bytes,4,opt,name=icon,proto3" json:"icon,omitempty"`
-	Sort          int32                  `protobuf:"varint,5,opt,name=sort,proto3" json:"sort,omitempty"`
-	Status        bool                   `protobuf:"varint,6,opt,name=status,proto3" json:"status,omitempty"`
-	Showcase      bool                   `protobuf:"varint,7,opt,name=showcase,proto3" json:"showcase,omitempty"`
-	Count         int32                  `protobuf:"varint,8,opt,name=count,proto3" json:"count,omitempty"`
-	Image         string                 `protobuf:"bytes,9,opt,name=image,proto3" json:"image,omitempty"`
-	ParentId      int64                  `protobuf:"varint,10,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
-	Children      []*CategoryNode        `protobuf:"bytes,11,rep,name=children,proto3" json:"children,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 分类名称
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 分类标识（URL 友好的英文别名）
+	Slug string `protobuf:"bytes,3,opt,name=slug,proto3" json:"slug,omitempty"`
+	// 分类图标
+	Icon string `protobuf:"bytes,4,opt,name=icon,proto3" json:"icon,omitempty"`
+	// 排序权重（数值越大越靠前）
+	Sort int32 `protobuf:"varint,5,opt,name=sort,proto3" json:"sort,omitempty"`
+	// 是否启用
+	Status bool `protobuf:"varint,6,opt,name=status,proto3" json:"status,omitempty"`
+	// 是否在首页展示
+	Showcase bool `protobuf:"varint,7,opt,name=showcase,proto3" json:"showcase,omitempty"`
+	// 分类下商品数量
+	Count int32 `protobuf:"varint,8,opt,name=count,proto3" json:"count,omitempty"`
+	// 分类图片
+	Image string `protobuf:"bytes,9,opt,name=image,proto3" json:"image,omitempty"`
+	// 父分类 ID（0 表示顶级分类）
+	ParentId int64 `protobuf:"varint,10,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
+	// 子分类节点列表
+	Children      []*CategoryNode `protobuf:"bytes,11,rep,name=children,proto3" json:"children,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

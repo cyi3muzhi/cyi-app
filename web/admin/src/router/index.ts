@@ -42,6 +42,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '编辑商品' }
       },
       {
+        path: 'stock-alert',
+        name: 'StockAlert',
+        component: () => import('../views/stock/StockAlertView.vue'),
+        meta: { title: '库存预警' }
+      },
+      {
         path: 'orders',
         name: 'Orders',
         component: () => import('../views/orders/OrderListView.vue'),

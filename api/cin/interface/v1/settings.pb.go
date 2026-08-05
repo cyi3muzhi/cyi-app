@@ -23,16 +23,22 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// PublicSettingsReply 公开配置响应
 type PublicSettingsReply struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	ShopName        string                 `protobuf:"bytes,1,opt,name=shop_name,json=shopName,proto3" json:"shop_name,omitempty"`
-	ShopDescription string                 `protobuf:"bytes,2,opt,name=shop_description,json=shopDescription,proto3" json:"shop_description,omitempty"`
-	ContactPhone    string                 `protobuf:"bytes,3,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`
-	ContactEmail    string                 `protobuf:"bytes,4,opt,name=contact_email,json=contactEmail,proto3" json:"contact_email,omitempty"`
-	IcpRecord       string                 `protobuf:"bytes,5,opt,name=icp_record,json=icpRecord,proto3" json:"icp_record,omitempty"`
-	HotKeywords     []string               `protobuf:"bytes,6,rep,name=hot_keywords,json=hotKeywords,proto3" json:"hot_keywords,omitempty"` // 热门搜索词（用户端搜索框联想展示）
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商城名称
+	ShopName string `protobuf:"bytes,1,opt,name=shop_name,json=shopName,proto3" json:"shop_name,omitempty"`
+	// 商城简介
+	ShopDescription string `protobuf:"bytes,2,opt,name=shop_description,json=shopDescription,proto3" json:"shop_description,omitempty"`
+	// 联系电话
+	ContactPhone string `protobuf:"bytes,3,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`
+	// 联系邮箱
+	ContactEmail string `protobuf:"bytes,4,opt,name=contact_email,json=contactEmail,proto3" json:"contact_email,omitempty"`
+	// ICP 备案号
+	IcpRecord     string   `protobuf:"bytes,5,opt,name=icp_record,json=icpRecord,proto3" json:"icp_record,omitempty"`
+	HotKeywords   []string `protobuf:"bytes,6,rep,name=hot_keywords,json=hotKeywords,proto3" json:"hot_keywords,omitempty"` // 热门搜索词（用户端搜索框联想展示）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PublicSettingsReply) Reset() {

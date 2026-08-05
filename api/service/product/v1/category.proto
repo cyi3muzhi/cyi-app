@@ -44,23 +44,31 @@ message CategoryNode {
     repeated CategoryNode children = 14;  // 子分类列表
 }
 
+// ListCategoryTreeRequest 获取分类树请求
 message ListCategoryTreeRequest {
     int64 parent_id = 1;  // 父分类 ID，不传则返回全量树
 }
 
+// ListCategoryTreeReply 分类树响应
 message ListCategoryTreeReply {
+    // 分类树节点列表
     repeated CategoryNode items = 1;
+    // 分类总数
     int32 total = 2;
 }
 
+// GetCategoryRequest 获取单个分类请求
 message GetCategoryRequest {
     int64 id = 1;  // 分类 ID
 }
 
+// GetCategoryReply 获取单个分类响应
 message GetCategoryReply {
+    // 分类详情
     CategoryNode item = 1;
 }
 
+// CreateCategoryRequest 创建分类请求
 message CreateCategoryRequest {
     string name = 1;            // 分类名称
     string slug = 2;            // 别名
@@ -75,10 +83,12 @@ message CreateCategoryRequest {
     int64 parent_id = 11;       // 父分类 ID，0 表示顶级分类
 }
 
+// CreateCategoryReply 创建分类响应
 message CreateCategoryReply {
     int64 id = 1;  // 创建后的分类 ID
 }
 
+// UpdateCategoryRequest 更新分类请求
 message UpdateCategoryRequest {
     int64 id = 1;               // 分类 ID
     string name = 2;            // 分类名称
@@ -94,41 +104,55 @@ message UpdateCategoryRequest {
     int64 parent_id = 12;       // 父分类 ID
 }
 
+// UpdateCategoryReply 更新分类响应
 message UpdateCategoryReply {
+    // 是否成功
     bool success = 1;
 }
 
+// DeleteCategoryRequest 删除分类请求
 message DeleteCategoryRequest {
     int64 id = 1;  // 分类 ID
 }
 
+// DeleteCategoryReply 删除分类响应
 message DeleteCategoryReply {
+    // 是否成功
     bool success = 1;
 }
 
+// UpdateCategorySortRequest 更新分类排序请求
 message UpdateCategorySortRequest {
     int64 id = 1;    // 分类 ID
     int32 sort = 2;  // 新的排序值
 }
 
+// UpdateCategorySortReply 更新分类排序响应
 message UpdateCategorySortReply {
+    // 是否成功
     bool success = 1;
 }
 
+// UpdateCategoryStatusRequest 更新分类状态请求
 message UpdateCategoryStatusRequest {
     int64 id = 1;      // 分类 ID
     bool status = 2;   // 新的状态
 }
 
+// UpdateCategoryStatusReply 更新分类状态响应
 message UpdateCategoryStatusReply {
+    // 是否成功
     bool success = 1;
 }
 
+// ToggleCategoryShowcaseRequest 切换分类首页展示请求
 message ToggleCategoryShowcaseRequest {
     int64 id = 1;         // 分类 ID
     bool showcase = 2;    // 是否首页展示
 }
 
+// ToggleCategoryShowcaseReply 切换分类首页展示响应
 message ToggleCategoryShowcaseReply {
+    // 是否成功
     bool success = 1;
 }

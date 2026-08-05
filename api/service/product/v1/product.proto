@@ -26,12 +26,19 @@ message SkuInfo {
 	string image = 7;       // SKU图片
 }
 
+// 商品服务
 service Product {
+	// 创建商品
 	rpc CreateProduct (CreateProductRequest) returns (CreateProductReply);
+	// 更新商品
 	rpc UpdateProduct (UpdateProductRequest) returns (UpdateProductReply);
+	// 删除商品
 	rpc DeleteProduct (DeleteProductRequest) returns (DeleteProductReply);
+	// 获取商品详情
 	rpc GetProduct (GetProductRequest) returns (GetProductReply);
+	// 商品列表
 	rpc ListProduct (ListProductRequest) returns (ListProductReply);
+	// 商品名称搜索联想
 	rpc SuggestProduct (SuggestProductRequest) returns (SuggestProductReply);
 }
 
@@ -51,6 +58,7 @@ message ProductItem {
 	repeated string images = 12; // 轮播图列表
 }
 
+// CreateProductRequest 创建商品请求
 message CreateProductRequest {
 	string name = 1;        // 商品名称
 	string description = 2;  // 商品描述
@@ -64,10 +72,12 @@ message CreateProductRequest {
 	repeated string images = 10; // 轮播图列表
 }
 
+// CreateProductReply 创建商品响应
 message CreateProductReply {
 	int64 product_id = 1;   // 创建后返回的商品ID
 }
 
+// UpdateProductRequest 更新商品请求
 message UpdateProductRequest {
 	int64 product_id = 1;   // 商品ID
 	string name = 2;        // 商品名称
@@ -83,26 +93,32 @@ message UpdateProductRequest {
 	repeated string images = 12; // 轮播图列表
 }
 
+// UpdateProductReply 更新商品响应
 message UpdateProductReply {
 	bool success = 1;       // 是否成功
 }
 
+// DeleteProductRequest 删除商品请求
 message DeleteProductRequest {
 	int64 product_id = 1;   // 商品ID
 }
 
+// DeleteProductReply 删除商品响应
 message DeleteProductReply {
 	bool success = 1;       // 是否成功
 }
 
+// GetProductRequest 获取商品详情请求
 message GetProductRequest {
 	int64 product_id = 1;   // 商品ID
 }
 
+// GetProductReply 获取商品详情响应
 message GetProductReply {
 	ProductItem product = 1; // 商品详情（含 specs 和 skus）
 }
 
+// ListProductRequest 商品列表请求
 message ListProductRequest {
 	int32 page = 1;         // 页码（从1开始）
 	int32 page_size = 2;    // 每页条数
@@ -111,8 +127,10 @@ message ListProductRequest {
 	string status = 5;      // 状态筛选
 	int64 category_id = 6;   // 分类ID筛选
 	google.protobuf.Int32Value stock_eq = 7; // 按可用库存数量筛选（如 {value: 0}=缺货，不传=不筛选）
+	google.protobuf.Int32Value stock_lte = 8; // 按可用库存上限筛选（库存 <= value，用于库存预警，不传=不筛选）
 }
 
+// ListProductReply 商品列表响应
 message ListProductReply {
 	repeated ProductItem items = 1; // 商品列表
 	int32 total = 2;                // 总条数

@@ -22,18 +22,28 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// MarketingErrorReason 营销服务错误码
 type MarketingErrorReason int32
 
 const (
-	MarketingErrorReason_COUPON_NOT_FOUND      MarketingErrorReason = 0
-	MarketingErrorReason_COUPON_VOIDED         MarketingErrorReason = 1
-	MarketingErrorReason_COUPON_INVALID_TYPE   MarketingErrorReason = 2
-	MarketingErrorReason_COUPON_INVALID_VALUE  MarketingErrorReason = 3
-	MarketingErrorReason_COUPON_DATE_INVALID   MarketingErrorReason = 4
+	// 优惠券不存在
+	MarketingErrorReason_COUPON_NOT_FOUND MarketingErrorReason = 0
+	// 优惠券已作废
+	MarketingErrorReason_COUPON_VOIDED MarketingErrorReason = 1
+	// 优惠券类型无效
+	MarketingErrorReason_COUPON_INVALID_TYPE MarketingErrorReason = 2
+	// 优惠券面值无效
+	MarketingErrorReason_COUPON_INVALID_VALUE MarketingErrorReason = 3
+	// 优惠券有效期无效
+	MarketingErrorReason_COUPON_DATE_INVALID MarketingErrorReason = 4
+	// 优惠券状态无效
 	MarketingErrorReason_COUPON_STATUS_INVALID MarketingErrorReason = 5
-	MarketingErrorReason_COUPON_CREATE_FAILED  MarketingErrorReason = 6
-	MarketingErrorReason_COUPON_UPDATE_FAILED  MarketingErrorReason = 7
-	MarketingErrorReason_COUPON_DELETE_FAILED  MarketingErrorReason = 8
+	// 创建优惠券失败
+	MarketingErrorReason_COUPON_CREATE_FAILED MarketingErrorReason = 6
+	// 更新优惠券失败
+	MarketingErrorReason_COUPON_UPDATE_FAILED MarketingErrorReason = 7
+	// 删除优惠券失败
+	MarketingErrorReason_COUPON_DELETE_FAILED MarketingErrorReason = 8
 )
 
 // Enum value maps for MarketingErrorReason.

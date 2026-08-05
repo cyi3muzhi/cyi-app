@@ -13,17 +13,26 @@ enum CinInterfaceErrorReason {
   option (errors.default_code) = 400;
 
   // 用户模块 0-99
+  // 用户不存在
   USER_NOT_EXIST = 0 [(errors.code) = 422];
+  // 用户未找到
   USER_NOT_FOUND = 3 [(errors.code) = 422];
+  // 密码错误
   PASSWORD_ERROR = 4 [(errors.code) = 422];
+  // 用户信息更新失败
   USER_UPDATE_FAILED = 5 [(errors.code) = 422];
 
   // 订单模块 100-199
+  // 订单不存在
   ORDER_ID_NOT_EXIST = 6 [(errors.code) = 422];
+  // 订单已支付
   ORDER_ALREADY_PAID = 10 [(errors.code) = 422];
 
   // 商品模块 200-299
+  // 商品不可用（已下架等）
   PRODUCT_NOT_AVAILABLE = 7 [(errors.code) = 422];
+  // 库存不足
   INSUFFICIENT_STOCK = 8 [(errors.code) = 422];
+  // 库存操作失败
   STOCK_OPERATION_FAILED = 9 [(errors.code) = 422];
 }

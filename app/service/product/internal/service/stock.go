@@ -40,6 +40,20 @@ func (s *StockService) UpdateStock(ctx context.Context, req *v1.UpdateStockReque
 	}, nil
 }
 
+// UpdateSkuStocks 按 SKU 批量设置库存（管理端按 SKU 明细补货）
+func (s *StockService) UpdateSkuStocks(ctx context.Context, req *v1.UpdateSkuStocksRequest) (*v1.UpdateSkuStocksReply, error) {
+	items := make(map[int64]int32, len(req.GetItems()))
+	for _, it := range req.GetItems() {
+		items[it.GetSkuId()] = it.GetTotal()
+	}
+	if err := s.uc.UpdateSkuStocks(ctx, req.GetProductId(), items); err != nil {
+		return nil, err
+	}
+	return &v1.UpdateSkuStocksReply{
+		Success: true,
+	}, nil
+}
+
 func (s *StockService) ReserveStock(ctx context.Context, req *v1.ReserveStockRequest) (*v1.ReserveStockReply, error) {
 	newVersion, err := s.uc.ReserveStock(ctx, req.GetSkuId(), req.Count, req.Version)
 	if err != nil {

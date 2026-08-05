@@ -38,13 +38,22 @@ const (
 // CouponServiceClient is the client API for CouponService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// 优惠券服务
 type CouponServiceClient interface {
+	// 创建优惠券
 	CreateCoupon(ctx context.Context, in *CreateCouponRequest, opts ...grpc.CallOption) (*CreateCouponReply, error)
+	// 更新优惠券
 	UpdateCoupon(ctx context.Context, in *UpdateCouponRequest, opts ...grpc.CallOption) (*UpdateCouponReply, error)
+	// 删除优惠券
 	DeleteCoupon(ctx context.Context, in *DeleteCouponRequest, opts ...grpc.CallOption) (*DeleteCouponReply, error)
+	// 获取优惠券详情
 	GetCoupon(ctx context.Context, in *GetCouponRequest, opts ...grpc.CallOption) (*GetCouponReply, error)
+	// 优惠券列表
 	ListCoupon(ctx context.Context, in *ListCouponRequest, opts ...grpc.CallOption) (*ListCouponReply, error)
+	// 启停用优惠券
 	ToggleCouponStatus(ctx context.Context, in *ToggleCouponStatusRequest, opts ...grpc.CallOption) (*ToggleCouponStatusReply, error)
+	// 优惠券统计
 	CouponStats(ctx context.Context, in *CouponStatsRequest, opts ...grpc.CallOption) (*CouponStatsReply, error)
 	// 用户领券
 	ClaimCoupon(ctx context.Context, in *ClaimCouponRequest, opts ...grpc.CallOption) (*ClaimCouponReply, error)
@@ -213,13 +222,22 @@ func (c *couponServiceClient) ListDistRecords(ctx context.Context, in *ListDistR
 // CouponServiceServer is the server API for CouponService service.
 // All implementations must embed UnimplementedCouponServiceServer
 // for forward compatibility.
+//
+// 优惠券服务
 type CouponServiceServer interface {
+	// 创建优惠券
 	CreateCoupon(context.Context, *CreateCouponRequest) (*CreateCouponReply, error)
+	// 更新优惠券
 	UpdateCoupon(context.Context, *UpdateCouponRequest) (*UpdateCouponReply, error)
+	// 删除优惠券
 	DeleteCoupon(context.Context, *DeleteCouponRequest) (*DeleteCouponReply, error)
+	// 获取优惠券详情
 	GetCoupon(context.Context, *GetCouponRequest) (*GetCouponReply, error)
+	// 优惠券列表
 	ListCoupon(context.Context, *ListCouponRequest) (*ListCouponReply, error)
+	// 启停用优惠券
 	ToggleCouponStatus(context.Context, *ToggleCouponStatusRequest) (*ToggleCouponStatusReply, error)
+	// 优惠券统计
 	CouponStats(context.Context, *CouponStatsRequest) (*CouponStatsReply, error)
 	// 用户领券
 	ClaimCoupon(context.Context, *ClaimCouponRequest) (*ClaimCouponReply, error)

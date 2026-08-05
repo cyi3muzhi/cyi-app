@@ -43,6 +43,7 @@ export interface ProductListParams {
   category_id?: number
   status?: string
   stock_eq?: number  // 按库存数量筛选（0=缺货）
+  stock_lte?: number // 按库存上限筛选（库存 <= value，库存预警用）
 }
 
 /** 规格组提交格式 */

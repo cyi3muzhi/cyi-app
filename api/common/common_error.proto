@@ -7,6 +7,7 @@ option java_multiple_files = true;
 option java_package = "api.common";
 import "errors/errors.proto";
 
+// CommonErrorReason 通用错误码定义
 enum CommonErrorReason {
 	// 设置缺省错误码
 	option (errors.default_code) = 500;

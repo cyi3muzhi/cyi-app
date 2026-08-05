@@ -6,11 +6,17 @@ option go_package = "cyi-app/api/service/order/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.service.order.v1";
 
+// Order 订单服务
 service Order {
+	// 创建订单
 	rpc CreateOrder (CreateOrderRequest) returns (CreateOrderReply);
+	// 更新订单
 	rpc UpdateOrder (UpdateOrderRequest) returns (UpdateOrderReply);
+	// 删除订单
 	rpc DeleteOrder (DeleteOrderRequest) returns (DeleteOrderReply);
+	// 获取订单详情
 	rpc GetOrder (GetOrderRequest) returns (GetOrderReply);
+	// 订单列表
 	rpc ListOrder (ListOrderRequest) returns (ListOrderReply);
 	// 支付订单
 	rpc PayOrder (PayOrderRequest) returns (PayOrderReply);
@@ -40,7 +46,9 @@ service Order {
 	rpc GetLogistics (GetLogisticsRequest) returns (GetLogisticsReply);
 }
 
+// CreateOrderRequest 创建订单请求
 message CreateOrderRequest {
+	// 用户ID
 	int64 user_id = 1;
 	int64 product_id = 2; // 立即购买：单个商品ID（与 items 二选一）
 	int32 count = 3; // 立即购买：数量
@@ -55,29 +63,43 @@ message CreateOrderRequest {
 	int64 freight = 12; // 运费（单位：分）
 }
 
+// CreateOrderReply 创建订单响应
 message CreateOrderReply {
+	// 订单ID
 	int64 order_id = 1;
 }
 
+// UpdateOrderRequest 更新订单请求
 message UpdateOrderRequest {}
 
+// UpdateOrderReply 更新订单响应
 message UpdateOrderReply {}
 
+// DeleteOrderRequest 删除订单请求
 message DeleteOrderRequest {}
 
+// DeleteOrderReply 删除订单响应
 message DeleteOrderReply {}
 
+// GetOrderRequest 获取订单详情请求
 message GetOrderRequest {
+	// 订单ID
 	int64 order_id = 1;
 }
 
+// GetOrderReply 获取订单详情响应
 message GetOrderReply {
+	// 订单ID
 	int64 order_id = 1;
+	// 用户ID
 	int64 user_id = 2;
+	// 订单号
 	string order_no = 3;
+	// 订单状态
 	int32 status = 4;
 	int64 total_price = 5; // 订单总金额
 	int64 pay_amount = 6; // 支付金额
+	// 商品明细列表
 	repeated OrderItemProto items = 7;
 	int64 freight = 8; // 运费（单位：分）
 	int64 discount_amount = 9; // 优惠金额（单位：分）
@@ -89,8 +111,11 @@ message GetOrderReply {
 	string address = 15; // 完整收货地址
 }
 
+// OrderItemProto 订单商品项
 message OrderItemProto {
+	// 商品ID
 	int64 product_id = 1;
+	// 商品名称（下单时快照）
 	string product_name = 2;
 	int64 price = 3; // 单价
 	int32 quantity = 4; // 数量
@@ -99,6 +124,7 @@ message OrderItemProto {
 	string image = 7; // 商品图片
 }
 
+// ListOrderRequest 订单列表请求
 message ListOrderRequest {
 	int32 page = 1;
 	int32 page_size = 2;
@@ -109,29 +135,46 @@ message ListOrderRequest {
 	int64 user_id = 7; // 按用户过滤（>0 时生效，个人中心使用）
 }
 
+// ListOrderReply 订单列表响应
 message ListOrderReply {
+	// 订单列表
 	repeated ListOrderItem items = 1;
+	// 总数
 	int32 total = 2;
 }
 
+// ListOrderItem 订单列表项
 message ListOrderItem {
+	// 订单ID
 	int64 order_id = 1;
+	// 订单号
 	string order_no = 2;
+	// 用户ID
 	int64 user_id = 3;
+	// 订单状态
 	int32 status = 4;
+	// 订单总金额（单位：分）
 	int64 total_price = 5;
+	// 支付金额（单位：分）
 	int64 pay_amount = 6;
+	// 运费（单位：分）
 	int64 freight = 7;
+	// 优惠金额（单位：分）
 	int64 discount_amount = 8;
+	// 下单时间（Unix 时间戳秒）
 	int64 created_at = 9;
 }
 
 
+// PayOrderRequest 支付订单请求
 message PayOrderRequest {
+	// 订单ID
 	int64 order_id = 1;
+	// 用户ID（校验订单归属）
 	int64 user_id = 2;
 }
 
+// PayOrderReply 支付订单响应
 message PayOrderReply {}
 
 // 订单统计请求
@@ -174,6 +217,7 @@ message BatchGetOrderReply {
 	repeated GetOrderReply orders = 1;
 }
 
+// OrderStatus 订单状态枚举
 enum OrderStatus {
     OrderStatusUnspecified = 0; // 未指定
     WaitPay = 1; // 待支付
@@ -239,8 +283,10 @@ message ListOverdueWaitPayOrdersRequest {
 	int64 timeout_seconds = 3; // 超时阈值（秒）：创建时间早于 now-timeout_seconds 且仍为待付款的订单
 }
 
+// ListOverdueWaitPayOrdersReply 超时待付款订单查询响应
 message ListOverdueWaitPayOrdersReply {
 	repeated ListOrderItem items = 1; // 复用列表项结构（含 order_id / created_at / user_id）
+	// 总数
 	int32 total = 2;
 }
 

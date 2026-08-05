@@ -29,8 +29,11 @@ service AdminLogs {
   }
 }
 
+// ListOperationLogsRequest 分页查询操作日志请求
 message ListOperationLogsRequest {
+  // 页码
   int32 page = 1;
+  // 每页数量
   int32 page_size = 2;
   string start_date = 3; // 开始日期（2006-01-02）
   string end_date = 4;   // 结束日期（2006-01-02）
@@ -39,12 +42,17 @@ message ListOperationLogsRequest {
   string keyword = 7;    // 关键词（匹配操作内容）
 }
 
+// ListOperationLogsReply 分页查询操作日志响应
 message ListOperationLogsReply {
+  // 操作日志列表
   repeated AdminLogItem items = 1;
+  // 总记录数
   int32 total = 2;
 }
 
+// AdminLogItem 操作日志条目
 message AdminLogItem {
+  // 日志 ID
   int64 id = 1;
   string operator = 2;    // 操作人姓名
   string role = 3;        // 角色标识（如 super_admin）
@@ -60,8 +68,10 @@ message AdminLogItem {
   string avatar = 13;     // 操作人头像（公开 URL）
 }
 
+// CountOperationLogsRequest 操作日志统计请求
 message CountOperationLogsRequest {}
 
+// CountOperationLogsReply 操作日志统计响应
 message CountOperationLogsReply {
   int64 today = 1;  // 今日操作数
   int64 week = 2;   // 本周操作数
@@ -69,8 +79,10 @@ message CountOperationLogsReply {
   int64 total = 4;  // 累计操作数
 }
 
+// ListOperationLogOperatorsRequest 操作人列表请求
 message ListOperationLogOperatorsRequest {}
 
+// ListOperationLogOperatorsReply 操作人列表响应
 message ListOperationLogOperatorsReply {
   repeated string operators = 1; // 操作人姓名列表（去重）
 }

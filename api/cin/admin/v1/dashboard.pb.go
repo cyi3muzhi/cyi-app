@@ -22,6 +22,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// GetDashboardStatsRequest 获取仪表盘统计数据请求
 type GetDashboardStatsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -58,16 +59,25 @@ func (*GetDashboardStatsRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{0}
 }
 
+// GetDashboardStatsReply 获取仪表盘统计数据响应
 type GetDashboardStatsReply struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	TodayOrders    int64                  `protobuf:"varint,1,opt,name=today_orders,json=todayOrders,proto3" json:"today_orders,omitempty"`
-	TodayRevenue   string                 `protobuf:"bytes,2,opt,name=today_revenue,json=todayRevenue,proto3" json:"today_revenue,omitempty"`
-	TotalUsers     int64                  `protobuf:"varint,3,opt,name=total_users,json=totalUsers,proto3" json:"total_users,omitempty"`
-	TotalProducts  int64                  `protobuf:"varint,4,opt,name=total_products,json=totalProducts,proto3" json:"total_products,omitempty"`
-	OrdersGrowth   float64                `protobuf:"fixed64,5,opt,name=orders_growth,json=ordersGrowth,proto3" json:"orders_growth,omitempty"`
-	RevenueGrowth  float64                `protobuf:"fixed64,6,opt,name=revenue_growth,json=revenueGrowth,proto3" json:"revenue_growth,omitempty"`
-	UsersGrowth    float64                `protobuf:"fixed64,7,opt,name=users_growth,json=usersGrowth,proto3" json:"users_growth,omitempty"`
-	ProductsGrowth float64                `protobuf:"fixed64,8,opt,name=products_growth,json=productsGrowth,proto3" json:"products_growth,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 今日订单数
+	TodayOrders int64 `protobuf:"varint,1,opt,name=today_orders,json=todayOrders,proto3" json:"today_orders,omitempty"`
+	// 今日营收（字符串，避免精度问题）
+	TodayRevenue string `protobuf:"bytes,2,opt,name=today_revenue,json=todayRevenue,proto3" json:"today_revenue,omitempty"`
+	// 用户总数
+	TotalUsers int64 `protobuf:"varint,3,opt,name=total_users,json=totalUsers,proto3" json:"total_users,omitempty"`
+	// 商品总数
+	TotalProducts int64 `protobuf:"varint,4,opt,name=total_products,json=totalProducts,proto3" json:"total_products,omitempty"`
+	// 订单数增长率
+	OrdersGrowth float64 `protobuf:"fixed64,5,opt,name=orders_growth,json=ordersGrowth,proto3" json:"orders_growth,omitempty"`
+	// 营收增长率
+	RevenueGrowth float64 `protobuf:"fixed64,6,opt,name=revenue_growth,json=revenueGrowth,proto3" json:"revenue_growth,omitempty"`
+	// 用户增长率
+	UsersGrowth float64 `protobuf:"fixed64,7,opt,name=users_growth,json=usersGrowth,proto3" json:"users_growth,omitempty"`
+	// 商品增长率
+	ProductsGrowth float64 `protobuf:"fixed64,8,opt,name=products_growth,json=productsGrowth,proto3" json:"products_growth,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -158,6 +168,7 @@ func (x *GetDashboardStatsReply) GetProductsGrowth() float64 {
 	return 0
 }
 
+// GetOrderTrendRequest 获取近14日订单趋势请求
 type GetOrderTrendRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -194,9 +205,11 @@ func (*GetOrderTrendRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{2}
 }
 
+// GetOrderTrendReply 获取近14日订单趋势响应
 type GetOrderTrendReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*TrendItem           `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 订单趋势数据列表
+	Items         []*TrendItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -238,10 +251,13 @@ func (x *GetOrderTrendReply) GetItems() []*TrendItem {
 	return nil
 }
 
+// TrendItem 订单趋势数据项
 type TrendItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Date          string                 `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
-	Value         int32                  `protobuf:"varint,2,opt,name=value,proto3" json:"value,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 日期
+	Date string `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
+	// 订单数量
+	Value         int32 `protobuf:"varint,2,opt,name=value,proto3" json:"value,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -290,6 +306,7 @@ func (x *TrendItem) GetValue() int32 {
 	return 0
 }
 
+// GetRevenueCategoriesRequest 获取营收分类占比请求
 type GetRevenueCategoriesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -326,9 +343,11 @@ func (*GetRevenueCategoriesRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_dashboard_proto_rawDescGZIP(), []int{5}
 }
 
+// GetRevenueCategoriesReply 获取营收分类占比响应
 type GetRevenueCategoriesReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Categories    []*RevenueCategory     `protobuf:"bytes,1,rep,name=categories,proto3" json:"categories,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 营收分类占比列表
+	Categories    []*RevenueCategory `protobuf:"bytes,1,rep,name=categories,proto3" json:"categories,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -370,11 +389,15 @@ func (x *GetRevenueCategoriesReply) GetCategories() []*RevenueCategory {
 	return nil
 }
 
+// RevenueCategory 营收分类占比
 type RevenueCategory struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Percentage    float64                `protobuf:"fixed64,2,opt,name=percentage,proto3" json:"percentage,omitempty"`
-	Color         string                 `protobuf:"bytes,3,opt,name=color,proto3" json:"color,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类名称
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// 占比（百分比）
+	Percentage float64 `protobuf:"fixed64,2,opt,name=percentage,proto3" json:"percentage,omitempty"`
+	// 展示颜色
+	Color         string `protobuf:"bytes,3,opt,name=color,proto3" json:"color,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

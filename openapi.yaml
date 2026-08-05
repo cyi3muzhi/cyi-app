@@ -450,6 +450,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 分类 ID
                   required: true
                   schema:
                     type: string
@@ -468,6 +469,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 分类 ID
                   required: true
                   schema:
                     type: string
@@ -492,6 +494,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 分类 ID
                   required: true
                   schema:
                     type: string
@@ -511,6 +514,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 分类 ID
                   required: true
                   schema:
                     type: string
@@ -536,6 +540,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 分类 ID
                   required: true
                   schema:
                     type: string
@@ -561,6 +566,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 分类 ID
                   required: true
                   schema:
                     type: string
@@ -657,6 +663,7 @@ paths:
             parameters:
                 - name: couponId
                   in: path
+                  description: 优惠券 ID
                   required: true
                   schema:
                     type: string
@@ -811,11 +818,13 @@ paths:
             parameters:
                 - name: page
                   in: query
+                  description: 页码
                   schema:
                     type: integer
                     format: int32
                 - name: pageSize
                   in: query
+                  description: 每页数量
                   schema:
                     type: integer
                     format: int32
@@ -881,28 +890,34 @@ paths:
             parameters:
                 - name: page
                   in: query
+                  description: 页码
                   schema:
                     type: integer
                     format: int32
                 - name: pageSize
                   in: query
+                  description: 每页数量
                   schema:
                     type: integer
                     format: int32
                 - name: status
                   in: query
+                  description: 订单状态筛选
                   schema:
                     type: string
                 - name: keyword
                   in: query
+                  description: 搜索关键词（订单号/用户）
                   schema:
                     type: string
                 - name: dateFrom
                   in: query
+                  description: 开始日期（按下单时间筛选）
                   schema:
                     type: string
                 - name: dateTo
                   in: query
+                  description: 结束日期（按下单时间筛选）
                   schema:
                     type: string
             responses:
@@ -923,14 +938,17 @@ paths:
             parameters:
                 - name: status
                   in: query
+                  description: 订单状态筛选
                   schema:
                     type: string
                 - name: dateFrom
                   in: query
+                  description: 开始日期
                   schema:
                     type: string
                 - name: dateTo
                   in: query
+                  description: 结束日期
                   schema:
                     type: string
             responses:
@@ -951,6 +969,7 @@ paths:
             parameters:
                 - name: taskId
                   in: path
+                  description: 导出任务ID
                   required: true
                   schema:
                     type: string
@@ -985,6 +1004,7 @@ paths:
             parameters:
                 - name: orderId
                   in: path
+                  description: 订单ID
                   required: true
                   schema:
                     type: string
@@ -1004,6 +1024,7 @@ paths:
             parameters:
                 - name: orderId
                   in: path
+                  description: 订单ID
                   required: true
                   schema:
                     type: string
@@ -1029,6 +1050,7 @@ paths:
             parameters:
                 - name: orderId
                   in: path
+                  description: 订单ID
                   required: true
                   schema:
                     type: string
@@ -1048,6 +1070,7 @@ paths:
             parameters:
                 - name: orderId
                   in: path
+                  description: 订单ID
                   required: true
                   schema:
                     type: string
@@ -1117,31 +1140,42 @@ paths:
             parameters:
                 - name: page
                   in: query
+                  description: 页码
                   schema:
                     type: integer
                     format: int32
                 - name: pageSize
                   in: query
+                  description: 每页数量
                   schema:
                     type: integer
                     format: int32
                 - name: keyword
                   in: query
+                  description: 搜索关键词
                   schema:
                     type: string
                 - name: category
                   in: query
+                  description: 商品分类（已废弃，改用 category_id）
                   schema:
                     type: string
                 - name: status
                   in: query
+                  description: 商品状态筛选
                   schema:
                     type: string
                 - name: categoryId
                   in: query
+                  description: 商品分类ID
                   schema:
                     type: string
                 - name: stockEq
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: stockLte
                   in: query
                   schema:
                     type: integer
@@ -1199,6 +1233,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 商品ID
                   required: true
                   schema:
                     type: string
@@ -1217,6 +1252,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 商品ID
                   required: true
                   schema:
                     type: string
@@ -1241,6 +1277,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 商品ID
                   required: true
                   schema:
                     type: string
@@ -1251,6 +1288,58 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.DeleteProductReply'
+    /admin/v1/products/{id}/sku-stock:
+        put:
+            tags:
+                - AdminProduct
+            description: 按 SKU 明细批量更新商品库存（有规格商品按 SKU 精确补货）
+            operationId: AdminProduct_UpdateSkuStocks
+            parameters:
+                - name: id
+                  in: path
+                  description: 商品ID
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.UpdateSkuStocksRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.UpdateSkuStocksReply'
+    /admin/v1/products/{id}/stock:
+        put:
+            tags:
+                - AdminProduct
+            description: 更新商品库存（补货/调库存）
+            operationId: AdminProduct_UpdateStock
+            parameters:
+                - name: id
+                  in: path
+                  description: 商品ID
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.UpdateStockRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.UpdateStockReply'
     /admin/v1/refunds:
         get:
             tags:
@@ -1260,11 +1349,13 @@ paths:
             parameters:
                 - name: page
                   in: query
+                  description: 页码
                   schema:
                     type: integer
                     format: int32
                 - name: pageSize
                   in: query
+                  description: 每页数量
                   schema:
                     type: integer
                     format: int32
@@ -1292,6 +1383,7 @@ paths:
             parameters:
                 - name: refundId
                   in: path
+                  description: 退款单ID
                   required: true
                   schema:
                     type: string
@@ -1361,6 +1453,7 @@ paths:
             parameters:
                 - name: role
                   in: path
+                  description: 角色标识
                   required: true
                   schema:
                     type: string
@@ -1379,6 +1472,7 @@ paths:
             parameters:
                 - name: role
                   in: path
+                  description: 角色标识
                   required: true
                   schema:
                     type: string
@@ -1404,6 +1498,7 @@ paths:
             parameters:
                 - name: slug
                   in: path
+                  description: 角色标识
                   required: true
                   schema:
                     type: string
@@ -1428,6 +1523,7 @@ paths:
             parameters:
                 - name: slug
                   in: path
+                  description: 角色标识
                   required: true
                   schema:
                     type: string
@@ -1478,24 +1574,29 @@ paths:
             parameters:
                 - name: page
                   in: query
+                  description: 页码
                   schema:
                     type: integer
                     format: int32
                 - name: pageSize
                   in: query
+                  description: 每页数量
                   schema:
                     type: integer
                     format: int32
                 - name: keyword
                   in: query
+                  description: 搜索关键词
                   schema:
                     type: string
                 - name: status
                   in: query
+                  description: 状态筛选
                   schema:
                     type: string
                 - name: role
                   in: query
+                  description: 角色筛选
                   schema:
                     type: string
             responses:
@@ -1532,6 +1633,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 员工ID
                   required: true
                   schema:
                     type: string
@@ -1557,6 +1659,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 员工ID
                   required: true
                   schema:
                     type: string
@@ -1614,20 +1717,24 @@ paths:
             parameters:
                 - name: page
                   in: query
+                  description: 页码
                   schema:
                     type: integer
                     format: int32
                 - name: pageSize
                   in: query
+                  description: 每页数量
                   schema:
                     type: integer
                     format: int32
                 - name: keyword
                   in: query
+                  description: 搜索关键词
                   schema:
                     type: string
                 - name: level
                   in: query
+                  description: 会员等级筛选
                   schema:
                     type: string
                 - name: status
@@ -1669,6 +1776,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 用户ID
                   required: true
                   schema:
                     type: string
@@ -1687,6 +1795,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 用户ID
                   required: true
                   schema:
                     type: string
@@ -1711,6 +1820,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 用户ID
                   required: true
                   schema:
                     type: string
@@ -1730,6 +1840,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 用户ID
                   required: true
                   schema:
                     type: string
@@ -1774,11 +1885,13 @@ paths:
             parameters:
                 - name: page
                   in: query
+                  description: 页码
                   schema:
                     type: integer
                     format: int32
                 - name: pageSize
                   in: query
+                  description: 每页数量
                   schema:
                     type: integer
                     format: int32
@@ -1803,11 +1916,13 @@ paths:
                     format: int32
                 - name: page
                   in: query
+                  description: 页码
                   schema:
                     type: integer
                     format: int32
                 - name: pageSize
                   in: query
+                  description: 每页数量
                   schema:
                     type: integer
                     format: int32
@@ -1827,6 +1942,7 @@ paths:
             parameters:
                 - name: amount
                   in: query
+                  description: 订单商品金额（分）
                   schema:
                     type: string
             responses:
@@ -1845,6 +1961,7 @@ paths:
             parameters:
                 - name: couponId
                   in: path
+                  description: 优惠券 ID
                   required: true
                   schema:
                     type: string
@@ -1953,6 +2070,7 @@ paths:
             parameters:
                 - name: productId
                   in: path
+                  description: 商品 ID
                   required: true
                   schema:
                     type: string
@@ -1995,6 +2113,7 @@ paths:
             parameters:
                 - name: parentId
                   in: query
+                  description: 父分类 ID（0 表示顶级分类）
                   schema:
                     type: string
             responses:
@@ -2013,6 +2132,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 分类 ID
                   required: true
                   schema:
                     type: string
@@ -2089,20 +2209,24 @@ paths:
             parameters:
                 - name: page
                   in: query
+                  description: 页码
                   schema:
                     type: integer
                     format: int32
                 - name: pageSize
                   in: query
+                  description: 每页数量
                   schema:
                     type: integer
                     format: int32
                 - name: status
                   in: query
+                  description: 订单状态筛选
                   schema:
                     type: string
                 - name: keyword
                   in: query
+                  description: 搜索关键词（订单号/商品名等）
                   schema:
                     type: string
             responses:
@@ -2182,11 +2306,13 @@ paths:
             parameters:
                 - name: page
                   in: query
+                  description: 页码
                   schema:
                     type: integer
                     format: int32
                 - name: pageSize
                   in: query
+                  description: 每页数量
                   schema:
                     type: integer
                     format: int32
@@ -2210,6 +2336,7 @@ paths:
             parameters:
                 - name: orderId
                   in: path
+                  description: 订单 ID
                   required: true
                   schema:
                     type: string
@@ -2229,6 +2356,7 @@ paths:
             parameters:
                 - name: orderId
                   in: path
+                  description: 订单 ID
                   required: true
                   schema:
                     type: string
@@ -2267,20 +2395,24 @@ paths:
             parameters:
                 - name: page
                   in: query
+                  description: 页码
                   schema:
                     type: integer
                     format: int32
                 - name: pageSize
                   in: query
+                  description: 每页数量
                   schema:
                     type: integer
                     format: int32
                 - name: keyword
                   in: query
+                  description: 搜索关键词
                   schema:
                     type: string
                 - name: category
                   in: query
+                  description: 分类筛选（分类名或标识）
                   schema:
                     type: string
             responses:
@@ -2363,6 +2495,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 商品 ID
                   required: true
                   schema:
                     type: string
@@ -2459,6 +2592,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 地址 ID
                   required: true
                   schema:
                     type: string
@@ -2478,6 +2612,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 地址 ID
                   required: true
                   schema:
                     type: string
@@ -2624,6 +2759,7 @@ paths:
             parameters:
                 - name: id
                   in: path
+                  description: 用户 ID
                   required: true
                   schema:
                     type: string
@@ -2641,28 +2777,40 @@ components:
             properties:
                 id:
                     type: string
+                    description: 管理员 ID
                 name:
                     type: string
+                    description: 姓名
                 username:
                     type: string
+                    description: 账号
                 role:
                     type: string
+                    description: 角色
                 email:
                     type: string
+                    description: 邮箱
                 phone:
                     type: string
+                    description: 手机号
                 department:
                     type: string
+                    description: 部门
                 position:
                     type: string
+                    description: 职位
                 bio:
                     type: string
+                    description: 个人简介
                 avatar:
                     type: string
+                    description: 头像 URL
                 createdAt:
                     type: string
+                    description: 创建时间
                 lastLogin:
                     type: string
+                    description: 最后登录时间
             description: 管理员信息
         api.cin.admin.v1.AdminKnowledgeChunk:
             type: object
@@ -2708,6 +2856,7 @@ components:
             properties:
                 id:
                     type: string
+                    description: 日志 ID
                 operator:
                     type: string
                 role:
@@ -2733,17 +2882,20 @@ components:
                     type: string
                 avatar:
                     type: string
+            description: AdminLogItem 操作日志条目
         api.cin.admin.v1.AuditRefundReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
             description: 审核退款响应
         api.cin.admin.v1.AuditRefundRequest:
             type: object
             properties:
                 refundId:
                     type: string
+                    description: 退款单ID
                 approve:
                     type: boolean
                 rejectReason:
@@ -2754,126 +2906,172 @@ components:
             properties:
                 title:
                     type: string
+                    description: 标题
                 subtitle:
                     type: string
+                    description: 副标题
                 btnText:
                     type: string
+                    description: 按钮文案
+            description: BannerCopyOption Banner 文案选项
         api.cin.admin.v1.BatchCategoryOperationReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否操作成功
                 affectedCount:
                     type: integer
+                    description: 受影响数量
                     format: int32
+            description: BatchCategoryOperationReply 批量操作分类响应
         api.cin.admin.v1.BatchCategoryOperationRequest:
             type: object
             properties:
                 action:
                     type: string
+                    description: 批量操作类型（启用/禁用/删除）
                 ids:
                     type: array
                     items:
                         type: string
+                    description: 分类 ID 列表
+            description: BatchCategoryOperationRequest 批量操作分类请求
         api.cin.admin.v1.BatchOperationReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
                 affectedCount:
                     type: integer
+                    description: 受影响的数量
                     format: int32
+            description: BatchOperationReply 批量操作响应
         api.cin.admin.v1.BatchOperationRequest:
             type: object
             properties:
                 action:
                     type: string
+                    description: 批量操作类型（上架/下架/删除）
                 ids:
                     type: array
                     items:
                         type: string
+                    description: 商品ID列表
+            description: BatchOperationRequest 批量操作请求
         api.cin.admin.v1.CancelOrderReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: CancelOrderReply 取消订单响应
         api.cin.admin.v1.CancelOrderRequest:
             type: object
             properties:
                 orderId:
                     type: string
+                    description: 订单ID
                 reason:
                     type: string
+                    description: 取消原因
+            description: CancelOrderRequest 取消订单请求
         api.cin.admin.v1.CategoryTreeItem:
             type: object
             properties:
                 id:
                     type: string
+                    description: 分类 ID
                 name:
                     type: string
+                    description: 分类名称
                 slug:
                     type: string
+                    description: 分类别名（URL 友好标识）
                 icon:
                     type: string
+                    description: 图标
                 sort:
                     type: integer
+                    description: 排序值
                     format: int32
                 status:
                     type: boolean
+                    description: 状态（是否启用）
                 showcase:
                     type: boolean
+                    description: 是否首页展示
                 count:
                     type: integer
+                    description: 子分类数量
                     format: int32
                 image:
                     type: string
+                    description: 分类图片
                 seoTitle:
                     type: string
+                    description: SEO 标题
                 seoKeywords:
                     type: string
+                    description: SEO 关键词
                 seoDesc:
                     type: string
+                    description: SEO 描述
                 parentId:
                     type: string
+                    description: 父分类 ID
                 createdAt:
                     type: string
+                    description: 创建时间（Unix 秒）
                 children:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.CategoryTreeItem'
+                    description: 子分类列表
             description: 分类节点（返回前端使用）
         api.cin.admin.v1.ChangeAvatarReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否更换成功
                 avatarUrl:
                     type: string
                     description: 头像 URL
+            description: ChangeAvatarReply 更换头像响应
         api.cin.admin.v1.ChangeAvatarRequest:
             type: object
             properties:
                 avatarBase64:
                     type: string
                     description: 头像图片 Base64 编码
+            description: ChangeAvatarRequest 更换头像请求
         api.cin.admin.v1.ChatReply:
             type: object
             properties:
                 response:
                     type: string
+                    description: AI 回复内容
+            description: ChatReply 非流式聊天响应
         api.cin.admin.v1.ChatRequest:
             type: object
             properties:
                 message:
                     type: string
+                    description: 用户输入的消息内容
+            description: ChatRequest 非流式聊天请求
         api.cin.admin.v1.ClearChatHistoryReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否清除成功
+            description: ClearChatHistoryReply 清除聊天历史响应
         api.cin.admin.v1.ClearChatHistoryRequest:
             type: object
             properties: {}
+            description: ClearChatHistoryRequest 清除聊天历史请求
         api.cin.admin.v1.CountOperationLogsReply:
             type: object
             properties:
@@ -2885,6 +3083,7 @@ components:
                     type: string
                 total:
                     type: string
+            description: CountOperationLogsReply 操作日志统计响应
         api.cin.admin.v1.CouponCreateReply:
             type: object
             properties:
@@ -2924,18 +3123,22 @@ components:
             properties:
                 success:
                     type: boolean
+                    description: 是否删除成功
             description: 删除优惠券响应
         api.cin.admin.v1.CouponGetReply:
             type: object
             properties:
                 coupon:
-                    $ref: '#/components/schemas/api.cin.admin.v1.CouponItem'
+                    allOf:
+                        - $ref: '#/components/schemas/api.cin.admin.v1.CouponItem'
+                    description: 优惠券信息
             description: 获取单个优惠券响应
         api.cin.admin.v1.CouponItem:
             type: object
             properties:
                 id:
                     type: string
+                    description: 优惠券 ID
                 name:
                     type: string
                 type:
@@ -3021,6 +3224,7 @@ components:
             properties:
                 success:
                     type: boolean
+                    description: 是否切换成功
             description: 切换优惠券状态响应
         api.cin.admin.v1.CouponToggleStatusRequest:
             type: object
@@ -3036,6 +3240,7 @@ components:
             properties:
                 success:
                     type: boolean
+                    description: 是否更新成功
             description: 更新优惠券响应
         api.cin.admin.v1.CouponUpdateRequest:
             type: object
@@ -3074,132 +3279,186 @@ components:
             properties:
                 id:
                     type: string
+                    description: 新创建的分类 ID
+            description: CreateCategoryReply 创建分类响应
         api.cin.admin.v1.CreateCategoryRequest:
             type: object
             properties:
                 name:
                     type: string
+                    description: 分类名称
                 slug:
                     type: string
+                    description: 分类别名
                 icon:
                     type: string
+                    description: 图标
                 sort:
                     type: integer
+                    description: 排序值
                     format: int32
                 status:
                     type: boolean
+                    description: 状态
                 showcase:
                     type: boolean
+                    description: 是否首页展示
                 image:
                     type: string
+                    description: 分类图片
                 seoTitle:
                     type: string
+                    description: SEO 标题
                 seoKeywords:
                     type: string
+                    description: SEO 关键词
                 seoDesc:
                     type: string
+                    description: SEO 描述
                 parentId:
                     type: string
+                    description: 父分类 ID
+            description: CreateCategoryRequest 创建分类请求
         api.cin.admin.v1.CreateProductReply:
             type: object
             properties:
                 id:
                     type: string
+                    description: 商品ID
+            description: CreateProductReply 创建商品响应
         api.cin.admin.v1.CreateProductRequest:
             type: object
             properties:
                 name:
                     type: string
+                    description: 商品名称
                 category:
                     type: string
+                    description: 商品分类（已废弃，改用 category_id）
                 price:
                     type: string
+                    description: 售价（单位：分）
                 stock:
                     type: integer
+                    description: 库存数量
                     format: int32
                 description:
                     type: string
+                    description: 商品描述
                 image:
                     type: string
+                    description: 商品主图
                 sku:
                     type: string
+                    description: SKU 信息
                 specs:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.SpecGroupItem'
+                    description: 规格组列表
                 skus:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.SkuItem'
+                    description: SKU 列表
                 categoryId:
                     type: string
                 images:
                     type: array
                     items:
                         type: string
+            description: CreateProductRequest 创建商品请求
         api.cin.admin.v1.CreateRoleReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: CreateRoleReply 创建角色响应
         api.cin.admin.v1.CreateRoleRequest:
             type: object
             properties:
                 name:
                     type: string
+                    description: 角色名称
                 slug:
                     type: string
+                    description: 角色标识
                 desc:
                     type: string
+                    description: 角色描述
                 color:
                     type: string
+                    description: 角色颜色标识
+            description: CreateRoleRequest 创建角色请求
         api.cin.admin.v1.CreateStaffReply:
             type: object
             properties:
                 id:
                     type: string
+                    description: 员工ID
+            description: CreateStaffReply 创建员工响应
         api.cin.admin.v1.CreateStaffRequest:
             type: object
             properties:
                 username:
                     type: string
+                    description: 登录账号
                 password:
                     type: string
+                    description: 密码
                 name:
                     type: string
+                    description: 姓名
                 role:
                     type: string
+                    description: 角色
                 email:
                     type: string
+                    description: 邮箱
                 phone:
                     type: string
+                    description: 手机号
                 department:
                     type: string
+                    description: 部门
+            description: CreateStaffRequest 创建员工请求
         api.cin.admin.v1.CreateUserReply:
             type: object
             properties:
                 id:
                     type: string
+                    description: 用户ID
+            description: CreateUserReply 创建用户响应
         api.cin.admin.v1.CreateUserRequest:
             type: object
             properties:
                 username:
                     type: string
+                    description: 登录账号
                 phone:
                     type: string
+                    description: 手机号
                 email:
                     type: string
+                    description: 邮箱
                 password:
                     type: string
+                    description: 密码
                 nickname:
                     type: string
+                    description: 昵称
                 registerSource:
                     type: string
+                    description: 注册来源
+            description: CreateUserRequest 创建用户请求
         api.cin.admin.v1.DeleteCategoryReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否删除成功
+            description: DeleteCategoryReply 删除分类响应
         api.cin.admin.v1.DeleteKnowledgeReply:
             type: object
             properties:
@@ -3222,21 +3481,28 @@ components:
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: DeleteProductReply 删除商品响应
         api.cin.admin.v1.DeleteRoleReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: DeleteRoleReply 删除角色响应
         api.cin.admin.v1.DeleteUserReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: DeleteUserReply 删除用户响应
         api.cin.admin.v1.DistRecord:
             type: object
             properties:
                 id:
                     type: string
+                    description: 发放记录 ID
                 userId:
                     type: string
                 source:
@@ -3265,13 +3531,18 @@ components:
             properties:
                 description:
                     type: string
+                    description: 扩写后的商品描述
+            description: ExpandDescriptionReply AI 扩写商品描述响应
         api.cin.admin.v1.ExpandDescriptionRequest:
             type: object
             properties:
                 productName:
                     type: string
+                    description: 商品名称
                 content:
                     type: string
+                    description: 待扩写的商品描述内容
+            description: ExpandDescriptionRequest AI 扩写商品描述请求
         api.cin.admin.v1.ExportOrderReply:
             type: object
             properties:
@@ -3280,6 +3551,7 @@ components:
                 status:
                     type: integer
                     format: enum
+            description: ExportOrderReply 导出订单响应
         api.cin.admin.v1.ExportTaskStatusReply:
             type: object
             properties:
@@ -3310,75 +3582,107 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.BannerCopyOption'
+                    description: 文案选项列表
+            description: GenerateBannerCopyReply AI 生成 Banner 文案响应
         api.cin.admin.v1.GenerateBannerCopyRequest:
             type: object
             properties:
                 topic:
                     type: string
+                    description: 主题
                 subtitle:
                     type: string
+                    description: 副标题
+            description: GenerateBannerCopyRequest AI 生成 Banner 文案请求
         api.cin.admin.v1.GenerateCategorySEOReply:
             type: object
             properties:
                 seoTitle:
                     type: string
+                    description: SEO 标题
                 seoKeywords:
                     type: string
+                    description: SEO 关键词
                 seoDescription:
                     type: string
+                    description: SEO 描述
+            description: GenerateCategorySEOReply AI 生成分类 SEO 响应
         api.cin.admin.v1.GenerateCategorySEORequest:
             type: object
             properties:
                 categoryName:
                     type: string
+                    description: 分类名称
                 description:
                     type: string
+                    description: 分类描述
+            description: GenerateCategorySEORequest AI 生成分类 SEO 请求
         api.cin.admin.v1.GenerateDescriptionReply:
             type: object
             properties:
                 description:
                     type: string
+                    description: 生成的商品描述
+            description: GenerateDescriptionReply AI 生成商品描述响应
         api.cin.admin.v1.GenerateDescriptionRequest:
             type: object
             properties:
                 productName:
                     type: string
+                    description: 商品名称
                 category:
                     type: string
+                    description: 商品分类
                 specs:
                     type: string
+                    description: 商品规格
+            description: GenerateDescriptionRequest AI 生成商品描述请求
         api.cin.admin.v1.GenerateSummaryReply:
             type: object
             properties:
                 summary:
                     type: string
+                    description: 生成的运营摘要
+            description: GenerateSummaryReply AI 生成运营摘要响应
         api.cin.admin.v1.GenerateSummaryRequest:
             type: object
             properties:
                 todayOrders:
                     type: integer
+                    description: 今日订单数
                     format: int32
                 todayRevenue:
                     type: number
+                    description: 今日营收
                     format: double
                 totalUsers:
                     type: integer
+                    description: 用户总数
                     format: int32
                 totalProducts:
                     type: integer
+                    description: 商品总数
                     format: int32
                 ordersTrend:
                     type: string
+                    description: 订单趋势数据
+            description: GenerateSummaryRequest AI 生成运营摘要请求
         api.cin.admin.v1.GetAdminInfoReply:
             type: object
             properties:
                 admin:
-                    $ref: '#/components/schemas/api.cin.admin.v1.AdminInfo'
+                    allOf:
+                        - $ref: '#/components/schemas/api.cin.admin.v1.AdminInfo'
+                    description: 管理员信息
+            description: GetAdminInfoReply 获取当前管理员信息响应
         api.cin.admin.v1.GetCategoryReply:
             type: object
             properties:
                 item:
-                    $ref: '#/components/schemas/api.cin.admin.v1.CategoryTreeItem'
+                    allOf:
+                        - $ref: '#/components/schemas/api.cin.admin.v1.CategoryTreeItem'
+                    description: 分类信息
+            description: GetCategoryReply 获取单个分类响应
         api.cin.admin.v1.GetChatHistoryReply:
             type: object
             properties:
@@ -3386,29 +3690,40 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.HistoryMessage'
+                    description: 历史消息列表
+            description: GetChatHistoryReply 获取聊天历史响应
         api.cin.admin.v1.GetDashboardStatsReply:
             type: object
             properties:
                 todayOrders:
                     type: string
+                    description: 今日订单数
                 todayRevenue:
                     type: string
+                    description: 今日营收（字符串，避免精度问题）
                 totalUsers:
                     type: string
+                    description: 用户总数
                 totalProducts:
                     type: string
+                    description: 商品总数
                 ordersGrowth:
                     type: number
+                    description: 订单数增长率
                     format: double
                 revenueGrowth:
                     type: number
+                    description: 营收增长率
                     format: double
                 usersGrowth:
                     type: number
+                    description: 用户增长率
                     format: double
                 productsGrowth:
                     type: number
+                    description: 商品增长率
                     format: double
+            description: GetDashboardStatsReply 获取仪表盘统计数据响应
         api.cin.admin.v1.GetLogisticsReply:
             type: object
             properties:
@@ -3434,6 +3749,8 @@ components:
                     type: object
                     additionalProperties:
                         $ref: '#/components/schemas/api.cin.admin.v1.PermissionValue'
+                    description: 权限映射（权限标识 -> 权限值）
+            description: GetMyPermissionsReply 获取当前登录用户角色权限响应
         api.cin.admin.v1.GetOnlineAdminIdsReply:
             type: object
             properties:
@@ -3441,11 +3758,16 @@ components:
                     type: array
                     items:
                         type: string
+                    description: 在线管理员 ID 列表
+            description: GetOnlineAdminIdsReply 获取在线管理员 ID 列表响应
         api.cin.admin.v1.GetOrderReply:
             type: object
             properties:
                 order:
-                    $ref: '#/components/schemas/api.cin.admin.v1.OrderItem'
+                    allOf:
+                        - $ref: '#/components/schemas/api.cin.admin.v1.OrderItem'
+                    description: 订单详情
+            description: GetOrderReply 订单详情响应
         api.cin.admin.v1.GetOrderTrendReply:
             type: object
             properties:
@@ -3453,17 +3775,24 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.TrendItem'
+                    description: 订单趋势数据列表
+            description: GetOrderTrendReply 获取近14日订单趋势响应
         api.cin.admin.v1.GetPreferenceReply:
             type: object
             properties:
                 data:
                     type: string
+                    description: 偏好设置数据（JSON 序列化）
                     format: bytes
+            description: GetPreferenceReply 获取当前用户偏好设置响应
         api.cin.admin.v1.GetProductReply:
             type: object
             properties:
                 product:
-                    $ref: '#/components/schemas/api.cin.admin.v1.ProductItem'
+                    allOf:
+                        - $ref: '#/components/schemas/api.cin.admin.v1.ProductItem'
+                    description: 商品详情
+            description: GetProductReply 商品详情响应
         api.cin.admin.v1.GetRevenueCategoriesReply:
             type: object
             properties:
@@ -3471,6 +3800,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.RevenueCategory'
+                    description: 营收分类占比列表
+            description: GetRevenueCategoriesReply 获取营收分类占比响应
         api.cin.admin.v1.GetRoleNameMapReply:
             type: object
             properties:
@@ -3478,6 +3809,7 @@ components:
                     type: object
                     additionalProperties:
                         type: string
+            description: GetRoleNameMapReply 获取角色名称映射响应
         api.cin.admin.v1.GetRolePermissionsReply:
             type: object
             properties:
@@ -3485,67 +3817,93 @@ components:
                     type: object
                     additionalProperties:
                         $ref: '#/components/schemas/api.cin.admin.v1.PermissionValue'
+                    description: 权限映射（模块标识 -> 权限值）
+            description: GetRolePermissionsReply 获取角色权限响应
         api.cin.admin.v1.GetSettingsReply:
             type: object
             properties:
                 shopName:
                     type: string
+                    description: 店铺名称
                 shopLogo:
                     type: string
+                    description: 店铺Logo
                 shopDescription:
                     type: string
+                    description: 店铺描述
                 contactPhone:
                     type: string
+                    description: 联系电话
                 contactEmail:
                     type: string
+                    description: 联系邮箱
                 icpRecord:
                     type: string
+                    description: ICP备案号
                 autoConfirmDays:
                     type: integer
+                    description: 自动确认收货天数
                     format: int32
                 autoCloseMinutes:
                     type: integer
+                    description: 自动关闭订单分钟数
                     format: int32
                 refundTimeoutDays:
                     type: integer
+                    description: 退款超时天数
                     format: int32
                 stockAlertThreshold:
                     type: integer
+                    description: 库存预警阈值
                     format: int32
                 newProductOnline:
                     type: boolean
+                    description: 新商品是否自动上架
                 productApproval:
                     type: boolean
+                    description: 商品上架是否需要审核
                 newOrderNotify:
                     type: boolean
+                    description: 是否开启新订单通知
                 refundNotify:
                     type: boolean
+                    description: 是否开启退款通知
                 userRegisterNotify:
                     type: boolean
+                    description: 是否开启用户注册通知
                 stockAlertNotify:
                     type: boolean
+                    description: 是否开启库存预警通知
                 loginAttemptLimit:
                     type: boolean
+                    description: 是否开启登录失败次数限制
                 loginCaptcha:
                     type: boolean
+                    description: 是否开启登录验证码
                 sessionTimeoutMinutes:
                     type: integer
+                    description: 会话超时分钟数
                     format: int32
                 enabledPayments:
                     type: array
                     items:
                         type: string
+                    description: 启用的支付方式列表
                 defaultPayment:
                     type: string
+                    description: 默认支付方式
                 freeShippingThreshold:
                     type: number
+                    description: 包邮门槛金额
                     format: double
                 defaultShippingCompany:
                     type: string
+                    description: 默认物流公司
                 hotKeywords:
                     type: array
                     items:
                         type: string
+            description: GetSettingsReply 获取系统设置响应
         api.cin.admin.v1.GetUploadTokenReply:
             type: object
             properties:
@@ -3555,6 +3913,7 @@ components:
                     type: string
                 publicUrl:
                     type: string
+            description: GetUploadTokenReply 获取上传凭证响应
         api.cin.admin.v1.GetUploadTokenRequest:
             type: object
             properties:
@@ -3562,37 +3921,52 @@ components:
                     type: string
                 directory:
                     type: string
+            description: GetUploadTokenRequest 获取上传凭证请求
         api.cin.admin.v1.GetUserReply:
             type: object
             properties:
                 user:
-                    $ref: '#/components/schemas/api.cin.admin.v1.UserItem'
+                    allOf:
+                        - $ref: '#/components/schemas/api.cin.admin.v1.UserItem'
+                    description: 用户详情
+            description: GetUserReply 用户详情响应
         api.cin.admin.v1.GetUserStatsReply:
             type: object
             properties:
                 totalUsers:
                     type: string
+                    description: 用户总数
                 todayNew:
                     type: string
+                    description: 今日新增用户数
                 todayNewGrowth:
                     type: number
+                    description: 今日新增用户增长率
                     format: double
                 activeUsers:
                     type: string
+                    description: 活跃用户数
                 memberUsers:
                     type: string
+                    description: 会员用户数
                 memberRatio:
                     type: number
+                    description: 会员占比
                     format: double
+            description: GetUserStatsReply 获取用户统计数据响应
         api.cin.admin.v1.HistoryMessage:
             type: object
             properties:
                 role:
                     type: string
+                    description: 消息角色（用户/助手）
                 content:
                     type: string
+                    description: 消息内容
                 createdAt:
                     type: string
+                    description: 消息创建时间
+            description: HistoryMessage 历史聊天消息
         api.cin.admin.v1.ListAllPermissionsReply:
             type: object
             properties:
@@ -3600,6 +3974,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.PermModule'
+                    description: 权限模块列表
+            description: ListAllPermissionsReply 获取所有权限模块定义响应
         api.cin.admin.v1.ListBannersReply:
             type: object
             properties:
@@ -3607,6 +3983,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.service.user.v1.BannerItem'
+                    description: Banner 列表
+            description: ListBannersReply 获取 Banner 列表响应
         api.cin.admin.v1.ListCategoryTreeReply:
             type: object
             properties:
@@ -3614,9 +3992,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.CategoryTreeItem'
+                    description: 分类树节点列表
                 total:
                     type: integer
+                    description: 总数
                     format: int32
+            description: ListCategoryTreeReply 获取分类树响应
         api.cin.admin.v1.ListChildCategoriesReply:
             type: object
             properties:
@@ -3624,9 +4005,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.CategoryTreeItem'
+                    description: 子分类列表
                 total:
                     type: integer
+                    description: 总数
                     format: int32
+            description: ListChildCategoriesReply 获取子分类列表响应
         api.cin.admin.v1.ListKnowledgeReply:
             type: object
             properties:
@@ -3643,6 +4027,7 @@ components:
                     type: array
                     items:
                         type: string
+            description: ListOperationLogOperatorsReply 操作人列表响应
         api.cin.admin.v1.ListOperationLogsReply:
             type: object
             properties:
@@ -3650,9 +4035,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.AdminLogItem'
+                    description: 操作日志列表
                 total:
                     type: integer
+                    description: 总记录数
                     format: int32
+            description: ListOperationLogsReply 分页查询操作日志响应
         api.cin.admin.v1.ListOrderReply:
             type: object
             properties:
@@ -3660,9 +4048,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.OrderItem'
+                    description: 订单列表
                 total:
                     type: integer
+                    description: 总数
                     format: int32
+            description: ListOrderReply 订单列表响应
         api.cin.admin.v1.ListProductReply:
             type: object
             properties:
@@ -3670,9 +4061,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.ProductItem'
+                    description: 商品列表
                 total:
                     type: integer
+                    description: 总数
                     format: int32
+            description: ListProductReply 商品列表响应
         api.cin.admin.v1.ListRefundReply:
             type: object
             properties:
@@ -3680,8 +4074,10 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.RefundItem'
+                    description: 退款单列表
                 total:
                     type: integer
+                    description: 总数
                     format: int32
             description: 退款单列表响应
         api.cin.admin.v1.ListRolesReply:
@@ -3691,6 +4087,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.RoleItem'
+                    description: 角色列表
+            description: ListRolesReply 角色列表响应
         api.cin.admin.v1.ListStaffReply:
             type: object
             properties:
@@ -3698,9 +4096,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.StaffInfo'
+                    description: 员工列表
                 total:
                     type: integer
+                    description: 总数
                     format: int32
+            description: ListStaffReply 员工列表响应
         api.cin.admin.v1.ListUserReply:
             type: object
             properties:
@@ -3708,9 +4109,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.UserItem'
+                    description: 用户列表
                 total:
                     type: integer
+                    description: 总数
                     format: int32
+            description: ListUserReply 用户列表响应
         api.cin.admin.v1.LoginReply:
             type: object
             properties:
@@ -3721,6 +4125,7 @@ components:
                     allOf:
                         - $ref: '#/components/schemas/api.cin.admin.v1.AdminInfo'
                     description: 管理员信息
+            description: LoginReply 管理员登录响应
         api.cin.admin.v1.LoginRequest:
             type: object
             properties:
@@ -3730,6 +4135,7 @@ components:
                 password:
                     type: string
                     description: 管理员密码
+            description: LoginRequest 管理员登录请求
         api.cin.admin.v1.LogisticsTrace:
             type: object
             properties:
@@ -3748,35 +4154,47 @@ components:
             properties:
                 success:
                     type: boolean
+                    description: 是否登出成功
+            description: LogoutReply 管理员登出响应
         api.cin.admin.v1.LogoutRequest:
             type: object
             properties:
                 token:
                     type: string
                     description: 要登出的 token
+            description: LogoutRequest 管理员登出请求
         api.cin.admin.v1.OrderItem:
             type: object
             properties:
                 id:
                     type: string
+                    description: 订单ID
                 orderNo:
                     type: string
+                    description: 订单号
                 createdAt:
                     type: string
+                    description: 下单时间
                 userName:
                     type: string
+                    description: 下单用户
                 amount:
                     type: string
+                    description: 订单金额（单位：分）
                 payment:
                     type: string
+                    description: 支付方式
                 status:
                     type: string
+                    description: 订单状态
                 statusText:
                     type: string
+                    description: 订单状态文本
                 products:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.OrderProduct'
+                    description: 订单商品列表
                 logisticsCompany:
                     type: string
                 logisticsNo:
@@ -3787,20 +4205,26 @@ components:
                     type: string
                 address:
                     type: string
+            description: OrderItem 订单项
         api.cin.admin.v1.OrderProduct:
             type: object
             properties:
                 name:
                     type: string
+                    description: 商品名称
                 spec:
                     type: string
+                    description: 商品规格
                 qty:
                     type: integer
+                    description: 购买数量
                     format: int32
                 price:
                     type: string
+                    description: 单价（单位：分）
                 image:
                     type: string
+            description: OrderProduct 订单商品项
         api.cin.admin.v1.OrderStatsReply:
             type: object
             properties:
@@ -3822,20 +4246,25 @@ components:
             properties:
                 key:
                     type: string
+                    description: 权限标识
                 label:
                     type: string
+                    description: 权限名称
             description: 权限项
         api.cin.admin.v1.PermModule:
             type: object
             properties:
                 key:
                     type: string
+                    description: 模块标识
                 title:
                     type: string
+                    description: 模块标题
                 items:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.PermItem'
+                    description: 权限项列表
             description: 权限模块
         api.cin.admin.v1.PermissionValue:
             type: object
@@ -3844,46 +4273,59 @@ components:
                     type: object
                     additionalProperties:
                         type: boolean
+                    description: 权限值映射（权限项标识 -> 是否授权）
             description: 权限值（模块 -> {权限项 -> bool}）
         api.cin.admin.v1.ProductItem:
             type: object
             properties:
                 id:
                     type: string
+                    description: 商品ID
                 name:
                     type: string
+                    description: 商品名称
                 category:
                     type: string
                 price:
                     type: string
+                    description: 售价（单位：分）
                 stock:
                     type: integer
+                    description: 库存数量
                     format: int32
                 sales:
                     type: integer
+                    description: 销量
                     format: int32
                 status:
                     type: string
+                    description: 商品状态（上架/下架）
                 image:
                     type: string
+                    description: 商品主图
                 sku:
                     type: string
+                    description: SKU 信息
                 specs:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.SpecGroupItem'
+                    description: 规格组列表
                 skus:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.SkuItem'
+                    description: SKU 列表
                 description:
                     type: string
+                    description: 商品描述
                 categoryId:
                     type: string
                 images:
                     type: array
                     items:
                         type: string
+            description: ProductItem 商品项
         api.cin.admin.v1.RefundItem:
             type: object
             properties:
@@ -3921,37 +4363,51 @@ components:
             properties:
                 name:
                     type: string
+                    description: 分类名称
                 percentage:
                     type: number
+                    description: 占比（百分比）
                     format: double
                 color:
                     type: string
+                    description: 展示颜色
+            description: RevenueCategory 营收分类占比
         api.cin.admin.v1.RoleItem:
             type: object
             properties:
                 name:
                     type: string
+                    description: 角色名称
                 slug:
                     type: string
+                    description: 角色标识
                 desc:
                     type: string
+                    description: 角色描述
                 users:
                     type: integer
+                    description: 关联用户数
                     format: int32
                 enabled:
                     type: boolean
+                    description: 是否启用
                 isSystem:
                     type: boolean
+                    description: 是否系统内置角色
                 createdAt:
                     type: string
+                    description: 创建时间
                 color:
                     type: string
+                    description: 角色颜色标识
             description: 角色项
         api.cin.admin.v1.SaveBannersReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否保存成功
+            description: SaveBannersReply 保存 Banner 响应
         api.cin.admin.v1.SaveBannersRequest:
             type: object
             properties:
@@ -3959,17 +4415,23 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.service.user.v1.BannerItem'
+                    description: 待保存的 Banner 列表
+            description: SaveBannersRequest 保存 Banner 请求
         api.cin.admin.v1.SavePreferenceReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: SavePreferenceReply 保存当前用户偏好设置响应
         api.cin.admin.v1.SavePreferenceRequest:
             type: object
             properties:
                 data:
                     type: string
+                    description: 偏好设置数据（JSON 序列化）
                     format: bytes
+            description: SavePreferenceRequest 保存当前用户偏好设置请求
         api.cin.admin.v1.SearchKnowledgeReply:
             type: object
             properties:
@@ -3998,86 +4460,129 @@ components:
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: ShipOrderReply 订单发货响应
         api.cin.admin.v1.ShipOrderRequest:
             type: object
             properties:
                 orderId:
                     type: string
+                    description: 订单ID
                 logisticsCompany:
                     type: string
+                    description: 物流公司
                 logisticsNo:
                     type: string
+                    description: 快递单号
+            description: ShipOrderRequest 订单发货请求
         api.cin.admin.v1.SkuItem:
             type: object
             properties:
                 id:
                     type: string
+                    description: SKU ID
                 skuCode:
                     type: string
+                    description: SKU 编码
                 price:
                     type: string
+                    description: 售价（单位：分）
                 stock:
                     type: integer
+                    description: 库存数量
                     format: int32
                 sales:
                     type: integer
+                    description: 销量
                     format: int32
                 spec:
                     type: object
                     additionalProperties:
                         type: string
+                    description: 规格映射（规格组名 -> 规格值）
                 image:
                     type: string
             description: SKU 项（管理后台用）
+        api.cin.admin.v1.SkuStockItem:
+            type: object
+            properties:
+                skuId:
+                    type: string
+                    description: SKU ID
+                total:
+                    type: integer
+                    description: 库存总量
+                    format: int32
+            description: 单个 SKU 库存项（管理后台用）
         api.cin.admin.v1.SpecGroupItem:
             type: object
             properties:
                 id:
                     type: string
+                    description: 规格组ID
                 name:
                     type: string
+                    description: 规格组名称
                 values:
                     type: array
                     items:
                         type: string
+                    description: 规格值列表
             description: 规格组项（管理后台用）
         api.cin.admin.v1.StaffInfo:
             type: object
             properties:
                 id:
                     type: string
+                    description: 员工ID
                 name:
                     type: string
+                    description: 姓名
                 username:
                     type: string
+                    description: 登录账号
                 phone:
                     type: string
+                    description: 手机号
                 email:
                     type: string
+                    description: 邮箱
                 role:
                     type: string
+                    description: 角色
                 department:
                     type: string
+                    description: 部门
                 position:
                     type: string
+                    description: 职位
                 bio:
                     type: string
+                    description: 个人简介
                 avatar:
                     type: string
+                    description: 头像
                 status:
                     type: integer
+                    description: 状态（1=正常 2=冻结）
                     format: int32
                 lastLogin:
                     type: string
+                    description: 最后登录时间
                 createdAt:
                     type: string
+                    description: 创建时间
+            description: StaffInfo 员工信息
         api.cin.admin.v1.SuggestQuestion:
             type: object
             properties:
                 label:
                     type: string
+                    description: 问题标签
                 query:
                     type: string
+                    description: 问题内容
+            description: SuggestQuestion 快捷提问选项
         api.cin.admin.v1.SuggestQuestionsReply:
             type: object
             properties:
@@ -4085,60 +4590,82 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.SuggestQuestion'
+                    description: 推荐问题列表
+            description: SuggestQuestionsReply AI 推荐快捷提问响应
         api.cin.admin.v1.SuggestQuestionsRequest:
             type: object
             properties: {}
+            description: SuggestQuestionsRequest AI 推荐快捷提问请求
         api.cin.admin.v1.ToggleCategoryShowcaseReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否切换成功
+            description: ToggleCategoryShowcaseReply 切换首页展示响应
         api.cin.admin.v1.ToggleCategoryShowcaseRequest:
             type: object
             properties:
                 id:
                     type: string
+                    description: 分类 ID
                 showcase:
                     type: boolean
+                    description: 是否首页展示
+            description: ToggleCategoryShowcaseRequest 切换首页展示请求
         api.cin.admin.v1.ToggleStaffStatusReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
                 newStatus:
                     type: integer
+                    description: 切换后的状态
                     format: int32
+            description: ToggleStaffStatusReply 切换员工状态响应
         api.cin.admin.v1.ToggleStaffStatusRequest:
             type: object
             properties:
                 id:
                     type: string
+                    description: 员工ID
+            description: ToggleStaffStatusRequest 切换员工状态请求
         api.cin.admin.v1.ToggleUserStatusReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
                 newStatus:
                     type: integer
                     format: int32
+            description: ToggleUserStatusReply 冻结/解冻用户响应
         api.cin.admin.v1.ToggleUserStatusRequest:
             type: object
             properties:
                 id:
                     type: string
+                    description: 用户ID
+            description: ToggleUserStatusRequest 冻结/解冻用户请求
         api.cin.admin.v1.TrendItem:
             type: object
             properties:
                 date:
                     type: string
+                    description: 日期
                 value:
                     type: integer
+                    description: 订单数量
                     format: int32
+            description: TrendItem 订单趋势数据项
         api.cin.admin.v1.UpdateAdminInfoReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否更新成功
+            description: UpdateAdminInfoReply 更新基本信息响应
         api.cin.admin.v1.UpdateAdminInfoRequest:
             type: object
             properties:
@@ -4160,263 +4687,403 @@ components:
                 bio:
                     type: string
                     description: 个人简介
+            description: UpdateAdminInfoRequest 更新基本信息请求
         api.cin.admin.v1.UpdateCategoryReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否更新成功
+            description: UpdateCategoryReply 更新分类响应
         api.cin.admin.v1.UpdateCategoryRequest:
             type: object
             properties:
                 id:
                     type: string
+                    description: 分类 ID
                 name:
                     type: string
+                    description: 分类名称
                 slug:
                     type: string
+                    description: 分类别名
                 icon:
                     type: string
+                    description: 图标
                 sort:
                     type: integer
+                    description: 排序值
                     format: int32
                 status:
                     type: boolean
+                    description: 状态
                 showcase:
                     type: boolean
+                    description: 是否首页展示
                 image:
                     type: string
+                    description: 分类图片
                 seoTitle:
                     type: string
+                    description: SEO 标题
                 seoKeywords:
                     type: string
+                    description: SEO 关键词
                 seoDesc:
                     type: string
+                    description: SEO 描述
                 parentId:
                     type: string
+                    description: 父分类 ID
+            description: UpdateCategoryRequest 更新分类请求
         api.cin.admin.v1.UpdateCategorySortReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否更新成功
+            description: UpdateCategorySortReply 更新分类排序响应
         api.cin.admin.v1.UpdateCategorySortRequest:
             type: object
             properties:
                 id:
                     type: string
+                    description: 分类 ID
                 sort:
                     type: integer
+                    description: 新的排序值
                     format: int32
+            description: UpdateCategorySortRequest 更新分类排序请求
         api.cin.admin.v1.UpdateCategoryStatusReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否更新成功
+            description: UpdateCategoryStatusReply 更新分类状态响应
         api.cin.admin.v1.UpdateCategoryStatusRequest:
             type: object
             properties:
                 id:
                     type: string
+                    description: 分类 ID
                 status:
                     type: boolean
+                    description: 新的状态
+            description: UpdateCategoryStatusRequest 更新分类状态请求
         api.cin.admin.v1.UpdateProductReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: UpdateProductReply 更新商品响应
         api.cin.admin.v1.UpdateProductRequest:
             type: object
             properties:
                 id:
                     type: string
+                    description: 商品ID
                 name:
                     type: string
+                    description: 商品名称
                 category:
                     type: string
+                    description: 商品分类（已废弃，改用 category_id）
                 price:
                     type: string
+                    description: 售价（单位：分）
                 stock:
                     type: integer
+                    description: 库存数量
                     format: int32
                 description:
                     type: string
+                    description: 商品描述
                 image:
                     type: string
+                    description: 商品主图
                 sku:
                     type: string
+                    description: SKU 信息
                 status:
                     type: string
+                    description: 商品状态（上架/下架）
                 specs:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.SpecGroupItem'
+                    description: 规格组列表
                 skus:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.admin.v1.SkuItem'
+                    description: SKU 列表
                 categoryId:
                     type: string
                 images:
                     type: array
                     items:
                         type: string
+            description: UpdateProductRequest 更新商品请求
         api.cin.admin.v1.UpdateRolePermissionsReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: UpdateRolePermissionsReply 更新角色权限响应
         api.cin.admin.v1.UpdateRolePermissionsRequest:
             type: object
             properties:
                 role:
                     type: string
+                    description: 角色标识
                 permissions:
                     type: object
                     additionalProperties:
                         $ref: '#/components/schemas/api.cin.admin.v1.PermissionValue'
+                    description: 权限映射（模块标识 -> 权限值）
+            description: UpdateRolePermissionsRequest 更新角色权限请求
         api.cin.admin.v1.UpdateRoleReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: UpdateRoleReply 更新角色响应
         api.cin.admin.v1.UpdateRoleRequest:
             type: object
             properties:
                 slug:
                     type: string
+                    description: 角色标识
                 name:
                     type: string
+                    description: 角色名称
                 desc:
                     type: string
+                    description: 角色描述
                 color:
                     type: string
+                    description: 角色颜色标识
+            description: UpdateRoleRequest 更新角色请求
         api.cin.admin.v1.UpdateSettingsReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: UpdateSettingsReply 更新系统设置响应
         api.cin.admin.v1.UpdateSettingsRequest:
             type: object
             properties:
                 shopName:
                     type: string
+                    description: 店铺名称
                 shopLogo:
                     type: string
+                    description: 店铺Logo
                 shopDescription:
                     type: string
+                    description: 店铺描述
                 contactPhone:
                     type: string
+                    description: 联系电话
                 contactEmail:
                     type: string
+                    description: 联系邮箱
                 icpRecord:
                     type: string
+                    description: ICP备案号
                 autoConfirmDays:
                     type: integer
+                    description: 自动确认收货天数
                     format: int32
                 autoCloseMinutes:
                     type: integer
+                    description: 自动关闭订单分钟数
                     format: int32
                 refundTimeoutDays:
                     type: integer
+                    description: 退款超时天数
                     format: int32
                 stockAlertThreshold:
                     type: integer
+                    description: 库存预警阈值
                     format: int32
                 newProductOnline:
                     type: boolean
+                    description: 新商品是否自动上架
                 productApproval:
                     type: boolean
+                    description: 商品上架是否需要审核
                 newOrderNotify:
                     type: boolean
+                    description: 是否开启新订单通知
                 refundNotify:
                     type: boolean
+                    description: 是否开启退款通知
                 userRegisterNotify:
                     type: boolean
+                    description: 是否开启用户注册通知
                 stockAlertNotify:
                     type: boolean
+                    description: 是否开启库存预警通知
                 loginAttemptLimit:
                     type: boolean
+                    description: 是否开启登录失败次数限制
                 loginCaptcha:
                     type: boolean
+                    description: 是否开启登录验证码
                 sessionTimeoutMinutes:
                     type: integer
+                    description: 会话超时分钟数
                     format: int32
                 enabledPayments:
                     type: array
                     items:
                         type: string
+                    description: 启用的支付方式列表
                 defaultPayment:
                     type: string
+                    description: 默认支付方式
                 freeShippingThreshold:
                     type: number
+                    description: 包邮门槛金额
                     format: double
                 defaultShippingCompany:
                     type: string
+                    description: 默认物流公司
                 hotKeywords:
                     type: array
                     items:
                         type: string
+            description: UpdateSettingsRequest 更新系统设置请求
+        api.cin.admin.v1.UpdateSkuStocksReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                    description: 是否成功
+            description: UpdateSkuStocksReply 按 SKU 明细批量更新库存响应
+        api.cin.admin.v1.UpdateSkuStocksRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 商品ID
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.SkuStockItem'
+                    description: SKU 库存明细列表
+            description: UpdateSkuStocksRequest 按 SKU 明细批量更新库存请求
         api.cin.admin.v1.UpdateStaffReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: UpdateStaffReply 更新员工响应
         api.cin.admin.v1.UpdateStaffRequest:
             type: object
             properties:
                 id:
                     type: string
+                    description: 员工ID
                 name:
                     type: string
+                    description: 姓名
                 role:
                     type: string
+                    description: 角色
                 email:
                     type: string
+                    description: 邮箱
                 phone:
                     type: string
+                    description: 手机号
                 department:
                     type: string
+                    description: 部门
                 position:
                     type: string
+                    description: 职位
                 bio:
                     type: string
+                    description: 个人简介
+            description: UpdateStaffRequest 更新员工请求
+        api.cin.admin.v1.UpdateStockReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                    description: 是否成功
+            description: UpdateStockReply 更新商品库存响应
+        api.cin.admin.v1.UpdateStockRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 商品ID
+                total:
+                    type: integer
+                    description: 库存总量
+                    format: int32
+            description: UpdateStockRequest 更新商品库存请求
         api.cin.admin.v1.UpdateUserReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: UpdateUserReply 更新用户响应
         api.cin.admin.v1.UpdateUserRequest:
             type: object
             properties:
                 id:
                     type: string
+                    description: 用户ID
                 nickname:
                     type: string
+                    description: 昵称
                 phone:
                     type: string
+                    description: 手机号
                 email:
                     type: string
+                    description: 邮箱
                 gender:
                     type: integer
+                    description: 性别（0=未知 1=男 2=女）
                     format: int32
                 birthday:
                     type: string
+                    description: 生日
                 level:
                     type: string
+                    description: 会员等级
+            description: UpdateUserRequest 更新用户请求
         api.cin.admin.v1.UserItem:
             type: object
             properties:
                 id:
                     type: string
+                    description: 用户ID
                 username:
                     type: string
                 nickname:
                     type: string
                 phone:
                     type: string
+                    description: 手机号
                 email:
                     type: string
+                    description: 邮箱
                 avatar:
                     type: string
+                    description: 头像
                 gender:
                     type: integer
                     format: int32
@@ -4424,8 +5091,10 @@ components:
                     type: string
                 lastLoginAt:
                     type: string
+                    description: 最后登录时间（Unix 秒）
                 registerSource:
                     type: string
+                    description: 注册来源
                 status:
                     type: integer
                     format: int32
@@ -4437,21 +5106,27 @@ components:
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: AddCartItemReply 加入购物车响应
         api.cin.interface.v1.AddCartItemRequest:
             type: object
             properties:
                 productId:
                     type: string
+                    description: 商品 ID
                 quantity:
                     type: integer
+                    description: 加入数量
                     format: int32
                 skuId:
                     type: string
+            description: AddCartItemRequest 加入购物车请求
         api.cin.interface.v1.AddressItem:
             type: object
             properties:
                 id:
                     type: string
+                    description: 地址 ID
                 receiver:
                     type: string
                 phone:
@@ -4469,30 +5144,40 @@ components:
                     format: int32
                 createTime:
                     type: string
-            description: ========== 收货地址 ==========
+                    description: 创建时间（Unix 秒）
+            description: |-
+                ========== 收货地址 ==========
+                 AddressItem 收货地址项
         api.cin.interface.v1.AiChatReply:
             type: object
             properties:
                 message:
                     type: string
+                    description: AI 智能助手的回复内容
+            description: AiChatReply AI 聊天响应
         api.cin.interface.v1.AiChatRequest:
             type: object
             properties:
                 message:
                     type: string
+                    description: 用户输入的聊天内容
                 sessionId:
                     type: string
+                    description: 会话 ID（用于多轮连续对话，首次对话可传空）
+            description: AiChatRequest AI 聊天请求
         api.cin.interface.v1.ApplyRefundReply:
             type: object
             properties:
                 refundId:
                     type: string
+                    description: 退款单 ID
             description: 申请退款响应
         api.cin.interface.v1.ApplyRefundRequest:
             type: object
             properties:
                 orderId:
                     type: string
+                    description: 订单 ID
                 reason:
                     type: string
             description: 申请退款请求
@@ -4534,18 +5219,24 @@ components:
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: CancelOrderReply 取消订单响应
         api.cin.interface.v1.CancelOrderRequest:
             type: object
             properties:
                 orderId:
                     type: string
+                    description: 订单 ID
                 reason:
                     type: string
+            description: CancelOrderRequest 取消订单请求
         api.cin.interface.v1.CartCheckoutReply:
             type: object
             properties:
                 orderId:
                     type: string
+                    description: 订单 ID
+            description: CartCheckoutReply 购物车结算响应
         api.cin.interface.v1.CartCheckoutRequest:
             type: object
             properties:
@@ -4565,16 +5256,20 @@ components:
                     type: string
                 couponId:
                     type: string
+            description: CartCheckoutRequest 购物车结算请求
         api.cin.interface.v1.CartItem:
             type: object
             properties:
                 productId:
                     type: string
+                    description: 商品 ID
                 quantity:
                     type: integer
+                    description: 购买数量
                     format: int32
                 skuId:
                     type: string
+            description: CartItem 购物车商品项（结算用）
         api.cin.interface.v1.CartProductItem:
             type: object
             properties:
@@ -4601,112 +5296,157 @@ components:
                     format: int32
                 skuId:
                     type: string
+            description: CartProductItem 购物车商品项
         api.cin.interface.v1.CategoryNode:
             type: object
             properties:
                 id:
                     type: string
+                    description: 分类 ID
                 name:
                     type: string
+                    description: 分类名称
                 slug:
                     type: string
+                    description: 分类标识（URL 友好的英文别名）
                 icon:
                     type: string
+                    description: 分类图标
                 sort:
                     type: integer
+                    description: 排序权重（数值越大越靠前）
                     format: int32
                 status:
                     type: boolean
+                    description: 是否启用
                 showcase:
                     type: boolean
+                    description: 是否在首页展示
                 count:
                     type: integer
+                    description: 分类下商品数量
                     format: int32
                 image:
                     type: string
+                    description: 分类图片
                 parentId:
                     type: string
+                    description: 父分类 ID（0 表示顶级分类）
                 children:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.CategoryNode'
+                    description: 子分类节点列表
+            description: CategoryNode 分类节点
         api.cin.interface.v1.ChangePasswordReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: ChangePasswordReply 修改密码响应
         api.cin.interface.v1.ChangePasswordRequest:
             type: object
             properties:
                 oldPassword:
                     type: string
+                    description: 原密码
                 newPassword:
                     type: string
-            description: ========== 修改密码 ==========
+                    description: 新密码
+            description: |-
+                ========== 修改密码 ==========
+                 ChangePasswordRequest 修改密码请求
         api.cin.interface.v1.ClaimCouponReply:
             type: object
             properties:
                 recordId:
                     type: string
+                    description: 优惠券发放记录 ID
+            description: ClaimCouponReply 领取优惠券响应
         api.cin.interface.v1.ClaimCouponRequest:
             type: object
             properties:
                 couponId:
                     type: string
+                    description: 优惠券 ID
                 source:
                     type: string
+                    description: 领取来源（如领券中心、活动页等）
+            description: ClaimCouponRequest 领取优惠券请求
         api.cin.interface.v1.ClearCartReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: ClearCartReply 清空购物车响应
         api.cin.interface.v1.CreateAddressReply:
             type: object
             properties:
                 id:
                     type: string
+                    description: 新地址 ID
+            description: CreateAddressReply 新增收货地址响应
         api.cin.interface.v1.CreateAddressRequest:
             type: object
             properties:
                 receiver:
                     type: string
+                    description: 收货人姓名
                 phone:
                     type: string
+                    description: 收货人手机号
                 province:
                     type: string
+                    description: 省份
                 city:
                     type: string
+                    description: 城市
                 district:
                     type: string
+                    description: 区县
                 detail:
                     type: string
+                    description: 详细地址
                 isDefault:
                     type: integer
                     format: int32
+            description: CreateAddressRequest 新增收货地址请求
         api.cin.interface.v1.CreateProductReply:
             type: object
             properties:
                 productId:
                     type: string
+                    description: 商品 ID
+            description: CreateProductReply 创建商品响应
         api.cin.interface.v1.CreateProductRequest:
             type: object
             properties:
                 name:
                     type: string
+                    description: 商品名称
                 description:
                     type: string
+                    description: 商品描述
                 price:
                     type: string
+                    description: 价格（分）
+            description: CreateProductRequest 创建商品请求
         api.cin.interface.v1.DeleteAddressReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: DeleteAddressReply 删除收货地址响应
         api.cin.interface.v1.DeleteCartItemReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: DeleteCartItemReply 删除购物车商品响应
         api.cin.interface.v1.GetCartReply:
             type: object
             properties:
@@ -4714,11 +5454,16 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.CartProductItem'
+                    description: 购物车商品列表
+            description: GetCartReply 获取购物车响应
         api.cin.interface.v1.GetCategoryReply:
             type: object
             properties:
                 item:
-                    $ref: '#/components/schemas/api.cin.interface.v1.CategoryNode'
+                    allOf:
+                        - $ref: '#/components/schemas/api.cin.interface.v1.CategoryNode'
+                    description: 分类详情节点
+            description: GetCategoryReply 获取分类详情响应
         api.cin.interface.v1.GetLogisticsReply:
             type: object
             properties:
@@ -4742,19 +5487,26 @@ components:
             properties:
                 id:
                     type: string
+                    description: 用户 ID
                 username:
                     type: string
+                    description: 登录账号
                 nickname:
                     type: string
+                    description: 昵称
                 avatar:
                     type: string
+                    description: 头像 URL
                 phone:
                     type: string
+                    description: 手机号
                 gender:
                     type: integer
+                    description: 性别（0=未知 1=男 2=女）
                     format: int32
                 email:
                     type: string
+                    description: 邮箱
                 birthday:
                     type: string
                 level:
@@ -4763,16 +5515,23 @@ components:
                     type: string
                 createdAt:
                     type: string
+            description: GetMyInfoReply 个人信息响应
         api.cin.interface.v1.GetOrderReply:
             type: object
             properties:
                 order:
-                    $ref: '#/components/schemas/api.cin.interface.v1.OrderItem'
+                    allOf:
+                        - $ref: '#/components/schemas/api.cin.interface.v1.OrderItem'
+                    description: 订单详情
+            description: GetOrderReply 订单详情响应
         api.cin.interface.v1.GetProductReply:
             type: object
             properties:
                 product:
-                    $ref: '#/components/schemas/api.cin.interface.v1.ProductItem'
+                    allOf:
+                        - $ref: '#/components/schemas/api.cin.interface.v1.ProductItem'
+                    description: 商品详情
+            description: GetProductReply 商品详情响应
         api.cin.interface.v1.GetUploadTokenReply:
             type: object
             properties:
@@ -4782,6 +5541,7 @@ components:
                     type: string
                 publicUrl:
                     type: string
+            description: GetUploadTokenReply 获取上传凭证响应
         api.cin.interface.v1.GetUploadTokenRequest:
             type: object
             properties:
@@ -4789,24 +5549,35 @@ components:
                     type: string
                 directory:
                     type: string
+            description: GetUploadTokenRequest 获取上传凭证请求
         api.cin.interface.v1.GetUserCenterReply:
             type: object
             properties:
                 user:
-                    $ref: '#/components/schemas/api.cin.interface.v1.GetMyInfoReply'
+                    allOf:
+                        - $ref: '#/components/schemas/api.cin.interface.v1.GetMyInfoReply'
+                    description: 用户基本信息
                 stats:
-                    $ref: '#/components/schemas/api.cin.interface.v1.UserCenterStats'
+                    allOf:
+                        - $ref: '#/components/schemas/api.cin.interface.v1.UserCenterStats'
+                    description: 订单/优惠券统计
+            description: GetUserCenterReply 个人中心概览响应
         api.cin.interface.v1.GetUserInfoReply:
             type: object
             properties:
                 id:
                     type: string
+                    description: 用户 ID
                 nickname:
                     type: string
+                    description: 昵称
                 avatar:
                     type: string
+                    description: 头像 URL
                 phone:
                     type: string
+                    description: 手机号
+            description: GetUserInfoReply 获取用户信息响应
         api.cin.interface.v1.ListAddressReply:
             type: object
             properties:
@@ -4814,6 +5585,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.AddressItem'
+                    description: 地址列表
+            description: ListAddressReply 收货地址列表响应
         api.cin.interface.v1.ListAvailableCouponsReply:
             type: object
             properties:
@@ -4821,9 +5594,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.AvailableCouponItem'
+                    description: 可领取优惠券列表
                 total:
                     type: integer
+                    description: 总数
                     format: int32
+            description: ListAvailableCouponsReply 领券中心列表响应
         api.cin.interface.v1.ListBannersReply:
             type: object
             properties:
@@ -4831,6 +5607,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.service.user.v1.BannerItem'
+                    description: Banner 列表
+            description: ListBannersReply 公开 Banner 列表响应
         api.cin.interface.v1.ListCategoryTreeReply:
             type: object
             properties:
@@ -4838,9 +5616,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.CategoryNode'
+                    description: 分类节点列表
                 total:
                     type: integer
+                    description: 分类总数
                     format: int32
+            description: ListCategoryTreeReply 获取分类树响应
         api.cin.interface.v1.ListMyCouponsReply:
             type: object
             properties:
@@ -4848,9 +5629,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.MyCouponItem'
+                    description: 优惠券列表
                 total:
                     type: integer
+                    description: 总数
                     format: int32
+            description: ListMyCouponsReply 我的优惠券列表响应
         api.cin.interface.v1.ListOrderReply:
             type: object
             properties:
@@ -4858,9 +5642,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.OrderItem'
+                    description: 订单列表
                 total:
                     type: integer
+                    description: 订单总数
                     format: int32
+            description: ListOrderReply 订单列表响应
         api.cin.interface.v1.ListProductReply:
             type: object
             properties:
@@ -4868,9 +5655,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.ProductItem'
+                    description: 商品列表
                 total:
                     type: integer
+                    description: 商品总数
                     format: int32
+            description: ListProductReply 商品列表响应
         api.cin.interface.v1.ListRefundReply:
             type: object
             properties:
@@ -4878,8 +5668,10 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.RefundItem'
+                    description: 退款记录列表
                 total:
                     type: integer
+                    description: 退款记录总数
                     format: int32
             description: 我的退款记录响应
         api.cin.interface.v1.ListUsableCouponsReply:
@@ -4889,11 +5681,15 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.UsableCouponItem'
+                    description: 可用优惠券列表
+            description: ListUsableCouponsReply 结算可用优惠券响应
         api.cin.interface.v1.LoginReply:
             type: object
             properties:
                 token:
                     type: string
+                    description: 登录令牌（后续请求需携带）
+            description: LoginReply 登录响应
         api.cin.interface.v1.LoginRequest:
             type: object
             properties:
@@ -4906,6 +5702,7 @@ components:
                 clientIp:
                     type: string
                     description: 客户端 IP（由服务端从请求头获取，前端无需传递）
+            description: LoginRequest 登录请求
         api.cin.interface.v1.LogisticsTrace:
             type: object
             properties:
@@ -4924,55 +5721,77 @@ components:
             properties:
                 recordId:
                     type: string
+                    description: 发放记录 ID
                 couponId:
                     type: string
+                    description: 优惠券 ID
                 name:
                     type: string
+                    description: 优惠券名称
                 type:
                     type: integer
+                    description: 类型：1-立减 2-折扣 3-满减
                     format: int32
                 value:
                     type: string
+                    description: 面值（分）或折扣百分比
                 minAmount:
                     type: string
+                    description: 使用门槛（分）
                 validStart:
                     type: string
+                    description: 有效期开始时间
                 validEnd:
                     type: string
+                    description: 有效期结束时间
                 recordStatus:
                     type: integer
                     format: int32
                 usedTime:
                     type: string
+                    description: 使用时间（Unix 秒，未使用为 0）
                 orderId:
                     type: string
+                    description: 使用的订单 ID（未使用为 0）
                 source:
                     type: string
+                    description: 领取来源
                 createTime:
                     type: string
+                    description: 领取时间
+            description: MyCouponItem 我的优惠券项
         api.cin.interface.v1.OrderItem:
             type: object
             properties:
                 id:
                     type: string
+                    description: 订单 ID
                 orderNo:
                     type: string
+                    description: 订单号
                 createdAt:
                     type: string
+                    description: 下单时间
                 userName:
                     type: string
+                    description: 下单用户
                 amount:
                     type: string
+                    description: 订单金额（分）
                 payment:
                     type: string
+                    description: 支付方式
                 status:
                     type: string
+                    description: 订单状态（状态码）
                 statusText:
                     type: string
+                    description: 订单状态文本
                 products:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.OrderProduct'
+                    description: 订单商品列表
                 logisticsCompany:
                     type: string
                 logisticsNo:
@@ -4985,113 +5804,153 @@ components:
                     type: string
                 payDeadline:
                     type: string
+            description: OrderItem 订单项
         api.cin.interface.v1.OrderProduct:
             type: object
             properties:
                 name:
                     type: string
+                    description: 商品名称
                 spec:
                     type: string
+                    description: 规格描述
                 qty:
                     type: integer
+                    description: 购买数量
                     format: int32
                 price:
                     type: string
+                    description: 单价（分）
                 image:
                     type: string
+                    description: 商品图片
                 productId:
                     type: string
                 skuId:
                     type: string
+            description: OrderProduct 订单商品项
         api.cin.interface.v1.PayOrderReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否支付成功
+            description: PayOrderReply 支付订单响应
         api.cin.interface.v1.PayOrderRequest:
             type: object
             properties:
                 orderId:
                     type: string
+                    description: 订单 ID
+            description: PayOrderRequest 支付订单请求
         api.cin.interface.v1.PlaceOrderReply:
             type: object
             properties:
                 orderId:
                     type: string
+                    description: 订单 ID
+            description: PlaceOrderReply 下单响应
         api.cin.interface.v1.PlaceOrderRequest:
             type: object
             properties:
                 productId:
                     type: string
+                    description: 商品 ID
                 count:
                     type: integer
+                    description: 购买数量
                     format: int32
                 skuId:
                     type: string
+            description: PlaceOrderRequest 下单请求
         api.cin.interface.v1.ProductItem:
             type: object
             properties:
                 id:
                     type: string
+                    description: 商品 ID
                 name:
                     type: string
+                    description: 商品名称
                 description:
                     type: string
+                    description: 商品描述
                 price:
                     type: string
+                    description: 价格（分）
                 stock:
                     type: integer
+                    description: 库存
                     format: int32
                 category:
                     type: string
+                    description: 分类名称
                 status:
                     type: string
+                    description: 商品状态
                 image:
                     type: string
+                    description: 商品主图
                 sales:
                     type: integer
+                    description: 销量
                     format: int32
                 categoryId:
                     type: string
+                    description: 分类 ID
                 images:
                     type: array
                     items:
                         type: string
+                    description: 商品图集
                 specs:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.SpecGroupInfo'
+                    description: 规格组列表
                 skus:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.cin.interface.v1.SkuInfo'
+                    description: SKU 列表
+            description: ProductItem 商品项
         api.cin.interface.v1.PublicSettingsReply:
             type: object
             properties:
                 shopName:
                     type: string
+                    description: 商城名称
                 shopDescription:
                     type: string
+                    description: 商城简介
                 contactPhone:
                     type: string
+                    description: 联系电话
                 contactEmail:
                     type: string
+                    description: 联系邮箱
                 icpRecord:
                     type: string
+                    description: ICP 备案号
                 hotKeywords:
                     type: array
                     items:
                         type: string
+            description: PublicSettingsReply 公开配置响应
         api.cin.interface.v1.ReceiveOrderReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: ReceiveOrderReply 确认收货响应
         api.cin.interface.v1.ReceiveOrderRequest:
             type: object
             properties:
                 orderId:
                     type: string
+                    description: 订单 ID
+            description: ReceiveOrderRequest 确认收货请求
         api.cin.interface.v1.RefundItem:
             type: object
             properties:
@@ -5120,6 +5979,8 @@ components:
             properties:
                 success:
                     type: boolean
+                    description: 是否注册成功
+            description: RegisterReply 注册响应
         api.cin.interface.v1.RegisterReq:
             type: object
             properties:
@@ -5138,58 +5999,79 @@ components:
                 clientIp:
                     type: string
                     description: 客户端 IP（由服务端从请求头获取，前端无需传递）
+            description: RegisterReq 注册请求
         api.cin.interface.v1.SelectAllCartReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: SelectAllCartReply 全选/取消全选响应
         api.cin.interface.v1.SelectAllCartRequest:
             type: object
             properties:
                 selected:
                     type: boolean
+                    description: 是否全选
+            description: SelectAllCartRequest 全选/取消全选请求
         api.cin.interface.v1.SetDefaultAddressReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: SetDefaultAddressReply 设置默认收货地址响应
         api.cin.interface.v1.SetDefaultAddressRequest:
             type: object
             properties:
                 id:
                     type: string
+                    description: 地址 ID
+            description: SetDefaultAddressRequest 设置默认收货地址请求
         api.cin.interface.v1.SkuInfo:
             type: object
             properties:
                 id:
                     type: string
+                    description: SKU ID
                 skuCode:
                     type: string
+                    description: SKU 编码
                 price:
                     type: string
+                    description: SKU 价格（分）
                 stock:
                     type: integer
+                    description: SKU 库存
                     format: int32
                 sales:
                     type: integer
+                    description: SKU 销量
                     format: int32
                 spec:
                     type: object
                     additionalProperties:
                         type: string
+                    description: '规格键值对（如 颜色: 红色）'
                 image:
                     type: string
+                    description: SKU 图片
+            description: SkuInfo SKU 信息
         api.cin.interface.v1.SpecGroupInfo:
             type: object
             properties:
                 id:
                     type: string
+                    description: 规格组 ID
                 name:
                     type: string
+                    description: 规格组名称（如颜色、尺码）
                 values:
                     type: array
                     items:
                         type: string
+                    description: 规格值列表
+            description: SpecGroupInfo 规格组信息
         api.cin.interface.v1.SuggestProductReply:
             type: object
             properties:
@@ -5203,105 +6085,145 @@ components:
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: ToggleCartItemReply 选中/取消选中单个商品响应
         api.cin.interface.v1.ToggleCartItemRequest:
             type: object
             properties:
                 productId:
                     type: string
+                    description: 商品 ID
                 selected:
                     type: boolean
+                    description: 是否选中
                 skuId:
                     type: string
+            description: ToggleCartItemRequest 选中/取消选中单个商品请求
         api.cin.interface.v1.UpdateAddressReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: UpdateAddressReply 更新收货地址响应
         api.cin.interface.v1.UpdateAddressRequest:
             type: object
             properties:
                 id:
                     type: string
+                    description: 地址 ID
                 receiver:
                     type: string
+                    description: 收货人姓名
                 phone:
                     type: string
+                    description: 收货人手机号
                 province:
                     type: string
+                    description: 省份
                 city:
                     type: string
+                    description: 城市
                 district:
                     type: string
+                    description: 区县
                 detail:
                     type: string
+                    description: 详细地址
                 isDefault:
                     type: integer
+                    description: 是否默认地址（0=否 1=是）
                     format: int32
+            description: UpdateAddressRequest 更新收货地址请求
         api.cin.interface.v1.UpdateCartItemReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: UpdateCartItemReply 修改购物车商品数量响应
         api.cin.interface.v1.UpdateCartItemRequest:
             type: object
             properties:
                 productId:
                     type: string
+                    description: 商品 ID
                 quantity:
                     type: integer
+                    description: 修改后的数量
                     format: int32
                 skuId:
                     type: string
+            description: UpdateCartItemRequest 修改购物车商品数量请求
         api.cin.interface.v1.UpdateProductReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: UpdateProductReply 更新商品响应
         api.cin.interface.v1.UpdateProductRequest:
             type: object
             properties:
                 productId:
                     type: string
+                    description: 商品 ID
                 name:
                     type: string
+                    description: 商品名称
                 description:
                     type: string
+                    description: 商品描述
                 price:
                     type: string
+                    description: 价格（分）
+            description: UpdateProductRequest 更新商品请求
         api.cin.interface.v1.UpdateStockReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: UpdateStockReply 更新库存响应
         api.cin.interface.v1.UpdateStockRequest:
             type: object
             properties:
                 productId:
                     type: string
+                    description: 商品 ID
                 total:
                     type: integer
+                    description: 库存总量
                     format: int32
+            description: UpdateStockRequest 更新库存请求
         api.cin.interface.v1.UpdateUserInfoReply:
             type: object
             properties:
                 success:
                     type: boolean
+                    description: 是否成功
+            description: UpdateUserInfoReply 更新用户信息响应
         api.cin.interface.v1.UpdateUserInfoRequest:
             type: object
             properties:
                 id:
                     type: string
+                    description: 用户 ID
                 nickname:
                     type: string
+                    description: 昵称
                 avatar:
                     type: string
+                    description: 头像 URL
                 email:
                     type: string
+                    description: 邮箱
                 gender:
                     type: integer
                     format: int32
                 birthday:
                     type: string
+            description: UpdateUserInfoRequest 更新用户信息请求
         api.cin.interface.v1.UsableCouponItem:
             type: object
             properties:
@@ -5346,25 +6268,34 @@ components:
                     type: string
                 totalSpent:
                     type: string
-            description: ========== 个人中心概览 ==========
+            description: |-
+                ========== 个人中心概览 ==========
+                 UserCenterStats 个人中心统计
         api.service.user.v1.BannerItem:
             type: object
             properties:
                 id:
                     type: string
+                    description: Banner ID
                 title:
                     type: string
+                    description: 标题
                 subtitle:
                     type: string
+                    description: 副标题
                 image:
                     type: string
+                    description: 图片地址
                 link:
                     type: string
+                    description: 跳转链接
                 sortOrder:
                     type: integer
+                    description: 排序权重（数值越小越靠前）
                     format: int32
                 enabled:
                     type: boolean
+                    description: 是否启用
                 bgColor:
                     type: string
                 btnText:
@@ -5428,3 +6359,4 @@ tags:
     - name: User
       description: 用户信息服务
     - name: UserCoupon
+      description: 用户优惠券服务

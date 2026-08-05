@@ -26,16 +26,23 @@ service Banner {
   }
 }
 
+// ListBannersRequest 获取 Banner 列表请求
 message ListBannersRequest {}
 
+// ListBannersReply 获取 Banner 列表响应
 message ListBannersReply {
+  // Banner 列表
   repeated api.service.user.v1.BannerItem banners = 1;
 }
 
+// SaveBannersRequest 保存 Banner 请求
 message SaveBannersRequest {
+  // 待保存的 Banner 列表
   repeated api.service.user.v1.BannerItem banners = 1;
 }
 
+// SaveBannersReply 保存 Banner 响应
 message SaveBannersReply {
+  // 是否保存成功
   bool success = 1;
 }

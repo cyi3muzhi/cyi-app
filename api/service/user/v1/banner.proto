@@ -16,12 +16,19 @@ service AdminBanner {
 
 // Banner 项
 message BannerItem {
+  // Banner ID
   int64 id = 1;
+  // 标题
   string title = 2;
+  // 副标题
   string subtitle = 3;
+  // 图片地址
   string image = 4;
+  // 跳转链接
   string link = 5;
+  // 排序权重（数值越小越靠前）
   int32 sort_order = 6;
+  // 是否启用
   bool enabled = 7;
   string bg_color = 8;       // 背景色（如 "linear-gradient(...)"）
   string btn_text = 9;       // 按钮文字
@@ -29,16 +36,23 @@ message BannerItem {
   string text_color = 11;    // 文字颜色，十六进制，如 "#ffffff"
 }
 
+// GetBannersRequest 获取 Banner 列表请求（无参数）
 message GetBannersRequest {}
 
+// GetBannersReply 获取 Banner 列表响应
 message GetBannersReply {
+  // Banner 列表
   repeated BannerItem banners = 1;
 }
 
+// SaveBannersRequest 保存 Banner 请求（全量替换）
 message SaveBannersRequest {
+  // Banner 列表
   repeated BannerItem banners = 1;
 }
 
+// SaveBannersReply 保存 Banner 响应
 message SaveBannersReply {
+  // 是否保存成功
   bool success = 1;
 }

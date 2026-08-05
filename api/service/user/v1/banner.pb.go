@@ -23,18 +23,25 @@ const (
 
 // Banner 项
 type BannerItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Subtitle      string                 `protobuf:"bytes,3,opt,name=subtitle,proto3" json:"subtitle,omitempty"`
-	Image         string                 `protobuf:"bytes,4,opt,name=image,proto3" json:"image,omitempty"`
-	Link          string                 `protobuf:"bytes,5,opt,name=link,proto3" json:"link,omitempty"`
-	SortOrder     int32                  `protobuf:"varint,6,opt,name=sort_order,json=sortOrder,proto3" json:"sort_order,omitempty"`
-	Enabled       bool                   `protobuf:"varint,7,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	BgColor       string                 `protobuf:"bytes,8,opt,name=bg_color,json=bgColor,proto3" json:"bg_color,omitempty"`        // 背景色（如 "linear-gradient(...)"）
-	BtnText       string                 `protobuf:"bytes,9,opt,name=btn_text,json=btnText,proto3" json:"btn_text,omitempty"`        // 按钮文字
-	Template      string                 `protobuf:"bytes,10,opt,name=template,proto3" json:"template,omitempty"`                    // 模板类型：classic | full-image | centered | dark | minimal
-	TextColor     string                 `protobuf:"bytes,11,opt,name=text_color,json=textColor,proto3" json:"text_color,omitempty"` // 文字颜色，十六进制，如 "#ffffff"
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Banner ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 标题
+	Title string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	// 副标题
+	Subtitle string `protobuf:"bytes,3,opt,name=subtitle,proto3" json:"subtitle,omitempty"`
+	// 图片地址
+	Image string `protobuf:"bytes,4,opt,name=image,proto3" json:"image,omitempty"`
+	// 跳转链接
+	Link string `protobuf:"bytes,5,opt,name=link,proto3" json:"link,omitempty"`
+	// 排序权重（数值越小越靠前）
+	SortOrder int32 `protobuf:"varint,6,opt,name=sort_order,json=sortOrder,proto3" json:"sort_order,omitempty"`
+	// 是否启用
+	Enabled       bool   `protobuf:"varint,7,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	BgColor       string `protobuf:"bytes,8,opt,name=bg_color,json=bgColor,proto3" json:"bg_color,omitempty"`        // 背景色（如 "linear-gradient(...)"）
+	BtnText       string `protobuf:"bytes,9,opt,name=btn_text,json=btnText,proto3" json:"btn_text,omitempty"`        // 按钮文字
+	Template      string `protobuf:"bytes,10,opt,name=template,proto3" json:"template,omitempty"`                    // 模板类型：classic | full-image | centered | dark | minimal
+	TextColor     string `protobuf:"bytes,11,opt,name=text_color,json=textColor,proto3" json:"text_color,omitempty"` // 文字颜色，十六进制，如 "#ffffff"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -146,6 +153,7 @@ func (x *BannerItem) GetTextColor() string {
 	return ""
 }
 
+// GetBannersRequest 获取 Banner 列表请求（无参数）
 type GetBannersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -182,9 +190,11 @@ func (*GetBannersRequest) Descriptor() ([]byte, []int) {
 	return file_api_service_user_v1_banner_proto_rawDescGZIP(), []int{1}
 }
 
+// GetBannersReply 获取 Banner 列表响应
 type GetBannersReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Banners       []*BannerItem          `protobuf:"bytes,1,rep,name=banners,proto3" json:"banners,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Banner 列表
+	Banners       []*BannerItem `protobuf:"bytes,1,rep,name=banners,proto3" json:"banners,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -226,9 +236,11 @@ func (x *GetBannersReply) GetBanners() []*BannerItem {
 	return nil
 }
 
+// SaveBannersRequest 保存 Banner 请求（全量替换）
 type SaveBannersRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Banners       []*BannerItem          `protobuf:"bytes,1,rep,name=banners,proto3" json:"banners,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Banner 列表
+	Banners       []*BannerItem `protobuf:"bytes,1,rep,name=banners,proto3" json:"banners,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -270,9 +282,11 @@ func (x *SaveBannersRequest) GetBanners() []*BannerItem {
 	return nil
 }
 
+// SaveBannersReply 保存 Banner 响应
 type SaveBannersReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否保存成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

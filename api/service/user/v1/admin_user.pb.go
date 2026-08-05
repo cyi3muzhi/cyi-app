@@ -265,9 +265,11 @@ func (x *CreateAdminUserRequest) GetDepartment() string {
 	return ""
 }
 
+// CreateAdminUserReply 创建管理员响应
 type CreateAdminUserReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 新创建管理员的ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -309,6 +311,7 @@ func (x *CreateAdminUserReply) GetId() int64 {
 	return 0
 }
 
+// UpdateAdminUserRequest 更新管理员请求
 type UpdateAdminUserRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 管理员ID
@@ -417,9 +420,11 @@ func (x *UpdateAdminUserRequest) GetBio() string {
 	return ""
 }
 
+// UpdateAdminUserReply 更新管理员响应
 type UpdateAdminUserReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否更新成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -461,9 +466,11 @@ func (x *UpdateAdminUserReply) GetSuccess() bool {
 	return false
 }
 
+// GetAdminUserRequest 获取管理员请求
 type GetAdminUserRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 管理员ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -505,9 +512,11 @@ func (x *GetAdminUserRequest) GetId() int64 {
 	return 0
 }
 
+// GetAdminUserReply 获取管理员响应
 type GetAdminUserReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Admin         *AdminUserInfo         `protobuf:"bytes,1,opt,name=admin,proto3" json:"admin,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 管理员信息
+	Admin         *AdminUserInfo `protobuf:"bytes,1,opt,name=admin,proto3" json:"admin,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -549,13 +558,19 @@ func (x *GetAdminUserReply) GetAdmin() *AdminUserInfo {
 	return nil
 }
 
+// ListAdminUserRequest 管理员列表请求
 type ListAdminUserRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	Keyword       string                 `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`
-	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
-	Role          string                 `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 页码
+	Page int32 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	// 每页数量
+	PageSize int32 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	// 搜索关键字（匹配用户名/姓名等）
+	Keyword string `protobuf:"bytes,3,opt,name=keyword,proto3" json:"keyword,omitempty"`
+	// 状态筛选（如 1-正常 2-冻结）
+	Status string `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	// 角色筛选
+	Role          string `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -625,10 +640,13 @@ func (x *ListAdminUserRequest) GetRole() string {
 	return ""
 }
 
+// ListAdminUserReply 管理员列表响应
 type ListAdminUserReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*AdminUserInfo       `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 管理员列表
+	Items []*AdminUserInfo `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	// 总数
+	Total         int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -677,9 +695,11 @@ func (x *ListAdminUserReply) GetTotal() int32 {
 	return 0
 }
 
+// ToggleAdminUserStatusRequest 冻结/解冻管理员请求
 type ToggleAdminUserStatusRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 管理员ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -721,10 +741,13 @@ func (x *ToggleAdminUserStatusRequest) GetId() int64 {
 	return 0
 }
 
+// ToggleAdminUserStatusReply 冻结/解冻管理员响应
 type ToggleAdminUserStatusReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	NewStatus     int32                  `protobuf:"varint,2,opt,name=new_status,json=newStatus,proto3" json:"new_status,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否操作成功
+	Success bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	// 变更后的状态（如 1-正常 2-冻结）
+	NewStatus     int32 `protobuf:"varint,2,opt,name=new_status,json=newStatus,proto3" json:"new_status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -773,21 +796,35 @@ func (x *ToggleAdminUserStatusReply) GetNewStatus() int32 {
 	return 0
 }
 
+// AdminUserInfo 管理员信息
 type AdminUserInfo struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
-	Email         string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
-	Phone         string                 `protobuf:"bytes,6,opt,name=phone,proto3" json:"phone,omitempty"`
-	Department    string                 `protobuf:"bytes,7,opt,name=department,proto3" json:"department,omitempty"`
-	Position      string                 `protobuf:"bytes,8,opt,name=position,proto3" json:"position,omitempty"`
-	Bio           string                 `protobuf:"bytes,9,opt,name=bio,proto3" json:"bio,omitempty"`
-	Avatar        string                 `protobuf:"bytes,10,opt,name=avatar,proto3" json:"avatar,omitempty"`
-	Status        int32                  `protobuf:"varint,11,opt,name=status,proto3" json:"status,omitempty"`
-	LastLogin     string                 `protobuf:"bytes,12,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 管理员ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 用户名
+	Username string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	// 姓名
+	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	// 角色
+	Role string `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
+	// 邮箱
+	Email string `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
+	// 手机号
+	Phone string `protobuf:"bytes,6,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 部门
+	Department string `protobuf:"bytes,7,opt,name=department,proto3" json:"department,omitempty"`
+	// 职位
+	Position string `protobuf:"bytes,8,opt,name=position,proto3" json:"position,omitempty"`
+	// 个人简介
+	Bio string `protobuf:"bytes,9,opt,name=bio,proto3" json:"bio,omitempty"`
+	// 头像URL
+	Avatar string `protobuf:"bytes,10,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	// 状态（1-正常 2-冻结）
+	Status int32 `protobuf:"varint,11,opt,name=status,proto3" json:"status,omitempty"`
+	// 最近登录时间
+	LastLogin string `protobuf:"bytes,12,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
+	// 创建时间
+	CreatedAt     string `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -913,6 +950,7 @@ func (x *AdminUserInfo) GetCreatedAt() string {
 	return ""
 }
 
+// UpdateAdminAvatarRequest 更新管理员头像请求
 type UpdateAdminAvatarRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 管理员ID
@@ -967,9 +1005,11 @@ func (x *UpdateAdminAvatarRequest) GetAvatarUrl() string {
 	return ""
 }
 
+// UpdateAdminAvatarReply 更新管理员头像响应
 type UpdateAdminAvatarReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否更新成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

@@ -25,22 +25,37 @@ const (
 
 // 分类节点（返回前端使用）
 type CategoryTreeItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Slug          string                 `protobuf:"bytes,3,opt,name=slug,proto3" json:"slug,omitempty"`
-	Icon          string                 `protobuf:"bytes,4,opt,name=icon,proto3" json:"icon,omitempty"`
-	Sort          int32                  `protobuf:"varint,5,opt,name=sort,proto3" json:"sort,omitempty"`
-	Status        bool                   `protobuf:"varint,6,opt,name=status,proto3" json:"status,omitempty"`
-	Showcase      bool                   `protobuf:"varint,7,opt,name=showcase,proto3" json:"showcase,omitempty"`
-	Count         int32                  `protobuf:"varint,8,opt,name=count,proto3" json:"count,omitempty"`
-	Image         string                 `protobuf:"bytes,9,opt,name=image,proto3" json:"image,omitempty"`
-	SeoTitle      string                 `protobuf:"bytes,10,opt,name=seo_title,json=seoTitle,proto3" json:"seo_title,omitempty"`
-	SeoKeywords   string                 `protobuf:"bytes,11,opt,name=seo_keywords,json=seoKeywords,proto3" json:"seo_keywords,omitempty"`
-	SeoDesc       string                 `protobuf:"bytes,12,opt,name=seo_desc,json=seoDesc,proto3" json:"seo_desc,omitempty"`
-	ParentId      int64                  `protobuf:"varint,13,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
-	CreatedAt     int64                  `protobuf:"varint,14,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	Children      []*CategoryTreeItem    `protobuf:"bytes,15,rep,name=children,proto3" json:"children,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 分类名称
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 分类别名（URL 友好标识）
+	Slug string `protobuf:"bytes,3,opt,name=slug,proto3" json:"slug,omitempty"`
+	// 图标
+	Icon string `protobuf:"bytes,4,opt,name=icon,proto3" json:"icon,omitempty"`
+	// 排序值
+	Sort int32 `protobuf:"varint,5,opt,name=sort,proto3" json:"sort,omitempty"`
+	// 状态（是否启用）
+	Status bool `protobuf:"varint,6,opt,name=status,proto3" json:"status,omitempty"`
+	// 是否首页展示
+	Showcase bool `protobuf:"varint,7,opt,name=showcase,proto3" json:"showcase,omitempty"`
+	// 子分类数量
+	Count int32 `protobuf:"varint,8,opt,name=count,proto3" json:"count,omitempty"`
+	// 分类图片
+	Image string `protobuf:"bytes,9,opt,name=image,proto3" json:"image,omitempty"`
+	// SEO 标题
+	SeoTitle string `protobuf:"bytes,10,opt,name=seo_title,json=seoTitle,proto3" json:"seo_title,omitempty"`
+	// SEO 关键词
+	SeoKeywords string `protobuf:"bytes,11,opt,name=seo_keywords,json=seoKeywords,proto3" json:"seo_keywords,omitempty"`
+	// SEO 描述
+	SeoDesc string `protobuf:"bytes,12,opt,name=seo_desc,json=seoDesc,proto3" json:"seo_desc,omitempty"`
+	// 父分类 ID
+	ParentId int64 `protobuf:"varint,13,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
+	// 创建时间（Unix 秒）
+	CreatedAt int64 `protobuf:"varint,14,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// 子分类列表
+	Children      []*CategoryTreeItem `protobuf:"bytes,15,rep,name=children,proto3" json:"children,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -180,6 +195,7 @@ func (x *CategoryTreeItem) GetChildren() []*CategoryTreeItem {
 	return nil
 }
 
+// ListCategoryTreeRequest 获取分类树请求
 type ListCategoryTreeRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -216,10 +232,13 @@ func (*ListCategoryTreeRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_category_proto_rawDescGZIP(), []int{1}
 }
 
+// ListCategoryTreeReply 获取分类树响应
 type ListCategoryTreeReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*CategoryTreeItem    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类树节点列表
+	Items []*CategoryTreeItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	// 总数
+	Total         int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -268,6 +287,7 @@ func (x *ListCategoryTreeReply) GetTotal() int32 {
 	return 0
 }
 
+// ListChildCategoriesRequest 获取子分类列表请求
 type ListChildCategoriesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ParentId      int64                  `protobuf:"varint,1,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"` // 父分类 ID，0 查顶级
@@ -312,10 +332,13 @@ func (x *ListChildCategoriesRequest) GetParentId() int64 {
 	return 0
 }
 
+// ListChildCategoriesReply 获取子分类列表响应
 type ListChildCategoriesReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*CategoryTreeItem    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 子分类列表
+	Items []*CategoryTreeItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	// 总数
+	Total         int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -364,9 +387,11 @@ func (x *ListChildCategoriesReply) GetTotal() int32 {
 	return 0
 }
 
+// GetCategoryRequest 获取单个分类请求
 type GetCategoryRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类 ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -408,9 +433,11 @@ func (x *GetCategoryRequest) GetId() int64 {
 	return 0
 }
 
+// GetCategoryReply 获取单个分类响应
 type GetCategoryReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Item          *CategoryTreeItem      `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类信息
+	Item          *CategoryTreeItem `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -452,19 +479,31 @@ func (x *GetCategoryReply) GetItem() *CategoryTreeItem {
 	return nil
 }
 
+// CreateCategoryRequest 创建分类请求
 type CreateCategoryRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Slug          string                 `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
-	Icon          string                 `protobuf:"bytes,3,opt,name=icon,proto3" json:"icon,omitempty"`
-	Sort          int32                  `protobuf:"varint,4,opt,name=sort,proto3" json:"sort,omitempty"`
-	Status        bool                   `protobuf:"varint,5,opt,name=status,proto3" json:"status,omitempty"`
-	Showcase      bool                   `protobuf:"varint,6,opt,name=showcase,proto3" json:"showcase,omitempty"`
-	Image         string                 `protobuf:"bytes,7,opt,name=image,proto3" json:"image,omitempty"`
-	SeoTitle      string                 `protobuf:"bytes,8,opt,name=seo_title,json=seoTitle,proto3" json:"seo_title,omitempty"`
-	SeoKeywords   string                 `protobuf:"bytes,9,opt,name=seo_keywords,json=seoKeywords,proto3" json:"seo_keywords,omitempty"`
-	SeoDesc       string                 `protobuf:"bytes,10,opt,name=seo_desc,json=seoDesc,proto3" json:"seo_desc,omitempty"`
-	ParentId      int64                  `protobuf:"varint,11,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类名称
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// 分类别名
+	Slug string `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
+	// 图标
+	Icon string `protobuf:"bytes,3,opt,name=icon,proto3" json:"icon,omitempty"`
+	// 排序值
+	Sort int32 `protobuf:"varint,4,opt,name=sort,proto3" json:"sort,omitempty"`
+	// 状态
+	Status bool `protobuf:"varint,5,opt,name=status,proto3" json:"status,omitempty"`
+	// 是否首页展示
+	Showcase bool `protobuf:"varint,6,opt,name=showcase,proto3" json:"showcase,omitempty"`
+	// 分类图片
+	Image string `protobuf:"bytes,7,opt,name=image,proto3" json:"image,omitempty"`
+	// SEO 标题
+	SeoTitle string `protobuf:"bytes,8,opt,name=seo_title,json=seoTitle,proto3" json:"seo_title,omitempty"`
+	// SEO 关键词
+	SeoKeywords string `protobuf:"bytes,9,opt,name=seo_keywords,json=seoKeywords,proto3" json:"seo_keywords,omitempty"`
+	// SEO 描述
+	SeoDesc string `protobuf:"bytes,10,opt,name=seo_desc,json=seoDesc,proto3" json:"seo_desc,omitempty"`
+	// 父分类 ID
+	ParentId      int64 `protobuf:"varint,11,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -576,9 +615,11 @@ func (x *CreateCategoryRequest) GetParentId() int64 {
 	return 0
 }
 
+// CreateCategoryReply 创建分类响应
 type CreateCategoryReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 新创建的分类 ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -620,20 +661,33 @@ func (x *CreateCategoryReply) GetId() int64 {
 	return 0
 }
 
+// UpdateCategoryRequest 更新分类请求
 type UpdateCategoryRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Slug          string                 `protobuf:"bytes,3,opt,name=slug,proto3" json:"slug,omitempty"`
-	Icon          string                 `protobuf:"bytes,4,opt,name=icon,proto3" json:"icon,omitempty"`
-	Sort          int32                  `protobuf:"varint,5,opt,name=sort,proto3" json:"sort,omitempty"`
-	Status        bool                   `protobuf:"varint,6,opt,name=status,proto3" json:"status,omitempty"`
-	Showcase      bool                   `protobuf:"varint,7,opt,name=showcase,proto3" json:"showcase,omitempty"`
-	Image         string                 `protobuf:"bytes,8,opt,name=image,proto3" json:"image,omitempty"`
-	SeoTitle      string                 `protobuf:"bytes,9,opt,name=seo_title,json=seoTitle,proto3" json:"seo_title,omitempty"`
-	SeoKeywords   string                 `protobuf:"bytes,10,opt,name=seo_keywords,json=seoKeywords,proto3" json:"seo_keywords,omitempty"`
-	SeoDesc       string                 `protobuf:"bytes,11,opt,name=seo_desc,json=seoDesc,proto3" json:"seo_desc,omitempty"`
-	ParentId      int64                  `protobuf:"varint,12,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 分类名称
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 分类别名
+	Slug string `protobuf:"bytes,3,opt,name=slug,proto3" json:"slug,omitempty"`
+	// 图标
+	Icon string `protobuf:"bytes,4,opt,name=icon,proto3" json:"icon,omitempty"`
+	// 排序值
+	Sort int32 `protobuf:"varint,5,opt,name=sort,proto3" json:"sort,omitempty"`
+	// 状态
+	Status bool `protobuf:"varint,6,opt,name=status,proto3" json:"status,omitempty"`
+	// 是否首页展示
+	Showcase bool `protobuf:"varint,7,opt,name=showcase,proto3" json:"showcase,omitempty"`
+	// 分类图片
+	Image string `protobuf:"bytes,8,opt,name=image,proto3" json:"image,omitempty"`
+	// SEO 标题
+	SeoTitle string `protobuf:"bytes,9,opt,name=seo_title,json=seoTitle,proto3" json:"seo_title,omitempty"`
+	// SEO 关键词
+	SeoKeywords string `protobuf:"bytes,10,opt,name=seo_keywords,json=seoKeywords,proto3" json:"seo_keywords,omitempty"`
+	// SEO 描述
+	SeoDesc string `protobuf:"bytes,11,opt,name=seo_desc,json=seoDesc,proto3" json:"seo_desc,omitempty"`
+	// 父分类 ID
+	ParentId      int64 `protobuf:"varint,12,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -752,9 +806,11 @@ func (x *UpdateCategoryRequest) GetParentId() int64 {
 	return 0
 }
 
+// UpdateCategoryReply 更新分类响应
 type UpdateCategoryReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否更新成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -796,9 +852,11 @@ func (x *UpdateCategoryReply) GetSuccess() bool {
 	return false
 }
 
+// DeleteCategoryRequest 删除分类请求
 type DeleteCategoryRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类 ID
+	Id            int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -840,9 +898,11 @@ func (x *DeleteCategoryRequest) GetId() int64 {
 	return 0
 }
 
+// DeleteCategoryReply 删除分类响应
 type DeleteCategoryReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否删除成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -884,10 +944,13 @@ func (x *DeleteCategoryReply) GetSuccess() bool {
 	return false
 }
 
+// UpdateCategorySortRequest 更新分类排序请求
 type UpdateCategorySortRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Sort          int32                  `protobuf:"varint,2,opt,name=sort,proto3" json:"sort,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 新的排序值
+	Sort          int32 `protobuf:"varint,2,opt,name=sort,proto3" json:"sort,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -936,9 +999,11 @@ func (x *UpdateCategorySortRequest) GetSort() int32 {
 	return 0
 }
 
+// UpdateCategorySortReply 更新分类排序响应
 type UpdateCategorySortReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否更新成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -980,10 +1045,13 @@ func (x *UpdateCategorySortReply) GetSuccess() bool {
 	return false
 }
 
+// UpdateCategoryStatusRequest 更新分类状态请求
 type UpdateCategoryStatusRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Status        bool                   `protobuf:"varint,2,opt,name=status,proto3" json:"status,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 新的状态
+	Status        bool `protobuf:"varint,2,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1032,9 +1100,11 @@ func (x *UpdateCategoryStatusRequest) GetStatus() bool {
 	return false
 }
 
+// UpdateCategoryStatusReply 更新分类状态响应
 type UpdateCategoryStatusReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否更新成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1076,10 +1146,13 @@ func (x *UpdateCategoryStatusReply) GetSuccess() bool {
 	return false
 }
 
+// ToggleCategoryShowcaseRequest 切换首页展示请求
 type ToggleCategoryShowcaseRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Showcase      bool                   `protobuf:"varint,2,opt,name=showcase,proto3" json:"showcase,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 是否首页展示
+	Showcase      bool `protobuf:"varint,2,opt,name=showcase,proto3" json:"showcase,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1128,9 +1201,11 @@ func (x *ToggleCategoryShowcaseRequest) GetShowcase() bool {
 	return false
 }
 
+// ToggleCategoryShowcaseReply 切换首页展示响应
 type ToggleCategoryShowcaseReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否切换成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1172,10 +1247,13 @@ func (x *ToggleCategoryShowcaseReply) GetSuccess() bool {
 	return false
 }
 
+// BatchCategoryOperationRequest 批量操作分类请求
 type BatchCategoryOperationRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Action        string                 `protobuf:"bytes,1,opt,name=action,proto3" json:"action,omitempty"`
-	Ids           []int64                `protobuf:"varint,2,rep,packed,name=ids,proto3" json:"ids,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 批量操作类型（启用/禁用/删除）
+	Action string `protobuf:"bytes,1,opt,name=action,proto3" json:"action,omitempty"`
+	// 分类 ID 列表
+	Ids           []int64 `protobuf:"varint,2,rep,packed,name=ids,proto3" json:"ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1224,10 +1302,13 @@ func (x *BatchCategoryOperationRequest) GetIds() []int64 {
 	return nil
 }
 
+// BatchCategoryOperationReply 批量操作分类响应
 type BatchCategoryOperationReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	AffectedCount int32                  `protobuf:"varint,2,opt,name=affected_count,json=affectedCount,proto3" json:"affected_count,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否操作成功
+	Success bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	// 受影响数量
+	AffectedCount int32 `protobuf:"varint,2,opt,name=affected_count,json=affectedCount,proto3" json:"affected_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

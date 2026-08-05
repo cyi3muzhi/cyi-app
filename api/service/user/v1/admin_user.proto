@@ -65,10 +65,13 @@ message CreateAdminUserRequest {
 	string department = 7;
 }
 
+// CreateAdminUserReply 创建管理员响应
 message CreateAdminUserReply {
+	// 新创建管理员的ID
 	int64 id = 1;
 }
 
+// UpdateAdminUserRequest 更新管理员请求
 message UpdateAdminUserRequest {
 	// 管理员ID
 	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
@@ -88,58 +91,93 @@ message UpdateAdminUserRequest {
 	string bio = 8;
 }
 
+// UpdateAdminUserReply 更新管理员响应
 message UpdateAdminUserReply {
+	// 是否更新成功
 	bool success = 1;
 }
 
+// GetAdminUserRequest 获取管理员请求
 message GetAdminUserRequest {
+	// 管理员ID
 	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// GetAdminUserReply 获取管理员响应
 message GetAdminUserReply {
+	// 管理员信息
 	AdminUserInfo admin = 1;
 }
 
+// ListAdminUserRequest 管理员列表请求
 message ListAdminUserRequest {
+	// 页码
 	int32 page = 1;
+	// 每页数量
 	int32 page_size = 2;
+	// 搜索关键字（匹配用户名/姓名等）
 	string keyword = 3;
+	// 状态筛选（如 1-正常 2-冻结）
 	string status = 4;
+	// 角色筛选
 	string role = 5;
 }
 
+// ListAdminUserReply 管理员列表响应
 message ListAdminUserReply {
+	// 管理员列表
 	repeated AdminUserInfo items = 1;
+	// 总数
 	int32 total = 2;
 }
 
+// ToggleAdminUserStatusRequest 冻结/解冻管理员请求
 message ToggleAdminUserStatusRequest {
+	// 管理员ID
 	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// ToggleAdminUserStatusReply 冻结/解冻管理员响应
 message ToggleAdminUserStatusReply {
+	// 是否操作成功
 	bool success = 1;
+	// 变更后的状态（如 1-正常 2-冻结）
 	int32 new_status = 2;
 }
 
+// AdminUserInfo 管理员信息
 message AdminUserInfo {
+	// 管理员ID
 	int64 id = 1;
+	// 用户名
 	string username = 2;
+	// 姓名
 	string name = 3;
+	// 角色
 	string role = 4;
+	// 邮箱
 	string email = 5;
+	// 手机号
 	string phone = 6;
+	// 部门
 	string department = 7;
+	// 职位
 	string position = 8;
+	// 个人简介
 	string bio = 9;
+	// 头像URL
 	string avatar = 10;
+	// 状态（1-正常 2-冻结）
 	int32 status = 11;
+	// 最近登录时间
 	string last_login = 12;
+	// 创建时间
 	string created_at = 13;
 }
 
 
 
+// UpdateAdminAvatarRequest 更新管理员头像请求
 message UpdateAdminAvatarRequest {
 	// 管理员ID
 	int64 admin_id = 1 [(validate.rules).int64 = {gt: 0}];
@@ -147,6 +185,8 @@ message UpdateAdminAvatarRequest {
 	string avatar_url = 2 [(validate.rules).string = {min_len: 1, max_len: 1024}];
 }
 
+// UpdateAdminAvatarReply 更新管理员头像响应
 message UpdateAdminAvatarReply {
+	// 是否更新成功
 	bool success = 1;
 }

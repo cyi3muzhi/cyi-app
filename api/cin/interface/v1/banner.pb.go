@@ -24,9 +24,11 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ListBannersReply 公开 Banner 列表响应
 type ListBannersReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Banners       []*v1.BannerItem       `protobuf:"bytes,1,rep,name=banners,proto3" json:"banners,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Banner 列表
+	Banners       []*v1.BannerItem `protobuf:"bytes,1,rep,name=banners,proto3" json:"banners,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

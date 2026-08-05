@@ -51,118 +51,240 @@ service AdminProduct {
       body: "*"
     };
   }
+  // 更新商品库存（补货/调库存）
+  rpc UpdateStock (UpdateStockRequest) returns (UpdateStockReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/products/{id}/stock"
+      body: "*"
+    };
+  }
+  // 按 SKU 明细批量更新商品库存（有规格商品按 SKU 精确补货）
+  rpc UpdateSkuStocks (UpdateSkuStocksRequest) returns (UpdateSkuStocksReply) {
+    option (google.api.http) = {
+      put: "/admin/v1/products/{id}/sku-stock"
+      body: "*"
+    };
+  }
 }
 
+// ListProductRequest 商品列表请求
 message ListProductRequest {
+  // 页码
   int32 page = 1;
+  // 每页数量
   int32 page_size = 2;
+  // 搜索关键词
   string keyword = 3;
+  // 商品分类（已废弃，改用 category_id）
   string category = 4 [deprecated = true];
+  // 商品状态筛选
   string status = 5;
+  // 商品分类ID
   int64 category_id = 6;
   google.protobuf.Int32Value stock_eq = 7; // 按库存数量筛选（如 {value: 0}=缺货，不传=不筛选）
+  google.protobuf.Int32Value stock_lte = 8; // 按库存上限筛选（库存 <= value，用于库存预警，不传=不筛选）
 }
 
+// ListProductReply 商品列表响应
 message ListProductReply {
+  // 商品列表
   repeated ProductItem items = 1;
+  // 总数
   int32 total = 2;
 }
 
 // 规格组项（管理后台用）
 message SpecGroupItem {
+  // 规格组ID
   int64 id = 1;
+  // 规格组名称
   string name = 2;
+  // 规格值列表
   repeated string values = 3;
 }
 
 // SKU 项（管理后台用）
 message SkuItem {
+  // SKU ID
   int64 id = 1;
+  // SKU 编码
   string sku_code = 2;
+  // 售价（单位：分）
   int64 price = 3;
+  // 库存数量
   int32 stock = 4;
+  // 销量
   int32 sales = 5;
+  // 规格映射（规格组名 -> 规格值）
   map<string, string> spec = 6;
   string image = 7; // SKU图片
 }
 
+// ProductItem 商品项
 message ProductItem {
+  // 商品ID
   int64 id = 1;
+  // 商品名称
   string name = 2;
   string category = 3 [deprecated = true]; // 已废弃，改用 category_id
+  // 售价（单位：分）
   int64 price = 4;
+  // 库存数量
   int32 stock = 5;
+  // 销量
   int32 sales = 6;
+  // 商品状态（上架/下架）
   string status = 7;
+  // 商品主图
   string image = 8;
+  // SKU 信息
   string sku = 9;
+  // 规格组列表
   repeated SpecGroupItem specs = 10;
+  // SKU 列表
   repeated SkuItem skus = 11;
+  // 商品描述
   string description = 12;
   int64 category_id = 13; // 商品分类ID
   repeated string images = 14; // 轮播图列表
 }
 
+// CreateProductRequest 创建商品请求
 message CreateProductRequest {
+  // 商品名称
   string name = 1 [(validate.rules).string = {min_len: 1, max_len: 128}];
+  // 商品分类（已废弃，改用 category_id）
   string category = 2 [deprecated = true];
+  // 售价（单位：分）
   int64 price = 3 [(validate.rules).int64 = {gte: 0}];
+  // 库存数量
   int32 stock = 4 [(validate.rules).int32 = {gte: 0}];
+  // 商品描述
   string description = 5;
+  // 商品主图
   string image = 6;
+  // SKU 信息
   string sku = 7;
+  // 规格组列表
   repeated SpecGroupItem specs = 8;
+  // SKU 列表
   repeated SkuItem skus = 9;
   int64 category_id = 10; // 商品分类ID
   repeated string images = 11; // 轮播图列表
 }
 
+// CreateProductReply 创建商品响应
 message CreateProductReply {
+  // 商品ID
   int64 id = 1;
 }
 
+// UpdateProductRequest 更新商品请求
 message UpdateProductRequest {
+  // 商品ID
   int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 商品名称
   string name = 2;
+  // 商品分类（已废弃，改用 category_id）
   string category = 3 [deprecated = true];
+  // 售价（单位：分）
   int64 price = 4;
+  // 库存数量
   int32 stock = 5;
+  // 商品描述
   string description = 6;
+  // 商品主图
   string image = 7;
+  // SKU 信息
   string sku = 8;
+  // 商品状态（上架/下架）
   string status = 9;
+  // 规格组列表
   repeated SpecGroupItem specs = 10;
+  // SKU 列表
   repeated SkuItem skus = 11;
   int64 category_id = 12; // 商品分类ID
   repeated string images = 13; // 轮播图列表
 }
 
+// UpdateProductReply 更新商品响应
 message UpdateProductReply {
+  // 是否成功
   bool success = 1;
 }
 
+// DeleteProductRequest 删除商品请求
 message DeleteProductRequest {
+  // 商品ID
   int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// DeleteProductReply 删除商品响应
 message DeleteProductReply {
+  // 是否成功
   bool success = 1;
 }
 
+// GetProductRequest 商品详情请求
 message GetProductRequest {
+  // 商品ID
   int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// GetProductReply 商品详情响应
 message GetProductReply {
+  // 商品详情
   ProductItem product = 1;
 }
 
+// BatchOperationRequest 批量操作请求
 message BatchOperationRequest {
+  // 批量操作类型（上架/下架/删除）
   string action = 1 [(validate.rules).string = {in: ["上架", "下架", "删除"]}];
+  // 商品ID列表
   repeated int64 ids = 2 [(validate.rules).repeated = {min_items: 1}];
 }
 
+// BatchOperationReply 批量操作响应
 message BatchOperationReply {
+  // 是否成功
   bool success = 1;
+  // 受影响的数量
   int32 affected_count = 2;
+}
+
+// UpdateStockRequest 更新商品库存请求
+message UpdateStockRequest {
+  // 商品ID
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 库存总量
+  int32 total = 2 [(validate.rules).int32 = {gte: 0}];
+}
+
+// UpdateStockReply 更新商品库存响应
+message UpdateStockReply {
+  // 是否成功
+  bool success = 1;
+}
+
+// 单个 SKU 库存项（管理后台用）
+message SkuStockItem {
+  // SKU ID
+  int64 sku_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 库存总量
+  int32 total = 2 [(validate.rules).int32 = {gte: 0}];
+}
+
+// UpdateSkuStocksRequest 按 SKU 明细批量更新库存请求
+message UpdateSkuStocksRequest {
+  // 商品ID
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+  // SKU 库存明细列表
+  repeated SkuStockItem items = 2 [(validate.rules).repeated = {min_items: 1}];
+}
+
+// UpdateSkuStocksReply 按 SKU 明细批量更新库存响应
+message UpdateSkuStocksReply {
+  // 是否成功
+  bool success = 1;
 }

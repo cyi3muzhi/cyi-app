@@ -23,11 +23,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// PlaceOrderRequest 下单请求
 type PlaceOrderRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
-	Count         int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
-	SkuId         int64                  `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（多SKU商品必传）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品 ID
+	ProductId int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	// 购买数量
+	Count         int32 `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+	SkuId         int64 `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（多SKU商品必传）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -83,9 +86,11 @@ func (x *PlaceOrderRequest) GetSkuId() int64 {
 	return 0
 }
 
+// PlaceOrderReply 下单响应
 type PlaceOrderReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 订单 ID
+	OrderId       int64 `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -127,9 +132,11 @@ func (x *PlaceOrderReply) GetOrderId() int64 {
 	return 0
 }
 
+// PayOrderRequest 支付订单请求
 type PayOrderRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 订单 ID
+	OrderId       int64 `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -171,9 +178,11 @@ func (x *PayOrderRequest) GetOrderId() int64 {
 	return 0
 }
 
+// PayOrderReply 支付订单响应
 type PayOrderReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否支付成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -215,9 +224,11 @@ func (x *PayOrderReply) GetSuccess() bool {
 	return false
 }
 
+// ReceiveOrderRequest 确认收货请求
 type ReceiveOrderRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 订单 ID
+	OrderId       int64 `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -259,9 +270,11 @@ func (x *ReceiveOrderRequest) GetOrderId() int64 {
 	return 0
 }
 
+// ReceiveOrderReply 确认收货响应
 type ReceiveOrderReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -303,10 +316,12 @@ func (x *ReceiveOrderReply) GetSuccess() bool {
 	return false
 }
 
+// CancelOrderRequest 取消订单请求
 type CancelOrderRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
-	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"` // 取消原因（可选）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 订单 ID
+	OrderId       int64  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	Reason        string `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"` // 取消原因（可选）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -355,9 +370,11 @@ func (x *CancelOrderRequest) GetReason() string {
 	return ""
 }
 
+// CancelOrderReply 取消订单响应
 type CancelOrderReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -399,6 +416,7 @@ func (x *CancelOrderReply) GetSuccess() bool {
 	return false
 }
 
+// CartCheckoutRequest 购物车结算请求
 type CartCheckoutRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*CartItem            `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
@@ -491,9 +509,11 @@ func (x *CartCheckoutRequest) GetCouponId() int64 {
 	return 0
 }
 
+// CartCheckoutReply 购物车结算响应
 type CartCheckoutReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 订单 ID
+	OrderId       int64 `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -535,11 +555,14 @@ func (x *CartCheckoutReply) GetOrderId() int64 {
 	return 0
 }
 
+// CartItem 购物车商品项（结算用）
 type CartItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductId     int64                  `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
-	Quantity      int32                  `protobuf:"varint,2,opt,name=quantity,proto3" json:"quantity,omitempty"`
-	SkuId         int64                  `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（多SKU商品必传）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品 ID
+	ProductId int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	// 购买数量
+	Quantity      int32 `protobuf:"varint,2,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	SkuId         int64 `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（多SKU商品必传）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -595,12 +618,17 @@ func (x *CartItem) GetSkuId() int64 {
 	return 0
 }
 
+// ListOrderRequest 订单列表请求
 type ListOrderRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
-	Keyword       string                 `protobuf:"bytes,4,opt,name=keyword,proto3" json:"keyword,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 页码
+	Page int32 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	// 每页数量
+	PageSize int32 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	// 订单状态筛选
+	Status string `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	// 搜索关键词（订单号/商品名等）
+	Keyword       string `protobuf:"bytes,4,opt,name=keyword,proto3" json:"keyword,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -663,10 +691,13 @@ func (x *ListOrderRequest) GetKeyword() string {
 	return ""
 }
 
+// ListOrderReply 订单列表响应
 type ListOrderReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*OrderItem           `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 订单列表
+	Items []*OrderItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	// 订单总数
+	Total         int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -715,23 +746,33 @@ func (x *ListOrderReply) GetTotal() int32 {
 	return 0
 }
 
+// OrderItem 订单项
 type OrderItem struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Id               int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	OrderNo          string                 `protobuf:"bytes,2,opt,name=order_no,json=orderNo,proto3" json:"order_no,omitempty"`
-	CreatedAt        string                 `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UserName         string                 `protobuf:"bytes,4,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
-	Amount           int64                  `protobuf:"varint,5,opt,name=amount,proto3" json:"amount,omitempty"`
-	Payment          string                 `protobuf:"bytes,6,opt,name=payment,proto3" json:"payment,omitempty"`
-	Status           string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
-	StatusText       string                 `protobuf:"bytes,8,opt,name=status_text,json=statusText,proto3" json:"status_text,omitempty"`
-	Products         []*OrderProduct        `protobuf:"bytes,9,rep,name=products,proto3" json:"products,omitempty"`
-	LogisticsCompany string                 `protobuf:"bytes,10,opt,name=logistics_company,json=logisticsCompany,proto3" json:"logistics_company,omitempty"` // 物流公司（发货后）
-	LogisticsNo      string                 `protobuf:"bytes,11,opt,name=logistics_no,json=logisticsNo,proto3" json:"logistics_no,omitempty"`                // 快递单号（发货后）
-	Receiver         string                 `protobuf:"bytes,12,opt,name=receiver,proto3" json:"receiver,omitempty"`                                         // 收货人
-	Phone            string                 `protobuf:"bytes,13,opt,name=phone,proto3" json:"phone,omitempty"`                                               // 手机号
-	Address          string                 `protobuf:"bytes,14,opt,name=address,proto3" json:"address,omitempty"`                                           // 完整收货地址
-	PayDeadline      int64                  `protobuf:"varint,15,opt,name=pay_deadline,json=payDeadline,proto3" json:"pay_deadline,omitempty"`               // 支付截止时间（Unix 秒，待付款订单为下单时间+30分钟，其余为 0）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 订单 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 订单号
+	OrderNo string `protobuf:"bytes,2,opt,name=order_no,json=orderNo,proto3" json:"order_no,omitempty"`
+	// 下单时间
+	CreatedAt string `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// 下单用户
+	UserName string `protobuf:"bytes,4,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
+	// 订单金额（分）
+	Amount int64 `protobuf:"varint,5,opt,name=amount,proto3" json:"amount,omitempty"`
+	// 支付方式
+	Payment string `protobuf:"bytes,6,opt,name=payment,proto3" json:"payment,omitempty"`
+	// 订单状态（状态码）
+	Status string `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
+	// 订单状态文本
+	StatusText string `protobuf:"bytes,8,opt,name=status_text,json=statusText,proto3" json:"status_text,omitempty"`
+	// 订单商品列表
+	Products         []*OrderProduct `protobuf:"bytes,9,rep,name=products,proto3" json:"products,omitempty"`
+	LogisticsCompany string          `protobuf:"bytes,10,opt,name=logistics_company,json=logisticsCompany,proto3" json:"logistics_company,omitempty"` // 物流公司（发货后）
+	LogisticsNo      string          `protobuf:"bytes,11,opt,name=logistics_no,json=logisticsNo,proto3" json:"logistics_no,omitempty"`                // 快递单号（发货后）
+	Receiver         string          `protobuf:"bytes,12,opt,name=receiver,proto3" json:"receiver,omitempty"`                                         // 收货人
+	Phone            string          `protobuf:"bytes,13,opt,name=phone,proto3" json:"phone,omitempty"`                                               // 手机号
+	Address          string          `protobuf:"bytes,14,opt,name=address,proto3" json:"address,omitempty"`                                           // 完整收货地址
+	PayDeadline      int64           `protobuf:"varint,15,opt,name=pay_deadline,json=payDeadline,proto3" json:"pay_deadline,omitempty"`               // 支付截止时间（Unix 秒，待付款订单为下单时间+30分钟，其余为 0）
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -871,15 +912,21 @@ func (x *OrderItem) GetPayDeadline() int64 {
 	return 0
 }
 
+// OrderProduct 订单商品项
 type OrderProduct struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Spec          string                 `protobuf:"bytes,2,opt,name=spec,proto3" json:"spec,omitempty"`
-	Qty           int32                  `protobuf:"varint,3,opt,name=qty,proto3" json:"qty,omitempty"`
-	Price         int64                  `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
-	Image         string                 `protobuf:"bytes,5,opt,name=image,proto3" json:"image,omitempty"`
-	ProductId     int64                  `protobuf:"varint,6,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 商品ID（再次购买用）
-	SkuId         int64                  `protobuf:"varint,7,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`             // SKU ID（再次购买用）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品名称
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// 规格描述
+	Spec string `protobuf:"bytes,2,opt,name=spec,proto3" json:"spec,omitempty"`
+	// 购买数量
+	Qty int32 `protobuf:"varint,3,opt,name=qty,proto3" json:"qty,omitempty"`
+	// 单价（分）
+	Price int64 `protobuf:"varint,4,opt,name=price,proto3" json:"price,omitempty"`
+	// 商品图片
+	Image         string `protobuf:"bytes,5,opt,name=image,proto3" json:"image,omitempty"`
+	ProductId     int64  `protobuf:"varint,6,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 商品ID（再次购买用）
+	SkuId         int64  `protobuf:"varint,7,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`             // SKU ID（再次购买用）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -963,9 +1010,11 @@ func (x *OrderProduct) GetSkuId() int64 {
 	return 0
 }
 
+// GetOrderRequest 订单详情请求
 type GetOrderRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 订单 ID
+	OrderId       int64 `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1007,9 +1056,11 @@ func (x *GetOrderRequest) GetOrderId() int64 {
 	return 0
 }
 
+// GetOrderReply 订单详情响应
 type GetOrderReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Order         *OrderItem             `protobuf:"bytes,1,opt,name=order,proto3" json:"order,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 订单详情
+	Order         *OrderItem `protobuf:"bytes,1,opt,name=order,proto3" json:"order,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1053,9 +1104,10 @@ func (x *GetOrderReply) GetOrder() *OrderItem {
 
 // 申请退款请求
 type ApplyRefundRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
-	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"` // 退款原因
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 订单 ID
+	OrderId       int64  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	Reason        string `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"` // 退款原因
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1106,8 +1158,9 @@ func (x *ApplyRefundRequest) GetReason() string {
 
 // 申请退款响应
 type ApplyRefundReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RefundId      int64                  `protobuf:"varint,1,opt,name=refund_id,json=refundId,proto3" json:"refund_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 退款单 ID
+	RefundId      int64 `protobuf:"varint,1,opt,name=refund_id,json=refundId,proto3" json:"refund_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1151,10 +1204,12 @@ func (x *ApplyRefundReply) GetRefundId() int64 {
 
 // 我的退款记录请求
 type ListRefundRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"` // 按退款单状态筛选（1-待审核 2-已通过 3-已拒绝；空字符串表示全部）
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 页码
+	Page int32 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	// 每页数量
+	PageSize      int32  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Status        string `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"` // 按退款单状态筛选（1-待审核 2-已通过 3-已拒绝；空字符串表示全部）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1212,9 +1267,11 @@ func (x *ListRefundRequest) GetStatus() string {
 
 // 我的退款记录响应
 type ListRefundReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*RefundItem          `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 退款记录列表
+	Items []*RefundItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	// 退款记录总数
+	Total         int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1374,8 +1431,9 @@ func (x *RefundItem) GetCreatedAt() string {
 
 // 查询物流轨迹请求
 type GetLogisticsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 订单 ID
+	OrderId       int64 `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

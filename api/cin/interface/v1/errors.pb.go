@@ -27,16 +27,25 @@ type CinInterfaceErrorReason int32
 
 const (
 	// 用户模块 0-99
-	CinInterfaceErrorReason_USER_NOT_EXIST     CinInterfaceErrorReason = 0
-	CinInterfaceErrorReason_USER_NOT_FOUND     CinInterfaceErrorReason = 3
-	CinInterfaceErrorReason_PASSWORD_ERROR     CinInterfaceErrorReason = 4
+	// 用户不存在
+	CinInterfaceErrorReason_USER_NOT_EXIST CinInterfaceErrorReason = 0
+	// 用户未找到
+	CinInterfaceErrorReason_USER_NOT_FOUND CinInterfaceErrorReason = 3
+	// 密码错误
+	CinInterfaceErrorReason_PASSWORD_ERROR CinInterfaceErrorReason = 4
+	// 用户信息更新失败
 	CinInterfaceErrorReason_USER_UPDATE_FAILED CinInterfaceErrorReason = 5
 	// 订单模块 100-199
+	// 订单不存在
 	CinInterfaceErrorReason_ORDER_ID_NOT_EXIST CinInterfaceErrorReason = 6
+	// 订单已支付
 	CinInterfaceErrorReason_ORDER_ALREADY_PAID CinInterfaceErrorReason = 10
 	// 商品模块 200-299
-	CinInterfaceErrorReason_PRODUCT_NOT_AVAILABLE  CinInterfaceErrorReason = 7
-	CinInterfaceErrorReason_INSUFFICIENT_STOCK     CinInterfaceErrorReason = 8
+	// 商品不可用（已下架等）
+	CinInterfaceErrorReason_PRODUCT_NOT_AVAILABLE CinInterfaceErrorReason = 7
+	// 库存不足
+	CinInterfaceErrorReason_INSUFFICIENT_STOCK CinInterfaceErrorReason = 8
+	// 库存操作失败
 	CinInterfaceErrorReason_STOCK_OPERATION_FAILED CinInterfaceErrorReason = 9
 )
 

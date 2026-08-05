@@ -77,6 +77,26 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  // 低库存预警商品数量（库存 <= 阈值，为 0 时不显示徽标）
+  const stockAlertCount = ref('')
+
+  /** 刷新低库存预警数量，使用系统设置的预警阈值 */
+  async function fetchStockAlertCount() {
+    try {
+      let threshold = 10
+      try {
+        const settings = await getSettings()
+        threshold = settings.stockAlertThreshold ?? 10
+      } catch {
+        // 读取阈值失败时使用默认值 10
+      }
+      const res = await listProducts({ page: 1, page_size: 1, stock_lte: threshold })
+      stockAlertCount.value = (res.total || 0) > 0 ? String(res.total) : ''
+    } catch {
+      stockAlertCount.value = ''
+    }
+  }
+
   // 计算侧边栏宽度
   const sidebarWidth = computed(() => sidebarCollapsed.value ? '64px' : '240px')
 
@@ -153,6 +173,7 @@ export const useAppStore = defineStore('app', () => {
     agentPanelOpen,
     productOnlineCount,
     orderPendingCount,
+    stockAlertCount,
     shopName,
     sidebarWidth,
     isLoggedIn,
@@ -164,6 +185,7 @@ export const useAppStore = defineStore('app', () => {
     logout,
     fetchProductOnlineCount,
     fetchOrderPendingCount,
+    fetchStockAlertCount,
     fetchShopName
   }
 })

@@ -20,11 +20,16 @@ service Blades {
   }
 }
 
+// AiChatRequest AI 聊天请求
 message AiChatRequest {
+  // 用户输入的聊天内容
   string message = 1 [(validate.rules).string = {min_len: 1, max_len: 500}];
+  // 会话 ID（用于多轮连续对话，首次对话可传空）
   string session_id = 2;
 }
 
+// AiChatReply AI 聊天响应
 message AiChatReply {
+  // AI 智能助手的回复内容
   string message = 1;
 }

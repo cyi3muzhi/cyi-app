@@ -56,11 +56,15 @@ service User {
 
 // UserInfo 用户完整信息（多处复用）
 message UserInfo {
+	// 用户ID
 	int64 id = 1;
 	string username = 2;          // 登录账号
+	// 手机号
 	string phone = 3;
+	// 邮箱
 	string email = 4;
 	string nickname = 5;          // 展示名
+	// 头像URL
 	string avatar = 6;
 	int32 gender = 7;            // 0=未知 1=男 2=女
 	string birthday = 8;          // YYYY-MM-DD
@@ -68,126 +72,197 @@ message UserInfo {
 	string level = 10;            // 会员等级 regular/gold/diamond
 	int64 growth_value = 11;      // 成长值（预留）
 	int64 last_login_at = 12;    // 最近登录时间戳
+	// 最近登录IP
 	string last_login_ip = 13;
 	string register_source = 14;  // 注册来源 web/app/wx_mini
-	int64 created_at = 15;        // 注册时间戳
+	// 注册时间戳
+	int64 created_at = 15;
+	// 更新时间戳
 	int64 updated_at = 16;
 }
 
 // ========== CreateUser ==========
+// CreateUserRequest 创建用户请求
 message CreateUserRequest {
+	// 用户名
 	string username = 1 [(validate.rules).string = {min_len: 2, max_len: 32}];
+	// 手机号
 	string phone = 2;
+	// 邮箱
 	string email = 3;
+	// 密码
 	string password = 4 [(validate.rules).string = {min_len: 6, max_len: 32}];
+	// 昵称
 	string nickname = 5;
+	// 注册来源（web/app/wx_mini）
 	string register_source = 6;
 }
+// CreateUserReply 创建用户响应
 message CreateUserReply {
+	// 新创建的用户ID
 	int64 id = 1;
 }
 
 // ========== UpdateUser ==========
+// UpdateUserRequest 更新用户资料请求
 message UpdateUserRequest {
+	// 用户ID
 	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+	// 昵称
 	string nickname = 2;
+	// 头像URL
 	string avatar = 3;
+	// 手机号
 	string phone = 4;
+	// 邮箱
 	string email = 5;
+	// 性别（0=未知 1=男 2=女）
 	int32 gender = 6;
+	// 生日（YYYY-MM-DD）
 	string birthday = 7;
+	// 会员等级（regular/gold/diamond）
 	string level = 8;
 }
+// UpdateUserReply 更新用户资料响应
 message UpdateUserReply {
+	// 是否更新成功
 	bool success = 1;
 }
 
 // ========== DeleteUser ==========
+// DeleteUserRequest 删除用户请求（软删除）
 message DeleteUserRequest {
+	// 用户ID
 	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
+// DeleteUserReply 删除用户响应
 message DeleteUserReply {
+	// 是否删除成功
 	bool success = 1;
 }
 
 // ========== GetUser ==========
+// GetUserRequest 获取用户详情请求
 message GetUserRequest {
+	// 用户ID
 	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
+// GetUserReply 获取用户详情响应
 message GetUserReply {
+	// 用户信息
 	UserInfo user = 1;
 }
 
 // ========== ListUser ==========
+// ListUserRequest 用户列表请求
 message ListUserRequest {
+	// 页码
 	int32 page = 1 [(validate.rules).int32 = {gte: 1}];
+	// 每页数量
 	int32 page_size = 2 [(validate.rules).int32 = {gte: 1, lte: 100}];
 	string keyword = 3;    // 模糊匹配 username/phone/nickname/email
 	string level = 4;      // 会员等级筛选
 	int32 status = 5;      // 0=全部 1=正常 2=冻结
 }
+// ListUserReply 用户列表响应
 message ListUserReply {
+	// 用户列表
 	repeated UserInfo items = 1;
+	// 总数
 	int32 total = 2;
 }
 
 // ========== ToggleUserStatus ==========
+// ToggleUserStatusRequest 冻结/解冻用户请求
 message ToggleUserStatusRequest {
+	// 用户ID
 	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
+// ToggleUserStatusReply 冻结/解冻用户响应
 message ToggleUserStatusReply {
+	// 是否操作成功
 	bool success = 1;
 	int32 new_status = 2;   // 1=正常 2=冻结
 }
 
 // ========== GetUserStats ==========
+// GetUserStatsReply 用户统计数据响应
 message GetUserStatsReply {
+	// 用户总数
 	int64 total_users = 1;
+	// 今日新增用户数
 	int64 today_new = 2;
+	// 今日新增用户增长率
 	double today_new_growth = 3;
+	// 活跃用户数
 	int64 active_users = 4;
+	// 会员用户数
 	int64 member_users = 5;
+	// 会员占比
 	double member_ratio = 6;
 }
 
 // ========== UpdateUserAvatar ==========
+// UpdateUserAvatarRequest 更新用户头像请求
 message UpdateUserAvatarRequest {
+	// 用户ID
 	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+	// 头像URL
 	string avatar_url = 2 [(validate.rules).string = {min_len: 1, max_len: 1024}];
 }
+// UpdateUserAvatarReply 更新用户头像响应
 message UpdateUserAvatarReply {
+	// 是否更新成功
 	bool success = 1;
 }
 
 // ========== 兼容老接口 ==========
+// CheckUserExistRequest 校验账号是否存在请求
 message CheckUserExistRequest {
+	// 手机号
 	string phone = 1;
+	// 用户名
 	string username = 2;
 }
+// CheckUserExistReply 校验账号是否存在响应
 message CheckUserExistReply {
+	// 是否存在
 	bool exist = 1;
 }
 
+// GetUserByUsernameReq 根据用户名获取用户请求
 message GetUserByUsernameReq {
+	// 用户名
 	string username = 1;
 }
+// GetUserByUsernameReply 根据用户名获取用户响应
 message GetUserByUsernameReply {
+	// 用户ID
 	int64 id = 1;
+	// 用户名
 	string username = 2;
 }
 
+// VerifyPasswordRequest 校验密码请求
 message VerifyPasswordRequest {
+	// 用户名
 	string username = 1;
+	// 密码
 	string password = 2;
 }
+// VerifyPasswordReply 校验密码响应
 message VerifyPasswordReply {
+	// 密码是否匹配
 	bool valid = 1;
 }
 
+// UserCountReply 用户数量统计响应
 message UserCountReply {
+	// 用户总数
 	int64 count = 1;
 }
 
+// RegisterRequest 注册请求
 message RegisterRequest {
 	string username = 1;   // 登录账号（注册时 = 手机号）
 	string password = 2;
@@ -195,27 +270,41 @@ message RegisterRequest {
 	string phone = 4;      // 手机号（与 username 相同，作为联系方式存储）
 	string client_ip = 5;  // 客户端 IP（注册即登录时记录）
 }
+// RegisterReply 注册响应
 message RegisterReply {
+	// 是否注册成功
 	bool success = 1;
 }
 
+// LoginRequest 登录请求
 message LoginRequest {
+	// 用户名
 	string username = 1 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
+	// 密码
 	string password = 3 [(validate.rules).string = {min_len: 6, max_len: 20}];
+	// API 密钥
 	string api_key = 4;
 	string client_ip = 5;  // 客户端 IP
 }
+// LoginReply 登录响应
 message LoginReply {
+	// 登录令牌（token）
 	string token = 1;
 }
 
 // ========== ChangePassword ==========
+// ChangePasswordRequest 修改密码请求
 message ChangePasswordRequest {
+	// 用户ID
 	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+	// 旧密码
 	string old_password = 2 [(validate.rules).string = {min_len: 6, max_len: 32}];
+	// 新密码
 	string new_password = 3 [(validate.rules).string = {min_len: 6, max_len: 32}];
 }
+// ChangePasswordReply 修改密码响应
 message ChangePasswordReply {
+	// 是否修改成功
 	bool success = 1;
 }
 
@@ -234,54 +323,90 @@ message AddressInfo {
 	int64 update_time = 10; // 更新时间（Unix 秒）
 }
 
+// ListAddressRequest 地址列表请求
 message ListAddressRequest {
+	// 用户ID
 	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
 }
+// ListAddressReply 地址列表响应
 message ListAddressReply {
+	// 地址列表
 	repeated AddressInfo items = 1;
 }
 
+// CreateAddressRequest 新增地址请求
 message CreateAddressRequest {
+	// 用户ID
 	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+	// 收货人姓名
 	string receiver = 2 [(validate.rules).string = {min_len: 2, max_len: 32}];
+	// 收货人手机号
 	string phone = 3 [(validate.rules).string = {min_len: 6, max_len: 20}];
+	// 省份
 	string province = 4;
+	// 城市
 	string city = 5;
+	// 区县
 	string district = 6;
+	// 详细地址
 	string detail = 7 [(validate.rules).string = {min_len: 2, max_len: 255}];
 	int32 is_default = 8; // 1=设为默认地址
 }
+// CreateAddressReply 新增地址响应
 message CreateAddressReply {
+	// 新创建的地址ID
 	int64 id = 1;
 }
 
+// UpdateAddressRequest 更新地址请求
 message UpdateAddressRequest {
+	// 地址ID
 	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+	// 用户ID
 	int64 user_id = 2 [(validate.rules).int64 = {gt: 0}];
+	// 收货人姓名
 	string receiver = 3;
+	// 收货人手机号
 	string phone = 4;
+	// 省份
 	string province = 5;
+	// 城市
 	string city = 6;
+	// 区县
 	string district = 7;
+	// 详细地址
 	string detail = 8;
+	// 是否默认地址（0=否 1=是）
 	int32 is_default = 9;
 }
+// UpdateAddressReply 更新地址响应
 message UpdateAddressReply {
+	// 是否更新成功
 	bool success = 1;
 }
 
+// DeleteAddressRequest 删除地址请求
 message DeleteAddressRequest {
+	// 地址ID
 	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+	// 用户ID
 	int64 user_id = 2 [(validate.rules).int64 = {gt: 0}];
 }
+// DeleteAddressReply 删除地址响应
 message DeleteAddressReply {
+	// 是否删除成功
 	bool success = 1;
 }
 
+// SetDefaultAddressRequest 设置默认地址请求
 message SetDefaultAddressRequest {
+	// 地址ID
 	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+	// 用户ID
 	int64 user_id = 2 [(validate.rules).int64 = {gt: 0}];
 }
+// SetDefaultAddressReply 设置默认地址响应
 message SetDefaultAddressReply {
+	// 是否设置成功
 	bool success = 1;
 }

@@ -23,6 +23,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ListBannersRequest 获取 Banner 列表请求
 type ListBannersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -59,9 +60,11 @@ func (*ListBannersRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_banner_proto_rawDescGZIP(), []int{0}
 }
 
+// ListBannersReply 获取 Banner 列表响应
 type ListBannersReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Banners       []*v1.BannerItem       `protobuf:"bytes,1,rep,name=banners,proto3" json:"banners,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Banner 列表
+	Banners       []*v1.BannerItem `protobuf:"bytes,1,rep,name=banners,proto3" json:"banners,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -103,9 +106,11 @@ func (x *ListBannersReply) GetBanners() []*v1.BannerItem {
 	return nil
 }
 
+// SaveBannersRequest 保存 Banner 请求
 type SaveBannersRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Banners       []*v1.BannerItem       `protobuf:"bytes,1,rep,name=banners,proto3" json:"banners,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 待保存的 Banner 列表
+	Banners       []*v1.BannerItem `protobuf:"bytes,1,rep,name=banners,proto3" json:"banners,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -147,9 +152,11 @@ func (x *SaveBannersRequest) GetBanners() []*v1.BannerItem {
 	return nil
 }
 
+// SaveBannersReply 保存 Banner 响应
 type SaveBannersReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否保存成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

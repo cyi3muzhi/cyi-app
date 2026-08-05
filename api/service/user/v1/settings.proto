@@ -14,62 +14,113 @@ service AdminSettings {
   rpc UpdateSettings (UpdateSettingsRequest) returns (UpdateSettingsReply);
 }
 
+// GetSettingsRequest 获取系统设置请求（无参数）
 message GetSettingsRequest {}
 
+// GetSettingsReply 系统设置信息响应
 message GetSettingsReply {
+  // 店铺名称
   string shop_name = 1;
+  // 店铺 Logo 图片地址
   string shop_logo = 2;
+  // 店铺描述
   string shop_description = 3;
+  // 联系电话
   string contact_phone = 4;
+  // 联系邮箱
   string contact_email = 5;
+  // ICP 备案号
   string icp_record = 6;
+  // 自动确认收货天数
   int32 auto_confirm_days = 7;
+  // 自动关闭订单分钟数
   int32 auto_close_minutes = 8;
+  // 退款超时天数
   int32 refund_timeout_days = 9;
+  // 库存预警阈值
   int32 stock_alert_threshold = 10;
+  // 是否开启新品自动上架
   bool new_product_online = 11;
+  // 是否开启商品审核
   bool product_approval = 12;
+  // 是否开启新订单通知
   bool new_order_notify = 13;
+  // 是否开启退款通知
   bool refund_notify = 14;
+  // 是否开启用户注册通知
   bool user_register_notify = 15;
+  // 是否开启库存预警通知
   bool stock_alert_notify = 16;
+  // 是否开启登录失败次数限制
   bool login_attempt_limit = 17;
+  // 是否开启登录验证码
   bool login_captcha = 18;
+  // 会话超时分钟数
   int32 session_timeout_minutes = 19;
+  // 已启用的支付方式列表
   repeated string enabled_payments = 20;
+  // 默认支付方式
   string default_payment = 21;
+  // 免运费门槛金额
   double free_shipping_threshold = 22;
+  // 默认物流公司
   string default_shipping_company = 23;
   repeated string hot_keywords = 24;  // 热门搜索词（用户端搜索框联想展示）
 }
 
+// UpdateSettingsRequest 更新系统设置请求
 message UpdateSettingsRequest {
+  // 店铺名称
   string shop_name = 1;
+  // 店铺 Logo 图片地址
   string shop_logo = 2;
+  // 店铺描述
   string shop_description = 3;
+  // 联系电话
   string contact_phone = 4;
+  // 联系邮箱
   string contact_email = 5;
+  // ICP 备案号
   string icp_record = 6;
+  // 自动确认收货天数
   int32 auto_confirm_days = 7;
+  // 自动关闭订单分钟数
   int32 auto_close_minutes = 8;
+  // 退款超时天数
   int32 refund_timeout_days = 9;
+  // 库存预警阈值
   int32 stock_alert_threshold = 10;
+  // 是否开启新品自动上架
   bool new_product_online = 11;
+  // 是否开启商品审核
   bool product_approval = 12;
+  // 是否开启新订单通知
   bool new_order_notify = 13;
+  // 是否开启退款通知
   bool refund_notify = 14;
+  // 是否开启用户注册通知
   bool user_register_notify = 15;
+  // 是否开启库存预警通知
   bool stock_alert_notify = 16;
+  // 是否开启登录失败次数限制
   bool login_attempt_limit = 17;
+  // 是否开启登录验证码
   bool login_captcha = 18;
+  // 会话超时分钟数
   int32 session_timeout_minutes = 19;
+  // 已启用的支付方式列表
   repeated string enabled_payments = 20;
+  // 默认支付方式
   string default_payment = 21;
+  // 免运费门槛金额
   double free_shipping_threshold = 22;
+  // 默认物流公司
   string default_shipping_company = 23;
   repeated string hot_keywords = 24;  // 热门搜索词
 }
 
+// UpdateSettingsReply 更新系统设置响应
 message UpdateSettingsReply {
+  // 是否更新成功
   bool success = 1;
 }

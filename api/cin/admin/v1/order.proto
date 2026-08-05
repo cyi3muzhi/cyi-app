@@ -79,29 +79,49 @@ service AdminOrder {
   }
 }
 
+// ListOrderRequest 订单列表请求
 message ListOrderRequest {
+  // 页码
   int32 page = 1;
+  // 每页数量
   int32 page_size = 2;
+  // 订单状态筛选
   string status = 3;
+  // 搜索关键词（订单号/用户）
   string keyword = 4;
+  // 开始日期（按下单时间筛选）
   string date_from = 5;
+  // 结束日期（按下单时间筛选）
   string date_to = 6;
 }
 
+// ListOrderReply 订单列表响应
 message ListOrderReply {
+  // 订单列表
   repeated OrderItem items = 1;
+  // 总数
   int32 total = 2;
 }
 
+// OrderItem 订单项
 message OrderItem {
+  // 订单ID
   int64 id = 1;
+  // 订单号
   string order_no = 2;
+  // 下单时间
   string created_at = 3;
+  // 下单用户
   string user_name = 4;
+  // 订单金额（单位：分）
   int64 amount = 5;
+  // 支付方式
   string payment = 6;
+  // 订单状态
   string status = 7;
+  // 订单状态文本
   string status_text = 8;
+  // 订单商品列表
   repeated OrderProduct products = 9;
   string logistics_company = 10; // 物流公司（发货后）
   string logistics_no = 11; // 快递单号（发货后）
@@ -110,47 +130,72 @@ message OrderItem {
   string address = 14; // 完整收货地址
 }
 
+// OrderProduct 订单商品项
 message OrderProduct {
+  // 商品名称
   string name = 1;
+  // 商品规格
   string spec = 2;
+  // 购买数量
   int32 qty = 3;
+  // 单价（单位：分）
   int64 price = 4;
   string image = 5; // 商品图片
 }
 
+// GetOrderRequest 订单详情请求
 message GetOrderRequest {
+  // 订单ID
   int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// GetOrderReply 订单详情响应
 message GetOrderReply {
+  // 订单详情
   OrderItem order = 1;
 }
 
+// ShipOrderRequest 订单发货请求
 message ShipOrderRequest {
+  // 订单ID
   int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 物流公司
   string logistics_company = 2;
+  // 快递单号
   string logistics_no = 3;
 }
 
+// ShipOrderReply 订单发货响应
 message ShipOrderReply {
+  // 是否成功
   bool success = 1;
 }
 
+// CancelOrderRequest 取消订单请求
 message CancelOrderRequest {
+  // 订单ID
   int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 取消原因
   string reason = 2;
 }
 
+// CancelOrderReply 取消订单响应
 message CancelOrderReply {
+  // 是否成功
   bool success = 1;
 }
 
+// ExportOrderRequest 导出订单请求
 message ExportOrderRequest {
+  // 订单状态筛选
   string status = 1;
+  // 开始日期
   string date_from = 2;
+  // 结束日期
   string date_to = 3;
 }
 
+// ExportOrderReply 导出订单响应
 message ExportOrderReply {
   string task_id = 1; // 异步任务ID，前端用于轮询状态
   ExportStatus status = 2; // 当前状态（初始为 PENDING）
@@ -158,6 +203,7 @@ message ExportOrderReply {
 
 // 导出任务状态查询请求
 message ExportTaskStatusRequest {
+  // 导出任务ID
   string task_id = 1 [(validate.rules).string.min_len = 1];
 }
 
@@ -175,6 +221,7 @@ message ExportTaskStatusReply {
 
 // 导出任务状态枚举
 enum ExportStatus {
+  // 未指定
   ExportStatusUnspecified = 0;
   PENDING = 1; // 已入队，等待处理
   PROCESSING = 2; // 处理中
@@ -195,7 +242,9 @@ message OrderStatsReply {
 
 // 退款单列表请求
 message ListRefundRequest {
+  // 页码
   int32 page = 1;
+  // 每页数量
   int32 page_size = 2;
   string status = 3; // 状态筛选（1-待审核 2-已通过 3-已拒绝；空=全部）
   string keyword = 4; // 订单号模糊搜索
@@ -203,7 +252,9 @@ message ListRefundRequest {
 
 // 退款单列表响应
 message ListRefundReply {
+  // 退款单列表
   repeated RefundItem items = 1;
+  // 总数
   int32 total = 2;
 }
 
@@ -226,6 +277,7 @@ message RefundItem {
 
 // 审核退款请求
 message AuditRefundRequest {
+  // 退款单ID
   int64 refund_id = 1 [(validate.rules).int64 = {gt: 0}];
   bool approve = 2; // true=通过（退款）；false=拒绝
   string reject_reason = 3; // 拒绝原因（approve=false 时必填）
@@ -233,11 +285,13 @@ message AuditRefundRequest {
 
 // 审核退款响应
 message AuditRefundReply {
+  // 是否成功
   bool success = 1;
 }
 
 // 查询物流轨迹请求
 message GetLogisticsRequest {
+  // 订单ID
   int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 

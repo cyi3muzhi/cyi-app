@@ -13,31 +13,50 @@ enum AdminErrorReason {
   option (errors.default_code) = 400;
 
   // 通用 0-99
+  // 未授权（401）
   UNAUTHORIZED = 0 [(errors.code) = 401];
+  // 无权限（403）
   FORBIDDEN = 1 [(errors.code) = 403];
+  // 资源不存在（404）
   NOT_FOUND = 2 [(errors.code) = 404];
 
   // 商品模块 100-199
+  // 商品不存在
   PRODUCT_NOT_FOUND = 100 [(errors.code) = 404];
+  // 商品创建失败
   PRODUCT_CREATE_FAILED = 101 [(errors.code) = 422];
+  // 商品更新失败
   PRODUCT_UPDATE_FAILED = 102 [(errors.code) = 422];
+  // 商品删除失败
   PRODUCT_DELETE_FAILED = 103 [(errors.code) = 422];
 
   // 订单模块 200-299
+  // 订单不存在
   ORDER_NOT_FOUND = 200 [(errors.code) = 404];
+  // 订单发货失败
   ORDER_SHIP_FAILED = 201 [(errors.code) = 422];
+  // 订单取消失败
   ORDER_CANCEL_FAILED = 202 [(errors.code) = 422];
 
   // 用户模块 300-399
+  // 用户不存在
   USER_NOT_FOUND_ADMIN = 300 [(errors.code) = 404];
+  // 用户创建失败
   USER_CREATE_FAILED = 301 [(errors.code) = 422];
+  // 用户更新失败
   USER_UPDATE_FAILED_ADMIN = 302 [(errors.code) = 422];
+  // 用户状态切换失败
   USER_TOGGLE_STATUS_FAILED = 303 [(errors.code) = 422];
 
   // 优惠券模块 400-499
+  // 优惠券不存在
   COUPON_NOT_FOUND = 400 [(errors.code) = 404];
+  // 优惠券创建失败
   COUPON_CREATE_FAILED = 401 [(errors.code) = 422];
+  // 优惠券更新失败
   COUPON_UPDATE_FAILED = 402 [(errors.code) = 422];
+  // 优惠券删除失败
   COUPON_DELETE_FAILED = 403 [(errors.code) = 422];
+  // 优惠券状态无效
   COUPON_STATUS_INVALID = 404 [(errors.code) = 422];
 }

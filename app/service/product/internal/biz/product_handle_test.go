@@ -31,7 +31,7 @@ func (m *mockProductRepo) DeleteProduct(ctx context.Context, productID int64) er
 func (m *mockProductRepo) GetProduct(ctx context.Context, productID int64) (*Product, error) {
 	return m.getProduct(ctx, productID)
 }
-func (m *mockProductRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*Product, int32, error) {
+func (m *mockProductRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ, stockLTE int32) ([]*Product, int32, error) {
 	return m.listProduct(ctx, page, pageSize, keyword, categoryID, status, stockEQ)
 }
 func (m *mockProductRepo) SuggestProduct(ctx context.Context, keyword string, limit int32) ([]string, error) {
@@ -42,6 +42,7 @@ func (m *mockProductRepo) SuggestProduct(ctx context.Context, keyword string, li
 type mockStockRepo struct {
 	createStock            func(ctx context.Context, in *Stock) error
 	updateStock            func(ctx context.Context, in *Stock) error
+	updateStockBySkuID     func(ctx context.Context, productID, skuID int64, total int32) error
 	deleteStockByProductID func(ctx context.Context, productID int64) error
 	deleteStockBySkuID     func(ctx context.Context, skuID int64) error
 	reserveStock           func(ctx context.Context, skuID int64, count, version int32) (int32, error)
@@ -57,6 +58,9 @@ func (m *mockStockRepo) CreateStock(ctx context.Context, in *Stock) error {
 }
 func (m *mockStockRepo) UpdateStock(ctx context.Context, in *Stock) error {
 	return m.updateStock(ctx, in)
+}
+func (m *mockStockRepo) UpdateStockBySkuID(ctx context.Context, productID, skuID int64, total int32) error {
+	return m.updateStockBySkuID(ctx, productID, skuID, total)
 }
 func (m *mockStockRepo) DeleteStockByProductID(ctx context.Context, productID int64) error {
 	return m.deleteStockByProductID(ctx, productID)
@@ -701,7 +705,7 @@ func TestListProduct_Success(t *testing.T) {
 	}
 	uc := newProductTestUseCase(pr, sr, sgr, skur)
 
-	products, total, err := uc.ListProduct(context.Background(), 1, 10, "", 0, "", -1)
+	products, total, err := uc.ListProduct(context.Background(), 1, 10, "", 0, "", -1, -1)
 	assert.NoError(t, err)
 	assert.Equal(t, int32(2), total)
 	assert.Len(t, products, 2)

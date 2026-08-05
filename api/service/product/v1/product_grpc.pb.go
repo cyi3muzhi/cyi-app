@@ -30,12 +30,20 @@ const (
 // ProductClient is the client API for Product service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// 商品服务
 type ProductClient interface {
+	// 创建商品
 	CreateProduct(ctx context.Context, in *CreateProductRequest, opts ...grpc.CallOption) (*CreateProductReply, error)
+	// 更新商品
 	UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...grpc.CallOption) (*UpdateProductReply, error)
+	// 删除商品
 	DeleteProduct(ctx context.Context, in *DeleteProductRequest, opts ...grpc.CallOption) (*DeleteProductReply, error)
+	// 获取商品详情
 	GetProduct(ctx context.Context, in *GetProductRequest, opts ...grpc.CallOption) (*GetProductReply, error)
+	// 商品列表
 	ListProduct(ctx context.Context, in *ListProductRequest, opts ...grpc.CallOption) (*ListProductReply, error)
+	// 商品名称搜索联想
 	SuggestProduct(ctx context.Context, in *SuggestProductRequest, opts ...grpc.CallOption) (*SuggestProductReply, error)
 }
 
@@ -110,12 +118,20 @@ func (c *productClient) SuggestProduct(ctx context.Context, in *SuggestProductRe
 // ProductServer is the server API for Product service.
 // All implementations must embed UnimplementedProductServer
 // for forward compatibility.
+//
+// 商品服务
 type ProductServer interface {
+	// 创建商品
 	CreateProduct(context.Context, *CreateProductRequest) (*CreateProductReply, error)
+	// 更新商品
 	UpdateProduct(context.Context, *UpdateProductRequest) (*UpdateProductReply, error)
+	// 删除商品
 	DeleteProduct(context.Context, *DeleteProductRequest) (*DeleteProductReply, error)
+	// 获取商品详情
 	GetProduct(context.Context, *GetProductRequest) (*GetProductReply, error)
+	// 商品列表
 	ListProduct(context.Context, *ListProductRequest) (*ListProductReply, error)
+	// 商品名称搜索联想
 	SuggestProduct(context.Context, *SuggestProductRequest) (*SuggestProductReply, error)
 	mustEmbedUnimplementedProductServer()
 }

@@ -23,10 +23,13 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ClaimCouponRequest 领取优惠券请求
 type ClaimCouponRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CouponId      int64                  `protobuf:"varint,1,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`
-	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 优惠券 ID
+	CouponId int64 `protobuf:"varint,1,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`
+	// 领取来源（如领券中心、活动页等）
+	Source        string `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -75,9 +78,11 @@ func (x *ClaimCouponRequest) GetSource() string {
 	return ""
 }
 
+// ClaimCouponReply 领取优惠券响应
 type ClaimCouponReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RecordId      int64                  `protobuf:"varint,1,opt,name=record_id,json=recordId,proto3" json:"record_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 优惠券发放记录 ID
+	RecordId      int64 `protobuf:"varint,1,opt,name=record_id,json=recordId,proto3" json:"record_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -119,11 +124,14 @@ func (x *ClaimCouponReply) GetRecordId() int64 {
 	return 0
 }
 
+// ListMyCouponsRequest 我的优惠券列表请求
 type ListMyCouponsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        int32                  `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"` // 0=全部 1=未使用 2=已使用 3=已过期
-	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Status int32                  `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"` // 0=全部 1=未使用 2=已使用 3=已过期
+	// 页码
+	Page int32 `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
+	// 每页数量
+	PageSize      int32 `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -179,21 +187,34 @@ func (x *ListMyCouponsRequest) GetPageSize() int32 {
 	return 0
 }
 
+// MyCouponItem 我的优惠券项
 type MyCouponItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RecordId      int64                  `protobuf:"varint,1,opt,name=record_id,json=recordId,proto3" json:"record_id,omitempty"`
-	CouponId      int64                  `protobuf:"varint,2,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Type          int32                  `protobuf:"varint,4,opt,name=type,proto3" json:"type,omitempty"`
-	Value         int64                  `protobuf:"varint,5,opt,name=value,proto3" json:"value,omitempty"`
-	MinAmount     int64                  `protobuf:"varint,6,opt,name=min_amount,json=minAmount,proto3" json:"min_amount,omitempty"`
-	ValidStart    string                 `protobuf:"bytes,7,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"`
-	ValidEnd      string                 `protobuf:"bytes,8,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`
-	RecordStatus  int32                  `protobuf:"varint,9,opt,name=record_status,json=recordStatus,proto3" json:"record_status,omitempty"` // 0=未使用 1=已使用 2=已过期
-	UsedTime      int64                  `protobuf:"varint,10,opt,name=used_time,json=usedTime,proto3" json:"used_time,omitempty"`
-	OrderId       int64                  `protobuf:"varint,11,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
-	Source        string                 `protobuf:"bytes,12,opt,name=source,proto3" json:"source,omitempty"`
-	CreateTime    string                 `protobuf:"bytes,13,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 发放记录 ID
+	RecordId int64 `protobuf:"varint,1,opt,name=record_id,json=recordId,proto3" json:"record_id,omitempty"`
+	// 优惠券 ID
+	CouponId int64 `protobuf:"varint,2,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`
+	// 优惠券名称
+	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	// 类型：1-立减 2-折扣 3-满减
+	Type int32 `protobuf:"varint,4,opt,name=type,proto3" json:"type,omitempty"`
+	// 面值（分）或折扣百分比
+	Value int64 `protobuf:"varint,5,opt,name=value,proto3" json:"value,omitempty"`
+	// 使用门槛（分）
+	MinAmount int64 `protobuf:"varint,6,opt,name=min_amount,json=minAmount,proto3" json:"min_amount,omitempty"`
+	// 有效期开始时间
+	ValidStart string `protobuf:"bytes,7,opt,name=valid_start,json=validStart,proto3" json:"valid_start,omitempty"`
+	// 有效期结束时间
+	ValidEnd     string `protobuf:"bytes,8,opt,name=valid_end,json=validEnd,proto3" json:"valid_end,omitempty"`
+	RecordStatus int32  `protobuf:"varint,9,opt,name=record_status,json=recordStatus,proto3" json:"record_status,omitempty"` // 0=未使用 1=已使用 2=已过期
+	// 使用时间（Unix 秒，未使用为 0）
+	UsedTime int64 `protobuf:"varint,10,opt,name=used_time,json=usedTime,proto3" json:"used_time,omitempty"`
+	// 使用的订单 ID（未使用为 0）
+	OrderId int64 `protobuf:"varint,11,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	// 领取来源
+	Source string `protobuf:"bytes,12,opt,name=source,proto3" json:"source,omitempty"`
+	// 领取时间
+	CreateTime    string `protobuf:"bytes,13,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -319,10 +340,13 @@ func (x *MyCouponItem) GetCreateTime() string {
 	return ""
 }
 
+// ListMyCouponsReply 我的优惠券列表响应
 type ListMyCouponsReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*MyCouponItem        `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 优惠券列表
+	Items []*MyCouponItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	// 总数
+	Total         int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -371,10 +395,13 @@ func (x *ListMyCouponsReply) GetTotal() int32 {
 	return 0
 }
 
+// ListAvailableCouponsRequest 领券中心列表请求
 type ListAvailableCouponsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 页码
+	Page int32 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	// 每页数量
+	PageSize      int32 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -556,10 +583,13 @@ func (x *AvailableCouponItem) GetLimitPerUser() int32 {
 	return 0
 }
 
+// ListAvailableCouponsReply 领券中心列表响应
 type ListAvailableCouponsReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*AvailableCouponItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 可领取优惠券列表
+	Items []*AvailableCouponItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	// 总数
+	Total         int32 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -610,8 +640,9 @@ func (x *ListAvailableCouponsReply) GetTotal() int32 {
 
 // 结算可用券请求：amount 为订单商品金额（分）
 type ListUsableCouponsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Amount        int64                  `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 订单商品金额（分）
+	Amount        int64 `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -770,9 +801,11 @@ func (x *UsableCouponItem) GetGapAmount() int64 {
 	return 0
 }
 
+// ListUsableCouponsReply 结算可用优惠券响应
 type ListUsableCouponsReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*UsableCouponItem    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 可用优惠券列表
+	Items         []*UsableCouponItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

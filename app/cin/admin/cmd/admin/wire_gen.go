@@ -35,6 +35,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth, enforcerProvider)
 	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	categoryClient := data.NewCategoryServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	stockClient := data.NewStockServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	adminUserClient := data.NewAdminUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
@@ -49,7 +50,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	universalClient := data.ProvideUniversalClient(client)
 	natsConn := data.NewNATSConn()
 	asynqClient := data.NewAsynqClient(confData, logger)
-	dataData, cleanup, err := data.NewData(productClient, categoryClient, adminUserClient, orderClient, userClient, operationLogClient, couponServiceClient, bladesClient, rustFSClient, client, natsConn, asynqClient, logger)
+	dataData, cleanup, err := data.NewData(productClient, categoryClient, stockClient, adminUserClient, orderClient, userClient, operationLogClient, couponServiceClient, bladesClient, rustFSClient, client, natsConn, asynqClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}

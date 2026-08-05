@@ -5,6 +5,7 @@ package api.service.product.v1;
 option go_package = "cyi-app/api/service/product/v1;v1";
 import "errors/errors.proto";
 
+// ProductErrorReason 商品服务错误码
 enum ProductErrorReason {
 	// 设置缺省错误码
 	option (errors.default_code) = 500;

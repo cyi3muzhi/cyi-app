@@ -28,6 +28,8 @@ const (
 // UserCouponClient is the client API for UserCoupon service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// 用户优惠券服务
 type UserCouponClient interface {
 	// 用户领取优惠券
 	ClaimCoupon(ctx context.Context, in *ClaimCouponRequest, opts ...grpc.CallOption) (*ClaimCouponReply, error)
@@ -90,6 +92,8 @@ func (c *userCouponClient) ListUsableCoupons(ctx context.Context, in *ListUsable
 // UserCouponServer is the server API for UserCoupon service.
 // All implementations must embed UnimplementedUserCouponServer
 // for forward compatibility.
+//
+// 用户优惠券服务
 type UserCouponServer interface {
 	// 用户领取优惠券
 	ClaimCoupon(context.Context, *ClaimCouponRequest) (*ClaimCouponReply, error)

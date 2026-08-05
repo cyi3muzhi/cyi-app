@@ -58,94 +58,147 @@ service AdminUser {
   }
 }
 
+// ListUserRequest 用户列表请求
 message ListUserRequest {
+  // 页码
   int32 page = 1;
+  // 每页数量
   int32 page_size = 2;
+  // 搜索关键词
   string keyword = 3;
+  // 会员等级筛选
   string level = 4;
   int32 status = 5;  // 0=全部 1=正常 2=冻结
 }
 
+// ListUserReply 用户列表响应
 message ListUserReply {
+  // 用户列表
   repeated UserItem items = 1;
+  // 总数
   int32 total = 2;
 }
 
 // UserItem 用户列表项（不含消费金额/订单数，这些数据由 order service 聚合，后续在用户详情里展示）
 message UserItem {
+  // 用户ID
   int64 id = 1;
   string username = 2;          // 登录账号
   string nickname = 3;          // 展示名
+  // 手机号
   string phone = 4;
+  // 邮箱
   string email = 5;
+  // 头像
   string avatar = 6;
   int32 gender = 7;             // 0=未知 1=男 2=女
   string level = 8;             // 会员等级 regular/gold/diamond
+  // 最后登录时间（Unix 秒）
   int64 last_login_at = 9;
+  // 注册来源
   string register_source = 10;
   int32 status = 11;            // 1=正常 2=冻结
   int64 created_at = 12;        // 注册时间戳
 }
 
+// GetUserRequest 用户详情请求
 message GetUserRequest {
+  // 用户ID
   int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// GetUserReply 用户详情响应
 message GetUserReply {
+  // 用户详情
   UserItem user = 1;
 }
 
+// CreateUserRequest 创建用户请求
 message CreateUserRequest {
+  // 登录账号
   string username = 1 [(validate.rules).string = {min_len: 2, max_len: 32}];
+  // 手机号
   string phone = 2;
+  // 邮箱
   string email = 3;
+  // 密码
   string password = 4 [(validate.rules).string = {min_len: 6}];
+  // 昵称
   string nickname = 5;
+  // 注册来源
   string register_source = 6;
 }
 
+// CreateUserReply 创建用户响应
 message CreateUserReply {
+  // 用户ID
   int64 id = 1;
 }
 
+// UpdateUserRequest 更新用户请求
 message UpdateUserRequest {
+  // 用户ID
   int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 昵称
   string nickname = 2;
+  // 手机号
   string phone = 3;
+  // 邮箱
   string email = 4;
+  // 性别（0=未知 1=男 2=女）
   int32 gender = 5;
+  // 生日
   string birthday = 6;
+  // 会员等级
   string level = 7;
 }
 
+// UpdateUserReply 更新用户响应
 message UpdateUserReply {
+  // 是否成功
   bool success = 1;
 }
 
+// DeleteUserRequest 删除用户请求
 message DeleteUserRequest {
+  // 用户ID
   int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// DeleteUserReply 删除用户响应
 message DeleteUserReply {
+  // 是否成功
   bool success = 1;
 }
 
+// ToggleUserStatusRequest 冻结/解冻用户请求
 message ToggleUserStatusRequest {
+  // 用户ID
   int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
 
+// ToggleUserStatusReply 冻结/解冻用户响应
 message ToggleUserStatusReply {
+  // 是否成功
   bool success = 1;
   int32 new_status = 2;  // 1=正常 2=冻结
 }
 
+// GetUserStatsRequest 获取用户统计数据请求（无入参）
 message GetUserStatsRequest {}
 
+// GetUserStatsReply 获取用户统计数据响应
 message GetUserStatsReply {
+  // 用户总数
   int64 total_users = 1;
+  // 今日新增用户数
   int64 today_new = 2;
+  // 今日新增用户增长率
   double today_new_growth = 3;
+  // 活跃用户数
   int64 active_users = 4;
+  // 会员用户数
   int64 member_users = 5;
+  // 会员占比
   double member_ratio = 6;
 }

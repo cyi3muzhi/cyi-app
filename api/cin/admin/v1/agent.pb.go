@@ -22,9 +22,11 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ChatRequest 非流式聊天请求
 type ChatRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户输入的消息内容
+	Message       string `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -66,9 +68,11 @@ func (x *ChatRequest) GetMessage() string {
 	return ""
 }
 
+// ChatReply 非流式聊天响应
 type ChatReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Response      string                 `protobuf:"bytes,1,opt,name=response,proto3" json:"response,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// AI 回复内容
+	Response      string `protobuf:"bytes,1,opt,name=response,proto3" json:"response,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -110,11 +114,15 @@ func (x *ChatReply) GetResponse() string {
 	return ""
 }
 
+// GenerateDescriptionRequest AI 生成商品描述请求
 type GenerateDescriptionRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductName   string                 `protobuf:"bytes,1,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"`
-	Category      string                 `protobuf:"bytes,2,opt,name=category,proto3" json:"category,omitempty"`
-	Specs         string                 `protobuf:"bytes,3,opt,name=specs,proto3" json:"specs,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品名称
+	ProductName string `protobuf:"bytes,1,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"`
+	// 商品分类
+	Category string `protobuf:"bytes,2,opt,name=category,proto3" json:"category,omitempty"`
+	// 商品规格
+	Specs         string `protobuf:"bytes,3,opt,name=specs,proto3" json:"specs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -170,9 +178,11 @@ func (x *GenerateDescriptionRequest) GetSpecs() string {
 	return ""
 }
 
+// GenerateDescriptionReply AI 生成商品描述响应
 type GenerateDescriptionReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Description   string                 `protobuf:"bytes,1,opt,name=description,proto3" json:"description,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 生成的商品描述
+	Description   string `protobuf:"bytes,1,opt,name=description,proto3" json:"description,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -214,10 +224,13 @@ func (x *GenerateDescriptionReply) GetDescription() string {
 	return ""
 }
 
+// ExpandDescriptionRequest AI 扩写商品描述请求
 type ExpandDescriptionRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductName   string                 `protobuf:"bytes,1,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"`
-	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 商品名称
+	ProductName string `protobuf:"bytes,1,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"`
+	// 待扩写的商品描述内容
+	Content       string `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -266,9 +279,11 @@ func (x *ExpandDescriptionRequest) GetContent() string {
 	return ""
 }
 
+// ExpandDescriptionReply AI 扩写商品描述响应
 type ExpandDescriptionReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Description   string                 `protobuf:"bytes,1,opt,name=description,proto3" json:"description,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 扩写后的商品描述
+	Description   string `protobuf:"bytes,1,opt,name=description,proto3" json:"description,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -310,10 +325,13 @@ func (x *ExpandDescriptionReply) GetDescription() string {
 	return ""
 }
 
+// GenerateBannerCopyRequest AI 生成 Banner 文案请求
 type GenerateBannerCopyRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Topic         string                 `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
-	Subtitle      string                 `protobuf:"bytes,2,opt,name=subtitle,proto3" json:"subtitle,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 主题
+	Topic string `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
+	// 副标题
+	Subtitle      string `protobuf:"bytes,2,opt,name=subtitle,proto3" json:"subtitle,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -362,11 +380,15 @@ func (x *GenerateBannerCopyRequest) GetSubtitle() string {
 	return ""
 }
 
+// BannerCopyOption Banner 文案选项
 type BannerCopyOption struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
-	Subtitle      string                 `protobuf:"bytes,2,opt,name=subtitle,proto3" json:"subtitle,omitempty"`
-	BtnText       string                 `protobuf:"bytes,3,opt,name=btn_text,json=btnText,proto3" json:"btn_text,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 标题
+	Title string `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	// 副标题
+	Subtitle string `protobuf:"bytes,2,opt,name=subtitle,proto3" json:"subtitle,omitempty"`
+	// 按钮文案
+	BtnText       string `protobuf:"bytes,3,opt,name=btn_text,json=btnText,proto3" json:"btn_text,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -422,9 +444,11 @@ func (x *BannerCopyOption) GetBtnText() string {
 	return ""
 }
 
+// GenerateBannerCopyReply AI 生成 Banner 文案响应
 type GenerateBannerCopyReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Options       []*BannerCopyOption    `protobuf:"bytes,1,rep,name=options,proto3" json:"options,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 文案选项列表
+	Options       []*BannerCopyOption `protobuf:"bytes,1,rep,name=options,proto3" json:"options,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -466,10 +490,13 @@ func (x *GenerateBannerCopyReply) GetOptions() []*BannerCopyOption {
 	return nil
 }
 
+// GenerateCategorySEORequest AI 生成分类 SEO 请求
 type GenerateCategorySEORequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CategoryName  string                 `protobuf:"bytes,1,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
-	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 分类名称
+	CategoryName string `protobuf:"bytes,1,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
+	// 分类描述
+	Description   string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -518,11 +545,15 @@ func (x *GenerateCategorySEORequest) GetDescription() string {
 	return ""
 }
 
+// GenerateCategorySEOReply AI 生成分类 SEO 响应
 type GenerateCategorySEOReply struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	SeoTitle       string                 `protobuf:"bytes,1,opt,name=seo_title,json=seoTitle,proto3" json:"seo_title,omitempty"`
-	SeoKeywords    string                 `protobuf:"bytes,2,opt,name=seo_keywords,json=seoKeywords,proto3" json:"seo_keywords,omitempty"`
-	SeoDescription string                 `protobuf:"bytes,3,opt,name=seo_description,json=seoDescription,proto3" json:"seo_description,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// SEO 标题
+	SeoTitle string `protobuf:"bytes,1,opt,name=seo_title,json=seoTitle,proto3" json:"seo_title,omitempty"`
+	// SEO 关键词
+	SeoKeywords string `protobuf:"bytes,2,opt,name=seo_keywords,json=seoKeywords,proto3" json:"seo_keywords,omitempty"`
+	// SEO 描述
+	SeoDescription string `protobuf:"bytes,3,opt,name=seo_description,json=seoDescription,proto3" json:"seo_description,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -578,13 +609,19 @@ func (x *GenerateCategorySEOReply) GetSeoDescription() string {
 	return ""
 }
 
+// GenerateSummaryRequest AI 生成运营摘要请求
 type GenerateSummaryRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TodayOrders   int32                  `protobuf:"varint,1,opt,name=today_orders,json=todayOrders,proto3" json:"today_orders,omitempty"`
-	TodayRevenue  float64                `protobuf:"fixed64,2,opt,name=today_revenue,json=todayRevenue,proto3" json:"today_revenue,omitempty"`
-	TotalUsers    int32                  `protobuf:"varint,3,opt,name=total_users,json=totalUsers,proto3" json:"total_users,omitempty"`
-	TotalProducts int32                  `protobuf:"varint,4,opt,name=total_products,json=totalProducts,proto3" json:"total_products,omitempty"`
-	OrdersTrend   string                 `protobuf:"bytes,5,opt,name=orders_trend,json=ordersTrend,proto3" json:"orders_trend,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 今日订单数
+	TodayOrders int32 `protobuf:"varint,1,opt,name=today_orders,json=todayOrders,proto3" json:"today_orders,omitempty"`
+	// 今日营收
+	TodayRevenue float64 `protobuf:"fixed64,2,opt,name=today_revenue,json=todayRevenue,proto3" json:"today_revenue,omitempty"`
+	// 用户总数
+	TotalUsers int32 `protobuf:"varint,3,opt,name=total_users,json=totalUsers,proto3" json:"total_users,omitempty"`
+	// 商品总数
+	TotalProducts int32 `protobuf:"varint,4,opt,name=total_products,json=totalProducts,proto3" json:"total_products,omitempty"`
+	// 订单趋势数据
+	OrdersTrend   string `protobuf:"bytes,5,opt,name=orders_trend,json=ordersTrend,proto3" json:"orders_trend,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -654,9 +691,11 @@ func (x *GenerateSummaryRequest) GetOrdersTrend() string {
 	return ""
 }
 
+// GenerateSummaryReply AI 生成运营摘要响应
 type GenerateSummaryReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Summary       string                 `protobuf:"bytes,1,opt,name=summary,proto3" json:"summary,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 生成的运营摘要
+	Summary       string `protobuf:"bytes,1,opt,name=summary,proto3" json:"summary,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -698,6 +737,7 @@ func (x *GenerateSummaryReply) GetSummary() string {
 	return ""
 }
 
+// SuggestQuestionsRequest AI 推荐快捷提问请求
 type SuggestQuestionsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -734,10 +774,13 @@ func (*SuggestQuestionsRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_agent_proto_rawDescGZIP(), []int{13}
 }
 
+// SuggestQuestion 快捷提问选项
 type SuggestQuestion struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Label         string                 `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
-	Query         string                 `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 问题标签
+	Label string `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
+	// 问题内容
+	Query         string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -786,9 +829,11 @@ func (x *SuggestQuestion) GetQuery() string {
 	return ""
 }
 
+// SuggestQuestionsReply AI 推荐快捷提问响应
 type SuggestQuestionsReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Questions     []*SuggestQuestion     `protobuf:"bytes,1,rep,name=questions,proto3" json:"questions,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 推荐问题列表
+	Questions     []*SuggestQuestion `protobuf:"bytes,1,rep,name=questions,proto3" json:"questions,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -830,6 +875,7 @@ func (x *SuggestQuestionsReply) GetQuestions() []*SuggestQuestion {
 	return nil
 }
 
+// GetChatHistoryRequest 获取聊天历史请求
 type GetChatHistoryRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -866,11 +912,15 @@ func (*GetChatHistoryRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_agent_proto_rawDescGZIP(), []int{16}
 }
 
+// HistoryMessage 历史聊天消息
 type HistoryMessage struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Role          string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
-	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 消息角色（用户/助手）
+	Role string `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	// 消息内容
+	Content string `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	// 消息创建时间
+	CreatedAt     string `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -926,9 +976,11 @@ func (x *HistoryMessage) GetCreatedAt() string {
 	return ""
 }
 
+// GetChatHistoryReply 获取聊天历史响应
 type GetChatHistoryReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	History       []*HistoryMessage      `protobuf:"bytes,1,rep,name=history,proto3" json:"history,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 历史消息列表
+	History       []*HistoryMessage `protobuf:"bytes,1,rep,name=history,proto3" json:"history,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -970,6 +1022,7 @@ func (x *GetChatHistoryReply) GetHistory() []*HistoryMessage {
 	return nil
 }
 
+// ClearChatHistoryRequest 清除聊天历史请求
 type ClearChatHistoryRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -1006,9 +1059,11 @@ func (*ClearChatHistoryRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_agent_proto_rawDescGZIP(), []int{19}
 }
 
+// ClearChatHistoryReply 清除聊天历史响应
 type ClearChatHistoryReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否清除成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

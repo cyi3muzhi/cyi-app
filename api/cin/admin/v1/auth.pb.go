@@ -23,6 +23,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// LoginRequest 管理员登录请求
 type LoginRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 管理员账号
@@ -77,6 +78,7 @@ func (x *LoginRequest) GetPassword() string {
 	return ""
 }
 
+// LoginReply 管理员登录响应
 type LoginReply struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 认证令牌
@@ -131,6 +133,7 @@ func (x *LoginReply) GetAdmin() *AdminInfo {
 	return nil
 }
 
+// LogoutRequest 管理员登出请求
 type LogoutRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 要登出的 token
@@ -176,9 +179,11 @@ func (x *LogoutRequest) GetToken() string {
 	return ""
 }
 
+// LogoutReply 管理员登出响应
 type LogoutReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否登出成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -220,6 +225,7 @@ func (x *LogoutReply) GetSuccess() bool {
 	return false
 }
 
+// GetAdminInfoRequest 获取当前管理员信息请求
 type GetAdminInfoRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -256,9 +262,11 @@ func (*GetAdminInfoRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{4}
 }
 
+// GetAdminInfoReply 获取当前管理员信息响应
 type GetAdminInfoReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Admin         *AdminInfo             `protobuf:"bytes,1,opt,name=admin,proto3" json:"admin,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 管理员信息
+	Admin         *AdminInfo `protobuf:"bytes,1,opt,name=admin,proto3" json:"admin,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -302,19 +310,31 @@ func (x *GetAdminInfoReply) GetAdmin() *AdminInfo {
 
 // 管理员信息
 type AdminInfo struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Username      string                 `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
-	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
-	Email         string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
-	Phone         string                 `protobuf:"bytes,6,opt,name=phone,proto3" json:"phone,omitempty"`
-	Department    string                 `protobuf:"bytes,7,opt,name=department,proto3" json:"department,omitempty"`
-	Position      string                 `protobuf:"bytes,8,opt,name=position,proto3" json:"position,omitempty"`
-	Bio           string                 `protobuf:"bytes,9,opt,name=bio,proto3" json:"bio,omitempty"`
-	Avatar        string                 `protobuf:"bytes,10,opt,name=avatar,proto3" json:"avatar,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	LastLogin     string                 `protobuf:"bytes,12,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 管理员 ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 姓名
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 账号
+	Username string `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
+	// 角色
+	Role string `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
+	// 邮箱
+	Email string `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
+	// 手机号
+	Phone string `protobuf:"bytes,6,opt,name=phone,proto3" json:"phone,omitempty"`
+	// 部门
+	Department string `protobuf:"bytes,7,opt,name=department,proto3" json:"department,omitempty"`
+	// 职位
+	Position string `protobuf:"bytes,8,opt,name=position,proto3" json:"position,omitempty"`
+	// 个人简介
+	Bio string `protobuf:"bytes,9,opt,name=bio,proto3" json:"bio,omitempty"`
+	// 头像 URL
+	Avatar string `protobuf:"bytes,10,opt,name=avatar,proto3" json:"avatar,omitempty"`
+	// 创建时间
+	CreatedAt string `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// 最后登录时间
+	LastLogin     string `protobuf:"bytes,12,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -433,6 +453,7 @@ func (x *AdminInfo) GetLastLogin() string {
 	return ""
 }
 
+// ChangeAvatarRequest 更换头像请求
 type ChangeAvatarRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 头像图片 Base64 编码
@@ -478,9 +499,11 @@ func (x *ChangeAvatarRequest) GetAvatarBase64() string {
 	return ""
 }
 
+// ChangeAvatarReply 更换头像响应
 type ChangeAvatarReply struct {
-	state   protoimpl.MessageState `protogen:"open.v1"`
-	Success bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否更换成功
+	Success bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	// 头像 URL
 	AvatarUrl     string `protobuf:"bytes,2,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -531,6 +554,7 @@ func (x *ChangeAvatarReply) GetAvatarUrl() string {
 	return ""
 }
 
+// UpdateAdminInfoRequest 更新基本信息请求
 type UpdateAdminInfoRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 姓名
@@ -621,9 +645,11 @@ func (x *UpdateAdminInfoRequest) GetBio() string {
 	return ""
 }
 
+// UpdateAdminInfoReply 更新基本信息响应
 type UpdateAdminInfoReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否更新成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -665,6 +691,7 @@ func (x *UpdateAdminInfoReply) GetSuccess() bool {
 	return false
 }
 
+// GetOnlineAdminIdsRequest 获取在线管理员 ID 列表请求
 type GetOnlineAdminIdsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -701,9 +728,11 @@ func (*GetOnlineAdminIdsRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{11}
 }
 
+// GetOnlineAdminIdsReply 获取在线管理员 ID 列表响应
 type GetOnlineAdminIdsReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Ids           []int64                `protobuf:"varint,1,rep,packed,name=ids,proto3" json:"ids,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 在线管理员 ID 列表
+	Ids           []int64 `protobuf:"varint,1,rep,packed,name=ids,proto3" json:"ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -745,6 +774,7 @@ func (x *GetOnlineAdminIdsReply) GetIds() []int64 {
 	return nil
 }
 
+// GetMyPermissionsRequest 获取当前登录用户角色权限请求
 type GetMyPermissionsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -781,8 +811,10 @@ func (*GetMyPermissionsRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_auth_proto_rawDescGZIP(), []int{13}
 }
 
+// GetMyPermissionsReply 获取当前登录用户角色权限响应
 type GetMyPermissionsReply struct {
-	state         protoimpl.MessageState      `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 权限映射（权限标识 -> 权限值）
 	Permissions   map[string]*PermissionValue `protobuf:"bytes,1,rep,name=permissions,proto3" json:"permissions,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

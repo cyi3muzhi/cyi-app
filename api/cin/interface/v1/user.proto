@@ -79,24 +79,39 @@ service User {
   }
 }
 
+// GetUserInfoRequest 获取用户信息请求
 message GetUserInfoRequest {
+  // 用户 ID
   int64 id = 1;
 }
 
+// GetUserInfoReply 获取用户信息响应
 message GetUserInfoReply {
+  // 用户 ID
   int64 id = 1;
+  // 昵称
   string nickname = 2;
+  // 头像 URL
   string avatar = 3;
+  // 手机号
   string phone = 4;
 }
 
+// GetMyInfoReply 个人信息响应
 message GetMyInfoReply {
+  // 用户 ID
   int64 id = 1;
+  // 登录账号
   string username = 2;
+  // 昵称
   string nickname = 3;
+  // 头像 URL
   string avatar = 4;
+  // 手机号
   string phone = 5;
+  // 性别（0=未知 1=男 2=女）
   int32 gender = 6;
+  // 邮箱
   string email = 7;
   string birthday = 8; // YYYY-MM-DD
   string level = 9; // 会员等级 regular/gold/diamond
@@ -104,30 +119,44 @@ message GetMyInfoReply {
   int64 created_at = 11; // 注册时间（Unix 秒）
 }
 
+// UpdateUserInfoRequest 更新用户信息请求
 message UpdateUserInfoRequest {
+  // 用户 ID
   int64 id = 1;
+  // 昵称
   string nickname = 2 [(validate.rules).string = {min_len: 2, max_len: 24, pattern: "^[\\w\\p{Han}]+$"}];
+  // 头像 URL
   string avatar = 3 [(validate.rules).string = {uri: true, ignore_empty: true}];
+  // 邮箱
   string email = 4;
   int32 gender = 5; // 0=未知 1=男 2=女
   string birthday = 6; // YYYY-MM-DD
 }
 
+// UpdateUserInfoReply 更新用户信息响应
 message UpdateUserInfoReply {
+  // 是否成功
   bool success = 1;
 }
 
 // ========== 修改密码 ==========
+// ChangePasswordRequest 修改密码请求
 message ChangePasswordRequest {
+  // 原密码
   string old_password = 1 [(validate.rules).string = {min_len: 6, max_len: 32}];
+  // 新密码
   string new_password = 2 [(validate.rules).string = {min_len: 6, max_len: 32}];
 }
+// ChangePasswordReply 修改密码响应
 message ChangePasswordReply {
+  // 是否成功
   bool success = 1;
 }
 
 // ========== 收货地址 ==========
+// AddressItem 收货地址项
 message AddressItem {
+  // 地址 ID
   int64 id = 1;
   string receiver = 2; // 收货人姓名
   string phone = 3; // 收货人手机号
@@ -136,55 +165,87 @@ message AddressItem {
   string district = 6; // 区县
   string detail = 7; // 详细地址
   int32 is_default = 8; // 是否默认地址 0=否 1=是
+  // 创建时间（Unix 秒）
   int64 create_time = 9;
 }
 
+// ListAddressReply 收货地址列表响应
 message ListAddressReply {
+  // 地址列表
   repeated AddressItem items = 1;
 }
 
+// CreateAddressRequest 新增收货地址请求
 message CreateAddressRequest {
+  // 收货人姓名
   string receiver = 1 [(validate.rules).string = {min_len: 2, max_len: 32}];
+  // 收货人手机号
   string phone = 2 [(validate.rules).string = {min_len: 6, max_len: 20}];
+  // 省份
   string province = 3;
+  // 城市
   string city = 4;
+  // 区县
   string district = 5;
+  // 详细地址
   string detail = 6 [(validate.rules).string = {min_len: 2, max_len: 255}];
   int32 is_default = 7; // 1=设为默认地址
 }
+// CreateAddressReply 新增收货地址响应
 message CreateAddressReply {
+  // 新地址 ID
   int64 id = 1;
 }
 
+// UpdateAddressRequest 更新收货地址请求
 message UpdateAddressRequest {
+  // 地址 ID
   int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 收货人姓名
   string receiver = 2;
+  // 收货人手机号
   string phone = 3;
+  // 省份
   string province = 4;
+  // 城市
   string city = 5;
+  // 区县
   string district = 6;
+  // 详细地址
   string detail = 7;
+  // 是否默认地址（0=否 1=是）
   int32 is_default = 8;
 }
+// UpdateAddressReply 更新收货地址响应
 message UpdateAddressReply {
+  // 是否成功
   bool success = 1;
 }
 
+// DeleteAddressRequest 删除收货地址请求
 message DeleteAddressRequest {
+  // 地址 ID
   int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
+// DeleteAddressReply 删除收货地址响应
 message DeleteAddressReply {
+  // 是否成功
   bool success = 1;
 }
 
+// SetDefaultAddressRequest 设置默认收货地址请求
 message SetDefaultAddressRequest {
+  // 地址 ID
   int64 id = 1 [(validate.rules).int64 = {gt: 0}];
 }
+// SetDefaultAddressReply 设置默认收货地址响应
 message SetDefaultAddressReply {
+  // 是否成功
   bool success = 1;
 }
 
 // ========== 个人中心概览 ==========
+// UserCenterStats 个人中心统计
 message UserCenterStats {
   int64 total_orders = 1; // 总订单数
   int64 pending_pay = 2; // 待付款
@@ -196,7 +257,10 @@ message UserCenterStats {
   int64 total_spent = 8; // 累计消费（分）
 }
 
+// GetUserCenterReply 个人中心概览响应
 message GetUserCenterReply {
+  // 用户基本信息
   GetMyInfoReply user = 1;
+  // 订单/优惠券统计
   UserCenterStats stats = 2;
 }

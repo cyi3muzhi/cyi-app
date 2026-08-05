@@ -14,7 +14,7 @@ type ProductRepo interface {
 	UpdateProduct(ctx context.Context, in *Product) error
 	DeleteProduct(ctx context.Context, productID int64) error
 	GetProduct(ctx context.Context, productID int64) (*Product, error)
-	ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*Product, int32, error)
+	ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ, stockLTE int32) ([]*Product, int32, error)
 	SuggestProduct(ctx context.Context, keyword string, limit int32) ([]string, error)
 }
 
@@ -226,8 +226,10 @@ func (uc *ProductUseCase) GetProduct(ctx context.Context, productID int64) (*Pro
 }
 
 // ListProduct 获取商品列表（使用批量加载避免 N+1 查询）
-func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*Product, int32, error) {
-	products, total, err := uc.repo.ListProduct(ctx, page, pageSize, keyword, categoryID, status, stockEQ)
+// @param stockEQ 可用库存精确筛选（-1 表示不筛选）
+// @param stockLTE 可用库存上限筛选，库存 <= stockLTE（-1 表示不筛选，用于库存预警）
+func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ, stockLTE int32) ([]*Product, int32, error) {
+	products, total, err := uc.repo.ListProduct(ctx, page, pageSize, keyword, categoryID, status, stockEQ, stockLTE)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -36,3 +36,13 @@ export function getProduct(id: number): Promise<{ product: import('../types/prod
 export function batchProductOperation(action: string, ids: number[]): Promise<{ success: boolean; affected_count: number }> {
   return request.post('/admin/v1/products/batch', { action, ids })
 }
+
+/** 更新商品库存（补货/调库存） */
+export function updateProductStock(id: number, total: number): Promise<{ success: boolean }> {
+  return request.put(`/admin/v1/products/${id}/stock`, { total })
+}
+
+/** 按 SKU 明细批量更新商品库存（有规格商品按 SKU 精确补货） */
+export function updateProductSkuStocks(id: number, items: { sku_id: number; total: number }[]): Promise<{ success: boolean }> {
+  return request.put(`/admin/v1/products/${id}/sku-stock`, { items })
+}

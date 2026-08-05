@@ -42,11 +42,18 @@ const (
 // OrderClient is the client API for Order service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// Order 订单服务
 type OrderClient interface {
+	// 创建订单
 	CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderReply, error)
+	// 更新订单
 	UpdateOrder(ctx context.Context, in *UpdateOrderRequest, opts ...grpc.CallOption) (*UpdateOrderReply, error)
+	// 删除订单
 	DeleteOrder(ctx context.Context, in *DeleteOrderRequest, opts ...grpc.CallOption) (*DeleteOrderReply, error)
+	// 获取订单详情
 	GetOrder(ctx context.Context, in *GetOrderRequest, opts ...grpc.CallOption) (*GetOrderReply, error)
+	// 订单列表
 	ListOrder(ctx context.Context, in *ListOrderRequest, opts ...grpc.CallOption) (*ListOrderReply, error)
 	// 支付订单
 	PayOrder(ctx context.Context, in *PayOrderRequest, opts ...grpc.CallOption) (*PayOrderReply, error)
@@ -267,11 +274,18 @@ func (c *orderClient) GetLogistics(ctx context.Context, in *GetLogisticsRequest,
 // OrderServer is the server API for Order service.
 // All implementations must embed UnimplementedOrderServer
 // for forward compatibility.
+//
+// Order 订单服务
 type OrderServer interface {
+	// 创建订单
 	CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderReply, error)
+	// 更新订单
 	UpdateOrder(context.Context, *UpdateOrderRequest) (*UpdateOrderReply, error)
+	// 删除订单
 	DeleteOrder(context.Context, *DeleteOrderRequest) (*DeleteOrderReply, error)
+	// 获取订单详情
 	GetOrder(context.Context, *GetOrderRequest) (*GetOrderReply, error)
+	// 订单列表
 	ListOrder(context.Context, *ListOrderRequest) (*ListOrderReply, error)
 	// 支付订单
 	PayOrder(context.Context, *PayOrderRequest) (*PayOrderReply, error)

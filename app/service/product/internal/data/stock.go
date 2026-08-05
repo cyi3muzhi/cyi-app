@@ -33,15 +33,67 @@ func (r *stockRepo) CreateStock(ctx context.Context, in *biz.Stock) error {
 	return nil
 }
 
-// UpdateStock 更新库存（按主键ID更新）
+// UpdateStock 更新库存，支持两种场景：
+// 1. in.ID > 0：按主键ID更新 total/available（商品编辑时逐条更新 SKU 库存）
+// 2. in.ID == 0 && in.ProductID > 0：按商品ID设置总库存（管理端补货/调库存），均分到该商品所有库存记录
 func (r *stockRepo) UpdateStock(ctx context.Context, in *biz.Stock) error {
-	stock := &mod.Stock{}
-	convert.Convert(in, stock)
+	if in.ID > 0 {
+		stock := &mod.Stock{}
+		convert.Convert(in, stock)
+		_, err := curd.Stock.WithContext(ctx).
+			Where(curd.Stock.ID.Eq(in.ID)).
+			UpdateSimple(
+				curd.Stock.Total.Value(in.Total),
+				curd.Stock.Available.Value(in.Available),
+			)
+		return err
+	}
+	return r.updateStockByProduct(ctx, in.ProductID, in.Total)
+}
+
+// updateStockByProduct 按商品ID设置总库存（管理端补货/调库存）
+// 将 total 均分到该商品的所有库存记录（余数计入第一条）；无库存记录时创建 product 级记录（sku_id=0）
+func (r *stockRepo) updateStockByProduct(ctx context.Context, productID int64, total int32) error {
+	stocks, err := curd.Stock.WithContext(ctx).Where(curd.Stock.ProductID.Eq(productID)).Find()
+	if err != nil {
+		return err
+	}
+	// 无库存记录：创建 product 级库存占位记录
+	if len(stocks) == 0 {
+		return curd.Stock.WithContext(ctx).Create(&mod.Stock{
+			ProductID: productID,
+			Total:     total,
+			Available: total,
+		})
+	}
+	// 均分：每份 = total/数量，余数加给第一条
+	each := total / int32(len(stocks))
+	remainder := total % int32(len(stocks))
+	for i, s := range stocks {
+		v := each
+		if i == 0 {
+			v += remainder
+		}
+		if _, err := curd.Stock.WithContext(ctx).Where(curd.Stock.ID.Eq(s.ID)).
+			UpdateSimple(
+				curd.Stock.Total.Value(v),
+				curd.Stock.Available.Value(v),
+			); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// UpdateStockBySkuID 按 SKU ID 设置库存（按 SKU 明细补货）
+// 带 product_id 条件校验 SKU 归属，防止越权更新其他商品的 SKU
+func (r *stockRepo) UpdateStockBySkuID(ctx context.Context, productID, skuID int64, total int32) error {
 	_, err := curd.Stock.WithContext(ctx).
-		Where(curd.Stock.ID.Eq(in.ID)).
+		Where(curd.Stock.ProductID.Eq(productID)).
+		Where(curd.Stock.SkuID.Eq(skuID)).
 		UpdateSimple(
-			curd.Stock.Total.Value(in.Total),
-			curd.Stock.Available.Value(in.Available),
+			curd.Stock.Total.Value(total),
+			curd.Stock.Available.Value(total),
 		)
 	return err
 }

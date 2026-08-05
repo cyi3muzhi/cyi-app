@@ -19,11 +19,17 @@ service Settings {
   }
 }
 
+// PublicSettingsReply 公开配置响应
 message PublicSettingsReply {
+  // 商城名称
   string shop_name = 1;
+  // 商城简介
   string shop_description = 2;
+  // 联系电话
   string contact_phone = 3;
+  // 联系邮箱
   string contact_email = 4;
+  // ICP 备案号
   string icp_record = 5;
   repeated string hot_keywords = 6;  // 热门搜索词（用户端搜索框联想展示）
 }

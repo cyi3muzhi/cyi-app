@@ -94,97 +94,152 @@ service Agent {
   }
 }
 
+// ChatRequest 非流式聊天请求
 message ChatRequest {
+  // 用户输入的消息内容
   string message = 1;
 }
 
+// ChatReply 非流式聊天响应
 message ChatReply {
+  // AI 回复内容
   string response = 1;
 }
 
+// GenerateDescriptionRequest AI 生成商品描述请求
 message GenerateDescriptionRequest {
+  // 商品名称
   string product_name = 1;
+  // 商品分类
   string category = 2;
+  // 商品规格
   string specs = 3;
 }
 
+// GenerateDescriptionReply AI 生成商品描述响应
 message GenerateDescriptionReply {
+  // 生成的商品描述
   string description = 1;
 }
 
+// ExpandDescriptionRequest AI 扩写商品描述请求
 message ExpandDescriptionRequest {
+  // 商品名称
   string product_name = 1;
+  // 待扩写的商品描述内容
   string content = 2;
 }
 
+// ExpandDescriptionReply AI 扩写商品描述响应
 message ExpandDescriptionReply {
+  // 扩写后的商品描述
   string description = 1;
 }
 
+// GenerateBannerCopyRequest AI 生成 Banner 文案请求
 message GenerateBannerCopyRequest {
+  // 主题
   string topic = 1;
+  // 副标题
   string subtitle = 2;
 }
 
+// BannerCopyOption Banner 文案选项
 message BannerCopyOption {
+  // 标题
   string title = 1;
+  // 副标题
   string subtitle = 2;
+  // 按钮文案
   string btn_text = 3;
 }
 
+// GenerateBannerCopyReply AI 生成 Banner 文案响应
 message GenerateBannerCopyReply {
+  // 文案选项列表
   repeated BannerCopyOption options = 1;
 }
 
+// GenerateCategorySEORequest AI 生成分类 SEO 请求
 message GenerateCategorySEORequest {
+  // 分类名称
   string category_name = 1;
+  // 分类描述
   string description = 2;
 }
 
+// GenerateCategorySEOReply AI 生成分类 SEO 响应
 message GenerateCategorySEOReply {
+  // SEO 标题
   string seo_title = 1;
+  // SEO 关键词
   string seo_keywords = 2;
+  // SEO 描述
   string seo_description = 3;
 }
 
+// GenerateSummaryRequest AI 生成运营摘要请求
 message GenerateSummaryRequest {
+  // 今日订单数
   int32 today_orders = 1;
+  // 今日营收
   double today_revenue = 2;
+  // 用户总数
   int32 total_users = 3;
+  // 商品总数
   int32 total_products = 4;
+  // 订单趋势数据
   string orders_trend = 5;
 }
 
+// GenerateSummaryReply AI 生成运营摘要响应
 message GenerateSummaryReply {
+  // 生成的运营摘要
   string summary = 1;
 }
 
+// SuggestQuestionsRequest AI 推荐快捷提问请求
 message SuggestQuestionsRequest {}
 
+// SuggestQuestion 快捷提问选项
 message SuggestQuestion {
+  // 问题标签
   string label = 1;
+  // 问题内容
   string query = 2;
 }
 
+// SuggestQuestionsReply AI 推荐快捷提问响应
 message SuggestQuestionsReply {
+  // 推荐问题列表
   repeated SuggestQuestion questions = 1;
 }
 
+// GetChatHistoryRequest 获取聊天历史请求
 message GetChatHistoryRequest {}
 
+// HistoryMessage 历史聊天消息
 message HistoryMessage {
+  // 消息角色（用户/助手）
   string role = 1;
+  // 消息内容
   string content = 2;
+  // 消息创建时间
   string created_at = 3;
 }
 
+// GetChatHistoryReply 获取聊天历史响应
 message GetChatHistoryReply {
+  // 历史消息列表
   repeated HistoryMessage history = 1;
 }
 
+// ClearChatHistoryRequest 清除聊天历史请求
 message ClearChatHistoryRequest {}
 
+// ClearChatHistoryReply 清除聊天历史响应
 message ClearChatHistoryReply {
+  // 是否清除成功
   bool success = 1;
 }
 

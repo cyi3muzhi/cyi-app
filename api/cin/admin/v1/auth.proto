@@ -60,6 +60,7 @@ service AdminAuth {
   }
 }
 
+// LoginRequest 管理员登录请求
 message LoginRequest {
   // 管理员账号
   string username = 1 [(validate.rules).string = {min_len: 2, max_len: 32}];
@@ -67,6 +68,7 @@ message LoginRequest {
   string password = 2 [(validate.rules).string = {min_len: 6, max_len: 32}];
 }
 
+// LoginReply 管理员登录响应
 message LoginReply {
   // 认证令牌
   string token = 1;
@@ -74,48 +76,70 @@ message LoginReply {
   AdminInfo admin = 2;
 }
 
+// LogoutRequest 管理员登出请求
 message LogoutRequest {
   // 要登出的 token
   string token = 1;
 }
 
+// LogoutReply 管理员登出响应
 message LogoutReply {
+  // 是否登出成功
   bool success = 1;
 }
 
+// GetAdminInfoRequest 获取当前管理员信息请求
 message GetAdminInfoRequest {}
 
+// GetAdminInfoReply 获取当前管理员信息响应
 message GetAdminInfoReply {
+  // 管理员信息
   AdminInfo admin = 1;
 }
 
 // 管理员信息
 message AdminInfo {
+  // 管理员 ID
   int64 id = 1;
+  // 姓名
   string name = 2;
+  // 账号
   string username = 3;
+  // 角色
   string role = 4;
+  // 邮箱
   string email = 5;
+  // 手机号
   string phone = 6;
+  // 部门
   string department = 7;
+  // 职位
   string position = 8;
+  // 个人简介
   string bio = 9;
+  // 头像 URL
   string avatar = 10;
+  // 创建时间
   string created_at = 11;
+  // 最后登录时间
   string last_login = 12;
 }
 
+// ChangeAvatarRequest 更换头像请求
 message ChangeAvatarRequest {
   // 头像图片 Base64 编码
   string avatar_base64 = 1 [(validate.rules).string = {min_len: 1, max_len: 5242880}];
 }
 
+// ChangeAvatarReply 更换头像响应
 message ChangeAvatarReply {
+  // 是否更换成功
   bool success = 1;
   // 头像 URL
   string avatar_url = 2;
 }
 
+// UpdateAdminInfoRequest 更新基本信息请求
 message UpdateAdminInfoRequest {
   // 姓名
   string name = 1;
@@ -131,18 +155,26 @@ message UpdateAdminInfoRequest {
   string bio = 6;
 }
 
+// UpdateAdminInfoReply 更新基本信息响应
 message UpdateAdminInfoReply {
+  // 是否更新成功
   bool success = 1;
 }
 
+// GetOnlineAdminIdsRequest 获取在线管理员 ID 列表请求
 message GetOnlineAdminIdsRequest {}
 
+// GetOnlineAdminIdsReply 获取在线管理员 ID 列表响应
 message GetOnlineAdminIdsReply {
+  // 在线管理员 ID 列表
   repeated int64 ids = 1;
 }
 
+// GetMyPermissionsRequest 获取当前登录用户角色权限请求
 message GetMyPermissionsRequest {}
 
+// GetMyPermissionsReply 获取当前登录用户角色权限响应
 message GetMyPermissionsReply {
+  // 权限映射（权限标识 -> 权限值）
   map<string, PermissionValue> permissions = 1;
 }

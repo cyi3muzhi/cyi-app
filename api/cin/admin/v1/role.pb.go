@@ -24,15 +24,23 @@ const (
 
 // 角色项
 type RoleItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Slug          string                 `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
-	Desc          string                 `protobuf:"bytes,3,opt,name=desc,proto3" json:"desc,omitempty"`
-	Users         int32                  `protobuf:"varint,4,opt,name=users,proto3" json:"users,omitempty"`
-	Enabled       bool                   `protobuf:"varint,5,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	IsSystem      bool                   `protobuf:"varint,6,opt,name=is_system,json=isSystem,proto3" json:"is_system,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	Color         string                 `protobuf:"bytes,8,opt,name=color,proto3" json:"color,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 角色名称
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// 角色标识
+	Slug string `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
+	// 角色描述
+	Desc string `protobuf:"bytes,3,opt,name=desc,proto3" json:"desc,omitempty"`
+	// 关联用户数
+	Users int32 `protobuf:"varint,4,opt,name=users,proto3" json:"users,omitempty"`
+	// 是否启用
+	Enabled bool `protobuf:"varint,5,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	// 是否系统内置角色
+	IsSystem bool `protobuf:"varint,6,opt,name=is_system,json=isSystem,proto3" json:"is_system,omitempty"`
+	// 创建时间
+	CreatedAt string `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// 角色颜色标识
+	Color         string `protobuf:"bytes,8,opt,name=color,proto3" json:"color,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -125,9 +133,11 @@ func (x *RoleItem) GetColor() string {
 
 // 权限项
 type PermItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	Label         string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 权限标识
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	// 权限名称
+	Label         string `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -178,10 +188,13 @@ func (x *PermItem) GetLabel() string {
 
 // 权限模块
 type PermModule struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Items         []*PermItem            `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 模块标识
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	// 模块标题
+	Title string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	// 权限项列表
+	Items         []*PermItem `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -239,8 +252,9 @@ func (x *PermModule) GetItems() []*PermItem {
 
 // 权限值（模块 -> {权限项 -> bool}）
 type PermissionValue struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Values        map[string]bool        `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 权限值映射（权限项标识 -> 是否授权）
+	Values        map[string]bool `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -282,6 +296,7 @@ func (x *PermissionValue) GetValues() map[string]bool {
 	return nil
 }
 
+// ListRolesRequest 角色列表请求（无入参）
 type ListRolesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -318,9 +333,11 @@ func (*ListRolesRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_role_proto_rawDescGZIP(), []int{4}
 }
 
+// ListRolesReply 角色列表响应
 type ListRolesReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*RoleItem            `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 角色列表
+	Items         []*RoleItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -362,12 +379,17 @@ func (x *ListRolesReply) GetItems() []*RoleItem {
 	return nil
 }
 
+// CreateRoleRequest 创建角色请求
 type CreateRoleRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Slug          string                 `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
-	Desc          string                 `protobuf:"bytes,3,opt,name=desc,proto3" json:"desc,omitempty"`
-	Color         string                 `protobuf:"bytes,4,opt,name=color,proto3" json:"color,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 角色名称
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// 角色标识
+	Slug string `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
+	// 角色描述
+	Desc string `protobuf:"bytes,3,opt,name=desc,proto3" json:"desc,omitempty"`
+	// 角色颜色标识
+	Color         string `protobuf:"bytes,4,opt,name=color,proto3" json:"color,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -430,9 +452,11 @@ func (x *CreateRoleRequest) GetColor() string {
 	return ""
 }
 
+// CreateRoleReply 创建角色响应
 type CreateRoleReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -474,12 +498,17 @@ func (x *CreateRoleReply) GetSuccess() bool {
 	return false
 }
 
+// UpdateRoleRequest 更新角色请求
 type UpdateRoleRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Slug          string                 `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Desc          string                 `protobuf:"bytes,3,opt,name=desc,proto3" json:"desc,omitempty"`
-	Color         string                 `protobuf:"bytes,4,opt,name=color,proto3" json:"color,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 角色标识
+	Slug string `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
+	// 角色名称
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// 角色描述
+	Desc string `protobuf:"bytes,3,opt,name=desc,proto3" json:"desc,omitempty"`
+	// 角色颜色标识
+	Color         string `protobuf:"bytes,4,opt,name=color,proto3" json:"color,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -542,9 +571,11 @@ func (x *UpdateRoleRequest) GetColor() string {
 	return ""
 }
 
+// UpdateRoleReply 更新角色响应
 type UpdateRoleReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -586,9 +617,11 @@ func (x *UpdateRoleReply) GetSuccess() bool {
 	return false
 }
 
+// DeleteRoleRequest 删除角色请求
 type DeleteRoleRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Slug          string                 `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 角色标识
+	Slug          string `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -630,9 +663,11 @@ func (x *DeleteRoleRequest) GetSlug() string {
 	return ""
 }
 
+// DeleteRoleReply 删除角色响应
 type DeleteRoleReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -674,9 +709,11 @@ func (x *DeleteRoleReply) GetSuccess() bool {
 	return false
 }
 
+// GetRolePermissionsRequest 获取角色权限请求
 type GetRolePermissionsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Role          string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 角色标识
+	Role          string `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -718,8 +755,10 @@ func (x *GetRolePermissionsRequest) GetRole() string {
 	return ""
 }
 
+// GetRolePermissionsReply 获取角色权限响应
 type GetRolePermissionsReply struct {
-	state         protoimpl.MessageState      `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 权限映射（模块标识 -> 权限值）
 	Permissions   map[string]*PermissionValue `protobuf:"bytes,1,rep,name=permissions,proto3" json:"permissions,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -762,9 +801,12 @@ func (x *GetRolePermissionsReply) GetPermissions() map[string]*PermissionValue {
 	return nil
 }
 
+// UpdateRolePermissionsRequest 更新角色权限请求
 type UpdateRolePermissionsRequest struct {
-	state         protoimpl.MessageState      `protogen:"open.v1"`
-	Role          string                      `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 角色标识
+	Role string `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	// 权限映射（模块标识 -> 权限值）
 	Permissions   map[string]*PermissionValue `protobuf:"bytes,2,rep,name=permissions,proto3" json:"permissions,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -814,9 +856,11 @@ func (x *UpdateRolePermissionsRequest) GetPermissions() map[string]*PermissionVa
 	return nil
 }
 
+// UpdateRolePermissionsReply 更新角色权限响应
 type UpdateRolePermissionsReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否成功
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -858,6 +902,7 @@ func (x *UpdateRolePermissionsReply) GetSuccess() bool {
 	return false
 }
 
+// ListAllPermissionsRequest 获取所有权限模块定义请求（无入参）
 type ListAllPermissionsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -894,9 +939,11 @@ func (*ListAllPermissionsRequest) Descriptor() ([]byte, []int) {
 	return file_api_cin_admin_v1_role_proto_rawDescGZIP(), []int{16}
 }
 
+// ListAllPermissionsReply 获取所有权限模块定义响应
 type ListAllPermissionsReply struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Modules       []*PermModule          `protobuf:"bytes,1,rep,name=modules,proto3" json:"modules,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 权限模块列表
+	Modules       []*PermModule `protobuf:"bytes,1,rep,name=modules,proto3" json:"modules,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

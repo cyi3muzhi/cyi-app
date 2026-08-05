@@ -114,7 +114,7 @@ app/service/product/
 | UseCase | 职责 |
 |---------|------|
 | `ProductUseCase` | 商品管理（创建、查询、更新、删除、搜索联想 SuggestProduct） |
-| `StockUseCase` | 库存管理（查询、扣减、增加） |
+| `StockUseCase` | 库存管理（查询、预留、扣减、释放、增加、按商品设置总库存） |
 | `CategoryUseCase` | 商品分类管理（分类树、创建、更新、删除、排序、状态管理） |
 | `SkuUseCase` | SKU 管理（列表、创建、更新、删除） |
 | `SpecGroupUseCase` | 规格组管理（列表、创建、更新、删除，含规格值） |
@@ -131,7 +131,7 @@ app/service/product/
 |------|------|------|
 | `CreateProduct` | gRPC | 创建商品 |
 | `GetProduct` | gRPC | 查询商品 |
-| `ListProducts` | gRPC | 商品列表（支持 MySQL FULLTEXT 关键词搜索，ngram 分词器支持中文） |
+| `ListProduct` | gRPC | 商品列表（支持 MySQL FULLTEXT 关键词搜索，ngram 分词器支持中文；支持 `stock_eq` 库存精确筛选、`stock_lte` 库存上限筛选（库存预警）） |
 | `SuggestProduct` | gRPC | 搜索联想（返回匹配关键词的商品名列表，用于搜索框下拉联想） |
 | `UpdateProduct` | gRPC | 更新商品 |
 | `DeleteProduct` | gRPC | 删除商品 |
@@ -146,7 +146,11 @@ FULLTEXT 搜索依赖以下 MySQL 配置（否则可能报错或搜不到）：
    - `SET PERSIST innodb_ft_server_stopword_table = 'cin_test/ft_stopwords'`
    - 重建两个 FULLTEXT 索引
 | `GetStock` | gRPC | 查询库存 |
+| `UpdateStock` | gRPC | 更新库存（按商品ID设置总库存，均分到该商品所有 SKU，管理端补货用） |
+| `UpdateSkuStocks` | gRPC | 按 SKU 批量设置库存（管理端按 SKU 明细精确补货，带商品归属校验） |
+| `ReserveStock` | gRPC | 预留库存 |
 | `DeductStock` | gRPC | 扣减库存 |
+| `ReleaseStock` | gRPC | 释放预留库存 |
 | `AddStock` | gRPC | 增加库存 |
 | `ListCategoryTree` | gRPC | 获取分类树 |
 | `GetCategory` | gRPC | 获取单个分类 |

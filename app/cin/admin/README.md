@@ -132,7 +132,7 @@ app/cin/admin/
 | `DashboardUseCase` | 仪表盘数据统计、订单趋势、营收分类占比 |
 | `OrderUseCase` | 订单管理（列表、详情、发货、取消、统计、物流轨迹查询） |
 | `ExportUseCase` | 订单导出（投递异步任务到 task 服务、查询任务状态、生成下载链接） |
-| `ProductUseCase` | 商品管理（CRUD、批量操作） |
+| `ProductUseCase` | 商品管理（CRUD、批量操作、库存预警筛选、补货/调库存） |
 | `CategoryUseCase` | 商品分类管理（分类树、CRUD、排序、状态、批量操作） |
 | `RoleUseCase` | 角色管理（CRUD、权限管理、权限校验） |
 | `StaffUseCase` | 员工管理（列表、创建、更新、状态切换） |
@@ -208,12 +208,14 @@ app/cin/admin/
 
 | 接口 | 方法 | 路径 | 说明 |
 |------|------|------|------|
-| `ListProducts` | GET | `/admin/v1/product/list` | 商品列表 |
-| `GetProduct` | GET | `/admin/v1/product/{id}` | 获取商品详情 |
-| `CreateProduct` | POST | `/admin/v1/product/create` | 创建商品 |
-| `UpdateProduct` | PUT | `/admin/v1/product/update` | 更新商品 |
-| `DeleteProduct` | DELETE | `/admin/v1/product/delete` | 删除商品 |
-| `BatchOperation` | POST | `/admin/v1/product/batch` | 批量操作商品 |
+| `ListProduct` | GET | `/admin/v1/products` | 商品列表（支持关键词/分类/状态筛选、`stock_eq` 库存精确筛选、`stock_lte` 库存上限筛选（库存预警）） |
+| `GetProduct` | GET | `/admin/v1/products/{id}` | 获取商品详情 |
+| `CreateProduct` | POST | `/admin/v1/products` | 创建商品 |
+| `UpdateProduct` | PUT | `/admin/v1/products/{id}` | 更新商品 |
+| `DeleteProduct` | DELETE | `/admin/v1/products/{id}` | 删除商品 |
+| `BatchOperation` | POST | `/admin/v1/products/batch` | 批量操作商品（上架/下架/删除） |
+| `UpdateStock` | PUT | `/admin/v1/products/{id}/stock` | 更新商品库存（补货/调库存，按商品ID设置总库存并均分到各 SKU） |
+| `UpdateSkuStocks` | PUT | `/admin/v1/products/{id}/sku-stock` | 按 SKU 明细批量更新库存（有规格商品按 SKU 精确补货） |
 
 #### 分类接口（AdminCategory）
 

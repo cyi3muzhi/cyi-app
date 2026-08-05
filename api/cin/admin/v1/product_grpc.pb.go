@@ -19,12 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AdminProduct_ListProduct_FullMethodName    = "/api.cin.admin.v1.AdminProduct/ListProduct"
-	AdminProduct_CreateProduct_FullMethodName  = "/api.cin.admin.v1.AdminProduct/CreateProduct"
-	AdminProduct_UpdateProduct_FullMethodName  = "/api.cin.admin.v1.AdminProduct/UpdateProduct"
-	AdminProduct_DeleteProduct_FullMethodName  = "/api.cin.admin.v1.AdminProduct/DeleteProduct"
-	AdminProduct_GetProduct_FullMethodName     = "/api.cin.admin.v1.AdminProduct/GetProduct"
-	AdminProduct_BatchOperation_FullMethodName = "/api.cin.admin.v1.AdminProduct/BatchOperation"
+	AdminProduct_ListProduct_FullMethodName     = "/api.cin.admin.v1.AdminProduct/ListProduct"
+	AdminProduct_CreateProduct_FullMethodName   = "/api.cin.admin.v1.AdminProduct/CreateProduct"
+	AdminProduct_UpdateProduct_FullMethodName   = "/api.cin.admin.v1.AdminProduct/UpdateProduct"
+	AdminProduct_DeleteProduct_FullMethodName   = "/api.cin.admin.v1.AdminProduct/DeleteProduct"
+	AdminProduct_GetProduct_FullMethodName      = "/api.cin.admin.v1.AdminProduct/GetProduct"
+	AdminProduct_BatchOperation_FullMethodName  = "/api.cin.admin.v1.AdminProduct/BatchOperation"
+	AdminProduct_UpdateStock_FullMethodName     = "/api.cin.admin.v1.AdminProduct/UpdateStock"
+	AdminProduct_UpdateSkuStocks_FullMethodName = "/api.cin.admin.v1.AdminProduct/UpdateSkuStocks"
 )
 
 // AdminProductClient is the client API for AdminProduct service.
@@ -45,6 +47,10 @@ type AdminProductClient interface {
 	GetProduct(ctx context.Context, in *GetProductRequest, opts ...grpc.CallOption) (*GetProductReply, error)
 	// 批量操作（上架/下架/删除）
 	BatchOperation(ctx context.Context, in *BatchOperationRequest, opts ...grpc.CallOption) (*BatchOperationReply, error)
+	// 更新商品库存（补货/调库存）
+	UpdateStock(ctx context.Context, in *UpdateStockRequest, opts ...grpc.CallOption) (*UpdateStockReply, error)
+	// 按 SKU 明细批量更新商品库存（有规格商品按 SKU 精确补货）
+	UpdateSkuStocks(ctx context.Context, in *UpdateSkuStocksRequest, opts ...grpc.CallOption) (*UpdateSkuStocksReply, error)
 }
 
 type adminProductClient struct {
@@ -115,6 +121,26 @@ func (c *adminProductClient) BatchOperation(ctx context.Context, in *BatchOperat
 	return out, nil
 }
 
+func (c *adminProductClient) UpdateStock(ctx context.Context, in *UpdateStockRequest, opts ...grpc.CallOption) (*UpdateStockReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateStockReply)
+	err := c.cc.Invoke(ctx, AdminProduct_UpdateStock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminProductClient) UpdateSkuStocks(ctx context.Context, in *UpdateSkuStocksRequest, opts ...grpc.CallOption) (*UpdateSkuStocksReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateSkuStocksReply)
+	err := c.cc.Invoke(ctx, AdminProduct_UpdateSkuStocks_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminProductServer is the server API for AdminProduct service.
 // All implementations must embed UnimplementedAdminProductServer
 // for forward compatibility.
@@ -133,6 +159,10 @@ type AdminProductServer interface {
 	GetProduct(context.Context, *GetProductRequest) (*GetProductReply, error)
 	// 批量操作（上架/下架/删除）
 	BatchOperation(context.Context, *BatchOperationRequest) (*BatchOperationReply, error)
+	// 更新商品库存（补货/调库存）
+	UpdateStock(context.Context, *UpdateStockRequest) (*UpdateStockReply, error)
+	// 按 SKU 明细批量更新商品库存（有规格商品按 SKU 精确补货）
+	UpdateSkuStocks(context.Context, *UpdateSkuStocksRequest) (*UpdateSkuStocksReply, error)
 	mustEmbedUnimplementedAdminProductServer()
 }
 
@@ -160,6 +190,12 @@ func (UnimplementedAdminProductServer) GetProduct(context.Context, *GetProductRe
 }
 func (UnimplementedAdminProductServer) BatchOperation(context.Context, *BatchOperationRequest) (*BatchOperationReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchOperation not implemented")
+}
+func (UnimplementedAdminProductServer) UpdateStock(context.Context, *UpdateStockRequest) (*UpdateStockReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateStock not implemented")
+}
+func (UnimplementedAdminProductServer) UpdateSkuStocks(context.Context, *UpdateSkuStocksRequest) (*UpdateSkuStocksReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateSkuStocks not implemented")
 }
 func (UnimplementedAdminProductServer) mustEmbedUnimplementedAdminProductServer() {}
 func (UnimplementedAdminProductServer) testEmbeddedByValue()                      {}
@@ -290,6 +326,42 @@ func _AdminProduct_BatchOperation_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminProduct_UpdateStock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateStockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminProductServer).UpdateStock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminProduct_UpdateStock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminProductServer).UpdateStock(ctx, req.(*UpdateStockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminProduct_UpdateSkuStocks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateSkuStocksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminProductServer).UpdateSkuStocks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminProduct_UpdateSkuStocks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminProductServer).UpdateSkuStocks(ctx, req.(*UpdateSkuStocksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminProduct_ServiceDesc is the grpc.ServiceDesc for AdminProduct service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -320,6 +392,14 @@ var AdminProduct_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BatchOperation",
 			Handler:    _AdminProduct_BatchOperation_Handler,
+		},
+		{
+			MethodName: "UpdateStock",
+			Handler:    _AdminProduct_UpdateStock_Handler,
+		},
+		{
+			MethodName: "UpdateSkuStocks",
+			Handler:    _AdminProduct_UpdateSkuStocks_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

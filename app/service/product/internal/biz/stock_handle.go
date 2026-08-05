@@ -8,6 +8,8 @@ type StockRepo interface {
 	CreateStock(ctx context.Context, in *Stock) error
 	// UpdateStock 更新库存
 	UpdateStock(ctx context.Context, in *Stock) error
+	// UpdateStockBySkuID 按 SKU ID 设置库存（带商品归属校验，按 SKU 明细补货用）
+	UpdateStockBySkuID(ctx context.Context, productID, skuID int64, total int32) error
 	// DeleteStockByProductID 按商品ID批量删除库存记录
 	DeleteStockByProductID(ctx context.Context, productID int64) error
 	// DeleteStockBySkuID 按 SKU ID 删除库存记录
@@ -44,6 +46,17 @@ func (uc *StockUseCase) CreateStock(ctx context.Context, in *Stock) error {
 // UpdateStock 更新库存
 func (uc *StockUseCase) UpdateStock(ctx context.Context, in *Stock) error {
 	return uc.repo.UpdateStock(ctx, in)
+}
+
+// UpdateSkuStocks 按 SKU 批量设置库存（管理端按 SKU 明细补货）
+// 逐个 SKU 设置 total/available，任一失败即返回错误（由调用方决定是否重试）
+func (uc *StockUseCase) UpdateSkuStocks(ctx context.Context, productID int64, items map[int64]int32) error {
+	for skuID, total := range items {
+		if err := uc.repo.UpdateStockBySkuID(ctx, productID, skuID, total); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // ReserveStock 按 SKU ID 预留库存
