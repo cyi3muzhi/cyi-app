@@ -222,12 +222,12 @@ jobs:
           docker save cyi3muz/service-marketing:0.1.0 | gzip > /tmp/marketing.tar.gz
           echo "✅ marketing 构建完成"
 
-      - name: Build and save nats-consumer
+      - name: Build and save nats
         if: needs.detect-changes.outputs.nats_consumer == 'true'
         run: |
-          cd app/nats && DOCKER_IMAGE_NAME=nats-consumer make docker
-          docker save cyi3muz/nats-consumer:0.1.0 | gzip > /tmp/nats-consumer.tar.gz
-          echo "✅ nats-consumer 构建完成"
+          cd app/nats && make docker
+          docker save cyi3muz/nats:0.1.0 | gzip > /tmp/nats.tar.gz
+          echo "✅ nats 构建完成"
 
       - name: Build and save task
         if: needs.detect-changes.outputs.task == 'true'
@@ -246,7 +246,7 @@ jobs:
           for img in cyi3muz/blades:0.1.0 cyi3muz/cin-admin:0.1.0 \
                      cyi3muz/cin-interface:0.1.0 cyi3muz/service-user:0.1.0 \
                      cyi3muz/service-order:0.1.0 cyi3muz/service-product:0.1.0 \
-                     cyi3muz/service-marketing:0.1.0 cyi3muz/nats-consumer:0.1.0 \
+                     cyi3muz/service-marketing:0.1.0 cyi3muz/nats:0.1.0 \
                      cyi3muz/task:0.1.0; do
             if docker image inspect "$img" > /dev/null 2>&1; then
               echo "✅ $img"
@@ -362,7 +362,7 @@ jobs:
           for img in /tmp/deploy-artifacts/blades.tar.gz /tmp/deploy-artifacts/admin.tar.gz \
                      /tmp/deploy-artifacts/interface.tar.gz /tmp/deploy-artifacts/user.tar.gz \
                      /tmp/deploy-artifacts/order.tar.gz /tmp/deploy-artifacts/product.tar.gz \
-                     /tmp/deploy-artifacts/marketing.tar.gz /tmp/deploy-artifacts/nats-consumer.tar.gz \
+                     /tmp/deploy-artifacts/marketing.tar.gz /tmp/deploy-artifacts/nats.tar.gz \
                      /tmp/deploy-artifacts/task.tar.gz; do
             if [ -f "$img" ] && [ -s "$img" ] && gzip -t "$img" 2>/dev/null; then
               echo "加载 $(basename $img .tar.gz) ..."
@@ -432,8 +432,8 @@ jobs:
           [ "${{ needs.detect-changes.outputs.product }}" == "true" ]       && restart_svc product
           [ "${{ needs.detect-changes.outputs.marketing }}" == "true" ]     && restart_svc marketing
           [ "${{ needs.detect-changes.outputs.nats_consumer }}" == "true" ] && {
-            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-nats-consumer
-            RESTARTED="$RESTARTED service-nats-consumer"
+            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-nats
+            RESTARTED="$RESTARTED service-nats"
           }
           [ "${{ needs.detect-changes.outputs.job }}" == "true" ]           && restart_svc job
           [ "${{ needs.detect-changes.outputs.task }}" == "true" ]          && restart_svc task

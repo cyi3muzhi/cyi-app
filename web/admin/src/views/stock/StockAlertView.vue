@@ -368,7 +368,9 @@ function onThresholdChange() {
 /** 保存预警阈值到系统设置 */
 async function saveThreshold() {
   try {
-    await updateSettings({ stockAlertThreshold: threshold.value })
+    // 更新接口为全量覆盖：先取完整配置合并阈值再提交，避免把未提交的配置项覆盖为空
+    const settings = await getSettings()
+    await updateSettings({ ...settings, stockAlertThreshold: threshold.value })
     thresholdSaved.value = true
     ElMessage.success('库存预警阈值已保存')
     loadStats()

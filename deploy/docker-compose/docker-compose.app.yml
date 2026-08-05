@@ -140,12 +140,12 @@ services:
       - cyi-network
 
   # NATS 消费者服务
-  service-nats-consumer:
-    image: cyi3muz/nats-consumer:0.1.0
-    container_name: service-nats-consumer
+  service-nats:
+    image: cyi3muz/nats:0.1.0
+    container_name: service-nats
     restart: always
     volumes:
-      - ../logs/nats-consumer:/app/logs
+      - ../logs/nats:/app/logs
     environment:
       - CONSUL_ADDR=consul:8500
       - CONSUL_PATHS=/develop/common,/develop/cyi-app/nats
