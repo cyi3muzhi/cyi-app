@@ -6,11 +6,7 @@
     <div class="page-header">
       <div class="container-shop">
         <div class="page-header-inner">
-          <router-link to="/user/orders" class="back-link">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-          </router-link>
+          <BackButton fallback="/user/orders" />
           <h1 class="page-title">订单详情</h1>
         </div>
       </div>
@@ -274,6 +270,7 @@
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import BackButton from '@/components/BackButton.vue'
 import { getOrderDetail, payOrder, receiveOrder, cancelOrder, applyRefund, getLogistics, PAY_TIMEOUT_SECONDS, type OrderItemDTO, type LogisticsDTO } from '@/api/order'
 import { toast } from '@/utils/toast'
 import type { OrderStatus } from '@/types/order'
@@ -645,20 +642,6 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-.back-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--shop-muted);
-  color: var(--shop-foreground);
-  transition: background 0.2s;
-}
-.back-link:hover {
-  background: var(--shop-border);
 }
 .page-title {
   font-size: 1.25rem;

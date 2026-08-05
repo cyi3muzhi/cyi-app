@@ -1,14 +1,8 @@
 <template>
   <div class="checkout-page">
-    <!-- 面包屑 -->
+    <!-- 返回上一页 -->
     <div class="container-shop py-3">
-      <div class="checkout-breadcrumb">
-        <router-link to="/" class="breadcrumb-link">首页</router-link>
-        <span class="separator">/</span>
-        <router-link to="/cart" class="breadcrumb-link">购物车</router-link>
-        <span class="separator">/</span>
-        <span class="current">确认订单</span>
-      </div>
+      <BackButton fallback="/cart" />
     </div>
 
     <div class="container-shop pb-12">
@@ -244,6 +238,7 @@ import { listAddress } from '@/api/user'
 import { cartCheckout, payOrder, getOrderDetail } from '@/api/order'
 import { listUsableCoupons } from '@/api/coupon'
 import { deleteCartItem } from '@/api/cart'
+import BackButton from '@/components/BackButton.vue'
 import { toast } from '@/utils/toast'
 import type { Address } from '@/types/user'
 import type { UsableCouponItem } from '@/types/coupon'
@@ -480,28 +475,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ---- 面包屑 ---- */
-.checkout-breadcrumb {
-  display: flex;
-  align-items: center;
-  font-size: 0.75rem;
-  color: var(--shop-muted-foreground);
-}
-.breadcrumb-link {
-  color: var(--shop-muted-foreground);
-  text-decoration: none;
-  transition: color var(--shop-transition);
-}
-.breadcrumb-link:hover {
-  color: var(--shop-primary);
-}
-.separator {
-  margin: 0 6px;
-  color: var(--shop-border);
-}
-.current {
-  color: var(--shop-foreground);
-}
 
 /* ---- 步骤指示器 ---- */
 .step-indicator {

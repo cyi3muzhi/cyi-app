@@ -9,19 +9,8 @@
     </div>
 
     <template v-else>
-      <!-- 面包屑导航 -->
-      <section class="container-shop pt-4 pb-2">
-        <div class="breadcrumb text-sm">
-          <router-link to="/" class="breadcrumb-link">首页</router-link>
-          <span class="separator">/</span>
-          <router-link to="/products" class="breadcrumb-link">全部商品</router-link>
-          <span class="separator">/</span>
-          <span class="current">{{ product?.name }}</span>
-        </div>
-      </section>
-
-      <!-- 产品概览区域（两栏布局） -->
-      <section class="container-shop py-4">
+      <!-- 产品概览区域（两栏布局）；顶部留白，避免内容紧贴导航栏 -->
+      <section class="container-shop detail-overview">
         <div class="product-overview">
           <!-- 左侧：图片画廊 -->
           <div class="gallery-col">
@@ -406,28 +395,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ---- 面包屑 ---- */
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  font-size: 0.875rem;
-  color: var(--shop-muted-foreground);
-}
-.breadcrumb-link {
-  color: var(--shop-muted-foreground);
-  text-decoration: none;
-  transition: color var(--shop-transition);
-}
-.breadcrumb-link:hover {
-  color: var(--shop-primary);
-}
-.separator {
-  margin: 0 8px;
-  color: var(--shop-border);
-}
-.current {
-  color: var(--shop-foreground);
-  font-weight: 500;
+
+/* ---- 概览区域顶部留白 ---- */
+.detail-overview {
+  padding-top: 32px;
+  padding-bottom: 16px;
 }
 
 /* ---- 产品概览两栏布局 ---- */

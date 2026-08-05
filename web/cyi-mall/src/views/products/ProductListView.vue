@@ -1,31 +1,6 @@
 <template>
-  <!-- 商品列表页：面包屑 + 排序筛选 + 商品网格 + 分页 -->
+  <!-- 商品列表页：排序筛选 + 商品网格 + 分页（一级页面，无需返回按钮） -->
   <div class="product-list-page">
-    <!-- ============================================================ -->
-    <!-- 面包屑导航 -->
-    <!-- ============================================================ -->
-    <section class="container-shop breadcrumb-section">
-      <div class="breadcrumb">
-        <router-link to="/" class="breadcrumb-link">首页</router-link>
-        <template v-if="breadcrumbPath.length">
-          <span class="breadcrumb-separator">&gt;</span>
-          <template v-for="(bc, idx) in breadcrumbPath" :key="bc.id">
-            <router-link
-              v-if="idx < breadcrumbPath.length - 1"
-              :to="{ path: '/products', query: { category: bc.id } }"
-              class="breadcrumb-link"
-            >{{ bc.name }}</router-link>
-            <span v-else class="breadcrumb-current">{{ bc.name }}</span>
-            <span v-if="idx < breadcrumbPath.length - 1" class="breadcrumb-separator">&gt;</span>
-          </template>
-        </template>
-        <template v-else>
-          <span class="breadcrumb-separator">&gt;</span>
-          <span class="breadcrumb-current">{{ activeCategoryName }}</span>
-        </template>
-      </div>
-    </section>
-
     <!-- ============================================================ -->
     <!-- 页面标题 + 排序 + 视图切换 -->
     <!-- ============================================================ -->
@@ -370,22 +345,6 @@ function findName(path: number[]): string {
   return name
 }
 
-/** 面包屑祖先链（首页 > 电子产品 > 手机） */
-const breadcrumbPath = computed(() => {
-  if (activeCategory.value === 'all') return [] as { id: number; name: string }[]
-  const path = findPath(categories.value, Number(activeCategory.value))
-  if (!path) return [] as { id: number; name: string }[]
-  const result: { id: number; name: string }[] = []
-  let nodes = categories.value
-  for (const id of path) {
-    const n = nodes.find(x => x.id === id)
-    if (!n) break
-    result.push({ id, name: n.name })
-    nodes = n.children || []
-  }
-  return result
-})
-
 async function loadProducts() {
   loading.value = true
   try {
@@ -518,38 +477,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ============================================
-   面包屑导航
-   ============================================ */
-.breadcrumb-section {
-  padding-top: 16px;
-  padding-bottom: 8px;
-}
-
-.breadcrumb {
-  font-size: 0.875rem;
-}
-
-.breadcrumb-link {
-  color: var(--shop-muted-foreground);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.breadcrumb-link:hover {
-  color: var(--shop-primary);
-}
-
-.breadcrumb-separator {
-  margin: 0 6px;
-  color: var(--shop-border);
-}
-
-.breadcrumb-current {
-  color: var(--shop-foreground);
-  font-weight: 500;
-}
-
 /* ============================================
    工具栏
    ============================================ */

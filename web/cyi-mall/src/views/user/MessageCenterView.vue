@@ -5,11 +5,7 @@
   <div class="page-header">
     <div class="container-shop">
       <div class="page-header-inner">
-        <router-link to="/user" class="back-link">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-        </router-link>
+        <BackButton fallback="/user" />
         <h1 class="page-title">
           消息中心
           <span v-if="unreadCount > 0" class="unread-badge">{{ unreadCount }} 条未读</span>
@@ -160,6 +156,7 @@
  * 数据来源：/message/v1/*
  */
 import { ref, onMounted } from 'vue'
+import BackButton from '@/components/BackButton.vue'
 import {
   listMessages,
   getUnreadCount,
@@ -296,22 +293,6 @@ onMounted(() => fetchMessages(true))
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.back-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--shop-muted);
-  color: var(--shop-foreground);
-  transition: background 0.2s;
-}
-
-.back-link:hover {
-  background: var(--shop-border);
 }
 
 .page-title {

@@ -193,19 +193,22 @@ func (r *stockRepo) AddStock(ctx context.Context, skuID int64, count int32, vers
 }
 
 // increaseSales 累加 SKU 与商品销量（支付成功后调用）
-// 使用原生 SQL 累加，因为 gorm gen 生成的 Product 字段未包含 sales 列
+// 注意：SKU 与商品必须分别使用各自 gen query 的 UnderlyingDB，
+// 因为 UnderlyingDB 返回的 *gorm.DB 已绑定表名（Table() 优先于 Model()），
+// 复用 sku 的 db 去 Model(&Product{}) 时 UPDATE 仍会指向 sku 表。
 func (r *stockRepo) increaseSales(ctx context.Context, skuID int64, count int32) error {
 	// 查询 SKU 归属商品
 	var sku mod.Sku
 	if err := curd.Sku.WithContext(ctx).UnderlyingDB().First(&sku, skuID).Error; err != nil {
 		return err
 	}
-	db := curd.Sku.WithContext(ctx).UnderlyingDB()
-	if err := db.Model(&mod.Sku{}).Where("id = ?", skuID).
+	// 更新 SKU 销量
+	if err := curd.Sku.WithContext(ctx).UnderlyingDB().Model(&mod.Sku{}).Where("id = ?", skuID).
 		UpdateColumn("sales", gorm.Expr("sales + ?", count)).Error; err != nil {
 		return err
 	}
-	if err := db.Model(&mod.Product{}).Where("id = ?", sku.ProductID).
+	// 更新商品销量（使用 product 的底层 db，避免复用 sku 的表绑定）
+	if err := curd.Product.WithContext(ctx).UnderlyingDB().Model(&mod.Product{}).Where("id = ?", sku.ProductID).
 		UpdateColumn("sales", gorm.Expr("sales + ?", count)).Error; err != nil {
 		return err
 	}
@@ -219,13 +222,14 @@ func (r *stockRepo) decreaseSales(ctx context.Context, skuID int64, count int32)
 	if err := curd.Sku.WithContext(ctx).UnderlyingDB().First(&sku, skuID).Error; err != nil {
 		return err
 	}
-	db := curd.Sku.WithContext(ctx).UnderlyingDB()
-	if err := db.Model(&mod.Sku{}).Where("id = ?", skuID).
-		UpdateColumn("sales", gorm.Expr("GREATEST(sales - ?, 0)", count)).Error; err != nil {
+	// 更新 SKU 销量（CASE WHEN 兼容 MySQL/SQLite，语义等同 GREATEST(sales-count, 0)）
+	if err := curd.Sku.WithContext(ctx).UnderlyingDB().Model(&mod.Sku{}).Where("id = ?", skuID).
+		UpdateColumn("sales", gorm.Expr("CASE WHEN sales > ? THEN sales - ? ELSE 0 END", count, count)).Error; err != nil {
 		return err
 	}
-	if err := db.Model(&mod.Product{}).Where("id = ?", sku.ProductID).
-		UpdateColumn("sales", gorm.Expr("GREATEST(sales - ?, 0)", count)).Error; err != nil {
+	// 更新商品销量（使用 product 的底层 db，避免复用 sku 的表绑定）
+	if err := curd.Product.WithContext(ctx).UnderlyingDB().Model(&mod.Product{}).Where("id = ?", sku.ProductID).
+		UpdateColumn("sales", gorm.Expr("CASE WHEN sales > ? THEN sales - ? ELSE 0 END", count, count)).Error; err != nil {
 		return err
 	}
 	return nil

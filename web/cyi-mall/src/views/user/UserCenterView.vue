@@ -1,19 +1,6 @@
 <template>
   <!-- ============================================================ -->
-  <!-- 1. 面包屑导航                                                  -->
-  <!-- ============================================================ -->
-  <div class="breadcrumb">
-    <div class="container-shop">
-      <router-link to="/" class="breadcrumb-link">首页</router-link>
-      <svg class="breadcrumb-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="9 18 15 12 9 6"/>
-      </svg>
-      <span class="breadcrumb-current">个人中心</span>
-    </div>
-  </div>
-
-  <!-- ============================================================ -->
-  <!-- 2. 用户信息头部（渐变色背景）                                    -->
+  <!-- 1. 用户信息头部（渐变色背景）                                    -->
   <!-- ============================================================ -->
   <section class="user-hero">
     <div class="container-shop">
@@ -110,7 +97,7 @@
   </section>
 
   <!-- ============================================================ -->
-  <!-- 3. 快捷功能入口（收货地址 / 领券中心）                        -->
+  <!-- 2. 快捷功能入口（收货地址 / 领券中心）                        -->
   <!-- ============================================================ -->
   <section class="entry-section">
     <div class="container-shop entry-grid">
@@ -154,7 +141,7 @@
           </svg>
         </div>
         <div class="entry-info">
-          <p class="entry-title">领券中心 <span class="mini-new">NEW</span></p>
+          <p class="entry-title">领券中心 <span v-if="hasNewCoupon" class="mini-new">NEW</span></p>
           <p class="entry-desc">每周好券上新，先到先得</p>
         </div>
         <svg class="entry-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -181,7 +168,7 @@
   </section>
 
   <!-- ============================================================ -->
-  <!-- 4. 订单管理区                                                  -->
+  <!-- 3. 订单管理区                                                  -->
   <!-- ============================================================ -->
   <section class="order-section">
     <div class="container-shop">
@@ -230,6 +217,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getUserCenter } from '@/api/user'
 import { getUnreadCount } from '@/api/message'
+import { listAvailableCoupons } from '@/api/coupon'
 import { useUserStore } from '@/store/user'
 import { useCartStore } from '@/store/cart'
 import type { User, UserCenter } from '@/types/user'
@@ -390,6 +378,9 @@ async function loadCenter() {
 /** 消息中心未读数 */
 const msgUnread = ref(0)
 
+/** 领券中心是否有未领取的新券（控制 NEW 标记显示） */
+const hasNewCoupon = ref(false)
+
 /** 获取消息未读数（失败静默，不影响页面） */
 async function loadMsgUnread() {
   try {
@@ -400,9 +391,20 @@ async function loadMsgUnread() {
   }
 }
 
+/** 判断是否有未领取的新券：领券中心列表中只要存在 claimed=false 的券即显示 NEW */
+async function loadNewCoupon() {
+  try {
+    const res = await listAvailableCoupons({ page: 1, pageSize: 100 })
+    hasNewCoupon.value = (res.items || []).some(i => !i.claimed)
+  } catch {
+    hasNewCoupon.value = false
+  }
+}
+
 onMounted(() => {
   loadCenter()
   loadMsgUnread()
+  loadNewCoupon()
 })
 </script>
 
@@ -410,36 +412,6 @@ onMounted(() => {
 /* ============================================
    个人中心页面样式
    ============================================ */
-
-/* ---- 面包屑 ---- */
-.breadcrumb {
-  padding: 24px 0 0;
-}
-
-.breadcrumb-link {
-  font-size: 0.875rem;
-  color: var(--shop-muted-foreground);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.breadcrumb-link:hover {
-  color: var(--shop-primary);
-  text-decoration: underline;
-}
-
-.breadcrumb-arrow {
-  display: inline;
-  margin: 0 8px;
-  vertical-align: middle;
-  color: var(--shop-muted-foreground);
-}
-
-.breadcrumb-current {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--shop-foreground);
-}
 
 /* ---- 用户信息头部 ---- */
 .user-hero {

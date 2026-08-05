@@ -6,11 +6,7 @@
     <div class="page-header">
       <div class="container-shop">
         <div class="page-header-inner">
-          <router-link to="/user" class="back-link">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-          </router-link>
+          <BackButton fallback="/user" />
           <h1 class="page-title">退款/售后</h1>
         </div>
       </div>
@@ -86,6 +82,7 @@
  * 数据来源：GET /order/v1/refunds
  */
 import { ref, computed, onMounted } from 'vue'
+import BackButton from '@/components/BackButton.vue'
 import { getRefunds, type RefundItemDTO } from '@/api/order'
 
 /** 状态筛选标签（value 与后端 refund status 对应，0=全部） */
@@ -191,20 +188,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-.back-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--shop-muted);
-  color: var(--shop-foreground);
-  transition: background 0.2s;
-}
-.back-link:hover {
-  background: var(--shop-border);
 }
 .page-title {
   font-size: 1.25rem;

@@ -33,7 +33,7 @@ const (
 type AdminLogsClient interface {
 	// 分页查询操作日志
 	ListOperationLogs(ctx context.Context, in *ListOperationLogsRequest, opts ...grpc.CallOption) (*ListOperationLogsReply, error)
-	// 操作日志统计（今日/本周/本月/累计）
+	// 操作日志统计（今日/近7天/近30天/累计）
 	CountOperationLogs(ctx context.Context, in *CountOperationLogsRequest, opts ...grpc.CallOption) (*CountOperationLogsReply, error)
 	// 操作人列表（筛选下拉）
 	ListOperationLogOperators(ctx context.Context, in *ListOperationLogOperatorsRequest, opts ...grpc.CallOption) (*ListOperationLogOperatorsReply, error)
@@ -86,7 +86,7 @@ func (c *adminLogsClient) ListOperationLogOperators(ctx context.Context, in *Lis
 type AdminLogsServer interface {
 	// 分页查询操作日志
 	ListOperationLogs(context.Context, *ListOperationLogsRequest) (*ListOperationLogsReply, error)
-	// 操作日志统计（今日/本周/本月/累计）
+	// 操作日志统计（今日/近7天/近30天/累计）
 	CountOperationLogs(context.Context, *CountOperationLogsRequest) (*CountOperationLogsReply, error)
 	// 操作人列表（筛选下拉）
 	ListOperationLogOperators(context.Context, *ListOperationLogOperatorsRequest) (*ListOperationLogOperatorsReply, error)

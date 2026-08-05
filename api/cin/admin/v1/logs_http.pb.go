@@ -24,7 +24,7 @@ const OperationAdminLogsListOperationLogOperators = "/api.cin.admin.v1.AdminLogs
 const OperationAdminLogsListOperationLogs = "/api.cin.admin.v1.AdminLogs/ListOperationLogs"
 
 type AdminLogsHTTPServer interface {
-	// CountOperationLogs 操作日志统计（今日/本周/本月/累计）
+	// CountOperationLogs 操作日志统计（今日/近7天/近30天/累计）
 	CountOperationLogs(context.Context, *CountOperationLogsRequest) (*CountOperationLogsReply, error)
 	// ListOperationLogOperators 操作人列表（筛选下拉）
 	ListOperationLogOperators(context.Context, *ListOperationLogOperatorsRequest) (*ListOperationLogOperatorsReply, error)
@@ -97,7 +97,7 @@ func _AdminLogs_ListOperationLogOperators0_HTTP_Handler(srv AdminLogsHTTPServer)
 }
 
 type AdminLogsHTTPClient interface {
-	// CountOperationLogs 操作日志统计（今日/本周/本月/累计）
+	// CountOperationLogs 操作日志统计（今日/近7天/近30天/累计）
 	CountOperationLogs(ctx context.Context, req *CountOperationLogsRequest, opts ...http.CallOption) (rsp *CountOperationLogsReply, err error)
 	// ListOperationLogOperators 操作人列表（筛选下拉）
 	ListOperationLogOperators(ctx context.Context, req *ListOperationLogOperatorsRequest, opts ...http.CallOption) (rsp *ListOperationLogOperatorsReply, err error)
@@ -113,7 +113,7 @@ func NewAdminLogsHTTPClient(client *http.Client) AdminLogsHTTPClient {
 	return &AdminLogsHTTPClientImpl{client}
 }
 
-// CountOperationLogs 操作日志统计（今日/本周/本月/累计）
+// CountOperationLogs 操作日志统计（今日/近7天/近30天/累计）
 func (c *AdminLogsHTTPClientImpl) CountOperationLogs(ctx context.Context, in *CountOperationLogsRequest, opts ...http.CallOption) (*CountOperationLogsReply, error) {
 	var out CountOperationLogsReply
 	pattern := "/admin/v1/logs/stats"

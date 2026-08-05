@@ -1,14 +1,8 @@
 <template>
   <div class="my-coupon">
-    <!-- 面包屑 -->
+    <!-- 返回上一页 -->
     <div class="container-shop py-3">
-      <div class="my-breadcrumb">
-        <router-link to="/" class="breadcrumb-link">首页</router-link>
-        <span class="separator">/</span>
-        <router-link to="/user" class="breadcrumb-link">个人中心</router-link>
-        <span class="separator">/</span>
-        <span class="current">我的优惠券</span>
-      </div>
+      <BackButton fallback="/user" />
     </div>
 
     <div class="container-shop pb-12">
@@ -124,6 +118,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { listMyCoupons } from '@/api/coupon'
+import BackButton from '@/components/BackButton.vue'
 import type { MyCouponItem } from '@/types/coupon'
 
 const router = useRouter()
@@ -263,29 +258,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ---- 面包屑 ---- */
-.my-breadcrumb {
-  display: flex;
-  align-items: center;
-  font-size: 0.75rem;
-  color: var(--shop-muted-foreground);
-}
-.breadcrumb-link {
-  color: var(--shop-muted-foreground);
-  text-decoration: none;
-  transition: color var(--shop-transition);
-}
-.breadcrumb-link:hover {
-  color: var(--shop-primary);
-}
-.separator {
-  margin: 0 6px;
-  color: var(--shop-border);
-}
-.current {
-  color: var(--shop-foreground);
-}
-
 /* ---- Tab ---- */
 .coupon-tabs {
   display: flex;

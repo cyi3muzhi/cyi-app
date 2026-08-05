@@ -1,20 +1,15 @@
 <template>
   <div class="coupon-center">
-    <!-- 面包屑 -->
-    <div class="container-shop py-3">
-      <div class="center-breadcrumb">
-        <router-link to="/" class="breadcrumb-link">首页</router-link>
-        <span class="separator">/</span>
-        <span class="current">领券中心</span>
-      </div>
-    </div>
-
     <div class="container-shop pb-12">
       <!-- 顶部宣传 banner -->
       <div class="center-banner">
         <div class="deco d1"></div>
         <div class="deco d2"></div>
         <div class="deco d3"></div>
+        <!-- 返回上一页 -->
+        <div class="banner-back">
+          <BackButton fallback="/user" light />
+        </div>
         <div class="bb-title">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
@@ -125,6 +120,7 @@
  */
 import { ref, onMounted } from 'vue'
 import { listAvailableCoupons, claimCoupon } from '@/api/coupon'
+import BackButton from '@/components/BackButton.vue'
 import { toast } from '@/utils/toast'
 import type { AvailableCouponItem } from '@/types/coupon'
 
@@ -240,29 +236,6 @@ onMounted(loadCoupons)
 </script>
 
 <style scoped>
-/* ---- 面包屑 ---- */
-.center-breadcrumb {
-  display: flex;
-  align-items: center;
-  font-size: 0.75rem;
-  color: var(--shop-muted-foreground);
-}
-.breadcrumb-link {
-  color: var(--shop-muted-foreground);
-  text-decoration: none;
-  transition: color var(--shop-transition);
-}
-.breadcrumb-link:hover {
-  color: var(--shop-primary);
-}
-.separator {
-  margin: 0 6px;
-  color: var(--shop-border);
-}
-.current {
-  color: var(--shop-foreground);
-}
-
 /* ---- 顶部 banner ---- */
 .center-banner {
   position: relative;
@@ -283,6 +256,13 @@ onMounted(loadCoupons)
 .center-banner .deco.d1 { width: 220px; height: 220px; right: -60px; top: -70px; }
 .center-banner .deco.d2 { width: 120px; height: 120px; right: 120px; bottom: -50px; background: rgba(255, 255, 255, 0.1); }
 .center-banner .deco.d3 { width: 60px; height: 60px; left: 38%; top: -24px; background: rgba(255, 255, 255, 0.08); }
+/* 返回按钮：左上角悬浮于渐变 banner 上 */
+.banner-back {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 2;
+}
 .center-banner .bb-title {
   position: relative;
   z-index: 1;
@@ -292,6 +272,7 @@ onMounted(loadCoupons)
   display: flex;
   align-items: center;
   gap: 10px;
+  padding-left: 44px;
 }
 .center-banner .bb-sub {
   position: relative;

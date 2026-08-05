@@ -1,15 +1,6 @@
 <template>
   <div class="cart-page">
-    <!-- 面包屑 -->
-    <div class="container-shop py-3">
-      <div class="cart-breadcrumb">
-        <router-link to="/" class="breadcrumb-link">首页</router-link>
-        <span class="separator">/</span>
-        <span class="current">购物车</span>
-      </div>
-    </div>
-
-    <!-- 页面标题和步骤指示器 -->
+    <!-- 页面标题和步骤指示器（一级页面，无需返回按钮） -->
     <div class="container-shop">
       <h1 class="page-title">
         我的购物车 (<span class="cart-count">{{ cartStore.totalCount }}</span> 件商品)
@@ -334,28 +325,6 @@ const recommendProducts = [
 </script>
 
 <style scoped>
-/* ---- 面包屑 ---- */
-.cart-breadcrumb {
-  display: flex;
-  align-items: center;
-  font-size: 0.75rem;
-  color: var(--shop-muted-foreground);
-}
-.breadcrumb-link {
-  color: var(--shop-muted-foreground);
-  text-decoration: none;
-  transition: color var(--shop-transition);
-}
-.breadcrumb-link:hover {
-  color: var(--shop-primary);
-}
-.separator {
-  margin: 0 6px;
-  color: var(--shop-border);
-}
-.current {
-  color: var(--shop-foreground);
-}
 
 /* ---- 页面标题 ---- */
 .page-title {

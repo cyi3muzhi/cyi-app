@@ -872,7 +872,7 @@ paths:
         get:
             tags:
                 - AdminLogs
-            description: 操作日志统计（今日/本周/本月/累计）
+            description: 操作日志统计（今日/近7天/近30天/累计）
             operationId: AdminLogs_CountOperationLogs
             responses:
                 "200":
