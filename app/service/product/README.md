@@ -113,7 +113,7 @@ app/service/product/
 
 | UseCase | 职责 |
 |---------|------|
-| `ProductUseCase` | 商品管理（创建、查询、更新、删除） |
+| `ProductUseCase` | 商品管理（创建、查询、更新、删除、搜索联想 SuggestProduct） |
 | `StockUseCase` | 库存管理（查询、扣减、增加） |
 | `CategoryUseCase` | 商品分类管理（分类树、创建、更新、删除、排序、状态管理） |
 | `SkuUseCase` | SKU 管理（列表、创建、更新、删除） |
@@ -131,9 +131,20 @@ app/service/product/
 |------|------|------|
 | `CreateProduct` | gRPC | 创建商品 |
 | `GetProduct` | gRPC | 查询商品 |
-| `ListProducts` | gRPC | 商品列表 |
+| `ListProducts` | gRPC | 商品列表（支持 MySQL FULLTEXT 关键词搜索，ngram 分词器支持中文） |
+| `SuggestProduct` | gRPC | 搜索联想（返回匹配关键词的商品名列表，用于搜索框下拉联想） |
 | `UpdateProduct` | gRPC | 更新商品 |
 | `DeleteProduct` | gRPC | 删除商品 |
+
+### 全文搜索部署要求
+
+FULLTEXT 搜索依赖以下 MySQL 配置（否则可能报错或搜不到）：
+
+1. **组合索引**：`ListProduct` 使用 `MATCH(name, description)`，需组合 FULLTEXT 索引 `ft_product_search (name, description)`；`SuggestProduct` 使用 `MATCH(name)`，需单列索引 `ft_product_name (name)`。服务启动时 `ensureFullTextIndexes` 自动创建（幂等），详见实现方案文档。
+2. **空停用词表**：ngram 默认英文停用词会过滤含 `i`/`on` 等 token 的英文关键词（如 "ip" 搜不到 "iPhone"）。需手动配置一次：
+   - 创建 `cin_test.ft_stopwords` 表（含一行占位值）
+   - `SET PERSIST innodb_ft_server_stopword_table = 'cin_test/ft_stopwords'`
+   - 重建两个 FULLTEXT 索引
 | `GetStock` | gRPC | 查询库存 |
 | `DeductStock` | gRPC | 扣减库存 |
 | `AddStock` | gRPC | 增加库存 |

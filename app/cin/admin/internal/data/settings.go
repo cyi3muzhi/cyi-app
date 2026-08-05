@@ -33,6 +33,10 @@ func bizToProto(s *biz.SystemSettings) *userV1.UpdateSettingsRequest {
 	if payments == nil {
 		payments = []string{}
 	}
+	hotKeywords := s.HotKeywords
+	if hotKeywords == nil {
+		hotKeywords = []string{}
+	}
 	return &userV1.UpdateSettingsRequest{
 		ShopName:               s.ShopName,
 		ShopLogo:               s.ShopLogo,
@@ -57,6 +61,7 @@ func bizToProto(s *biz.SystemSettings) *userV1.UpdateSettingsRequest {
 		DefaultPayment:         s.DefaultPayment,
 		FreeShippingThreshold:  s.FreeShippingThreshold,
 		DefaultShippingCompany: s.DefaultShippingCompany,
+		HotKeywords:            hotKeywords,
 	}
 }
 
@@ -65,6 +70,10 @@ func protoToBiz(resp *userV1.GetSettingsReply) *biz.SystemSettings {
 	payments := resp.EnabledPayments
 	if payments == nil {
 		payments = []string{}
+	}
+	hotKeywords := resp.HotKeywords
+	if hotKeywords == nil {
+		hotKeywords = []string{}
 	}
 	return &biz.SystemSettings{
 		ShopName:               resp.ShopName,
@@ -90,6 +99,7 @@ func protoToBiz(resp *userV1.GetSettingsReply) *biz.SystemSettings {
 		DefaultPayment:         resp.DefaultPayment,
 		FreeShippingThreshold:  resp.FreeShippingThreshold,
 		DefaultShippingCompany: resp.DefaultShippingCompany,
+		HotKeywords:            hotKeywords,
 	}
 }
 

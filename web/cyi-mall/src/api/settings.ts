@@ -10,6 +10,7 @@ export interface PublicSettings {
   contactPhone: string
   contactEmail: string
   icpRecord: string
+  hotKeywords: string[]  // 热门搜索词（搜索框联想展示）
 }
 
 /** 获取公开系统设置 */

@@ -11,7 +11,7 @@
 
       <!-- 搜索栏（桌面） -->
       <div class="search-desktop">
-        <div class="search-wrap">
+        <div ref="searchWrapRef" class="search-wrap">
           <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
@@ -20,7 +20,16 @@
             type="text"
             placeholder="搜索商品..."
             class="search-input"
-            @keyup.enter="onSearch"
+            @focus="showSuggest = true"
+            @blur="onInputBlur"
+            @keydown="onSearchKeydown"
+          />
+          <!-- 搜索联想下拉面板 -->
+          <SearchSuggest
+            ref="suggestRef"
+            :keyword="keyword"
+            :visible="showSuggest && !showMobileSearch"
+            @select="onSuggestSelect"
           />
         </div>
       </div>
@@ -85,7 +94,7 @@
     <!-- 移动端搜索栏 -->
     <div v-show="showMobileSearch" class="mobile-search-panel">
       <div class="container-shop">
-        <div class="search-wrap">
+        <div ref="mobileSearchWrapRef" class="search-wrap">
           <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
@@ -94,7 +103,15 @@
             type="text"
             placeholder="搜索商品..."
             class="search-input"
-            @keyup.enter="onSearch"
+            @focus="showSuggest = true"
+            @blur="onInputBlur"
+            @keydown="onSearchKeydown"
+          />
+          <!-- 搜索联想下拉面板（移动端） -->
+          <SearchSuggest
+            :keyword="keyword"
+            :visible="showSuggest && showMobileSearch"
+            @select="onSuggestSelect"
           />
         </div>
       </div>
@@ -103,13 +120,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/store/cart'
 import { useUserStore } from '@/store/user'
 import { useShopStore } from '@/store/shop'
 import { getCategoryTree } from '@/api/product'
+import { addSearchHistory } from '@/utils/searchHistory'
 import type { CategoryNode } from '@/types/product'
+import SearchSuggest from './SearchSuggest.vue'
 
 const router = useRouter()
 const cartStore = useCartStore()
@@ -118,6 +137,14 @@ const shopStore = useShopStore()
 
 const keyword = ref('')
 const showMobileSearch = ref(false)
+/** 搜索联想面板显隐 */
+const showSuggest = ref(false)
+/** 桌面端搜索容器引用（用于点击外部检测） */
+const searchWrapRef = ref<HTMLElement | null>(null)
+/** 移动端搜索容器引用 */
+const mobileSearchWrapRef = ref<HTMLElement | null>(null)
+/** SearchSuggest 组件实例引用 */
+const suggestRef = ref<InstanceType<typeof SearchSuggest> | null>(null)
 
 /** 分类下拉菜单显隐 */
 const showCategoryMenu = ref(false)
@@ -134,7 +161,24 @@ const isLoggedIn = computed(() => userStore.isLoggedIn)
 onMounted(() => {
   cartStore.loadCart()
   loadHeaderCategories()
+  document.addEventListener('click', onDocumentClick)
 })
+
+// 卸载前移除全局点击监听
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocumentClick)
+})
+
+/** 全局点击事件：点击搜索区域外时关闭联想面板 */
+function onDocumentClick(e: MouseEvent) {
+  const target = e.target as Node
+  if (
+    searchWrapRef.value && !searchWrapRef.value.contains(target) &&
+    mobileSearchWrapRef.value && !mobileSearchWrapRef.value.contains(target)
+  ) {
+    showSuggest.value = false
+  }
+}
 
 /** 加载头部导航分类（顶级分类，仅启用状态） */
 async function loadHeaderCategories() {
@@ -159,10 +203,54 @@ function renderCatIcon(icon: string): string {
   return icon
 }
 
-function onSearch() {
-  if (keyword.value.trim()) {
-    router.push({ path: '/products', query: { keyword: keyword.value.trim() } })
+/**
+ * 搜索框键盘事件处理：
+ * - Enter：选中高亮项（无高亮则用输入框值）并搜索
+ * - ↓/↑：循环导航联想面板
+ * - Esc：关闭面板
+ */
+function onSearchKeydown(e: KeyboardEvent) {
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    suggestRef.value?.navigateKey('down')
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    suggestRef.value?.navigateKey('up')
+  } else if (e.key === 'Escape') {
+    showSuggest.value = false
+  } else if (e.key === 'Enter') {
+    e.preventDefault()
+    const activeItem = suggestRef.value?.getActiveItem()
+    onSearch(activeItem || keyword.value.trim())
+  }
+}
+
+/** 输入框失焦：延迟关闭面板（留时间让点击事件触发） */
+function onInputBlur() {
+  setTimeout(() => {
+    showSuggest.value = false
+  }, 150)
+}
+
+/**
+ * 联想面板选中关键词回调
+ * 跳转到商品列表页搜索
+ */
+function onSuggestSelect(selectedKeyword: string) {
+  onSearch(selectedKeyword)
+}
+
+/**
+ * 执行搜索：跳转商品列表页并记录搜索历史
+ * @param kw 搜索关键词（优先用传入值，否则取输入框值）
+ */
+function onSearch(kw?: string) {
+  const searchKeyword = (kw || keyword.value).trim()
+  if (searchKeyword) {
+    addSearchHistory(searchKeyword, userStore.userId)
+    router.push({ path: '/products', query: { keyword: searchKeyword } })
     keyword.value = ''
+    showSuggest.value = false
     showMobileSearch.value = false
   }
 }

@@ -129,7 +129,7 @@ app/cin/interface/
 |---------|------|
 | `UserUseCase` | 用户认证、注册、信息管理、修改密码、收货地址管理、个人中心概览 |
 | `OrderUseCase` | 订单创建、查询、状态管理 |
-| `ProductUseCase` | 商品查询、管理 |
+| `ProductUseCase` | 商品查询、管理、搜索联想（SuggestProduct） |
 | `StockUseCase` | 库存查询、扣减 |
 | `CartUseCase` | 购物车管理（Redis 存储 + 商品信息聚合，按商品+SKU 维度） |
 | `CouponUseCase` | 优惠券领取、我的优惠券列表、领券中心（可领取券）、结算可用券筛选 |
@@ -158,8 +158,9 @@ app/cin/interface/
 | | `SetDefaultAddress` | gRPC/HTTP | 设置默认收货地址 |
 | **Product** | `CreateProduct` | gRPC/HTTP | 创建商品 |
 | | `UpdateProduct` | gRPC/HTTP | 更新商品 |
-| | `ListProduct` | gRPC/HTTP | 商品列表 |
+| | `ListProduct` | gRPC/HTTP | 商品列表（支持关键词 FULLTEXT 搜索） |
 | | `GetProduct` | gRPC/HTTP | 商品详情 |
+| | `SuggestProduct` | gRPC/HTTP | 搜索联想（输入关键词返回商品名建议，GET /product/v1/suggest，免鉴权） |
 | **Order** | `PlaceOrder` | gRPC/HTTP | 下单 |
 | | `PayOrder` | gRPC/HTTP | 支付订单 |
 | | `ReceiveOrder` | gRPC/HTTP | 确认收货 |
@@ -181,6 +182,7 @@ app/cin/interface/
 | **Banner** | `ListBanners` | gRPC/HTTP | 轮播图列表（启用中的） |
 | **Category** | `ListCategoryTree` | gRPC/HTTP | 分类树（启用中的） |
 | **Settings** | `GetSettings` | gRPC/HTTP | 获取店铺设置（名称、logo、公告等） |
+| | `GetPublicSettings` | gRPC/HTTP | 获取公开设置（商城名称、联系方式、ICP、热门搜索词 hot_keywords，免鉴权） |
 | **Stock** | `UpdateStock` | gRPC/HTTP | 更新库存 |
 | **Upload** | `GetUploadToken` | gRPC/HTTP | 获取上传凭证（OSS 预签名直传，用于头像等） |
 | **Blades** | `AiChat` | gRPC/HTTP | AI 聊天（非流式） |

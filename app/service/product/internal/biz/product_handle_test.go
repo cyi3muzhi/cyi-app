@@ -11,11 +11,12 @@ import (
 
 // mockProductRepo 商品仓储模拟实现
 type mockProductRepo struct {
-	createProduct func(ctx context.Context, in *Product) error
-	updateProduct func(ctx context.Context, in *Product) error
-	deleteProduct func(ctx context.Context, productID int64) error
-	getProduct    func(ctx context.Context, productID int64) (*Product, error)
-	listProduct   func(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*Product, int32, error)
+	createProduct  func(ctx context.Context, in *Product) error
+	updateProduct  func(ctx context.Context, in *Product) error
+	deleteProduct  func(ctx context.Context, productID int64) error
+	getProduct     func(ctx context.Context, productID int64) (*Product, error)
+	listProduct    func(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*Product, int32, error)
+	suggestProduct func(ctx context.Context, keyword string, limit int32) ([]string, error)
 }
 
 func (m *mockProductRepo) CreateProduct(ctx context.Context, in *Product) error {
@@ -32,6 +33,9 @@ func (m *mockProductRepo) GetProduct(ctx context.Context, productID int64) (*Pro
 }
 func (m *mockProductRepo) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*Product, int32, error) {
 	return m.listProduct(ctx, page, pageSize, keyword, categoryID, status, stockEQ)
+}
+func (m *mockProductRepo) SuggestProduct(ctx context.Context, keyword string, limit int32) ([]string, error) {
+	return m.suggestProduct(ctx, keyword, limit)
 }
 
 // mockStockRepo 库存仓储模拟实现
@@ -705,4 +709,66 @@ func TestListProduct_Success(t *testing.T) {
 		assert.Len(t, p.SpecGroups, 1, "每个商品应加载规格组")
 		assert.Len(t, p.Skus, 1, "每个商品应加载SKU")
 	}
+}
+
+// TestSuggestProduct_Success 测试搜索联想成功，limit 默认值为 8
+func TestSuggestProduct_Success(t *testing.T) {
+	pr := mockProductRepo{
+		suggestProduct: func(ctx context.Context, keyword string, limit int32) ([]string, error) {
+			assert.Equal(t, int32(8), limit, "未传 limit 时应使用默认值 8")
+			return []string{"iPhone 17 Pro Max", "HUAWEI Mate 80 Pro Max"}, nil
+		},
+	}
+	uc := newProductTestUseCase(pr, mockStockRepo{}, mockSpecGroupRepo{}, mockSkuRepo{})
+
+	items, err := uc.SuggestProduct(context.Background(), "ip", 0)
+	assert.NoError(t, err)
+	assert.Len(t, items, 2)
+	assert.Equal(t, "iPhone 17 Pro Max", items[0])
+}
+
+// TestSuggestProduct_LimitCap 测试搜索联想的 limit 上限为 20
+func TestSuggestProduct_LimitCap(t *testing.T) {
+	pr := mockProductRepo{
+		suggestProduct: func(ctx context.Context, keyword string, limit int32) ([]string, error) {
+			assert.Equal(t, int32(20), limit, "超过上限的 limit 应被截断为 20")
+			return []string{"商品A", "商品B"}, nil
+		},
+	}
+	uc := newProductTestUseCase(pr, mockStockRepo{}, mockSpecGroupRepo{}, mockSkuRepo{})
+
+	items, err := uc.SuggestProduct(context.Background(), "手机", 100)
+	assert.NoError(t, err)
+	assert.Len(t, items, 2)
+}
+
+// TestSuggestProduct_EmptyKeyword 测试空关键词不触发查询
+func TestSuggestProduct_EmptyKeyword(t *testing.T) {
+	called := false
+	pr := mockProductRepo{
+		suggestProduct: func(ctx context.Context, keyword string, limit int32) ([]string, error) {
+			called = true
+			return nil, nil
+		},
+	}
+	uc := newProductTestUseCase(pr, mockStockRepo{}, mockSpecGroupRepo{}, mockSkuRepo{})
+
+	items, err := uc.SuggestProduct(context.Background(), "", 0)
+	assert.NoError(t, err)
+	assert.Nil(t, items)
+	assert.False(t, called, "空关键词不应触发仓储查询")
+}
+
+// TestSuggestProduct_RepoError 测试搜索联想时仓储层报错
+func TestSuggestProduct_RepoError(t *testing.T) {
+	pr := mockProductRepo{
+		suggestProduct: func(ctx context.Context, keyword string, limit int32) ([]string, error) {
+			return nil, assert.AnError
+		},
+	}
+	uc := newProductTestUseCase(pr, mockStockRepo{}, mockSpecGroupRepo{}, mockSkuRepo{})
+
+	items, err := uc.SuggestProduct(context.Background(), "ip", 8)
+	assert.Error(t, err)
+	assert.Nil(t, items)
 }

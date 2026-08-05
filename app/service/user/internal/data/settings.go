@@ -47,6 +47,7 @@ func defaultSettings() *biz.SystemSettings {
 		DefaultPayment:         "wechat",
 		FreeShippingThreshold:  99.00,
 		DefaultShippingCompany: "顺丰速运",
+		HotKeywords:            []string{},
 	}
 }
 

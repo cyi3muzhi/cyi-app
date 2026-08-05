@@ -2,7 +2,9 @@ package data
 
 import (
 	"cyi-app/app/service/product/internal/conf"
+	"fmt"
 	"os"
+	"strings"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gen"
@@ -62,7 +64,56 @@ func NewDB(c *conf.Data) *gorm.DB {
 		generateCode(db)
 	}
 
+	// 确保 FULLTEXT 索引存在（ngram 分词器，支持中文搜索）
+	// 幂等执行：索引已存在时忽略 Duplicate key name 错误
+	ensureFullTextIndexes(db)
+
 	return db
+}
+
+// ensureFullTextIndexes 为 product 表创建 FULLTEXT 索引（ngram 分词器）
+// 用于支持中文全文搜索，替代 LIKE 查询以提升性能
+// 说明：MySQL FULLTEXT 的 MATCH() 列列表必须与索引列完全一致（不支持前缀匹配），
+// 因此需要两个索引：
+//   - ft_product_name    单列 (name)：供 SuggestProduct 的 MATCH(name) 使用
+//   - ft_product_search  组合 (name, description)：供 ListProduct 的 MATCH(name, description) 使用
+//
+// 幂等：索引已存在时静默跳过
+func ensureFullTextIndexes(db *gorm.DB) {
+	indexes := []struct {
+		name    string
+		columns string
+	}{
+		{"ft_product_name", "`name`"},
+		{"ft_product_search", "`name`,`description`"},
+	}
+	for _, idx := range indexes {
+		sql := fmt.Sprintf("ALTER TABLE `product` ADD FULLTEXT INDEX `%s` (%s) WITH PARSER ngram", idx.name, idx.columns)
+		if err := db.Exec(sql).Error; err != nil {
+			// 索引已存在时静默跳过（MySQL 错误码 1061：Duplicate key name）
+			if !isDuplicateIndexErr(err) {
+				log.Warnf("create fulltext index %s failed: %v", idx.name, err)
+			}
+		}
+	}
+	// 清理旧版单列 description 索引（已被组合索引 ft_product_search 替代，避免冗余）
+	dropLegacyDescIndex(db)
+}
+
+// dropLegacyDescIndex 删除旧版单列 description FULLTEXT 索引（ft_product_desc）
+// 旧实现为 ListProduct 单独创建了 description 索引，但 MATCH(name, description)
+// 无法命中单列索引（FULLTEXT 不支持前缀匹配），现已由组合索引替代
+func dropLegacyDescIndex(db *gorm.DB) {
+	_ = db.Exec("DROP INDEX `ft_product_desc` ON `product`").Error
+}
+
+// isDuplicateIndexErr 判断是否为"索引已存在"错误（幂等场景下静默跳过）
+func isDuplicateIndexErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "Duplicate key name") || strings.Contains(msg, "1061")
 }
 
 func generateCode(db *gorm.DB) {

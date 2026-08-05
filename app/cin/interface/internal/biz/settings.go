@@ -13,6 +13,7 @@ type PublicSettings struct {
 	ContactPhone    string
 	ContactEmail    string
 	IcpRecord       string
+	HotKeywords     []string  // 热门搜索词（用户端搜索框联想展示）
 }
 
 // SettingsRepo 设置仓库接口

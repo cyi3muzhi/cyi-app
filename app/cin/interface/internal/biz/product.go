@@ -51,6 +51,8 @@ type ProductRepo interface {
 	UpdateProduct(ctx context.Context, product *Product) error
 	GetProduct(ctx context.Context, productID int64) (*Product, error)
 	ListProduct(ctx context.Context, req *ListProductRequest) ([]*Product, int32, error)
+	// SuggestProduct 搜索联想：返回匹配关键词的商品名列表
+	SuggestProduct(ctx context.Context, keyword string, limit int32) ([]string, error)
 }
 
 type ProductUseCase struct {
@@ -79,4 +81,22 @@ func (u *ProductUseCase) GetProduct(ctx context.Context, productID int64) (*Prod
 
 func (u *ProductUseCase) ListProduct(ctx context.Context, req *ListProductRequest) ([]*Product, int32, error) {
 	return u.repo.ListProduct(ctx, req)
+}
+
+// SuggestProduct 搜索联想：返回匹配关键词的商品名列表
+// @param keyword 联想关键词
+// @param limit 返回条数上限（默认 8，最大 20）
+// @return 商品名称列表
+func (u *ProductUseCase) SuggestProduct(ctx context.Context, keyword string, limit int32) ([]string, error) {
+	if keyword == "" {
+		return nil, nil
+	}
+	// limit 默认值 8，上限 20
+	if limit <= 0 {
+		limit = 8
+	}
+	if limit > 20 {
+		limit = 20
+	}
+	return u.repo.SuggestProduct(ctx, keyword, limit)
 }

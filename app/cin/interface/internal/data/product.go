@@ -72,6 +72,23 @@ func (r *productRepo) ListProduct(ctx context.Context, req *biz.ListProductReque
 	return items, resp.Total, nil
 }
 
+// SuggestProduct 搜索联想：代理调用商品服务的 SuggestProduct rpc
+// 返回匹配关键词的商品名列表（去重）
+func (r *productRepo) SuggestProduct(ctx context.Context, keyword string, limit int32) ([]string, error) {
+	resp, err := r.data.pc.SuggestProduct(ctx, &productV1.SuggestProductRequest{
+		Keyword: keyword,
+		Limit:   limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+	items := resp.Items
+	if items == nil {
+		items = []string{}
+	}
+	return items, nil
+}
+
 func convertProductItem(item *productV1.ProductItem) *biz.Product {
 	if item == nil {
 		return nil

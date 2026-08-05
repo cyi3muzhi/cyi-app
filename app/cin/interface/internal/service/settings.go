@@ -15,11 +15,16 @@ func (s *CinInterface) GetPublicSettings(ctx context.Context, _ *emptypb.Empty) 
 	if err != nil {
 		return nil, err
 	}
+	hotKeywords := settings.HotKeywords
+	if hotKeywords == nil {
+		hotKeywords = []string{}
+	}
 	return &v1.PublicSettingsReply{
 		ShopName:        settings.ShopName,
 		ShopDescription: settings.ShopDescription,
 		ContactPhone:    settings.ContactPhone,
 		ContactEmail:    settings.ContactEmail,
 		IcpRecord:       settings.IcpRecord,
+		HotKeywords:     hotKeywords,
 	}, nil
 }

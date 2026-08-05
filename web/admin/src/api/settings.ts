@@ -28,6 +28,7 @@ export interface SystemSettings {
   defaultPayment: string
   freeShippingThreshold: number
   defaultShippingCompany: string
+  hotKeywords: string[]  // 热门搜索词（用户端搜索框联想展示）
 }
 
 /** 获取系统设置 */

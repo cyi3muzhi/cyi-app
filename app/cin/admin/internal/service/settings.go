@@ -19,6 +19,10 @@ func (s *AdminService) GetSettings(ctx context.Context, req *adminv1.GetSettings
 	if payments == nil {
 		payments = []string{}
 	}
+	hotKeywords := settings.HotKeywords
+	if hotKeywords == nil {
+		hotKeywords = []string{}
+	}
 	return &adminv1.GetSettingsReply{
 		ShopName:               settings.ShopName,
 		ShopLogo:               settings.ShopLogo,
@@ -43,6 +47,7 @@ func (s *AdminService) GetSettings(ctx context.Context, req *adminv1.GetSettings
 		DefaultPayment:         settings.DefaultPayment,
 		FreeShippingThreshold:  settings.FreeShippingThreshold,
 		DefaultShippingCompany: settings.DefaultShippingCompany,
+		HotKeywords:            hotKeywords,
 	}, nil
 }
 
@@ -51,6 +56,10 @@ func (s *AdminService) UpdateSettings(ctx context.Context, req *adminv1.UpdateSe
 	payments := req.EnabledPayments
 	if payments == nil {
 		payments = []string{}
+	}
+	hotKeywords := req.HotKeywords
+	if hotKeywords == nil {
+		hotKeywords = []string{}
 	}
 	settings := &biz.SystemSettings{
 		ShopName:               req.ShopName,
@@ -76,6 +85,7 @@ func (s *AdminService) UpdateSettings(ctx context.Context, req *adminv1.UpdateSe
 		DefaultPayment:         req.DefaultPayment,
 		FreeShippingThreshold:  req.FreeShippingThreshold,
 		DefaultShippingCompany: req.DefaultShippingCompany,
+		HotKeywords:            hotKeywords,
 	}
 	if err := s.settUC.Update(ctx, settings); err != nil {
 		return nil, err

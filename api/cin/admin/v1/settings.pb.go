@@ -83,6 +83,7 @@ type GetSettingsReply struct {
 	DefaultPayment         string                 `protobuf:"bytes,21,opt,name=default_payment,json=defaultPayment,proto3" json:"default_payment,omitempty"`
 	FreeShippingThreshold  float64                `protobuf:"fixed64,22,opt,name=free_shipping_threshold,json=freeShippingThreshold,proto3" json:"free_shipping_threshold,omitempty"`
 	DefaultShippingCompany string                 `protobuf:"bytes,23,opt,name=default_shipping_company,json=defaultShippingCompany,proto3" json:"default_shipping_company,omitempty"`
+	HotKeywords            []string               `protobuf:"bytes,24,rep,name=hot_keywords,json=hotKeywords,proto3" json:"hot_keywords,omitempty"` // 热门搜索词（用户端搜索框联想展示）
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
@@ -278,6 +279,13 @@ func (x *GetSettingsReply) GetDefaultShippingCompany() string {
 	return ""
 }
 
+func (x *GetSettingsReply) GetHotKeywords() []string {
+	if x != nil {
+		return x.HotKeywords
+	}
+	return nil
+}
+
 type UpdateSettingsRequest struct {
 	state                  protoimpl.MessageState `protogen:"open.v1"`
 	ShopName               string                 `protobuf:"bytes,1,opt,name=shop_name,json=shopName,proto3" json:"shop_name,omitempty"`
@@ -303,6 +311,7 @@ type UpdateSettingsRequest struct {
 	DefaultPayment         string                 `protobuf:"bytes,21,opt,name=default_payment,json=defaultPayment,proto3" json:"default_payment,omitempty"`
 	FreeShippingThreshold  float64                `protobuf:"fixed64,22,opt,name=free_shipping_threshold,json=freeShippingThreshold,proto3" json:"free_shipping_threshold,omitempty"`
 	DefaultShippingCompany string                 `protobuf:"bytes,23,opt,name=default_shipping_company,json=defaultShippingCompany,proto3" json:"default_shipping_company,omitempty"`
+	HotKeywords            []string               `protobuf:"bytes,24,rep,name=hot_keywords,json=hotKeywords,proto3" json:"hot_keywords,omitempty"` // 热门搜索词
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
@@ -496,6 +505,13 @@ func (x *UpdateSettingsRequest) GetDefaultShippingCompany() string {
 		return x.DefaultShippingCompany
 	}
 	return ""
+}
+
+func (x *UpdateSettingsRequest) GetHotKeywords() []string {
+	if x != nil {
+		return x.HotKeywords
+	}
+	return nil
 }
 
 type UpdateSettingsReply struct {
@@ -715,7 +731,7 @@ var File_api_cin_admin_v1_settings_proto protoreflect.FileDescriptor
 const file_api_cin_admin_v1_settings_proto_rawDesc = "" +
 	"\n" +
 	"\x1fapi/cin/admin/v1/settings.proto\x12\x10api.cin.admin.v1\x1a\x1cgoogle/api/annotations.proto\"\x14\n" +
-	"\x12GetSettingsRequest\"\xf9\a\n" +
+	"\x12GetSettingsRequest\"\x9c\b\n" +
 	"\x10GetSettingsReply\x12\x1b\n" +
 	"\tshop_name\x18\x01 \x01(\tR\bshopName\x12\x1b\n" +
 	"\tshop_logo\x18\x02 \x01(\tR\bshopLogo\x12)\n" +
@@ -741,7 +757,8 @@ const file_api_cin_admin_v1_settings_proto_rawDesc = "" +
 	"\x10enabled_payments\x18\x14 \x03(\tR\x0fenabledPayments\x12'\n" +
 	"\x0fdefault_payment\x18\x15 \x01(\tR\x0edefaultPayment\x126\n" +
 	"\x17free_shipping_threshold\x18\x16 \x01(\x01R\x15freeShippingThreshold\x128\n" +
-	"\x18default_shipping_company\x18\x17 \x01(\tR\x16defaultShippingCompany\"\xfe\a\n" +
+	"\x18default_shipping_company\x18\x17 \x01(\tR\x16defaultShippingCompany\x12!\n" +
+	"\fhot_keywords\x18\x18 \x03(\tR\vhotKeywords\"\xa1\b\n" +
 	"\x15UpdateSettingsRequest\x12\x1b\n" +
 	"\tshop_name\x18\x01 \x01(\tR\bshopName\x12\x1b\n" +
 	"\tshop_logo\x18\x02 \x01(\tR\bshopLogo\x12)\n" +
@@ -767,7 +784,8 @@ const file_api_cin_admin_v1_settings_proto_rawDesc = "" +
 	"\x10enabled_payments\x18\x14 \x03(\tR\x0fenabledPayments\x12'\n" +
 	"\x0fdefault_payment\x18\x15 \x01(\tR\x0edefaultPayment\x126\n" +
 	"\x17free_shipping_threshold\x18\x16 \x01(\x01R\x15freeShippingThreshold\x128\n" +
-	"\x18default_shipping_company\x18\x17 \x01(\tR\x16defaultShippingCompany\"/\n" +
+	"\x18default_shipping_company\x18\x17 \x01(\tR\x16defaultShippingCompany\x12!\n" +
+	"\fhot_keywords\x18\x18 \x03(\tR\vhotKeywords\"/\n" +
 	"\x13UpdateSettingsReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x16\n" +
 	"\x14GetPreferenceRequest\"(\n" +

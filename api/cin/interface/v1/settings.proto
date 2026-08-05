@@ -25,4 +25,5 @@ message PublicSettingsReply {
   string contact_phone = 3;
   string contact_email = 4;
   string icp_record = 5;
+  repeated string hot_keywords = 6;  // 热门搜索词（用户端搜索框联想展示）
 }

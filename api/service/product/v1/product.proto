@@ -32,6 +32,7 @@ service Product {
 	rpc DeleteProduct (DeleteProductRequest) returns (DeleteProductReply);
 	rpc GetProduct (GetProductRequest) returns (GetProductReply);
 	rpc ListProduct (ListProductRequest) returns (ListProductReply);
+	rpc SuggestProduct (SuggestProductRequest) returns (SuggestProductReply);
 }
 
 // 商品信息（完整字段）
@@ -115,4 +116,15 @@ message ListProductRequest {
 message ListProductReply {
 	repeated ProductItem items = 1; // 商品列表
 	int32 total = 2;                // 总条数
+}
+
+// 搜索联想请求
+message SuggestProductRequest {
+	string keyword = 1;     // 联想关键词
+	int32 limit = 2;        // 返回条数上限（默认 8，最大 20）
+}
+
+// 搜索联想响应
+message SuggestProductReply {
+	repeated string items = 1;  // 商品名称列表
 }

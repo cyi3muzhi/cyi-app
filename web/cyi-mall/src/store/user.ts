@@ -9,6 +9,8 @@ export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')
   const nickname = ref('')
   const avatar = ref('')
+  /** 当前用户 ID（用于搜索历史等按用户隔离的本地数据） */
+  const userId = ref<number | null>(null)
 
   const isLoggedIn = computed(() => !!token.value)
 
@@ -27,6 +29,7 @@ export const useUserStore = defineStore('user', () => {
       const user = await getMyInfo()
       nickname.value = user.nickname
       avatar.value = user.avatar || ''
+      userId.value = user.id || null
     } catch {
       // 拉取失败静默处理（如 token 过期时由请求拦截器统一跳转登录页）
     }
@@ -37,10 +40,11 @@ export const useUserStore = defineStore('user', () => {
     token.value = ''
     nickname.value = ''
     avatar.value = ''
+    userId.value = null
     localStorage.removeItem('token')
   }
 
-  return { token, nickname, avatar, isLoggedIn, setLogin, fetchUserInfo, logout }
+  return { token, nickname, avatar, userId, isLoggedIn, setLogin, fetchUserInfo, logout }
 })
 
 // 启用 store 热更新（修改此文件时无需整页刷新）

@@ -16,6 +16,8 @@ export const useShopStore = defineStore('shop', () => {
   const contactEmail = ref('')
   /** ICP 备案号 */
   const icpRecord = ref('')
+  /** 热门搜索词（搜索框联想展示） */
+  const hotKeywords = ref<string[]>([])
   /** 是否已加载 */
   const loaded = ref(false)
 
@@ -30,11 +32,13 @@ export const useShopStore = defineStore('shop', () => {
       if (data.contactPhone || data.contact_phone) contactPhone.value = data.contactPhone || data.contact_phone
       if (data.contactEmail || data.contact_email) contactEmail.value = data.contactEmail || data.contact_email
       if (data.icpRecord || data.icp_record) icpRecord.value = data.icpRecord || data.icp_record
+      // 热门搜索词兜底空数组
+      hotKeywords.value = data.hotKeywords || data.hot_keywords || []
       loaded.value = true
     } catch (e) {
       console.warn('[settings] fetch failed:', e)
     }
   }
 
-  return { shopName, shopDescription, contactPhone, contactEmail, icpRecord, loaded, fetchSettings }
+  return { shopName, shopDescription, contactPhone, contactEmail, icpRecord, hotKeywords, loaded, fetchSettings }
 })

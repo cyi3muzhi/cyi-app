@@ -57,6 +57,20 @@ export function getProductDetail(id: number) {
   return request.get<any, { product: ProductItem }>(`/product/v1/${id}`)
 }
 
+/** 搜索联想响应 */
+export interface SuggestProductReply {
+  items: string[]
+}
+
+/**
+ * 搜索联想：输入关键词时返回匹配的商品名列表
+ * @param keyword 联想关键词（至少 2 个字符）
+ * @param limit 返回条数上限（默认 8，最大 20）
+ */
+export function suggestProduct(params: { keyword: string; limit?: number }) {
+  return request.get<any, SuggestProductReply>('/product/v1/suggest', { params })
+}
+
 /** 获取分类树 */
 export function getCategoryTree(parentId?: number) {
   return request.get<any, { items: CategoryNode[]; total: number }>('/category/v1/tree', {

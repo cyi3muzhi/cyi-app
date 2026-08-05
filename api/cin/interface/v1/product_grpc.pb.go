@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Product_CreateProduct_FullMethodName = "/api.cin.interface.v1.Product/CreateProduct"
-	Product_UpdateProduct_FullMethodName = "/api.cin.interface.v1.Product/UpdateProduct"
-	Product_ListProduct_FullMethodName   = "/api.cin.interface.v1.Product/ListProduct"
-	Product_GetProduct_FullMethodName    = "/api.cin.interface.v1.Product/GetProduct"
+	Product_CreateProduct_FullMethodName  = "/api.cin.interface.v1.Product/CreateProduct"
+	Product_UpdateProduct_FullMethodName  = "/api.cin.interface.v1.Product/UpdateProduct"
+	Product_ListProduct_FullMethodName    = "/api.cin.interface.v1.Product/ListProduct"
+	Product_SuggestProduct_FullMethodName = "/api.cin.interface.v1.Product/SuggestProduct"
+	Product_GetProduct_FullMethodName     = "/api.cin.interface.v1.Product/GetProduct"
 )
 
 // ProductClient is the client API for Product service.
@@ -37,6 +38,10 @@ type ProductClient interface {
 	UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...grpc.CallOption) (*UpdateProductReply, error)
 	// 商品列表
 	ListProduct(ctx context.Context, in *ListProductRequest, opts ...grpc.CallOption) (*ListProductReply, error)
+	// 搜索联想（输入关键词时返回商品名建议）
+	// 注意：必须声明在 GetProduct（/product/v1/{id}）之前，
+	// 否则静态路径 suggest 会被 {id} 参数路由抢先匹配导致解析失败
+	SuggestProduct(ctx context.Context, in *SuggestProductRequest, opts ...grpc.CallOption) (*SuggestProductReply, error)
 	// 商品详情
 	GetProduct(ctx context.Context, in *GetProductRequest, opts ...grpc.CallOption) (*GetProductReply, error)
 }
@@ -79,6 +84,16 @@ func (c *productClient) ListProduct(ctx context.Context, in *ListProductRequest,
 	return out, nil
 }
 
+func (c *productClient) SuggestProduct(ctx context.Context, in *SuggestProductRequest, opts ...grpc.CallOption) (*SuggestProductReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SuggestProductReply)
+	err := c.cc.Invoke(ctx, Product_SuggestProduct_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *productClient) GetProduct(ctx context.Context, in *GetProductRequest, opts ...grpc.CallOption) (*GetProductReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetProductReply)
@@ -101,6 +116,10 @@ type ProductServer interface {
 	UpdateProduct(context.Context, *UpdateProductRequest) (*UpdateProductReply, error)
 	// 商品列表
 	ListProduct(context.Context, *ListProductRequest) (*ListProductReply, error)
+	// 搜索联想（输入关键词时返回商品名建议）
+	// 注意：必须声明在 GetProduct（/product/v1/{id}）之前，
+	// 否则静态路径 suggest 会被 {id} 参数路由抢先匹配导致解析失败
+	SuggestProduct(context.Context, *SuggestProductRequest) (*SuggestProductReply, error)
 	// 商品详情
 	GetProduct(context.Context, *GetProductRequest) (*GetProductReply, error)
 	mustEmbedUnimplementedProductServer()
@@ -121,6 +140,9 @@ func (UnimplementedProductServer) UpdateProduct(context.Context, *UpdateProductR
 }
 func (UnimplementedProductServer) ListProduct(context.Context, *ListProductRequest) (*ListProductReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListProduct not implemented")
+}
+func (UnimplementedProductServer) SuggestProduct(context.Context, *SuggestProductRequest) (*SuggestProductReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SuggestProduct not implemented")
 }
 func (UnimplementedProductServer) GetProduct(context.Context, *GetProductRequest) (*GetProductReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProduct not implemented")
@@ -200,6 +222,24 @@ func _Product_ListProduct_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Product_SuggestProduct_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SuggestProductRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProductServer).SuggestProduct(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Product_SuggestProduct_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProductServer).SuggestProduct(ctx, req.(*SuggestProductRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Product_GetProduct_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetProductRequest)
 	if err := dec(in); err != nil {
@@ -236,6 +276,10 @@ var Product_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListProduct",
 			Handler:    _Product_ListProduct_Handler,
+		},
+		{
+			MethodName: "SuggestProduct",
+			Handler:    _Product_SuggestProduct_Handler,
 		},
 		{
 			MethodName: "GetProduct",

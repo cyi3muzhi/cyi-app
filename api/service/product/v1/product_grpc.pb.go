@@ -19,11 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Product_CreateProduct_FullMethodName = "/api.service.product.v1.Product/CreateProduct"
-	Product_UpdateProduct_FullMethodName = "/api.service.product.v1.Product/UpdateProduct"
-	Product_DeleteProduct_FullMethodName = "/api.service.product.v1.Product/DeleteProduct"
-	Product_GetProduct_FullMethodName    = "/api.service.product.v1.Product/GetProduct"
-	Product_ListProduct_FullMethodName   = "/api.service.product.v1.Product/ListProduct"
+	Product_CreateProduct_FullMethodName  = "/api.service.product.v1.Product/CreateProduct"
+	Product_UpdateProduct_FullMethodName  = "/api.service.product.v1.Product/UpdateProduct"
+	Product_DeleteProduct_FullMethodName  = "/api.service.product.v1.Product/DeleteProduct"
+	Product_GetProduct_FullMethodName     = "/api.service.product.v1.Product/GetProduct"
+	Product_ListProduct_FullMethodName    = "/api.service.product.v1.Product/ListProduct"
+	Product_SuggestProduct_FullMethodName = "/api.service.product.v1.Product/SuggestProduct"
 )
 
 // ProductClient is the client API for Product service.
@@ -35,6 +36,7 @@ type ProductClient interface {
 	DeleteProduct(ctx context.Context, in *DeleteProductRequest, opts ...grpc.CallOption) (*DeleteProductReply, error)
 	GetProduct(ctx context.Context, in *GetProductRequest, opts ...grpc.CallOption) (*GetProductReply, error)
 	ListProduct(ctx context.Context, in *ListProductRequest, opts ...grpc.CallOption) (*ListProductReply, error)
+	SuggestProduct(ctx context.Context, in *SuggestProductRequest, opts ...grpc.CallOption) (*SuggestProductReply, error)
 }
 
 type productClient struct {
@@ -95,6 +97,16 @@ func (c *productClient) ListProduct(ctx context.Context, in *ListProductRequest,
 	return out, nil
 }
 
+func (c *productClient) SuggestProduct(ctx context.Context, in *SuggestProductRequest, opts ...grpc.CallOption) (*SuggestProductReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SuggestProductReply)
+	err := c.cc.Invoke(ctx, Product_SuggestProduct_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProductServer is the server API for Product service.
 // All implementations must embed UnimplementedProductServer
 // for forward compatibility.
@@ -104,6 +116,7 @@ type ProductServer interface {
 	DeleteProduct(context.Context, *DeleteProductRequest) (*DeleteProductReply, error)
 	GetProduct(context.Context, *GetProductRequest) (*GetProductReply, error)
 	ListProduct(context.Context, *ListProductRequest) (*ListProductReply, error)
+	SuggestProduct(context.Context, *SuggestProductRequest) (*SuggestProductReply, error)
 	mustEmbedUnimplementedProductServer()
 }
 
@@ -128,6 +141,9 @@ func (UnimplementedProductServer) GetProduct(context.Context, *GetProductRequest
 }
 func (UnimplementedProductServer) ListProduct(context.Context, *ListProductRequest) (*ListProductReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListProduct not implemented")
+}
+func (UnimplementedProductServer) SuggestProduct(context.Context, *SuggestProductRequest) (*SuggestProductReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SuggestProduct not implemented")
 }
 func (UnimplementedProductServer) mustEmbedUnimplementedProductServer() {}
 func (UnimplementedProductServer) testEmbeddedByValue()                 {}
@@ -240,6 +256,24 @@ func _Product_ListProduct_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Product_SuggestProduct_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SuggestProductRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProductServer).SuggestProduct(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Product_SuggestProduct_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProductServer).SuggestProduct(ctx, req.(*SuggestProductRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Product_ServiceDesc is the grpc.ServiceDesc for Product service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -266,6 +300,10 @@ var Product_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListProduct",
 			Handler:    _Product_ListProduct_Handler,
+		},
+		{
+			MethodName: "SuggestProduct",
+			Handler:    _Product_SuggestProduct_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

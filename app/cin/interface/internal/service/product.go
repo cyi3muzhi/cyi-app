@@ -69,6 +69,21 @@ func (s *CinInterface) GetProduct(ctx context.Context, req *v1.GetProductRequest
 	}, nil
 }
 
+// SuggestProduct 搜索联想：返回匹配关键词的商品名列表
+// 用于用户端搜索框输入时的下拉联想提示，无需登录鉴权
+func (s *CinInterface) SuggestProduct(ctx context.Context, req *v1.SuggestProductRequest) (*v1.SuggestProductReply, error) {
+	items, err := s.pc.SuggestProduct(ctx, req.Keyword, req.Limit)
+	if err != nil {
+		return nil, err
+	}
+	if items == nil {
+		items = []string{}
+	}
+	return &v1.SuggestProductReply{
+		Items: items,
+	}, nil
+}
+
 func convertProductItem(item *biz.Product) *v1.ProductItem {
 	if item == nil {
 		return nil

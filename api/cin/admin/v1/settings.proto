@@ -64,6 +64,7 @@ message GetSettingsReply {
   string default_payment = 21;
   double free_shipping_threshold = 22;
   string default_shipping_company = 23;
+  repeated string hot_keywords = 24;  // 热门搜索词（用户端搜索框联想展示）
 }
 
 message UpdateSettingsRequest {
@@ -90,6 +91,7 @@ message UpdateSettingsRequest {
   string default_payment = 21;
   double free_shipping_threshold = 22;
   string default_shipping_company = 23;
+  repeated string hot_keywords = 24;  // 热门搜索词
 }
 
 message UpdateSettingsReply {

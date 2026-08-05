@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"cyi-app/app/service/product/internal/biz"
 	"cyi-app/app/service/product/internal/data/curd"
@@ -107,10 +108,16 @@ func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, key
 	baseQuery := curd.Product.WithContext(ctx)
 	db := baseQuery.UnderlyingDB().Model(&mod.Product{})
 
-	// 关键词搜索：(name LIKE ? OR description LIKE ?)
+	// 关键词搜索：使用 FULLTEXT 索引（ngram 分词器）+ BOOLEAN MODE
+	// 相比 LIKE 全表扫描，FULLTEXT 走索引性能更优，且支持相关度排序
+	// 注意：BOOLEAN MODE 中空格分隔的词默认是 OR 关系，需加 + 前缀强制 AND（所有词都要匹配），
+	// 否则搜索 "HUAWEI Mate 80 Pro Max" 会因 "Pro"/"Max" 命中其他商品导致结果发散
 	if keyword != "" {
-		kw := "%" + keyword + "%"
-		db = db.Where("name LIKE ? OR description LIKE ?", kw, kw)
+		kw := escapeFulltextKeyword(keyword)
+		if kw != "" {
+			query := toFulltextAndQuery(kw)
+			db = db.Where("MATCH(name, description) AGAINST(? IN BOOLEAN MODE)", query)
+		}
 	}
 
 	// 分类筛选：匹配该分类及其所有子分类（层级分类下商品挂在叶子节点）
@@ -175,4 +182,65 @@ func marshalImages(images []string) string {
 	}
 	data, _ := json.Marshal(images)
 	return string(data)
+}
+
+// SuggestProduct 搜索联想：仅返回商品名称列表（去重），限制 limit 条
+// 使用 name 字段的 FULLTEXT 索引（ngram 分词器）+ BOOLEAN MODE 查询
+// 仅返回上架商品（status=1）
+func (r *productRepo) SuggestProduct(ctx context.Context, keyword string, limit int32) ([]string, error) {
+	kw := escapeFulltextKeyword(keyword)
+	if kw == "" {
+		return nil, nil
+	}
+	query := toFulltextAndQuery(kw)
+	var names []string
+	err := curd.Product.WithContext(ctx).UnderlyingDB().
+		Table("product").
+		Select("DISTINCT name").
+		Where("MATCH(name) AGAINST(? IN BOOLEAN MODE)", query).
+		Where("status = ?", 1).
+		Where("deleted_at IS NULL").
+		Limit(int(limit)).
+		Pluck("name", &names).Error
+	if err != nil {
+		return nil, err
+	}
+	return names, nil
+}
+
+// toFulltextAndQuery 将清理后的关键词转换为 BOOLEAN MODE 的 AND 查询
+// FULLTEXT BOOLEAN MODE 中空格分隔的词默认是 OR 关系，
+// 为每个词加 + 前缀可强制要求所有词都匹配，避免部分匹配导致结果发散。
+// 例："HUAWEI Mate 80" → "+HUAWEI +Mate +80"
+func toFulltextAndQuery(cleaned string) string {
+	terms := strings.Fields(cleaned)
+	if len(terms) == 0 {
+		return ""
+	}
+	quoted := make([]string, 0, len(terms))
+	for _, t := range terms {
+		quoted = append(quoted, "+"+t)
+	}
+	return strings.Join(quoted, " ")
+}
+
+// escapeFulltextKeyword 清理 FULLTEXT BOOLEAN MODE 查询的关键词
+// 移除特殊字符 + - * < > ( ) ~ " @，避免被误解析为操作符
+// 清理后若为空字符串，调用方应跳过查询
+func escapeFulltextKeyword(keyword string) string {
+	if keyword == "" {
+		return ""
+	}
+	// BOOLEAN MODE 特殊字符替换为空格（避免误解析为操作符）
+	replacer := strings.NewReplacer(
+		"+", " ", "-", " ", "*", " ", "<", " ", ">", " ",
+		"(", " ", ")", " ", "~", " ", "\"", " ", "@", " ",
+	)
+	cleaned := replacer.Replace(keyword)
+	// 压缩多余空格并去首尾空格
+	cleaned = strings.TrimSpace(cleaned)
+	for strings.Contains(cleaned, "  ") {
+		cleaned = strings.ReplaceAll(cleaned, "  ", " ")
+	}
+	return cleaned
 }

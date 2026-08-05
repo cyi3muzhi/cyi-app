@@ -13,7 +13,7 @@ const instance = axios.create({
 })
 
 // 公开接口路径前缀，401 时不跳登录
-const publicPaths = ['/settings/v1/']
+const publicPaths = ['/settings/v1/', '/product/v1/suggest']
 
 /** 判断是否为公开接口 */
 function isPublicPath(url: string = ''): boolean {

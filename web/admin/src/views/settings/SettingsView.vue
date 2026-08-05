@@ -153,6 +153,49 @@
           </div>
         </el-tab-pane>
 
+        <!-- 🔍 搜索设置 -->
+        <el-tab-pane label="🔍 搜索设置" name="search">
+          <div class="tab-body">
+            <el-card shadow="never" class="section-card">
+              <template #header><span class="section-title">热门搜索词</span></template>
+              <el-form label-position="top" class="settings-form">
+                <el-form-item label="热门搜索词配置">
+                  <div class="hot-keywords-input">
+                    <el-tag
+                      v-for="(tag, idx) in form.hotKeywords"
+                      :key="idx"
+                      closable
+                      :disable-transitions="false"
+                      class="hot-keyword-tag"
+                      @close="removeHotKeyword(idx)"
+                    >{{ tag }}</el-tag>
+                    <el-input
+                      v-if="hotKeywordInputVisible"
+                      ref="hotKeywordInputRef"
+                      v-model="hotKeywordInputValue"
+                      size="small"
+                      class="hot-keyword-input"
+                      placeholder="输入热词后回车"
+                      maxlength="10"
+                      show-word-limit
+                      @keyup.enter="addHotKeyword"
+                      @blur="addHotKeyword"
+                    />
+                    <el-button v-else size="small" class="hot-keyword-add-btn" @click="showHotKeywordInput">
+                      <el-icon><Plus /></el-icon> 添加热词
+                    </el-button>
+                  </div>
+                  <span class="form-hint">用户端搜索框聚焦时展示，最多 10 个，每个不超过 10 字</span>
+                </el-form-item>
+              </el-form>
+            </el-card>
+            <div class="form-actions">
+              <el-button type="primary" :loading="saving" @click="handleSave"><el-icon v-if="!saving"><Check /></el-icon> 保存设置</el-button>
+              <el-button @click="handleReset('search')">重置</el-button>
+            </div>
+          </div>
+        </el-tab-pane>
+
         <!-- 🔔 通知设置 -->
         <el-tab-pane label="🔔 通知设置" name="notification">
           <div class="tab-body">
@@ -283,7 +326,7 @@
  * 系统设置页面
  * 7 个设置分类标签页，对接后端 API 实现数据持久化
  */
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Check, Close, Plus } from '@element-plus/icons-vue'
 import { getSettings, updateSettings } from '@/api/settings'
@@ -326,7 +369,8 @@ const form = reactive<SystemSettings>({
   enabledPayments: ['wechat', 'alipay'],
   defaultPayment: 'wechat',
   freeShippingThreshold: 99,
-  defaultShippingCompany: ''
+  defaultShippingCompany: '',
+  hotKeywords: []
 })
 
 /** 通知开关列表配置 */
@@ -396,8 +440,50 @@ async function handleSave() {
 function handleReset(_tab: string) {
   if (originalData) {
     Object.assign(form, originalData)
+    // 兜底：老数据可能没有 hotKeywords 字段
+    if (!form.hotKeywords) form.hotKeywords = []
     ElMessage.success('表单已重置')
   }
+}
+
+// ====== 热门搜索词标签输入 ======
+
+/** 热词输入框显隐 */
+const hotKeywordInputVisible = ref(false)
+/** 热词输入值 */
+const hotKeywordInputValue = ref('')
+/** 热词输入框 ref（用于自动聚焦） */
+const hotKeywordInputRef = ref<{ input?: { focus?: () => void } } | null>(null)
+
+/** 显示热词输入框并自动聚焦 */
+function showHotKeywordInput() {
+  hotKeywordInputVisible.value = true
+  nextTick(() => {
+    hotKeywordInputRef.value?.input?.focus?.()
+  })
+}
+
+/** 添加热词（回车或失焦触发，去重 + 限制 10 个 + 单项 10 字） */
+function addHotKeyword() {
+  const kw = hotKeywordInputValue.value.trim()
+  if (kw) {
+    if (kw.length > 10) {
+      ElMessage.warning('单个热词不超过 10 个字')
+    } else if (form.hotKeywords.includes(kw)) {
+      ElMessage.warning('该热词已存在')
+    } else if (form.hotKeywords.length >= 10) {
+      ElMessage.warning('最多配置 10 个热词')
+    } else {
+      form.hotKeywords.push(kw)
+    }
+  }
+  hotKeywordInputVisible.value = false
+  hotKeywordInputValue.value = ''
+}
+
+/** 删除指定位置的热词 */
+function removeHotKeyword(idx: number) {
+  form.hotKeywords.splice(idx, 1)
 }
 </script>
 

@@ -22,6 +22,7 @@ const _ = http.SupportPackageIsVersion1
 const OperationProductCreateProduct = "/api.cin.interface.v1.Product/CreateProduct"
 const OperationProductGetProduct = "/api.cin.interface.v1.Product/GetProduct"
 const OperationProductListProduct = "/api.cin.interface.v1.Product/ListProduct"
+const OperationProductSuggestProduct = "/api.cin.interface.v1.Product/SuggestProduct"
 const OperationProductUpdateProduct = "/api.cin.interface.v1.Product/UpdateProduct"
 
 type ProductHTTPServer interface {
@@ -31,6 +32,10 @@ type ProductHTTPServer interface {
 	GetProduct(context.Context, *GetProductRequest) (*GetProductReply, error)
 	// ListProduct 商品列表
 	ListProduct(context.Context, *ListProductRequest) (*ListProductReply, error)
+	// SuggestProduct 搜索联想（输入关键词时返回商品名建议）
+	// 注意：必须声明在 GetProduct（/product/v1/{id}）之前，
+	// 否则静态路径 suggest 会被 {id} 参数路由抢先匹配导致解析失败
+	SuggestProduct(context.Context, *SuggestProductRequest) (*SuggestProductReply, error)
 	// UpdateProduct 更新商品
 	UpdateProduct(context.Context, *UpdateProductRequest) (*UpdateProductReply, error)
 }
@@ -40,6 +45,7 @@ func RegisterProductHTTPServer(s *http.Server, srv ProductHTTPServer) {
 	r.POST("/product/v1/create", _Product_CreateProduct1_HTTP_Handler(srv))
 	r.PUT("/product/v1/update", _Product_UpdateProduct1_HTTP_Handler(srv))
 	r.GET("/product/v1/list", _Product_ListProduct1_HTTP_Handler(srv))
+	r.GET("/product/v1/suggest", _Product_SuggestProduct0_HTTP_Handler(srv))
 	r.GET("/product/v1/{id}", _Product_GetProduct1_HTTP_Handler(srv))
 }
 
@@ -106,6 +112,25 @@ func _Product_ListProduct1_HTTP_Handler(srv ProductHTTPServer) func(ctx http.Con
 	}
 }
 
+func _Product_SuggestProduct0_HTTP_Handler(srv ProductHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SuggestProductRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationProductSuggestProduct)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.SuggestProduct(ctx, req.(*SuggestProductRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SuggestProductReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 func _Product_GetProduct1_HTTP_Handler(srv ProductHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in GetProductRequest
@@ -135,6 +160,10 @@ type ProductHTTPClient interface {
 	GetProduct(ctx context.Context, req *GetProductRequest, opts ...http.CallOption) (rsp *GetProductReply, err error)
 	// ListProduct 商品列表
 	ListProduct(ctx context.Context, req *ListProductRequest, opts ...http.CallOption) (rsp *ListProductReply, err error)
+	// SuggestProduct 搜索联想（输入关键词时返回商品名建议）
+	// 注意：必须声明在 GetProduct（/product/v1/{id}）之前，
+	// 否则静态路径 suggest 会被 {id} 参数路由抢先匹配导致解析失败
+	SuggestProduct(ctx context.Context, req *SuggestProductRequest, opts ...http.CallOption) (rsp *SuggestProductReply, err error)
 	// UpdateProduct 更新商品
 	UpdateProduct(ctx context.Context, req *UpdateProductRequest, opts ...http.CallOption) (rsp *UpdateProductReply, err error)
 }
@@ -181,6 +210,22 @@ func (c *ProductHTTPClientImpl) ListProduct(ctx context.Context, in *ListProduct
 	pattern := "/product/v1/list"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationProductListProduct))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// SuggestProduct 搜索联想（输入关键词时返回商品名建议）
+// 注意：必须声明在 GetProduct（/product/v1/{id}）之前，
+// 否则静态路径 suggest 会被 {id} 参数路由抢先匹配导致解析失败
+func (c *ProductHTTPClientImpl) SuggestProduct(ctx context.Context, in *SuggestProductRequest, opts ...http.CallOption) (*SuggestProductReply, error) {
+	var out SuggestProductReply
+	pattern := "/product/v1/suggest"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationProductSuggestProduct))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

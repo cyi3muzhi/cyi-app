@@ -15,6 +15,7 @@ type ProductRepo interface {
 	DeleteProduct(ctx context.Context, productID int64) error
 	GetProduct(ctx context.Context, productID int64) (*Product, error)
 	ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ int32) ([]*Product, int32, error)
+	SuggestProduct(ctx context.Context, keyword string, limit int32) ([]string, error)
 }
 
 // ProductUseCase 商品用例
@@ -272,4 +273,23 @@ func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32,
 	}
 
 	return products, total, nil
+}
+
+// SuggestProduct 搜索联想：返回匹配关键词的商品名列表
+// 仅做参数校验，实际查询由 repo 层实现（使用 FULLTEXT 索引）
+// @param keyword 联想关键词
+// @param limit 返回条数上限（默认 8，最大 20）
+// @return 商品名称列表（去重）
+func (uc *ProductUseCase) SuggestProduct(ctx context.Context, keyword string, limit int32) ([]string, error) {
+	if keyword == "" {
+		return nil, nil
+	}
+	// limit 默认值 8，上限 20
+	if limit <= 0 {
+		limit = 8
+	}
+	if limit > 20 {
+		limit = 20
+	}
+	return uc.repo.SuggestProduct(ctx, keyword, limit)
 }

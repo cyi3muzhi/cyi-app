@@ -739,6 +739,104 @@ func (x *GetProductReply) GetProduct() *ProductItem {
 	return nil
 }
 
+// 搜索联想请求
+type SuggestProductRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Keyword       string                 `protobuf:"bytes,1,opt,name=keyword,proto3" json:"keyword,omitempty"` // 联想关键词
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`    // 返回条数上限（默认 8，最大 20）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SuggestProductRequest) Reset() {
+	*x = SuggestProductRequest{}
+	mi := &file_api_cin_interface_v1_product_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SuggestProductRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SuggestProductRequest) ProtoMessage() {}
+
+func (x *SuggestProductRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_product_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SuggestProductRequest.ProtoReflect.Descriptor instead.
+func (*SuggestProductRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_product_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *SuggestProductRequest) GetKeyword() string {
+	if x != nil {
+		return x.Keyword
+	}
+	return ""
+}
+
+func (x *SuggestProductRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+// 搜索联想响应
+type SuggestProductReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []string               `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"` // 商品名称列表
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SuggestProductReply) Reset() {
+	*x = SuggestProductReply{}
+	mi := &file_api_cin_interface_v1_product_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SuggestProductReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SuggestProductReply) ProtoMessage() {}
+
+func (x *SuggestProductReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_product_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SuggestProductReply.ProtoReflect.Descriptor instead.
+func (*SuggestProductReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_product_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SuggestProductReply) GetItems() []string {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
 var File_api_cin_interface_v1_product_proto protoreflect.FileDescriptor
 
 const file_api_cin_interface_v1_product_proto_rawDesc = "" +
@@ -801,11 +899,17 @@ const file_api_cin_interface_v1_product_proto_rawDesc = "" +
 	"\x11GetProductRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"N\n" +
 	"\x0fGetProductReply\x12;\n" +
-	"\aproduct\x18\x01 \x01(\v2!.api.cin.interface.v1.ProductItemR\aproduct2\x8a\x04\n" +
+	"\aproduct\x18\x01 \x01(\v2!.api.cin.interface.v1.ProductItemR\aproduct\"G\n" +
+	"\x15SuggestProductRequest\x12\x18\n" +
+	"\akeyword\x18\x01 \x01(\tR\akeyword\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\"+\n" +
+	"\x13SuggestProductReply\x12\x14\n" +
+	"\x05items\x18\x01 \x03(\tR\x05items2\x92\x05\n" +
 	"\aProduct\x12\x84\x01\n" +
 	"\rCreateProduct\x12*.api.cin.interface.v1.CreateProductRequest\x1a(.api.cin.interface.v1.CreateProductReply\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/product/v1/create\x12\x84\x01\n" +
 	"\rUpdateProduct\x12*.api.cin.interface.v1.UpdateProductRequest\x1a(.api.cin.interface.v1.UpdateProductReply\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\x1a\x12/product/v1/update\x12y\n" +
-	"\vListProduct\x12(.api.cin.interface.v1.ListProductRequest\x1a&.api.cin.interface.v1.ListProductReply\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/product/v1/list\x12v\n" +
+	"\vListProduct\x12(.api.cin.interface.v1.ListProductRequest\x1a&.api.cin.interface.v1.ListProductReply\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/product/v1/list\x12\x85\x01\n" +
+	"\x0eSuggestProduct\x12+.api.cin.interface.v1.SuggestProductRequest\x1a).api.cin.interface.v1.SuggestProductReply\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/product/v1/suggest\x12v\n" +
 	"\n" +
 	"GetProduct\x12'.api.cin.interface.v1.GetProductRequest\x1a%.api.cin.interface.v1.GetProductReply\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/product/v1/{id}B9\n" +
 	"\x14api.cin.interface.v1P\x01Z\x1fcyi-app/api/cin/interface/v1;v1b\x06proto3"
@@ -822,37 +926,41 @@ func file_api_cin_interface_v1_product_proto_rawDescGZIP() []byte {
 	return file_api_cin_interface_v1_product_proto_rawDescData
 }
 
-var file_api_cin_interface_v1_product_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_api_cin_interface_v1_product_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_api_cin_interface_v1_product_proto_goTypes = []any{
-	(*CreateProductRequest)(nil), // 0: api.cin.interface.v1.CreateProductRequest
-	(*CreateProductReply)(nil),   // 1: api.cin.interface.v1.CreateProductReply
-	(*UpdateProductRequest)(nil), // 2: api.cin.interface.v1.UpdateProductRequest
-	(*UpdateProductReply)(nil),   // 3: api.cin.interface.v1.UpdateProductReply
-	(*ListProductRequest)(nil),   // 4: api.cin.interface.v1.ListProductRequest
-	(*ListProductReply)(nil),     // 5: api.cin.interface.v1.ListProductReply
-	(*ProductItem)(nil),          // 6: api.cin.interface.v1.ProductItem
-	(*SpecGroupInfo)(nil),        // 7: api.cin.interface.v1.SpecGroupInfo
-	(*SkuInfo)(nil),              // 8: api.cin.interface.v1.SkuInfo
-	(*GetProductRequest)(nil),    // 9: api.cin.interface.v1.GetProductRequest
-	(*GetProductReply)(nil),      // 10: api.cin.interface.v1.GetProductReply
-	nil,                          // 11: api.cin.interface.v1.SkuInfo.SpecEntry
+	(*CreateProductRequest)(nil),  // 0: api.cin.interface.v1.CreateProductRequest
+	(*CreateProductReply)(nil),    // 1: api.cin.interface.v1.CreateProductReply
+	(*UpdateProductRequest)(nil),  // 2: api.cin.interface.v1.UpdateProductRequest
+	(*UpdateProductReply)(nil),    // 3: api.cin.interface.v1.UpdateProductReply
+	(*ListProductRequest)(nil),    // 4: api.cin.interface.v1.ListProductRequest
+	(*ListProductReply)(nil),      // 5: api.cin.interface.v1.ListProductReply
+	(*ProductItem)(nil),           // 6: api.cin.interface.v1.ProductItem
+	(*SpecGroupInfo)(nil),         // 7: api.cin.interface.v1.SpecGroupInfo
+	(*SkuInfo)(nil),               // 8: api.cin.interface.v1.SkuInfo
+	(*GetProductRequest)(nil),     // 9: api.cin.interface.v1.GetProductRequest
+	(*GetProductReply)(nil),       // 10: api.cin.interface.v1.GetProductReply
+	(*SuggestProductRequest)(nil), // 11: api.cin.interface.v1.SuggestProductRequest
+	(*SuggestProductReply)(nil),   // 12: api.cin.interface.v1.SuggestProductReply
+	nil,                           // 13: api.cin.interface.v1.SkuInfo.SpecEntry
 }
 var file_api_cin_interface_v1_product_proto_depIdxs = []int32{
 	6,  // 0: api.cin.interface.v1.ListProductReply.items:type_name -> api.cin.interface.v1.ProductItem
 	7,  // 1: api.cin.interface.v1.ProductItem.specs:type_name -> api.cin.interface.v1.SpecGroupInfo
 	8,  // 2: api.cin.interface.v1.ProductItem.skus:type_name -> api.cin.interface.v1.SkuInfo
-	11, // 3: api.cin.interface.v1.SkuInfo.spec:type_name -> api.cin.interface.v1.SkuInfo.SpecEntry
+	13, // 3: api.cin.interface.v1.SkuInfo.spec:type_name -> api.cin.interface.v1.SkuInfo.SpecEntry
 	6,  // 4: api.cin.interface.v1.GetProductReply.product:type_name -> api.cin.interface.v1.ProductItem
 	0,  // 5: api.cin.interface.v1.Product.CreateProduct:input_type -> api.cin.interface.v1.CreateProductRequest
 	2,  // 6: api.cin.interface.v1.Product.UpdateProduct:input_type -> api.cin.interface.v1.UpdateProductRequest
 	4,  // 7: api.cin.interface.v1.Product.ListProduct:input_type -> api.cin.interface.v1.ListProductRequest
-	9,  // 8: api.cin.interface.v1.Product.GetProduct:input_type -> api.cin.interface.v1.GetProductRequest
-	1,  // 9: api.cin.interface.v1.Product.CreateProduct:output_type -> api.cin.interface.v1.CreateProductReply
-	3,  // 10: api.cin.interface.v1.Product.UpdateProduct:output_type -> api.cin.interface.v1.UpdateProductReply
-	5,  // 11: api.cin.interface.v1.Product.ListProduct:output_type -> api.cin.interface.v1.ListProductReply
-	10, // 12: api.cin.interface.v1.Product.GetProduct:output_type -> api.cin.interface.v1.GetProductReply
-	9,  // [9:13] is the sub-list for method output_type
-	5,  // [5:9] is the sub-list for method input_type
+	11, // 8: api.cin.interface.v1.Product.SuggestProduct:input_type -> api.cin.interface.v1.SuggestProductRequest
+	9,  // 9: api.cin.interface.v1.Product.GetProduct:input_type -> api.cin.interface.v1.GetProductRequest
+	1,  // 10: api.cin.interface.v1.Product.CreateProduct:output_type -> api.cin.interface.v1.CreateProductReply
+	3,  // 11: api.cin.interface.v1.Product.UpdateProduct:output_type -> api.cin.interface.v1.UpdateProductReply
+	5,  // 12: api.cin.interface.v1.Product.ListProduct:output_type -> api.cin.interface.v1.ListProductReply
+	12, // 13: api.cin.interface.v1.Product.SuggestProduct:output_type -> api.cin.interface.v1.SuggestProductReply
+	10, // 14: api.cin.interface.v1.Product.GetProduct:output_type -> api.cin.interface.v1.GetProductReply
+	10, // [10:15] is the sub-list for method output_type
+	5,  // [5:10] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
 	5,  // [5:5] is the sub-list for extension extendee
 	0,  // [0:5] is the sub-list for field type_name
@@ -869,7 +977,7 @@ func file_api_cin_interface_v1_product_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_interface_v1_product_proto_rawDesc), len(file_api_cin_interface_v1_product_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

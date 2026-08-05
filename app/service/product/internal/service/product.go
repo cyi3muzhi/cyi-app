@@ -111,6 +111,19 @@ func (s *ProductService) ListProduct(ctx context.Context, req *v1.ListProductReq
 	}, nil
 }
 
+// SuggestProduct 搜索联想：返回匹配关键词的商品名列表
+// 用于用户端搜索框输入时的下拉联想提示
+func (s *ProductService) SuggestProduct(ctx context.Context, req *v1.SuggestProductRequest) (*v1.SuggestProductReply, error) {
+	items, err := s.uc.SuggestProduct(ctx, req.Keyword, req.Limit)
+	if err != nil {
+		return nil, err
+	}
+	if items == nil {
+		items = []string{}
+	}
+	return &v1.SuggestProductReply{Items: items}, nil
+}
+
 // ====== 转换辅助函数 ======
 
 // specGroupInfoListToBiz 将 proto 规格组列表转换为 biz 实体列表

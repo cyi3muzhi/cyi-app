@@ -26,11 +26,16 @@ func (r *settingsRepo) GetPublicSettings(ctx context.Context) (*biz.PublicSettin
 	if err != nil {
 		return nil, err
 	}
+	hotKeywords := resp.HotKeywords
+	if hotKeywords == nil {
+		hotKeywords = []string{}
+	}
 	return &biz.PublicSettings{
 		ShopName:        resp.ShopName,
 		ShopDescription: resp.ShopDescription,
 		ContactPhone:    resp.ContactPhone,
 		ContactEmail:    resp.ContactEmail,
 		IcpRecord:       resp.IcpRecord,
+		HotKeywords:     hotKeywords,
 	}, nil
 }

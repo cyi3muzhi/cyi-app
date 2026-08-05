@@ -30,6 +30,7 @@ type PublicSettingsReply struct {
 	ContactPhone    string                 `protobuf:"bytes,3,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`
 	ContactEmail    string                 `protobuf:"bytes,4,opt,name=contact_email,json=contactEmail,proto3" json:"contact_email,omitempty"`
 	IcpRecord       string                 `protobuf:"bytes,5,opt,name=icp_record,json=icpRecord,proto3" json:"icp_record,omitempty"`
+	HotKeywords     []string               `protobuf:"bytes,6,rep,name=hot_keywords,json=hotKeywords,proto3" json:"hot_keywords,omitempty"` // 热门搜索词（用户端搜索框联想展示）
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -99,18 +100,26 @@ func (x *PublicSettingsReply) GetIcpRecord() string {
 	return ""
 }
 
+func (x *PublicSettingsReply) GetHotKeywords() []string {
+	if x != nil {
+		return x.HotKeywords
+	}
+	return nil
+}
+
 var File_api_cin_interface_v1_settings_proto protoreflect.FileDescriptor
 
 const file_api_cin_interface_v1_settings_proto_rawDesc = "" +
 	"\n" +
-	"#api/cin/interface/v1/settings.proto\x12\x14api.cin.interface.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xc6\x01\n" +
+	"#api/cin/interface/v1/settings.proto\x12\x14api.cin.interface.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xe9\x01\n" +
 	"\x13PublicSettingsReply\x12\x1b\n" +
 	"\tshop_name\x18\x01 \x01(\tR\bshopName\x12)\n" +
 	"\x10shop_description\x18\x02 \x01(\tR\x0fshopDescription\x12#\n" +
 	"\rcontact_phone\x18\x03 \x01(\tR\fcontactPhone\x12#\n" +
 	"\rcontact_email\x18\x04 \x01(\tR\fcontactEmail\x12\x1d\n" +
 	"\n" +
-	"icp_record\x18\x05 \x01(\tR\ticpRecord2\x7f\n" +
+	"icp_record\x18\x05 \x01(\tR\ticpRecord\x12!\n" +
+	"\fhot_keywords\x18\x06 \x03(\tR\vhotKeywords2\x7f\n" +
 	"\bSettings\x12s\n" +
 	"\x11GetPublicSettings\x12\x16.google.protobuf.Empty\x1a).api.cin.interface.v1.PublicSettingsReply\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/settings/v1/publicB9\n" +
 	"\x14api.cin.interface.v1P\x01Z\x1fcyi-app/api/cin/interface/v1;v1b\x06proto3"

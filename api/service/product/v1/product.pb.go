@@ -973,6 +973,104 @@ func (x *ListProductReply) GetTotal() int32 {
 	return 0
 }
 
+// 搜索联想请求
+type SuggestProductRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Keyword       string                 `protobuf:"bytes,1,opt,name=keyword,proto3" json:"keyword,omitempty"` // 联想关键词
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`    // 返回条数上限（默认 8，最大 20）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SuggestProductRequest) Reset() {
+	*x = SuggestProductRequest{}
+	mi := &file_api_service_product_v1_product_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SuggestProductRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SuggestProductRequest) ProtoMessage() {}
+
+func (x *SuggestProductRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_product_v1_product_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SuggestProductRequest.ProtoReflect.Descriptor instead.
+func (*SuggestProductRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_product_v1_product_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SuggestProductRequest) GetKeyword() string {
+	if x != nil {
+		return x.Keyword
+	}
+	return ""
+}
+
+func (x *SuggestProductRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+// 搜索联想响应
+type SuggestProductReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []string               `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"` // 商品名称列表
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SuggestProductReply) Reset() {
+	*x = SuggestProductReply{}
+	mi := &file_api_service_product_v1_product_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SuggestProductReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SuggestProductReply) ProtoMessage() {}
+
+func (x *SuggestProductReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_product_v1_product_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SuggestProductReply.ProtoReflect.Descriptor instead.
+func (*SuggestProductReply) Descriptor() ([]byte, []int) {
+	return file_api_service_product_v1_product_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *SuggestProductReply) GetItems() []string {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
 var File_api_service_product_v1_product_proto protoreflect.FileDescriptor
 
 const file_api_service_product_v1_product_proto_rawDesc = "" +
@@ -1064,14 +1162,20 @@ const file_api_service_product_v1_product_proto_rawDesc = "" +
 	"\bstock_eq\x18\a \x01(\v2\x1b.google.protobuf.Int32ValueR\astockEq\"c\n" +
 	"\x10ListProductReply\x129\n" +
 	"\x05items\x18\x01 \x03(\v2#.api.service.product.v1.ProductItemR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total2\x91\x04\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"G\n" +
+	"\x15SuggestProductRequest\x12\x18\n" +
+	"\akeyword\x18\x01 \x01(\tR\akeyword\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\"+\n" +
+	"\x13SuggestProductReply\x12\x14\n" +
+	"\x05items\x18\x01 \x03(\tR\x05items2\xff\x04\n" +
 	"\aProduct\x12i\n" +
 	"\rCreateProduct\x12,.api.service.product.v1.CreateProductRequest\x1a*.api.service.product.v1.CreateProductReply\x12i\n" +
 	"\rUpdateProduct\x12,.api.service.product.v1.UpdateProductRequest\x1a*.api.service.product.v1.UpdateProductReply\x12i\n" +
 	"\rDeleteProduct\x12,.api.service.product.v1.DeleteProductRequest\x1a*.api.service.product.v1.DeleteProductReply\x12`\n" +
 	"\n" +
 	"GetProduct\x12).api.service.product.v1.GetProductRequest\x1a'.api.service.product.v1.GetProductReply\x12c\n" +
-	"\vListProduct\x12*.api.service.product.v1.ListProductRequest\x1a(.api.service.product.v1.ListProductReplyB=\n" +
+	"\vListProduct\x12*.api.service.product.v1.ListProductRequest\x1a(.api.service.product.v1.ListProductReply\x12l\n" +
+	"\x0eSuggestProduct\x12-.api.service.product.v1.SuggestProductRequest\x1a+.api.service.product.v1.SuggestProductReplyB=\n" +
 	"\x16api.service.product.v1P\x01Z!cyi-app/api/service/product/v1;v1b\x06proto3"
 
 var (
@@ -1086,7 +1190,7 @@ func file_api_service_product_v1_product_proto_rawDescGZIP() []byte {
 	return file_api_service_product_v1_product_proto_rawDescData
 }
 
-var file_api_service_product_v1_product_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_api_service_product_v1_product_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_api_service_product_v1_product_proto_goTypes = []any{
 	(*SpecGroupInfo)(nil),         // 0: api.service.product.v1.SpecGroupInfo
 	(*SkuInfo)(nil),               // 1: api.service.product.v1.SkuInfo
@@ -1101,11 +1205,13 @@ var file_api_service_product_v1_product_proto_goTypes = []any{
 	(*GetProductReply)(nil),       // 10: api.service.product.v1.GetProductReply
 	(*ListProductRequest)(nil),    // 11: api.service.product.v1.ListProductRequest
 	(*ListProductReply)(nil),      // 12: api.service.product.v1.ListProductReply
-	nil,                           // 13: api.service.product.v1.SkuInfo.SpecEntry
-	(*wrapperspb.Int32Value)(nil), // 14: google.protobuf.Int32Value
+	(*SuggestProductRequest)(nil), // 13: api.service.product.v1.SuggestProductRequest
+	(*SuggestProductReply)(nil),   // 14: api.service.product.v1.SuggestProductReply
+	nil,                           // 15: api.service.product.v1.SkuInfo.SpecEntry
+	(*wrapperspb.Int32Value)(nil), // 16: google.protobuf.Int32Value
 }
 var file_api_service_product_v1_product_proto_depIdxs = []int32{
-	13, // 0: api.service.product.v1.SkuInfo.spec:type_name -> api.service.product.v1.SkuInfo.SpecEntry
+	15, // 0: api.service.product.v1.SkuInfo.spec:type_name -> api.service.product.v1.SkuInfo.SpecEntry
 	0,  // 1: api.service.product.v1.ProductItem.specs:type_name -> api.service.product.v1.SpecGroupInfo
 	1,  // 2: api.service.product.v1.ProductItem.skus:type_name -> api.service.product.v1.SkuInfo
 	0,  // 3: api.service.product.v1.CreateProductRequest.specs:type_name -> api.service.product.v1.SpecGroupInfo
@@ -1113,20 +1219,22 @@ var file_api_service_product_v1_product_proto_depIdxs = []int32{
 	0,  // 5: api.service.product.v1.UpdateProductRequest.specs:type_name -> api.service.product.v1.SpecGroupInfo
 	1,  // 6: api.service.product.v1.UpdateProductRequest.skus:type_name -> api.service.product.v1.SkuInfo
 	2,  // 7: api.service.product.v1.GetProductReply.product:type_name -> api.service.product.v1.ProductItem
-	14, // 8: api.service.product.v1.ListProductRequest.stock_eq:type_name -> google.protobuf.Int32Value
+	16, // 8: api.service.product.v1.ListProductRequest.stock_eq:type_name -> google.protobuf.Int32Value
 	2,  // 9: api.service.product.v1.ListProductReply.items:type_name -> api.service.product.v1.ProductItem
 	3,  // 10: api.service.product.v1.Product.CreateProduct:input_type -> api.service.product.v1.CreateProductRequest
 	5,  // 11: api.service.product.v1.Product.UpdateProduct:input_type -> api.service.product.v1.UpdateProductRequest
 	7,  // 12: api.service.product.v1.Product.DeleteProduct:input_type -> api.service.product.v1.DeleteProductRequest
 	9,  // 13: api.service.product.v1.Product.GetProduct:input_type -> api.service.product.v1.GetProductRequest
 	11, // 14: api.service.product.v1.Product.ListProduct:input_type -> api.service.product.v1.ListProductRequest
-	4,  // 15: api.service.product.v1.Product.CreateProduct:output_type -> api.service.product.v1.CreateProductReply
-	6,  // 16: api.service.product.v1.Product.UpdateProduct:output_type -> api.service.product.v1.UpdateProductReply
-	8,  // 17: api.service.product.v1.Product.DeleteProduct:output_type -> api.service.product.v1.DeleteProductReply
-	10, // 18: api.service.product.v1.Product.GetProduct:output_type -> api.service.product.v1.GetProductReply
-	12, // 19: api.service.product.v1.Product.ListProduct:output_type -> api.service.product.v1.ListProductReply
-	15, // [15:20] is the sub-list for method output_type
-	10, // [10:15] is the sub-list for method input_type
+	13, // 15: api.service.product.v1.Product.SuggestProduct:input_type -> api.service.product.v1.SuggestProductRequest
+	4,  // 16: api.service.product.v1.Product.CreateProduct:output_type -> api.service.product.v1.CreateProductReply
+	6,  // 17: api.service.product.v1.Product.UpdateProduct:output_type -> api.service.product.v1.UpdateProductReply
+	8,  // 18: api.service.product.v1.Product.DeleteProduct:output_type -> api.service.product.v1.DeleteProductReply
+	10, // 19: api.service.product.v1.Product.GetProduct:output_type -> api.service.product.v1.GetProductReply
+	12, // 20: api.service.product.v1.Product.ListProduct:output_type -> api.service.product.v1.ListProductReply
+	14, // 21: api.service.product.v1.Product.SuggestProduct:output_type -> api.service.product.v1.SuggestProductReply
+	16, // [16:22] is the sub-list for method output_type
+	10, // [10:16] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name
 	10, // [10:10] is the sub-list for extension extendee
 	0,  // [0:10] is the sub-list for field type_name
@@ -1143,7 +1251,7 @@ func file_api_service_product_v1_product_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_service_product_v1_product_proto_rawDesc), len(file_api_service_product_v1_product_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

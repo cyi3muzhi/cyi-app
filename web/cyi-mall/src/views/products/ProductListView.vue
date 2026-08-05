@@ -32,7 +32,12 @@
     <section class="container-shop toolbar-section">
       <div class="toolbar">
         <h1 class="toolbar-title">
-          {{ activeCategoryName }}
+          <template v-if="activeKeyword">
+            搜索：{{ activeKeyword }}
+          </template>
+          <template v-else>
+            {{ activeCategoryName }}
+          </template>
           <span class="toolbar-count">（共 {{ totalCount }} 件）</span>
         </h1>
         <div class="toolbar-actions">
@@ -186,7 +191,21 @@
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--shop-muted-foreground)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
             </svg>
-            <p>没有找到符合条件的商品</p>
+            <!-- 搜索场景空结果 -->
+            <p v-if="activeKeyword">没有找到与「{{ activeKeyword }}」相关的商品</p>
+            <p v-else>没有找到符合条件的商品</p>
+            <!-- 搜索无结果时展示热词推荐 -->
+            <div v-if="activeKeyword && hotKeywords.length > 0" class="empty-hot-keywords">
+              <p class="empty-hot-title">试试搜索这些：</p>
+              <div class="empty-hot-list">
+                <span
+                  v-for="(kw, idx) in hotKeywords"
+                  :key="'empty-hot-' + idx"
+                  class="empty-hot-tag"
+                  @click="onHotKeywordClick(kw)"
+                >{{ kw }}</span>
+              </div>
+            </div>
           </div>
 
           <!-- ============================================================ -->
@@ -235,10 +254,12 @@ import { useRoute, useRouter } from 'vue-router'
 import ProductCard from '@/components/ProductCard.vue'
 import CategoryLevelPicker from '@/components/CategoryLevelPicker.vue'
 import { getProducts, getCategoryTree, type ProductItem } from '@/api/product'
+import { useShopStore } from '@/store/shop'
 import type { CategoryNode } from '@/types/product'
 
 const route = useRoute()
 const router = useRouter()
+const shopStore = useShopStore()
 
 const allProducts = ref<ProductItem[]>([])
 const categories = ref<CategoryNode[]>([])
@@ -248,6 +269,17 @@ const activeKeyword = ref<string>((route.query.keyword as string) || '')
 const sortBy = ref<string>('default')
 const viewMode = ref<'grid' | 'list'>('grid')
 const mobileFilterOpen = ref(false)
+
+/** 热门搜索词（搜索无结果时推荐） */
+const hotKeywords = computed(() => shopStore.hotKeywords || [])
+
+/**
+ * 点击热词推荐：跳转到该关键词的搜索结果
+ * @param kw 热门搜索词
+ */
+function onHotKeywordClick(kw: string) {
+  router.push({ path: '/products', query: { keyword: kw } })
+}
 
 const priceMin = ref<number | undefined>(undefined)
 const priceMax = ref<number | undefined>(undefined)
@@ -935,6 +967,39 @@ onMounted(() => {
   padding: 64px 0;
   color: var(--shop-muted-foreground);
   font-size: 0.875rem;
+}
+
+/* 搜索无结果时的热词推荐 */
+.empty-hot-keywords {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.empty-hot-title {
+  font-size: 0.8125rem;
+  color: var(--shop-muted-foreground);
+}
+.empty-hot-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 400px;
+}
+.empty-hot-tag {
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: var(--shop-muted);
+  font-size: 0.8125rem;
+  color: var(--shop-foreground);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.empty-hot-tag:hover {
+  background: var(--shop-primary-bg);
+  color: var(--shop-primary);
 }
 
 /* ============================================
