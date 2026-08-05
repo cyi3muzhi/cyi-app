@@ -23,6 +23,7 @@ const OperationAdminOrderAuditRefund = "/api.cin.admin.v1.AdminOrder/AuditRefund
 const OperationAdminOrderCancelOrder = "/api.cin.admin.v1.AdminOrder/CancelOrder"
 const OperationAdminOrderExportOrder = "/api.cin.admin.v1.AdminOrder/ExportOrder"
 const OperationAdminOrderExportTaskStatus = "/api.cin.admin.v1.AdminOrder/ExportTaskStatus"
+const OperationAdminOrderGetLogistics = "/api.cin.admin.v1.AdminOrder/GetLogistics"
 const OperationAdminOrderGetOrder = "/api.cin.admin.v1.AdminOrder/GetOrder"
 const OperationAdminOrderListOrder = "/api.cin.admin.v1.AdminOrder/ListOrder"
 const OperationAdminOrderListRefund = "/api.cin.admin.v1.AdminOrder/ListRefund"
@@ -40,6 +41,8 @@ type AdminOrderHTTPServer interface {
 	// ExportTaskStatus 查询导出任务状态
 	// 注意：需要放在 GetOrder 之前，避免 /export/{task_id} 中的 export 被当作 {order_id}
 	ExportTaskStatus(context.Context, *ExportTaskStatusRequest) (*ExportTaskStatusReply, error)
+	// GetLogistics 查询物流轨迹（发货后展示）
+	GetLogistics(context.Context, *GetLogisticsRequest) (*GetLogisticsReply, error)
 	// GetOrder 订单详情
 	GetOrder(context.Context, *GetOrderRequest) (*GetOrderReply, error)
 	// ListOrder 订单列表
@@ -64,6 +67,7 @@ func RegisterAdminOrderHTTPServer(s *http.Server, srv AdminOrderHTTPServer) {
 	r.POST("/admin/v1/orders/{order_id}/cancel", _AdminOrder_CancelOrder0_HTTP_Handler(srv))
 	r.GET("/admin/v1/refunds", _AdminOrder_ListRefund0_HTTP_Handler(srv))
 	r.POST("/admin/v1/refunds/{refund_id}/audit", _AdminOrder_AuditRefund0_HTTP_Handler(srv))
+	r.GET("/admin/v1/orders/{order_id}/logistics", _AdminOrder_GetLogistics0_HTTP_Handler(srv))
 }
 
 func _AdminOrder_ListOrder0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx http.Context) error {
@@ -261,6 +265,28 @@ func _AdminOrder_AuditRefund0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx ht
 	}
 }
 
+func _AdminOrder_GetLogistics0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetLogisticsRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminOrderGetLogistics)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetLogistics(ctx, req.(*GetLogisticsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetLogisticsReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type AdminOrderHTTPClient interface {
 	// AuditRefund 审核退款（通过/拒绝）
 	AuditRefund(ctx context.Context, req *AuditRefundRequest, opts ...http.CallOption) (rsp *AuditRefundReply, err error)
@@ -272,6 +298,8 @@ type AdminOrderHTTPClient interface {
 	// ExportTaskStatus 查询导出任务状态
 	// 注意：需要放在 GetOrder 之前，避免 /export/{task_id} 中的 export 被当作 {order_id}
 	ExportTaskStatus(ctx context.Context, req *ExportTaskStatusRequest, opts ...http.CallOption) (rsp *ExportTaskStatusReply, err error)
+	// GetLogistics 查询物流轨迹（发货后展示）
+	GetLogistics(ctx context.Context, req *GetLogisticsRequest, opts ...http.CallOption) (rsp *GetLogisticsReply, err error)
 	// GetOrder 订单详情
 	GetOrder(ctx context.Context, req *GetOrderRequest, opts ...http.CallOption) (rsp *GetOrderReply, err error)
 	// ListOrder 订单列表
@@ -343,6 +371,20 @@ func (c *AdminOrderHTTPClientImpl) ExportTaskStatus(ctx context.Context, in *Exp
 	pattern := "/admin/v1/orders/export/{task_id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAdminOrderExportTaskStatus))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// GetLogistics 查询物流轨迹（发货后展示）
+func (c *AdminOrderHTTPClientImpl) GetLogistics(ctx context.Context, in *GetLogisticsRequest, opts ...http.CallOption) (*GetLogisticsReply, error) {
+	var out GetLogisticsReply
+	pattern := "/admin/v1/orders/{order_id}/logistics"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminOrderGetLogistics))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

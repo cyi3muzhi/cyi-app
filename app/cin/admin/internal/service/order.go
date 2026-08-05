@@ -119,6 +119,31 @@ func (s *AdminService) AuditRefund(ctx context.Context, req *adminv1.AuditRefund
 	return &adminv1.AuditRefundReply{Success: true}, nil
 }
 
+// GetLogistics 查询订单物流轨迹
+func (s *AdminService) GetLogistics(ctx context.Context, req *adminv1.GetLogisticsRequest) (*adminv1.GetLogisticsReply, error) {
+	logistics, err := s.oc.GetLogistics(ctx, req.OrderId)
+	if err != nil {
+		return nil, err
+	}
+	reply := &adminv1.GetLogisticsReply{
+		OrderId:          logistics.OrderID,
+		LogisticsCompany: logistics.LogisticsCompany,
+		LogisticsNo:      logistics.LogisticsNo,
+		ShipTime:         logistics.ShipTime,
+		ShipTimeText:     logistics.ShipTimeText,
+		Traces:           make([]*adminv1.LogisticsTrace, 0, len(logistics.Traces)),
+	}
+	for _, t := range logistics.Traces {
+		reply.Traces = append(reply.Traces, &adminv1.LogisticsTrace{
+			Time:     t.Time,
+			TimeText: t.TimeText,
+			Desc:     t.Desc,
+			Status:   t.Status,
+		})
+	}
+	return reply, nil
+}
+
 // bizToAdminProtoOrder 将 biz Order 转换为 admin proto OrderItem
 func bizToAdminProtoOrder(order *biz.Order) *adminv1.OrderItem {
 	products := make([]*adminv1.OrderProduct, 0, len(order.Products))

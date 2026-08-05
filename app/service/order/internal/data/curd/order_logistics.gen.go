@@ -34,6 +34,7 @@ func newOrderLogistics(db *gorm.DB) orderLogistics {
 	_orderLogistics.Address = field.NewString(tableName, "address")
 	_orderLogistics.Company = field.NewString(tableName, "company")
 	_orderLogistics.ExpressNo = field.NewString(tableName, "express_no")
+	_orderLogistics.ShipTime = field.NewInt64(tableName, "ship_time")
 
 	_orderLogistics.fillFieldMap()
 
@@ -54,6 +55,7 @@ type orderLogistics struct {
 	Address    field.String
 	Company    field.String
 	ExpressNo  field.String
+	ShipTime   field.Int64
 
 	fieldMap map[string]field.Expr
 }
@@ -80,6 +82,7 @@ func (o *orderLogistics) updateTableName(table string) *orderLogistics {
 	o.Address = field.NewString(table, "address")
 	o.Company = field.NewString(table, "company")
 	o.ExpressNo = field.NewString(table, "express_no")
+	o.ShipTime = field.NewInt64(table, "ship_time")
 
 	o.fillFieldMap()
 
@@ -96,7 +99,7 @@ func (o *orderLogistics) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (o *orderLogistics) fillFieldMap() {
-	o.fieldMap = make(map[string]field.Expr, 10)
+	o.fieldMap = make(map[string]field.Expr, 11)
 	o.fieldMap["id"] = o.ID
 	o.fieldMap["create_time"] = o.CreateTime
 	o.fieldMap["update_time"] = o.UpdateTime
@@ -107,6 +110,7 @@ func (o *orderLogistics) fillFieldMap() {
 	o.fieldMap["address"] = o.Address
 	o.fieldMap["company"] = o.Company
 	o.fieldMap["express_no"] = o.ExpressNo
+	o.fieldMap["ship_time"] = o.ShipTime
 }
 
 func (o orderLogistics) clone(db *gorm.DB) orderLogistics {

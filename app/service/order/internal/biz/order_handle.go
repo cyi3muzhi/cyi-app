@@ -4,6 +4,7 @@ import (
 	"context"
 	"sort"
 	"strings"
+	"time"
 
 	v1 "cyi-app/api/service/order/v1"
 
@@ -53,8 +54,10 @@ type OrderRepo interface {
 	GetOrderRevenueStats(ctx context.Context) (todayRevenue, yesterdayRevenue int64, err error)
 	// GetUserOrderStats 统计单个用户的订单数据（个人中心使用）
 	GetUserOrderStats(ctx context.Context, userID int64) (*UserOrderStats, error)
-	// UpdateLogistics 更新订单物流信息（发货时写入物流公司和快递单号）
-	UpdateLogistics(ctx context.Context, orderID int64, logisticsCompany, logisticsNo string) error
+	// UpdateLogistics 更新订单物流信息（发货时写入物流公司、快递单号和发货时间）
+	UpdateLogistics(ctx context.Context, orderID int64, logisticsCompany, logisticsNo string, shipTime int64) error
+	// GetLogistics 查询订单物流信息（含轨迹节点）
+	GetLogistics(ctx context.Context, orderID int64) (*Logistics, error)
 	// UpdateStatusIf 条件更新订单状态（乐观并发控制）：仅当当前状态为 expectStatus 时更新为 newStatus
 	// 解决支付/取消并发时的竞态：落库状态转换原子化，行数=0 表示状态已被并发变更
 	UpdateStatusIf(ctx context.Context, id int64, expectStatus, newStatus int32) error
@@ -354,7 +357,7 @@ func (uc *OrderUseCase) compensateDeductedStock(ctx context.Context, order *Orde
 	}
 }
 
-// Ship 发货（管理端调用）：状态流转（待发货 -> 已发货）+ 写入物流信息
+// Ship 发货（管理端调用）：状态流转（待发货 -> 已发货）+ 写入物流信息和发货时间
 func (uc *OrderUseCase) Ship(ctx context.Context, orderID int64, logisticsCompany, logisticsNo string) error {
 	order, err := uc.Get(ctx, orderID)
 	if err != nil {
@@ -364,7 +367,26 @@ func (uc *OrderUseCase) Ship(ctx context.Context, orderID int64, logisticsCompan
 		uc.log.Errorf("order ship failed, orderID: %d: %v", orderID, err)
 		return err
 	}
-	return uc.repo.UpdateLogistics(ctx, orderID, logisticsCompany, logisticsNo)
+	return uc.repo.UpdateLogistics(ctx, orderID, logisticsCompany, logisticsNo, time.Now().Unix())
+}
+
+// GetLogistics 查询订单物流信息（含轨迹节点，按发货时间动态推算）
+func (uc *OrderUseCase) GetLogistics(ctx context.Context, orderID int64) (*Logistics, error) {
+	order, err := uc.Get(ctx, orderID)
+	if err != nil {
+		return nil, err
+	}
+	logistics, err := uc.repo.GetLogistics(ctx, orderID)
+	if err != nil {
+		return nil, err
+	}
+	// 未发货时直接返回（轨迹为空）
+	if logistics.ShipTime == 0 {
+		return logistics, nil
+	}
+	// 订单已完成时强制补全全部轨迹节点（含签收）
+	logistics.Traces = BuildLogisticsTraces(logistics.ShipTime, time.Now().Unix(), order.Status == v1.OrderStatus_Complete)
+	return logistics, nil
 }
 
 // Receive 确认收货（用户端调用）：状态流转（已发货/待收货 -> 已完成）

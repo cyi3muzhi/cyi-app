@@ -19,6 +19,8 @@ type OrderLogistics struct {
 	Company string `json:"company" gorm:"type:varchar(64);default:'';comment:物流公司"`
 	// 快递单号
 	ExpressNo string `json:"express_no" gorm:"type:varchar(64);default:'';comment:快递单号"`
+	// 发货时间（Unix 秒，0=未发货）
+	ShipTime int64 `json:"ship_time" gorm:"default:0;comment:发货时间（Unix秒）"`
 }
 
 type IOrderLogistics interface {

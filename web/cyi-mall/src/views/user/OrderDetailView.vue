@@ -112,18 +112,58 @@
               <span class="info-label">收货地址</span>
               <span class="info-value">{{ order.address || '-' }}</span>
             </div>
-            <template v-if="order.logisticsCompany">
-              <div class="info-divider"></div>
-              <div class="info-row">
-                <span class="info-label">物流公司</span>
-                <span class="info-value">{{ order.logisticsCompany }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">快递单号</span>
-                <span class="info-value">{{ order.logisticsNo || '-' }}</span>
-              </div>
-            </template>
           </div>
+
+          <!-- 物流轨迹时间线（发货后展示） -->
+          <template v-if="order.logisticsCompany">
+            <div class="info-divider"></div>
+            <div class="info-row">
+              <span class="info-label">物流公司</span>
+              <span class="info-value">{{ order.logisticsCompany }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">快递单号</span>
+              <span class="info-value mono-text">{{ order.logisticsNo || '-' }}</span>
+            </div>
+
+            <!-- 轨迹加载中 -->
+            <div v-if="logisticsLoading" class="logistics-loading">
+              <span class="mini-spinner"></span> 正在加载物流轨迹...
+            </div>
+
+            <!-- 轨迹时间线 -->
+            <div v-else-if="logistics && logistics.traces.length" class="logistics-timeline">
+              <div
+                v-for="(t, i) in [...logistics.traces].reverse()"
+                :key="i"
+                class="trace-item"
+              >
+                <div class="trace-node">
+                  <span
+                    class="trace-dot"
+                    :style="{ background: i === 0 ? logisticsStatusColor(t.status) : 'var(--shop-border)' }"
+                  ></span>
+                  <span v-if="i !== [...logistics.traces].length - 1" class="trace-line"></span>
+                </div>
+                <div class="trace-content">
+                  <p class="trace-desc" :style="{ color: i === 0 ? logisticsStatusColor(t.status) : 'var(--shop-foreground)' }">
+                    {{ t.desc }}
+                    <span v-if="i === 0" class="trace-current">最新</span>
+                  </p>
+                  <p class="trace-status">
+                    <span :style="{ color: logisticsStatusColor(t.status) }">{{ logisticsStatusText(t.status) }}</span>
+                    <span class="trace-time">{{ t.timeText }}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 无轨迹数据兜底 -->
+            <div v-else class="logistics-empty">
+              <p>物流轨迹更新中，请稍后刷新查看</p>
+              <button class="logistics-refresh" @click="loadLogistics">刷新轨迹</button>
+            </div>
+          </template>
         </section>
 
         <!-- 订单信息 -->
@@ -234,7 +274,7 @@
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getOrderDetail, payOrder, receiveOrder, cancelOrder, applyRefund, PAY_TIMEOUT_SECONDS, type OrderItemDTO } from '@/api/order'
+import { getOrderDetail, payOrder, receiveOrder, cancelOrder, applyRefund, getLogistics, PAY_TIMEOUT_SECONDS, type OrderItemDTO, type LogisticsDTO } from '@/api/order'
 import { toast } from '@/utils/toast'
 import type { OrderStatus } from '@/types/order'
 
@@ -243,6 +283,10 @@ const router = useRouter()
 const loading = ref(true)
 const error = ref('')
 const order = ref<OrderItemDTO | null>(null)
+/** 物流信息（发货后加载） */
+const logistics = ref<LogisticsDTO | null>(null)
+/** 物流加载中 */
+const logisticsLoading = ref(false)
 
 /** 当前时间（每秒刷新，驱动待付款倒计时渲染） */
 const now = ref(Date.now())
@@ -297,11 +341,56 @@ async function loadDetail() {
   try {
     const res = await getOrderDetail(Number(route.params.id))
     order.value = res.order
+    // 已发货/待收货/已完成订单加载物流轨迹
+    loadLogistics()
   } catch (e: any) {
     error.value = e?.response?.data?.message || e?.message || '订单不存在或加载失败'
   } finally {
     loading.value = false
   }
+}
+
+/**
+ * 加载物流轨迹（发货后展示）
+ */
+async function loadLogistics() {
+  const o = order.value
+  if (!o || !o.logisticsCompany || o.status === 'pending_ship') {
+    logistics.value = null
+    return
+  }
+  logisticsLoading.value = true
+  try {
+    const res = await getLogistics(Number(route.params.id))
+    logistics.value = res
+  } catch {
+    // 物流接口失败不影响订单详情展示
+    logistics.value = null
+  } finally {
+    logisticsLoading.value = false
+  }
+}
+
+/** 物流节点状态文字 */
+function logisticsStatusText(status: number): string {
+  const map: Record<number, string> = {
+    1: '已发货',
+    2: '运输中',
+    3: '派送中',
+    4: '已签收'
+  }
+  return map[status] || ''
+}
+
+/** 物流节点状态颜色 */
+function logisticsStatusColor(status: number): string {
+  const map: Record<number, string> = {
+    1: 'var(--shop-primary)',
+    2: 'var(--shop-primary)',
+    3: 'var(--shop-warning)',
+    4: 'var(--shop-success)'
+  }
+  return map[status] || 'var(--shop-muted-foreground)'
 }
 
 /**
@@ -1049,5 +1138,137 @@ onUnmounted(() => {
   height: 1px;
   background: var(--shop-border);
   margin: 8px 0;
+}
+
+/* ---- 物流轨迹时间线 ---- */
+.mono-text {
+  font-family: var(--shop-font-mono, monospace);
+  letter-spacing: 0.02em;
+}
+
+.logistics-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0 4px;
+  font-size: 0.8125rem;
+  color: var(--shop-muted-foreground);
+}
+
+.mini-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--shop-border);
+  border-top-color: var(--shop-primary);
+  animation: traceSpin 0.7s linear infinite;
+}
+
+@keyframes traceSpin {
+  to { transform: rotate(360deg); }
+}
+
+.logistics-timeline {
+  padding: 6px 0 2px;
+}
+
+.trace-item {
+  display: flex;
+  gap: 12px;
+}
+
+.trace-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 3px;
+}
+
+.trace-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid var(--shop-card);
+  box-shadow: 0 0 0 2px var(--shop-border);
+  z-index: 1;
+}
+
+.trace-item:first-child .trace-dot {
+  box-shadow: 0 0 0 3px var(--shop-primary-bg);
+}
+
+.trace-line {
+  position: absolute;
+  top: 16px;
+  bottom: -12px;
+  width: 2px;
+  background: var(--shop-border);
+}
+
+.trace-content {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 14px;
+}
+
+.trace-desc {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--shop-foreground);
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trace-current {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--shop-primary-bg);
+  color: var(--shop-primary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.trace-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+  font-size: 0.75rem;
+}
+
+.trace-time {
+  color: var(--shop-muted-foreground);
+  font-family: var(--shop-font-mono, monospace);
+}
+
+.logistics-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0 4px;
+  font-size: 0.8125rem;
+  color: var(--shop-muted-foreground);
+}
+
+.logistics-refresh {
+  padding: 4px 12px;
+  border: 1px solid var(--shop-primary);
+  border-radius: var(--shop-radius-lg);
+  background: transparent;
+  color: var(--shop-primary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--shop-font-sans);
+}
+
+.logistics-refresh:hover {
+  background: var(--shop-primary-bg);
 }
 </style>

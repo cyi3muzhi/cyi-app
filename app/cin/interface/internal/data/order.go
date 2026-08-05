@@ -288,3 +288,42 @@ func (r *orderRepo) ListRefund(ctx context.Context, userID int64, page, pageSize
 	}
 	return items, reply.Total, nil
 }
+
+// GetLogistics 查询当前用户订单物流轨迹（先校验订单归属，再调用订单服务）
+func (r *orderRepo) GetLogistics(ctx context.Context, orderID int64, userID int64) (*biz.Logistics, error) {
+	// 校验订单归属（防止越权查看他人订单物流）
+	order, err := r.data.oc.GetOrder(ctx, &orderV1.GetOrderRequest{OrderId: orderID})
+	if err != nil {
+		r.log.Errorf("get order for logistics failed, orderID=%d: %v", orderID, err)
+		return nil, err
+	}
+	if order.UserId != userID {
+		return nil, v1.ErrorOrderIdNotExist("order not found")
+	}
+
+	reply, err := r.data.oc.GetLogistics(ctx, &orderV1.GetLogisticsRequest{OrderId: orderID})
+	if err != nil {
+		r.log.Errorf("get logistics failed, orderID=%d, userID=%d: %v", orderID, userID, err)
+		return nil, err
+	}
+
+	logistics := &biz.Logistics{
+		OrderID:          reply.OrderId,
+		LogisticsCompany: reply.LogisticsCompany,
+		LogisticsNo:      reply.LogisticsNo,
+		ShipTime:         reply.ShipTime,
+		Traces:           make([]*biz.LogisticsTrace, 0, len(reply.Traces)),
+	}
+	if reply.ShipTime > 0 {
+		logistics.ShipTimeText = time.Unix(reply.ShipTime, 0).Format("2006-01-02 15:04:05")
+	}
+	for _, t := range reply.Traces {
+		logistics.Traces = append(logistics.Traces, &biz.LogisticsTrace{
+			Time:     t.Time,
+			TimeText: time.Unix(t.Time, 0).Format("2006-01-02 15:04:05"),
+			Desc:     t.Desc,
+			Status:   t.Status,
+		})
+	}
+	return logistics, nil
+}

@@ -128,7 +128,7 @@ app/cin/interface/
 | UseCase | 职责 |
 |---------|------|
 | `UserUseCase` | 用户认证、注册、信息管理、修改密码、收货地址管理、个人中心概览 |
-| `OrderUseCase` | 订单创建、查询、状态管理 |
+| `OrderUseCase` | 订单创建、查询、状态管理、物流轨迹查询 |
 | `ProductUseCase` | 商品查询、管理、搜索联想（SuggestProduct） |
 | `StockUseCase` | 库存查询、扣减 |
 | `CartUseCase` | 购物车管理（Redis 存储 + 商品信息聚合，按商品+SKU 维度） |
@@ -170,6 +170,7 @@ app/cin/interface/
 | | `GetOrder` | gRPC/HTTP | 订单详情（当前用户，含商品明细、物流信息、支付截止时间 pay_deadline） |
 | | `ApplyRefund` | gRPC/HTTP | 申请退款（仅已支付/待发货订单，POST /order/v1/refund/apply） |
 | | `ListRefund` | gRPC/HTTP | 我的退款记录（GET /order/v1/refunds，按状态筛选、分页） |
+| | `GetLogistics` | gRPC/HTTP | 查询物流轨迹（当前用户订单，GET /order/v1/{order_id}/logistics，校验订单归属，发货后展示轨迹时间线） |
 | **Cart** | `AddCartItem` | gRPC/HTTP | 加入购物车（同商品同规格数量累加，携带 sku_id） |
 | | `GetCart` | gRPC/HTTP | 获取购物车（含商品信息聚合，按商品+SKU 维度返回价格/库存/规格） |
 | | `UpdateCartItem` | gRPC/HTTP | 修改购物车商品数量（按商品+SKU） |

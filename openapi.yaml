@@ -1020,6 +1020,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.CancelOrderReply'
+    /admin/v1/orders/{orderId}/logistics:
+        get:
+            tags:
+                - AdminOrder
+            description: 查询物流轨迹（发货后展示）
+            operationId: AdminOrder_GetLogistics
+            parameters:
+                - name: orderId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.GetLogisticsReply'
     /admin/v1/orders/{orderId}/ship:
         post:
             tags:
@@ -2201,6 +2220,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.GetOrderReply'
+    /order/v1/{orderId}/logistics:
+        get:
+            tags:
+                - Order
+            description: 查询物流轨迹（当前登录用户订单，发货后展示）
+            operationId: Order_GetLogistics
+            parameters:
+                - name: orderId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.GetLogisticsReply'
     /product/v1/create:
         post:
             tags:
@@ -3371,6 +3409,24 @@ components:
                 productsGrowth:
                     type: number
                     format: double
+        api.cin.admin.v1.GetLogisticsReply:
+            type: object
+            properties:
+                orderId:
+                    type: string
+                logisticsCompany:
+                    type: string
+                logisticsNo:
+                    type: string
+                shipTime:
+                    type: string
+                shipTimeText:
+                    type: string
+                traces:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.LogisticsTrace'
+            description: 查询物流轨迹响应
         api.cin.admin.v1.GetMyPermissionsReply:
             type: object
             properties:
@@ -3674,6 +3730,19 @@ components:
                 password:
                     type: string
                     description: 管理员密码
+        api.cin.admin.v1.LogisticsTrace:
+            type: object
+            properties:
+                time:
+                    type: string
+                timeText:
+                    type: string
+                desc:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+            description: 物流轨迹节点
         api.cin.admin.v1.LogoutReply:
             type: object
             properties:
@@ -4650,6 +4719,24 @@ components:
             properties:
                 item:
                     $ref: '#/components/schemas/api.cin.interface.v1.CategoryNode'
+        api.cin.interface.v1.GetLogisticsReply:
+            type: object
+            properties:
+                orderId:
+                    type: string
+                logisticsCompany:
+                    type: string
+                logisticsNo:
+                    type: string
+                shipTime:
+                    type: string
+                shipTimeText:
+                    type: string
+                traces:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.LogisticsTrace'
+            description: 查询物流轨迹响应
         api.cin.interface.v1.GetMyInfoReply:
             type: object
             properties:
@@ -4819,6 +4906,19 @@ components:
                 clientIp:
                     type: string
                     description: 客户端 IP（由服务端从请求头获取，前端无需传递）
+        api.cin.interface.v1.LogisticsTrace:
+            type: object
+            properties:
+                time:
+                    type: string
+                timeText:
+                    type: string
+                desc:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+            description: 物流轨迹节点
         api.cin.interface.v1.MyCouponItem:
             type: object
             properties:

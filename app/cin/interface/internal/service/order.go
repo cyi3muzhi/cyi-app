@@ -184,6 +184,35 @@ func (s *CinInterface) ListRefund(ctx context.Context, req *v1.ListRefundRequest
 	return &v1.ListRefundReply{Items: replyItems, Total: total}, nil
 }
 
+// GetLogistics 查询当前登录用户订单的物流轨迹
+func (s *CinInterface) GetLogistics(ctx context.Context, req *v1.GetLogisticsRequest) (*v1.GetLogisticsReply, error) {
+	userID, err := service.GetUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	logistics, err := s.oc.GetLogistics(ctx, req.OrderId, userID)
+	if err != nil {
+		return nil, err
+	}
+	reply := &v1.GetLogisticsReply{
+		OrderId:          logistics.OrderID,
+		LogisticsCompany: logistics.LogisticsCompany,
+		LogisticsNo:      logistics.LogisticsNo,
+		ShipTime:         logistics.ShipTime,
+		ShipTimeText:     logistics.ShipTimeText,
+		Traces:           make([]*v1.LogisticsTrace, 0, len(logistics.Traces)),
+	}
+	for _, t := range logistics.Traces {
+		reply.Traces = append(reply.Traces, &v1.LogisticsTrace{
+			Time:     t.Time,
+			TimeText: t.TimeText,
+			Desc:     t.Desc,
+			Status:   t.Status,
+		})
+	}
+	return reply, nil
+}
+
 // orderBizToProto biz.Order -> v1.OrderItem 转换（含状态字符串映射、时间格式化）
 func orderBizToProto(o *biz.Order) *v1.OrderItem {
 	// 支付截止时间：待付款订单 = 下单时间 + 30 分钟，其余状态为 0

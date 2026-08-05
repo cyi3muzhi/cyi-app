@@ -329,3 +329,26 @@ func refundStatusText(status int32) string {
 		return "未知状态"
 	}
 }
+
+// GetLogistics 查询订单物流轨迹（用户端/管理端调用）
+func (s *OrderService) GetLogistics(ctx context.Context, req *v1.GetLogisticsRequest) (*v1.GetLogisticsReply, error) {
+	logistics, err := s.uc.GetLogistics(ctx, req.OrderId)
+	if err != nil {
+		return nil, err
+	}
+	reply := &v1.GetLogisticsReply{
+		OrderId:          logistics.OrderID,
+		LogisticsCompany: logistics.LogisticsCompany,
+		LogisticsNo:      logistics.LogisticsNo,
+		ShipTime:         logistics.ShipTime,
+		Traces:           make([]*v1.LogisticsTrace, 0, len(logistics.Traces)),
+	}
+	for _, t := range logistics.Traces {
+		reply.Traces = append(reply.Traces, &v1.LogisticsTrace{
+			Time:   t.Time,
+			Desc:   t.Desc,
+			Status: t.Status,
+		})
+	}
+	return reply, nil
+}

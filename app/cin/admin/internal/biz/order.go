@@ -53,6 +53,8 @@ type OrderRepo interface {
 	ListRefund(ctx context.Context, page, pageSize int32, status string, keyword string) ([]*Refund, int32, error)
 	// AuditRefund 审核退款（通过/拒绝）
 	AuditRefund(ctx context.Context, refundID int64, approve bool, rejectReason, auditor string) error
+	// GetLogistics 查询订单物流轨迹
+	GetLogistics(ctx context.Context, orderID int64) (*Logistics, error)
 }
 
 // Refund 退款/售后单领域模型（管理端展示）
@@ -70,6 +72,24 @@ type Refund struct {
 	Auditor      string // 审核人
 	CreatedAt    string // 申请时间（格式化字符串）
 	OriginStatus int32  // 申请前的订单状态
+}
+
+// LogisticsTrace 物流轨迹节点（管理端展示）
+type LogisticsTrace struct {
+	Time     int64  // 节点时间（Unix 秒）
+	TimeText string // 节点时间（格式化字符串）
+	Desc     string // 节点描述
+	Status   int32  // 节点状态: 1-已发货 2-运输中 3-派送中 4-已签收
+}
+
+// Logistics 物流信息（管理端展示）
+type Logistics struct {
+	OrderID          int64             // 订单ID
+	LogisticsCompany string            // 物流公司
+	LogisticsNo      string            // 快递单号
+	ShipTime         int64             // 发货时间（Unix 秒，0=未发货）
+	ShipTimeText     string            // 发货时间（格式化字符串）
+	Traces           []*LogisticsTrace // 轨迹节点（按时间升序）
 }
 
 // OrderUseCase 订单管理业务用例
@@ -119,4 +139,9 @@ func (uc *OrderUseCase) ListRefund(ctx context.Context, page, pageSize int32, st
 // AuditRefund 审核退款（通过/拒绝）
 func (uc *OrderUseCase) AuditRefund(ctx context.Context, refundID int64, approve bool, rejectReason, auditor string) error {
 	return uc.repo.AuditRefund(ctx, refundID, approve, rejectReason, auditor)
+}
+
+// GetLogistics 查询订单物流轨迹
+func (uc *OrderUseCase) GetLogistics(ctx context.Context, orderID int64) (*Logistics, error) {
+	return uc.repo.GetLogistics(ctx, orderID)
 }

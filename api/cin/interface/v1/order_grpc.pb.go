@@ -28,6 +28,7 @@ const (
 	Order_GetOrder_FullMethodName     = "/api.cin.interface.v1.Order/GetOrder"
 	Order_ReceiveOrder_FullMethodName = "/api.cin.interface.v1.Order/ReceiveOrder"
 	Order_CancelOrder_FullMethodName  = "/api.cin.interface.v1.Order/CancelOrder"
+	Order_GetLogistics_FullMethodName = "/api.cin.interface.v1.Order/GetLogistics"
 )
 
 // OrderClient is the client API for Order service.
@@ -56,6 +57,8 @@ type OrderClient interface {
 	ReceiveOrder(ctx context.Context, in *ReceiveOrderRequest, opts ...grpc.CallOption) (*ReceiveOrderReply, error)
 	// 取消订单
 	CancelOrder(ctx context.Context, in *CancelOrderRequest, opts ...grpc.CallOption) (*CancelOrderReply, error)
+	// 查询物流轨迹（当前登录用户订单，发货后展示）
+	GetLogistics(ctx context.Context, in *GetLogisticsRequest, opts ...grpc.CallOption) (*GetLogisticsReply, error)
 }
 
 type orderClient struct {
@@ -156,6 +159,16 @@ func (c *orderClient) CancelOrder(ctx context.Context, in *CancelOrderRequest, o
 	return out, nil
 }
 
+func (c *orderClient) GetLogistics(ctx context.Context, in *GetLogisticsRequest, opts ...grpc.CallOption) (*GetLogisticsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLogisticsReply)
+	err := c.cc.Invoke(ctx, Order_GetLogistics_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrderServer is the server API for Order service.
 // All implementations must embed UnimplementedOrderServer
 // for forward compatibility.
@@ -182,6 +195,8 @@ type OrderServer interface {
 	ReceiveOrder(context.Context, *ReceiveOrderRequest) (*ReceiveOrderReply, error)
 	// 取消订单
 	CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error)
+	// 查询物流轨迹（当前登录用户订单，发货后展示）
+	GetLogistics(context.Context, *GetLogisticsRequest) (*GetLogisticsReply, error)
 	mustEmbedUnimplementedOrderServer()
 }
 
@@ -218,6 +233,9 @@ func (UnimplementedOrderServer) ReceiveOrder(context.Context, *ReceiveOrderReque
 }
 func (UnimplementedOrderServer) CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelOrder not implemented")
+}
+func (UnimplementedOrderServer) GetLogistics(context.Context, *GetLogisticsRequest) (*GetLogisticsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLogistics not implemented")
 }
 func (UnimplementedOrderServer) mustEmbedUnimplementedOrderServer() {}
 func (UnimplementedOrderServer) testEmbeddedByValue()               {}
@@ -402,6 +420,24 @@ func _Order_CancelOrder_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Order_GetLogistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLogisticsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServer).GetLogistics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Order_GetLogistics_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServer).GetLogistics(ctx, req.(*GetLogisticsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Order_ServiceDesc is the grpc.ServiceDesc for Order service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -444,6 +480,10 @@ var Order_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CancelOrder",
 			Handler:    _Order_CancelOrder_Handler,
+		},
+		{
+			MethodName: "GetLogistics",
+			Handler:    _Order_GetLogistics_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

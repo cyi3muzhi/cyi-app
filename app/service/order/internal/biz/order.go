@@ -35,6 +35,7 @@ type Order struct {
 	// 物流信息（发货后写入订单物流表）
 	LogisticsCompany string // 物流公司
 	LogisticsNo      string // 快递单号
+	ShipTime         int64  // 发货时间（Unix 秒，0=未发货）
 }
 
 // AddItem 添加商品（保持一致性）

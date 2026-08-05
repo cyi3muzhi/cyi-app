@@ -15,6 +15,7 @@ import (
 	v1 "cyi-app/api/service/order/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"gorm.io/gorm"
 )
 
 // parseInt32 将字符串转换为 int32，转换失败时返回错误
@@ -459,20 +460,42 @@ func (r *orderRepo) GetOrder(ctx context.Context, id int64) (*biz.Order, error) 
 		out.Address = logistics.Address
 		out.LogisticsCompany = logistics.Company
 		out.LogisticsNo = logistics.ExpressNo
+		out.ShipTime = logistics.ShipTime
 	}
 	return out, nil
 }
 
-// UpdateLogistics 更新订单物流信息（发货时写入物流公司和快递单号）
+// UpdateLogistics 更新订单物流信息（发货时写入物流公司、快递单号和发货时间）
 // 使用原生 GORM 更新（gen 生成的 curd 代码不包含新增的 Company 字段）
-func (r *orderRepo) UpdateLogistics(ctx context.Context, orderID int64, logisticsCompany, logisticsNo string) error {
+func (r *orderRepo) UpdateLogistics(ctx context.Context, orderID int64, logisticsCompany, logisticsNo string, shipTime int64) error {
 	if err := r.data.db.Model(&mod.OrderLogistics{}).
 		Where("order_id = ?", orderID).
-		Updates(map[string]interface{}{"company": logisticsCompany, "express_no": logisticsNo}).Error; err != nil {
+		Updates(map[string]interface{}{"company": logisticsCompany, "express_no": logisticsNo, "ship_time": shipTime}).Error; err != nil {
 		r.log.Errorf("update logistics failed, orderID=%d: %v", orderID, err)
 		return errors.New("update logistics failed")
 	}
 	return nil
+}
+
+// GetLogistics 查询订单物流信息（含发货时间）
+// 使用原生 GORM 查询（gen 生成的 curd 代码不包含新增的 ShipTime 字段）
+func (r *orderRepo) GetLogistics(ctx context.Context, orderID int64) (*biz.Logistics, error) {
+	var logistics mod.OrderLogistics
+	if err := r.data.db.WithContext(ctx).
+		Where("order_id = ?", orderID).
+		First(&logistics).Error; err != nil {
+		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, v1.ErrorOrderNotFound("order logistics not found")
+		}
+		r.log.Errorf("get logistics failed, orderID=%d: %v", orderID, err)
+		return nil, errors.New("get logistics failed")
+	}
+	return &biz.Logistics{
+		OrderID:          orderID,
+		LogisticsCompany: logistics.Company,
+		LogisticsNo:      logistics.ExpressNo,
+		ShipTime:         logistics.ShipTime,
+	}, nil
 }
 
 // BatchGetOrder 批量获取订单详情（含商品明细）

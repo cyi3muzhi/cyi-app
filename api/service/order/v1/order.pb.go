@@ -2487,6 +2487,189 @@ func (*AuditRefundReply) Descriptor() ([]byte, []int) {
 	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{37}
 }
 
+// 查询物流轨迹请求
+type GetLogisticsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"` // 订单ID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLogisticsRequest) Reset() {
+	*x = GetLogisticsRequest{}
+	mi := &file_api_service_order_v1_order_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLogisticsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLogisticsRequest) ProtoMessage() {}
+
+func (x *GetLogisticsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_order_v1_order_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLogisticsRequest.ProtoReflect.Descriptor instead.
+func (*GetLogisticsRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *GetLogisticsRequest) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+// 查询物流轨迹响应
+type GetLogisticsReply struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	OrderId          int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`                           // 订单ID
+	LogisticsCompany string                 `protobuf:"bytes,2,opt,name=logistics_company,json=logisticsCompany,proto3" json:"logistics_company,omitempty"` // 物流公司
+	LogisticsNo      string                 `protobuf:"bytes,3,opt,name=logistics_no,json=logisticsNo,proto3" json:"logistics_no,omitempty"`                // 快递单号
+	ShipTime         int64                  `protobuf:"varint,4,opt,name=ship_time,json=shipTime,proto3" json:"ship_time,omitempty"`                        // 发货时间（Unix 秒，0=未发货）
+	Traces           []*LogisticsTrace      `protobuf:"bytes,5,rep,name=traces,proto3" json:"traces,omitempty"`                                             // 轨迹节点（按时间升序）
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *GetLogisticsReply) Reset() {
+	*x = GetLogisticsReply{}
+	mi := &file_api_service_order_v1_order_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLogisticsReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLogisticsReply) ProtoMessage() {}
+
+func (x *GetLogisticsReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_order_v1_order_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLogisticsReply.ProtoReflect.Descriptor instead.
+func (*GetLogisticsReply) Descriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *GetLogisticsReply) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+func (x *GetLogisticsReply) GetLogisticsCompany() string {
+	if x != nil {
+		return x.LogisticsCompany
+	}
+	return ""
+}
+
+func (x *GetLogisticsReply) GetLogisticsNo() string {
+	if x != nil {
+		return x.LogisticsNo
+	}
+	return ""
+}
+
+func (x *GetLogisticsReply) GetShipTime() int64 {
+	if x != nil {
+		return x.ShipTime
+	}
+	return 0
+}
+
+func (x *GetLogisticsReply) GetTraces() []*LogisticsTrace {
+	if x != nil {
+		return x.Traces
+	}
+	return nil
+}
+
+// 物流轨迹节点
+type LogisticsTrace struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Time          int64                  `protobuf:"varint,1,opt,name=time,proto3" json:"time,omitempty"`     // 节点时间（Unix 秒）
+	Desc          string                 `protobuf:"bytes,2,opt,name=desc,proto3" json:"desc,omitempty"`      // 节点描述
+	Status        int32                  `protobuf:"varint,3,opt,name=status,proto3" json:"status,omitempty"` // 节点状态: 1-已发货 2-运输中 3-派送中 4-已签收
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LogisticsTrace) Reset() {
+	*x = LogisticsTrace{}
+	mi := &file_api_service_order_v1_order_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LogisticsTrace) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LogisticsTrace) ProtoMessage() {}
+
+func (x *LogisticsTrace) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_order_v1_order_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LogisticsTrace.ProtoReflect.Descriptor instead.
+func (*LogisticsTrace) Descriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *LogisticsTrace) GetTime() int64 {
+	if x != nil {
+		return x.Time
+	}
+	return 0
+}
+
+func (x *LogisticsTrace) GetDesc() string {
+	if x != nil {
+		return x.Desc
+	}
+	return ""
+}
+
+func (x *LogisticsTrace) GetStatus() int32 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
 var File_api_service_order_v1_order_proto protoreflect.FileDescriptor
 
 const file_api_service_order_v1_order_proto_rawDesc = "" +
@@ -2670,7 +2853,19 @@ const file_api_service_order_v1_order_proto_rawDesc = "" +
 	"\n" +
 	"auditor_id\x18\x04 \x01(\x03R\tauditorId\x12\x18\n" +
 	"\aauditor\x18\x05 \x01(\tR\aauditor\"\x12\n" +
-	"\x10AuditRefundReply*\x9f\x01\n" +
+	"\x10AuditRefundReply\"0\n" +
+	"\x13GetLogisticsRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\x03R\aorderId\"\xd9\x01\n" +
+	"\x11GetLogisticsReply\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\x03R\aorderId\x12+\n" +
+	"\x11logistics_company\x18\x02 \x01(\tR\x10logisticsCompany\x12!\n" +
+	"\flogistics_no\x18\x03 \x01(\tR\vlogisticsNo\x12\x1b\n" +
+	"\tship_time\x18\x04 \x01(\x03R\bshipTime\x12<\n" +
+	"\x06traces\x18\x05 \x03(\v2$.api.service.order.v1.LogisticsTraceR\x06traces\"P\n" +
+	"\x0eLogisticsTrace\x12\x12\n" +
+	"\x04time\x18\x01 \x01(\x03R\x04time\x12\x12\n" +
+	"\x04desc\x18\x02 \x01(\tR\x04desc\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\x05R\x06status*\x9f\x01\n" +
 	"\vOrderStatus\x12\x1a\n" +
 	"\x16OrderStatusUnspecified\x10\x00\x12\v\n" +
 	"\aWaitPay\x10\x01\x12\a\n" +
@@ -2687,7 +2882,7 @@ const file_api_service_order_v1_order_proto_rawDesc = "" +
 	"\x17RefundStatusUnspecified\x10\x00\x12\x11\n" +
 	"\rRefundPending\x10\x01\x12\x12\n" +
 	"\x0eRefundApproved\x10\x02\x12\x12\n" +
-	"\x0eRefundRejected\x10\x032\x9d\r\n" +
+	"\x0eRefundRejected\x10\x032\x81\x0e\n" +
 	"\x05Order\x12_\n" +
 	"\vCreateOrder\x12(.api.service.order.v1.CreateOrderRequest\x1a&.api.service.order.v1.CreateOrderReply\x12_\n" +
 	"\vUpdateOrder\x12(.api.service.order.v1.UpdateOrderRequest\x1a&.api.service.order.v1.UpdateOrderReply\x12_\n" +
@@ -2707,7 +2902,8 @@ const file_api_service_order_v1_order_proto_rawDesc = "" +
 	"\vApplyRefund\x12(.api.service.order.v1.ApplyRefundRequest\x1a&.api.service.order.v1.ApplyRefundReply\x12\\\n" +
 	"\n" +
 	"ListRefund\x12'.api.service.order.v1.ListRefundRequest\x1a%.api.service.order.v1.ListRefundReply\x12_\n" +
-	"\vAuditRefund\x12(.api.service.order.v1.AuditRefundRequest\x1a&.api.service.order.v1.AuditRefundReplyB9\n" +
+	"\vAuditRefund\x12(.api.service.order.v1.AuditRefundRequest\x1a&.api.service.order.v1.AuditRefundReply\x12b\n" +
+	"\fGetLogistics\x12).api.service.order.v1.GetLogisticsRequest\x1a'.api.service.order.v1.GetLogisticsReplyB9\n" +
 	"\x14api.service.order.v1P\x01Z\x1fcyi-app/api/service/order/v1;v1b\x06proto3"
 
 var (
@@ -2723,7 +2919,7 @@ func file_api_service_order_v1_order_proto_rawDescGZIP() []byte {
 }
 
 var file_api_service_order_v1_order_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_api_service_order_v1_order_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
+var file_api_service_order_v1_order_proto_msgTypes = make([]protoimpl.MessageInfo, 41)
 var file_api_service_order_v1_order_proto_goTypes = []any{
 	(OrderStatus)(0),                        // 0: api.service.order.v1.OrderStatus
 	(RefundStatus)(0),                       // 1: api.service.order.v1.RefundStatus
@@ -2765,6 +2961,9 @@ var file_api_service_order_v1_order_proto_goTypes = []any{
 	(*RefundItem)(nil),                      // 37: api.service.order.v1.RefundItem
 	(*AuditRefundRequest)(nil),              // 38: api.service.order.v1.AuditRefundRequest
 	(*AuditRefundReply)(nil),                // 39: api.service.order.v1.AuditRefundReply
+	(*GetLogisticsRequest)(nil),             // 40: api.service.order.v1.GetLogisticsRequest
+	(*GetLogisticsReply)(nil),               // 41: api.service.order.v1.GetLogisticsReply
+	(*LogisticsTrace)(nil),                  // 42: api.service.order.v1.LogisticsTrace
 }
 var file_api_service_order_v1_order_proto_depIdxs = []int32{
 	10, // 0: api.service.order.v1.CreateOrderRequest.items:type_name -> api.service.order.v1.OrderItemProto
@@ -2774,45 +2973,48 @@ var file_api_service_order_v1_order_proto_depIdxs = []int32{
 	9,  // 4: api.service.order.v1.BatchGetOrderReply.orders:type_name -> api.service.order.v1.GetOrderReply
 	13, // 5: api.service.order.v1.ListOverdueWaitPayOrdersReply.items:type_name -> api.service.order.v1.ListOrderItem
 	37, // 6: api.service.order.v1.ListRefundReply.items:type_name -> api.service.order.v1.RefundItem
-	2,  // 7: api.service.order.v1.Order.CreateOrder:input_type -> api.service.order.v1.CreateOrderRequest
-	4,  // 8: api.service.order.v1.Order.UpdateOrder:input_type -> api.service.order.v1.UpdateOrderRequest
-	6,  // 9: api.service.order.v1.Order.DeleteOrder:input_type -> api.service.order.v1.DeleteOrderRequest
-	8,  // 10: api.service.order.v1.Order.GetOrder:input_type -> api.service.order.v1.GetOrderRequest
-	11, // 11: api.service.order.v1.Order.ListOrder:input_type -> api.service.order.v1.ListOrderRequest
-	14, // 12: api.service.order.v1.Order.PayOrder:input_type -> api.service.order.v1.PayOrderRequest
-	16, // 13: api.service.order.v1.Order.OrderStats:input_type -> api.service.order.v1.OrderStatsRequest
-	18, // 14: api.service.order.v1.Order.GetOrderTrend:input_type -> api.service.order.v1.GetOrderTrendRequest
-	21, // 15: api.service.order.v1.Order.BatchGetOrder:input_type -> api.service.order.v1.BatchGetOrderRequest
-	23, // 16: api.service.order.v1.Order.GetUserOrderStats:input_type -> api.service.order.v1.GetUserOrderStatsRequest
-	25, // 17: api.service.order.v1.Order.ShipOrder:input_type -> api.service.order.v1.ShipOrderRequest
-	27, // 18: api.service.order.v1.Order.ReceiveOrder:input_type -> api.service.order.v1.ReceiveOrderRequest
-	29, // 19: api.service.order.v1.Order.CancelOrder:input_type -> api.service.order.v1.CancelOrderRequest
-	31, // 20: api.service.order.v1.Order.ListOverdueWaitPayOrders:input_type -> api.service.order.v1.ListOverdueWaitPayOrdersRequest
-	33, // 21: api.service.order.v1.Order.ApplyRefund:input_type -> api.service.order.v1.ApplyRefundRequest
-	35, // 22: api.service.order.v1.Order.ListRefund:input_type -> api.service.order.v1.ListRefundRequest
-	38, // 23: api.service.order.v1.Order.AuditRefund:input_type -> api.service.order.v1.AuditRefundRequest
-	3,  // 24: api.service.order.v1.Order.CreateOrder:output_type -> api.service.order.v1.CreateOrderReply
-	5,  // 25: api.service.order.v1.Order.UpdateOrder:output_type -> api.service.order.v1.UpdateOrderReply
-	7,  // 26: api.service.order.v1.Order.DeleteOrder:output_type -> api.service.order.v1.DeleteOrderReply
-	9,  // 27: api.service.order.v1.Order.GetOrder:output_type -> api.service.order.v1.GetOrderReply
-	12, // 28: api.service.order.v1.Order.ListOrder:output_type -> api.service.order.v1.ListOrderReply
-	15, // 29: api.service.order.v1.Order.PayOrder:output_type -> api.service.order.v1.PayOrderReply
-	17, // 30: api.service.order.v1.Order.OrderStats:output_type -> api.service.order.v1.OrderStatsReply
-	19, // 31: api.service.order.v1.Order.GetOrderTrend:output_type -> api.service.order.v1.GetOrderTrendReply
-	22, // 32: api.service.order.v1.Order.BatchGetOrder:output_type -> api.service.order.v1.BatchGetOrderReply
-	24, // 33: api.service.order.v1.Order.GetUserOrderStats:output_type -> api.service.order.v1.GetUserOrderStatsReply
-	26, // 34: api.service.order.v1.Order.ShipOrder:output_type -> api.service.order.v1.ShipOrderReply
-	28, // 35: api.service.order.v1.Order.ReceiveOrder:output_type -> api.service.order.v1.ReceiveOrderReply
-	30, // 36: api.service.order.v1.Order.CancelOrder:output_type -> api.service.order.v1.CancelOrderReply
-	32, // 37: api.service.order.v1.Order.ListOverdueWaitPayOrders:output_type -> api.service.order.v1.ListOverdueWaitPayOrdersReply
-	34, // 38: api.service.order.v1.Order.ApplyRefund:output_type -> api.service.order.v1.ApplyRefundReply
-	36, // 39: api.service.order.v1.Order.ListRefund:output_type -> api.service.order.v1.ListRefundReply
-	39, // 40: api.service.order.v1.Order.AuditRefund:output_type -> api.service.order.v1.AuditRefundReply
-	24, // [24:41] is the sub-list for method output_type
-	7,  // [7:24] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	42, // 7: api.service.order.v1.GetLogisticsReply.traces:type_name -> api.service.order.v1.LogisticsTrace
+	2,  // 8: api.service.order.v1.Order.CreateOrder:input_type -> api.service.order.v1.CreateOrderRequest
+	4,  // 9: api.service.order.v1.Order.UpdateOrder:input_type -> api.service.order.v1.UpdateOrderRequest
+	6,  // 10: api.service.order.v1.Order.DeleteOrder:input_type -> api.service.order.v1.DeleteOrderRequest
+	8,  // 11: api.service.order.v1.Order.GetOrder:input_type -> api.service.order.v1.GetOrderRequest
+	11, // 12: api.service.order.v1.Order.ListOrder:input_type -> api.service.order.v1.ListOrderRequest
+	14, // 13: api.service.order.v1.Order.PayOrder:input_type -> api.service.order.v1.PayOrderRequest
+	16, // 14: api.service.order.v1.Order.OrderStats:input_type -> api.service.order.v1.OrderStatsRequest
+	18, // 15: api.service.order.v1.Order.GetOrderTrend:input_type -> api.service.order.v1.GetOrderTrendRequest
+	21, // 16: api.service.order.v1.Order.BatchGetOrder:input_type -> api.service.order.v1.BatchGetOrderRequest
+	23, // 17: api.service.order.v1.Order.GetUserOrderStats:input_type -> api.service.order.v1.GetUserOrderStatsRequest
+	25, // 18: api.service.order.v1.Order.ShipOrder:input_type -> api.service.order.v1.ShipOrderRequest
+	27, // 19: api.service.order.v1.Order.ReceiveOrder:input_type -> api.service.order.v1.ReceiveOrderRequest
+	29, // 20: api.service.order.v1.Order.CancelOrder:input_type -> api.service.order.v1.CancelOrderRequest
+	31, // 21: api.service.order.v1.Order.ListOverdueWaitPayOrders:input_type -> api.service.order.v1.ListOverdueWaitPayOrdersRequest
+	33, // 22: api.service.order.v1.Order.ApplyRefund:input_type -> api.service.order.v1.ApplyRefundRequest
+	35, // 23: api.service.order.v1.Order.ListRefund:input_type -> api.service.order.v1.ListRefundRequest
+	38, // 24: api.service.order.v1.Order.AuditRefund:input_type -> api.service.order.v1.AuditRefundRequest
+	40, // 25: api.service.order.v1.Order.GetLogistics:input_type -> api.service.order.v1.GetLogisticsRequest
+	3,  // 26: api.service.order.v1.Order.CreateOrder:output_type -> api.service.order.v1.CreateOrderReply
+	5,  // 27: api.service.order.v1.Order.UpdateOrder:output_type -> api.service.order.v1.UpdateOrderReply
+	7,  // 28: api.service.order.v1.Order.DeleteOrder:output_type -> api.service.order.v1.DeleteOrderReply
+	9,  // 29: api.service.order.v1.Order.GetOrder:output_type -> api.service.order.v1.GetOrderReply
+	12, // 30: api.service.order.v1.Order.ListOrder:output_type -> api.service.order.v1.ListOrderReply
+	15, // 31: api.service.order.v1.Order.PayOrder:output_type -> api.service.order.v1.PayOrderReply
+	17, // 32: api.service.order.v1.Order.OrderStats:output_type -> api.service.order.v1.OrderStatsReply
+	19, // 33: api.service.order.v1.Order.GetOrderTrend:output_type -> api.service.order.v1.GetOrderTrendReply
+	22, // 34: api.service.order.v1.Order.BatchGetOrder:output_type -> api.service.order.v1.BatchGetOrderReply
+	24, // 35: api.service.order.v1.Order.GetUserOrderStats:output_type -> api.service.order.v1.GetUserOrderStatsReply
+	26, // 36: api.service.order.v1.Order.ShipOrder:output_type -> api.service.order.v1.ShipOrderReply
+	28, // 37: api.service.order.v1.Order.ReceiveOrder:output_type -> api.service.order.v1.ReceiveOrderReply
+	30, // 38: api.service.order.v1.Order.CancelOrder:output_type -> api.service.order.v1.CancelOrderReply
+	32, // 39: api.service.order.v1.Order.ListOverdueWaitPayOrders:output_type -> api.service.order.v1.ListOverdueWaitPayOrdersReply
+	34, // 40: api.service.order.v1.Order.ApplyRefund:output_type -> api.service.order.v1.ApplyRefundReply
+	36, // 41: api.service.order.v1.Order.ListRefund:output_type -> api.service.order.v1.ListRefundReply
+	39, // 42: api.service.order.v1.Order.AuditRefund:output_type -> api.service.order.v1.AuditRefundReply
+	41, // 43: api.service.order.v1.Order.GetLogistics:output_type -> api.service.order.v1.GetLogisticsReply
+	26, // [26:44] is the sub-list for method output_type
+	8,  // [8:26] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_api_service_order_v1_order_proto_init() }
@@ -2826,7 +3028,7 @@ func file_api_service_order_v1_order_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_service_order_v1_order_proto_rawDesc), len(file_api_service_order_v1_order_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   38,
+			NumMessages:   41,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

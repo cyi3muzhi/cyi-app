@@ -36,6 +36,7 @@ const (
 	Order_ApplyRefund_FullMethodName              = "/api.service.order.v1.Order/ApplyRefund"
 	Order_ListRefund_FullMethodName               = "/api.service.order.v1.Order/ListRefund"
 	Order_AuditRefund_FullMethodName              = "/api.service.order.v1.Order/AuditRefund"
+	Order_GetLogistics_FullMethodName             = "/api.service.order.v1.Order/GetLogistics"
 )
 
 // OrderClient is the client API for Order service.
@@ -71,6 +72,8 @@ type OrderClient interface {
 	ListRefund(ctx context.Context, in *ListRefundRequest, opts ...grpc.CallOption) (*ListRefundReply, error)
 	// 审核退款（管理端调用）：通过 -> 已退款并恢复库存；拒绝 -> 订单恢复申请前状态
 	AuditRefund(ctx context.Context, in *AuditRefundRequest, opts ...grpc.CallOption) (*AuditRefundReply, error)
+	// 查询物流轨迹（用户端/管理端调用）：返回物流公司、单号、发货时间与轨迹节点时间线
+	GetLogistics(ctx context.Context, in *GetLogisticsRequest, opts ...grpc.CallOption) (*GetLogisticsReply, error)
 }
 
 type orderClient struct {
@@ -251,6 +254,16 @@ func (c *orderClient) AuditRefund(ctx context.Context, in *AuditRefundRequest, o
 	return out, nil
 }
 
+func (c *orderClient) GetLogistics(ctx context.Context, in *GetLogisticsRequest, opts ...grpc.CallOption) (*GetLogisticsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLogisticsReply)
+	err := c.cc.Invoke(ctx, Order_GetLogistics_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrderServer is the server API for Order service.
 // All implementations must embed UnimplementedOrderServer
 // for forward compatibility.
@@ -284,6 +297,8 @@ type OrderServer interface {
 	ListRefund(context.Context, *ListRefundRequest) (*ListRefundReply, error)
 	// 审核退款（管理端调用）：通过 -> 已退款并恢复库存；拒绝 -> 订单恢复申请前状态
 	AuditRefund(context.Context, *AuditRefundRequest) (*AuditRefundReply, error)
+	// 查询物流轨迹（用户端/管理端调用）：返回物流公司、单号、发货时间与轨迹节点时间线
+	GetLogistics(context.Context, *GetLogisticsRequest) (*GetLogisticsReply, error)
 	mustEmbedUnimplementedOrderServer()
 }
 
@@ -344,6 +359,9 @@ func (UnimplementedOrderServer) ListRefund(context.Context, *ListRefundRequest) 
 }
 func (UnimplementedOrderServer) AuditRefund(context.Context, *AuditRefundRequest) (*AuditRefundReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuditRefund not implemented")
+}
+func (UnimplementedOrderServer) GetLogistics(context.Context, *GetLogisticsRequest) (*GetLogisticsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLogistics not implemented")
 }
 func (UnimplementedOrderServer) mustEmbedUnimplementedOrderServer() {}
 func (UnimplementedOrderServer) testEmbeddedByValue()               {}
@@ -672,6 +690,24 @@ func _Order_AuditRefund_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Order_GetLogistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLogisticsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServer).GetLogistics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Order_GetLogistics_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServer).GetLogistics(ctx, req.(*GetLogisticsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Order_ServiceDesc is the grpc.ServiceDesc for Order service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -746,6 +782,10 @@ var Order_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AuditRefund",
 			Handler:    _Order_AuditRefund_Handler,
+		},
+		{
+			MethodName: "GetLogistics",
+			Handler:    _Order_GetLogistics_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

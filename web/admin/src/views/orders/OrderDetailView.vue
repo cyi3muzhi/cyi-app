@@ -154,6 +154,49 @@
               <span class="field-value mono">{{ order.logisticsNo || '-' }}</span>
             </div>
           </div>
+
+          <!-- 物流轨迹时间线（发货后展示） -->
+          <template v-if="order.logisticsCompany">
+            <div class="logistics-divider"></div>
+            <!-- 轨迹加载中 -->
+            <div v-if="logisticsLoading" class="logistics-loading">
+              <el-icon class="is-loading" :size="14"><Loading /></el-icon>
+              <span>正在加载物流轨迹...</span>
+            </div>
+
+            <!-- 轨迹时间线 -->
+            <div v-else-if="logistics && logistics.traces.length" class="logistics-timeline">
+              <div
+                v-for="(t, i) in [...logistics.traces].reverse()"
+                :key="i"
+                class="trace-item"
+              >
+                <div class="trace-node">
+                  <span
+                    class="trace-dot"
+                    :style="{ background: i === 0 ? logisticsStatusColor(t.status) : '#cbd5e1' }"
+                  ></span>
+                  <span v-if="i !== [...logistics.traces].length - 1" class="trace-line"></span>
+                </div>
+                <div class="trace-content">
+                  <p class="trace-desc" :style="{ color: i === 0 ? logisticsStatusColor(t.status) : '#1e293b' }">
+                    {{ t.desc }}
+                    <el-tag v-if="i === 0" size="small" effect="plain" :color="logisticsStatusColor(t.status) + '1a'" style="border: none" :style="{ color: logisticsStatusColor(t.status) }">最新</el-tag>
+                  </p>
+                  <p class="trace-meta">
+                    <span class="trace-status" :style="{ color: logisticsStatusColor(t.status) }">{{ logisticsStatusText(t.status) }}</span>
+                    <span class="trace-time">{{ t.timeText }}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 无轨迹数据兜底 -->
+            <div v-else class="logistics-empty">
+              <span>物流轨迹更新中，请稍后刷新查看</span>
+              <el-button link type="primary" :loading="logisticsLoading" @click="loadLogistics">刷新轨迹</el-button>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -261,7 +304,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, InfoFilled, Goods, Loading, Clock, UserFilled, Van } from '@element-plus/icons-vue'
-import { getOrder, shipOrder, cancelOrder } from '../../api/order'
+import { getOrder, shipOrder, cancelOrder, getLogistics, type LogisticsDTO } from '../../api/order'
 import type { OrderItem } from '../../types/order'
 
 const route = useRoute()
@@ -271,6 +314,10 @@ const loading = ref(true)
 const error = ref('')
 const order = ref<OrderItem | null>(null)
 const previewImage = ref('')
+/** 物流轨迹（发货后加载） */
+const logistics = ref<LogisticsDTO | null>(null)
+/** 物流加载中 */
+const logisticsLoading = ref(false)
 
 function openPreview(src: string) {
   previewImage.value = src
@@ -308,11 +355,55 @@ async function loadOrder() {
     const id = Number(route.params.id)
     const res = await getOrder(id)
     order.value = res.order
+    // 发货后加载物流轨迹
+    loadLogistics()
   } catch (e: any) {
     error.value = e?.message || '加载订单详情失败'
   } finally {
     loading.value = false
   }
+}
+
+/**
+ * 加载物流轨迹（发货后展示）
+ */
+async function loadLogistics() {
+  const o = order.value
+  if (!o || !o.logisticsCompany || o.status === 'paid') {
+    logistics.value = null
+    return
+  }
+  logisticsLoading.value = true
+  try {
+    const res = await getLogistics(Number(route.params.id))
+    logistics.value = res
+  } catch {
+    logistics.value = null
+  } finally {
+    logisticsLoading.value = false
+  }
+}
+
+/** 物流节点状态文字 */
+function logisticsStatusText(status: number): string {
+  const map: Record<number, string> = {
+    1: '已发货',
+    2: '运输中',
+    3: '派送中',
+    4: '已签收'
+  }
+  return map[status] || ''
+}
+
+/** 物流节点状态颜色 */
+function logisticsStatusColor(status: number): string {
+  const map: Record<number, string> = {
+    1: '#3b82f6',
+    2: '#3b82f6',
+    3: '#f59e0b',
+    4: '#10b981'
+  }
+  return map[status] || '#94a3b8'
 }
 
 /** 返回列表 */
@@ -526,6 +617,100 @@ onMounted(loadOrder)
 .field-label { font-size: 0.75rem; color: var(--shop-muted-foreground, #94a3b8); font-weight: 500; text-transform: uppercase; letter-spacing: 0.03em; }
 .field-value { font-size: 0.875rem; color: var(--shop-foreground, #1e293b); font-weight: 500; }
 .field-value.mono { font-family: var(--shop-font-mono, 'JetBrains Mono', monospace); font-size: 0.8125rem; word-break: break-all; }
+
+/* ===== 物流轨迹时间线 ===== */
+.logistics-divider { height: 1px; background: var(--shop-border, #e8e8e8); margin: 12px 0; }
+
+.logistics-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 0.8125rem;
+  color: var(--shop-muted-foreground, #94a3b8);
+}
+
+.logistics-timeline {
+  padding: 4px 0 2px;
+}
+
+.trace-item {
+  display: flex;
+  gap: 12px;
+}
+
+.trace-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 3px;
+}
+
+.trace-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--shop-border, #e8e8e8);
+  z-index: 1;
+}
+
+.trace-item:first-child .trace-dot {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.trace-line {
+  position: absolute;
+  top: 16px;
+  bottom: -12px;
+  width: 2px;
+  background: var(--shop-border, #e8e8e8);
+}
+
+.trace-content {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 14px;
+}
+
+.trace-desc {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--shop-foreground, #1e293b);
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trace-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+  font-size: 0.75rem;
+}
+
+.trace-status {
+  font-weight: 500;
+}
+
+.trace-time {
+  color: var(--shop-muted-foreground, #94a3b8);
+  font-family: var(--shop-font-mono, 'JetBrains Mono', monospace);
+}
+
+.logistics-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 0.8125rem;
+  color: var(--shop-muted-foreground, #94a3b8);
+}
 
 /* ===== 商品明细 ===== */
 .product-card {

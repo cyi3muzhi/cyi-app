@@ -22,6 +22,7 @@ const _ = http.SupportPackageIsVersion1
 const OperationOrderApplyRefund = "/api.cin.interface.v1.Order/ApplyRefund"
 const OperationOrderCancelOrder = "/api.cin.interface.v1.Order/CancelOrder"
 const OperationOrderCartCheckout = "/api.cin.interface.v1.Order/CartCheckout"
+const OperationOrderGetLogistics = "/api.cin.interface.v1.Order/GetLogistics"
 const OperationOrderGetOrder = "/api.cin.interface.v1.Order/GetOrder"
 const OperationOrderListOrder = "/api.cin.interface.v1.Order/ListOrder"
 const OperationOrderListRefund = "/api.cin.interface.v1.Order/ListRefund"
@@ -37,6 +38,8 @@ type OrderHTTPServer interface {
 	CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error)
 	// CartCheckout 购物车结算
 	CartCheckout(context.Context, *CartCheckoutRequest) (*CartCheckoutReply, error)
+	// GetLogistics 查询物流轨迹（当前登录用户订单，发货后展示）
+	GetLogistics(context.Context, *GetLogisticsRequest) (*GetLogisticsReply, error)
 	// GetOrder 订单详情
 	GetOrder(context.Context, *GetOrderRequest) (*GetOrderReply, error)
 	// ListOrder 订单列表
@@ -63,6 +66,7 @@ func RegisterOrderHTTPServer(s *http.Server, srv OrderHTTPServer) {
 	r.GET("/order/v1/{order_id}", _Order_GetOrder1_HTTP_Handler(srv))
 	r.POST("/order/v1/receive", _Order_ReceiveOrder0_HTTP_Handler(srv))
 	r.POST("/order/v1/cancel", _Order_CancelOrder1_HTTP_Handler(srv))
+	r.GET("/order/v1/{order_id}/logistics", _Order_GetLogistics1_HTTP_Handler(srv))
 }
 
 func _Order_PlaceOrder0_HTTP_Handler(srv OrderHTTPServer) func(ctx http.Context) error {
@@ -257,6 +261,28 @@ func _Order_CancelOrder1_HTTP_Handler(srv OrderHTTPServer) func(ctx http.Context
 	}
 }
 
+func _Order_GetLogistics1_HTTP_Handler(srv OrderHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetLogisticsRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationOrderGetLogistics)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetLogistics(ctx, req.(*GetLogisticsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetLogisticsReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type OrderHTTPClient interface {
 	// ApplyRefund 申请退款（仅已支付/待发货订单）
 	// 注意：必须放在 GetOrder 之前注册，避免 /refund/apply 被 {order_id} 通配匹配
@@ -265,6 +291,8 @@ type OrderHTTPClient interface {
 	CancelOrder(ctx context.Context, req *CancelOrderRequest, opts ...http.CallOption) (rsp *CancelOrderReply, err error)
 	// CartCheckout 购物车结算
 	CartCheckout(ctx context.Context, req *CartCheckoutRequest, opts ...http.CallOption) (rsp *CartCheckoutReply, err error)
+	// GetLogistics 查询物流轨迹（当前登录用户订单，发货后展示）
+	GetLogistics(ctx context.Context, req *GetLogisticsRequest, opts ...http.CallOption) (rsp *GetLogisticsReply, err error)
 	// GetOrder 订单详情
 	GetOrder(ctx context.Context, req *GetOrderRequest, opts ...http.CallOption) (rsp *GetOrderReply, err error)
 	// ListOrder 订单列表
@@ -325,6 +353,20 @@ func (c *OrderHTTPClientImpl) CartCheckout(ctx context.Context, in *CartCheckout
 	opts = append(opts, http.Operation(OperationOrderCartCheckout))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// GetLogistics 查询物流轨迹（当前登录用户订单，发货后展示）
+func (c *OrderHTTPClientImpl) GetLogistics(ctx context.Context, in *GetLogisticsRequest, opts ...http.CallOption) (*GetLogisticsReply, error) {
+	var out GetLogisticsReply
+	pattern := "/order/v1/{order_id}/logistics"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationOrderGetLogistics))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

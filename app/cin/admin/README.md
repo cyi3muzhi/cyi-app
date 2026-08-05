@@ -130,7 +130,7 @@ app/cin/admin/
 | `AuthUseCase` | 管理员认证（登录、登出、头像管理、在线管理、信息更新） |
 | `AgentUseCase` | AI 智能助手（聊天、生成商品描述、Banner 文案、分类 SEO、运营摘要、快捷提问、知识库管理） |
 | `DashboardUseCase` | 仪表盘数据统计、订单趋势、营收分类占比 |
-| `OrderUseCase` | 订单管理（列表、详情、发货、取消、统计） |
+| `OrderUseCase` | 订单管理（列表、详情、发货、取消、统计、物流轨迹查询） |
 | `ExportUseCase` | 订单导出（投递异步任务到 task 服务、查询任务状态、生成下载链接） |
 | `ProductUseCase` | 商品管理（CRUD、批量操作） |
 | `CategoryUseCase` | 商品分类管理（分类树、CRUD、排序、状态、批量操作） |
@@ -243,6 +243,7 @@ app/cin/admin/
 | `CancelOrder` | POST | `/admin/v1/orders/{order_id}/cancel` | 取消订单 |
 | `ListRefund` | GET | `/admin/v1/refunds` | 退款/售后单列表（支持状态筛选、订单号搜索，含用户名） |
 | `AuditRefund` | POST | `/admin/v1/refunds/{refund_id}/audit` | 审核退款（通过→退款并恢复库存；拒绝→订单恢复原状态，需填拒绝原因） |
+| `GetLogistics` | GET | `/admin/v1/orders/{order_id}/logistics` | 查询物流轨迹（发货后展示轨迹时间线） |
 
 #### 用户接口（AdminUser）
 

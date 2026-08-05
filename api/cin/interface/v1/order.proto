@@ -73,6 +73,12 @@ service Order {
       body: "*"
     };
   }
+  // 查询物流轨迹（当前登录用户订单，发货后展示）
+  rpc GetLogistics (GetLogisticsRequest) returns (GetLogisticsReply) {
+    option (google.api.http) = {
+      get: "/order/v1/{order_id}/logistics"
+    };
+  }
 }
 
 message PlaceOrderRequest {
@@ -213,4 +219,27 @@ message RefundItem {
   string status_text = 7; // 状态文本
   string reject_reason = 8; // 拒绝原因
   string created_at = 9; // 申请时间（格式化字符串）
+}
+
+// 查询物流轨迹请求
+message GetLogisticsRequest {
+  int64 order_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+// 查询物流轨迹响应
+message GetLogisticsReply {
+  int64 order_id = 1; // 订单ID
+  string logistics_company = 2; // 物流公司
+  string logistics_no = 3; // 快递单号
+  int64 ship_time = 4; // 发货时间（Unix 秒，0=未发货）
+  string ship_time_text = 5; // 发货时间（格式化字符串，0=未发货时为空）
+  repeated LogisticsTrace traces = 6; // 轨迹节点（按时间升序）
+}
+
+// 物流轨迹节点
+message LogisticsTrace {
+  int64 time = 1; // 节点时间（Unix 秒）
+  string time_text = 2; // 节点时间（格式化字符串）
+  string desc = 3; // 节点描述
+  int32 status = 4; // 节点状态: 1-已发货 2-运输中 3-派送中 4-已签收
 }

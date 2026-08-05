@@ -71,6 +71,24 @@ type Refund struct {
 	CreatedAt    int64  `json:"created_at"`    // 申请时间（Unix 秒）
 }
 
+// LogisticsTrace 物流轨迹节点（用户端展示）
+type LogisticsTrace struct {
+	Time     int64  // 节点时间（Unix 秒）
+	TimeText string // 节点时间（格式化字符串）
+	Desc     string // 节点描述
+	Status   int32  // 节点状态: 1-已发货 2-运输中 3-派送中 4-已签收
+}
+
+// Logistics 物流信息（用户端展示）
+type Logistics struct {
+	OrderID          int64             // 订单ID
+	LogisticsCompany string            // 物流公司
+	LogisticsNo      string            // 快递单号
+	ShipTime         int64             // 发货时间（Unix 秒，0=未发货）
+	ShipTimeText     string            // 发货时间（格式化字符串）
+	Traces           []*LogisticsTrace // 轨迹节点（按时间升序）
+}
+
 type OrderRepo interface {
 	CreateOrder(ctx context.Context, order *Order) error
 	PayOrder(ctx context.Context, orderID int64, userID int64) error
@@ -87,6 +105,8 @@ type OrderRepo interface {
 	ApplyRefund(ctx context.Context, orderID int64, userID int64, reason string) (int64, error)
 	// ListRefund 查询当前用户退款记录（支持按状态筛选）
 	ListRefund(ctx context.Context, userID int64, page, pageSize int32, status string) ([]*Refund, int32, error)
+	// GetLogistics 查询当前用户订单物流轨迹（校验订单归属）
+	GetLogistics(ctx context.Context, orderID int64, userID int64) (*Logistics, error)
 }
 
 type OrderUseCase struct {
@@ -156,4 +176,12 @@ func (u *OrderUseCase) ApplyRefund(ctx context.Context, orderID int64, userID in
 // ListRefund 查询当前用户退款记录（支持按状态筛选）
 func (u *OrderUseCase) ListRefund(ctx context.Context, userID int64, page, pageSize int32, status string) ([]*Refund, int32, error) {
 	return u.repo.ListRefund(ctx, userID, page, pageSize, status)
+}
+
+// GetLogistics 查询当前用户订单物流轨迹（校验订单归属）
+func (u *OrderUseCase) GetLogistics(ctx context.Context, orderID int64, userID int64) (*Logistics, error) {
+	if orderID == 0 {
+		return nil, v1.ErrorOrderIdNotExist("order id not exist")
+	}
+	return u.repo.GetLogistics(ctx, orderID, userID)
 }

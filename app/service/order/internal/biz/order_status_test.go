@@ -50,8 +50,13 @@ func (m *mockOrderRepo) GetUserOrderStats(_ context.Context, _ int64) (*UserOrde
 	return &UserOrderStats{}, nil
 }
 
-func (m *mockOrderRepo) UpdateLogistics(_ context.Context, _ int64, _ string, _ string) error {
+func (m *mockOrderRepo) UpdateLogistics(_ context.Context, _ int64, _ string, _ string, _ int64) error {
 	return nil
+}
+
+// GetLogistics 查询物流信息（测试桩默认返回空物流）
+func (m *mockOrderRepo) GetLogistics(_ context.Context, _ int64) (*Logistics, error) {
+	return &Logistics{}, nil
 }
 
 // UpdateStatusIf 条件更新订单状态（状态机测试可注入 updateStatusIfFn 模拟 DB 失败/冲突）

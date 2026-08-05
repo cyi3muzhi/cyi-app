@@ -358,6 +358,36 @@ func (r *orderRepo) AuditRefund(ctx context.Context, refundID int64, approve boo
 	return nil
 }
 
+// GetLogistics 通过 gRPC 调用订单服务查询物流轨迹
+func (r *orderRepo) GetLogistics(ctx context.Context, orderID int64) (*biz.Logistics, error) {
+	reply, err := r.data.oc.GetLogistics(ctx, &orderRpc.GetLogisticsRequest{
+		OrderId: orderID,
+	})
+	if err != nil {
+		r.log.Errorf("get logistics failed, orderID=%d: %v", orderID, err)
+		return nil, err
+	}
+	logistics := &biz.Logistics{
+		OrderID:          reply.OrderId,
+		LogisticsCompany: reply.LogisticsCompany,
+		LogisticsNo:      reply.LogisticsNo,
+		ShipTime:         reply.ShipTime,
+		Traces:           make([]*biz.LogisticsTrace, 0, len(reply.Traces)),
+	}
+	if reply.ShipTime > 0 {
+		logistics.ShipTimeText = time.Unix(reply.ShipTime, 0).Format("2006-01-02 15:04:05")
+	}
+	for _, t := range reply.Traces {
+		logistics.Traces = append(logistics.Traces, &biz.LogisticsTrace{
+			Time:     t.Time,
+			TimeText: time.Unix(t.Time, 0).Format("2006-01-02 15:04:05"),
+			Desc:     t.Desc,
+			Status:   t.Status,
+		})
+	}
+	return logistics, nil
+}
+
 // refundStatusText 退款单状态 -> 中文文本
 func refundStatusText(status int32) string {
 	switch status {

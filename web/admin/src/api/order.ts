@@ -88,3 +88,29 @@ export async function auditRefund(refundId: number, approve: boolean, rejectReas
   })
   return res
 }
+
+/** 物流轨迹节点 */
+export interface LogisticsTraceDTO {
+  time: number // 节点时间（Unix 秒）
+  timeText: string // 节点时间（格式化字符串）
+  desc: string // 节点描述
+  status: number // 节点状态: 1-已发货 2-运输中 3-派送中 4-已签收
+}
+
+/** 物流信息（发货后展示） */
+export interface LogisticsDTO {
+  orderId: number
+  logisticsCompany: string // 物流公司
+  logisticsNo: string // 快递单号
+  shipTime: number // 发货时间（Unix 秒，0=未发货）
+  shipTimeText: string // 发货时间（格式化字符串）
+  traces: LogisticsTraceDTO[] // 轨迹节点（按时间升序）
+}
+
+/**
+ * 查询订单物流轨迹
+ */
+export async function getLogistics(orderId: number): Promise<LogisticsDTO> {
+  const res = await request.get<any, LogisticsDTO>(`${BASE}/${orderId}/logistics`)
+  return res
+}

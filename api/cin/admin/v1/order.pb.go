@@ -1460,6 +1460,205 @@ func (x *AuditRefundReply) GetSuccess() bool {
 	return false
 }
 
+// 查询物流轨迹请求
+type GetLogisticsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLogisticsRequest) Reset() {
+	*x = GetLogisticsRequest{}
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLogisticsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLogisticsRequest) ProtoMessage() {}
+
+func (x *GetLogisticsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLogisticsRequest.ProtoReflect.Descriptor instead.
+func (*GetLogisticsRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_order_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *GetLogisticsRequest) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+// 查询物流轨迹响应
+type GetLogisticsReply struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	OrderId          int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`                           // 订单ID
+	LogisticsCompany string                 `protobuf:"bytes,2,opt,name=logistics_company,json=logisticsCompany,proto3" json:"logistics_company,omitempty"` // 物流公司
+	LogisticsNo      string                 `protobuf:"bytes,3,opt,name=logistics_no,json=logisticsNo,proto3" json:"logistics_no,omitempty"`                // 快递单号
+	ShipTime         int64                  `protobuf:"varint,4,opt,name=ship_time,json=shipTime,proto3" json:"ship_time,omitempty"`                        // 发货时间（Unix 秒，0=未发货）
+	ShipTimeText     string                 `protobuf:"bytes,5,opt,name=ship_time_text,json=shipTimeText,proto3" json:"ship_time_text,omitempty"`           // 发货时间（格式化字符串，0=未发货时为空）
+	Traces           []*LogisticsTrace      `protobuf:"bytes,6,rep,name=traces,proto3" json:"traces,omitempty"`                                             // 轨迹节点（按时间升序）
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *GetLogisticsReply) Reset() {
+	*x = GetLogisticsReply{}
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLogisticsReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLogisticsReply) ProtoMessage() {}
+
+func (x *GetLogisticsReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLogisticsReply.ProtoReflect.Descriptor instead.
+func (*GetLogisticsReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_order_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *GetLogisticsReply) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+func (x *GetLogisticsReply) GetLogisticsCompany() string {
+	if x != nil {
+		return x.LogisticsCompany
+	}
+	return ""
+}
+
+func (x *GetLogisticsReply) GetLogisticsNo() string {
+	if x != nil {
+		return x.LogisticsNo
+	}
+	return ""
+}
+
+func (x *GetLogisticsReply) GetShipTime() int64 {
+	if x != nil {
+		return x.ShipTime
+	}
+	return 0
+}
+
+func (x *GetLogisticsReply) GetShipTimeText() string {
+	if x != nil {
+		return x.ShipTimeText
+	}
+	return ""
+}
+
+func (x *GetLogisticsReply) GetTraces() []*LogisticsTrace {
+	if x != nil {
+		return x.Traces
+	}
+	return nil
+}
+
+// 物流轨迹节点
+type LogisticsTrace struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Time          int64                  `protobuf:"varint,1,opt,name=time,proto3" json:"time,omitempty"`                        // 节点时间（Unix 秒）
+	TimeText      string                 `protobuf:"bytes,2,opt,name=time_text,json=timeText,proto3" json:"time_text,omitempty"` // 节点时间（格式化字符串）
+	Desc          string                 `protobuf:"bytes,3,opt,name=desc,proto3" json:"desc,omitempty"`                         // 节点描述
+	Status        int32                  `protobuf:"varint,4,opt,name=status,proto3" json:"status,omitempty"`                    // 节点状态: 1-已发货 2-运输中 3-派送中 4-已签收
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LogisticsTrace) Reset() {
+	*x = LogisticsTrace{}
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LogisticsTrace) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LogisticsTrace) ProtoMessage() {}
+
+func (x *LogisticsTrace) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LogisticsTrace.ProtoReflect.Descriptor instead.
+func (*LogisticsTrace) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_order_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *LogisticsTrace) GetTime() int64 {
+	if x != nil {
+		return x.Time
+	}
+	return 0
+}
+
+func (x *LogisticsTrace) GetTimeText() string {
+	if x != nil {
+		return x.TimeText
+	}
+	return ""
+}
+
+func (x *LogisticsTrace) GetDesc() string {
+	if x != nil {
+		return x.Desc
+	}
+	return ""
+}
+
+func (x *LogisticsTrace) GetStatus() int32 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
 var File_api_cin_admin_v1_order_proto protoreflect.FileDescriptor
 
 const file_api_cin_admin_v1_order_proto_rawDesc = "" +
@@ -1574,7 +1773,21 @@ const file_api_cin_admin_v1_order_proto_rawDesc = "" +
 	"\aapprove\x18\x02 \x01(\bR\aapprove\x12#\n" +
 	"\rreject_reason\x18\x03 \x01(\tR\frejectReason\",\n" +
 	"\x10AuditRefundReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess*c\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"9\n" +
+	"\x13GetLogisticsRequest\x12\"\n" +
+	"\border_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aorderId\"\xfb\x01\n" +
+	"\x11GetLogisticsReply\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\x03R\aorderId\x12+\n" +
+	"\x11logistics_company\x18\x02 \x01(\tR\x10logisticsCompany\x12!\n" +
+	"\flogistics_no\x18\x03 \x01(\tR\vlogisticsNo\x12\x1b\n" +
+	"\tship_time\x18\x04 \x01(\x03R\bshipTime\x12$\n" +
+	"\x0eship_time_text\x18\x05 \x01(\tR\fshipTimeText\x128\n" +
+	"\x06traces\x18\x06 \x03(\v2 .api.cin.admin.v1.LogisticsTraceR\x06traces\"m\n" +
+	"\x0eLogisticsTrace\x12\x12\n" +
+	"\x04time\x18\x01 \x01(\x03R\x04time\x12\x1b\n" +
+	"\ttime_text\x18\x02 \x01(\tR\btimeText\x12\x12\n" +
+	"\x04desc\x18\x03 \x01(\tR\x04desc\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\x05R\x06status*c\n" +
 	"\fExportStatus\x12\x1b\n" +
 	"\x17ExportStatusUnspecified\x10\x00\x12\v\n" +
 	"\aPENDING\x10\x01\x12\x0e\n" +
@@ -1582,7 +1795,8 @@ const file_api_cin_admin_v1_order_proto_rawDesc = "" +
 	"PROCESSING\x10\x02\x12\r\n" +
 	"\tCOMPLETED\x10\x03\x12\n" +
 	"\n" +
-	"\x06FAILED\x10\x042\xf6\b\n" +
+	"\x06FAILED\x10\x042\x82\n" +
+	"\n" +
 	"\n" +
 	"AdminOrder\x12k\n" +
 	"\tListOrder\x12\".api.cin.admin.v1.ListOrderRequest\x1a .api.cin.admin.v1.ListOrderReply\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/admin/v1/orders\x12t\n" +
@@ -1595,7 +1809,8 @@ const file_api_cin_admin_v1_order_proto_rawDesc = "" +
 	"\vCancelOrder\x12$.api.cin.admin.v1.CancelOrderRequest\x1a\".api.cin.admin.v1.CancelOrderReply\"-\x82\xd3\xe4\x93\x02':\x01*\"\"/admin/v1/orders/{order_id}/cancel\x12o\n" +
 	"\n" +
 	"ListRefund\x12#.api.cin.admin.v1.ListRefundRequest\x1a!.api.cin.admin.v1.ListRefundReply\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/admin/v1/refunds\x12\x87\x01\n" +
-	"\vAuditRefund\x12$.api.cin.admin.v1.AuditRefundRequest\x1a\".api.cin.admin.v1.AuditRefundReply\".\x82\xd3\xe4\x93\x02(:\x01*\"#/admin/v1/refunds/{refund_id}/auditB6\n" +
+	"\vAuditRefund\x12$.api.cin.admin.v1.AuditRefundRequest\x1a\".api.cin.admin.v1.AuditRefundReply\".\x82\xd3\xe4\x93\x02(:\x01*\"#/admin/v1/refunds/{refund_id}/audit\x12\x89\x01\n" +
+	"\fGetLogistics\x12%.api.cin.admin.v1.GetLogisticsRequest\x1a#.api.cin.admin.v1.GetLogisticsReply\"-\x82\xd3\xe4\x93\x02'\x12%/admin/v1/orders/{order_id}/logisticsB6\n" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (
@@ -1611,7 +1826,7 @@ func file_api_cin_admin_v1_order_proto_rawDescGZIP() []byte {
 }
 
 var file_api_cin_admin_v1_order_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_cin_admin_v1_order_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_api_cin_admin_v1_order_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_api_cin_admin_v1_order_proto_goTypes = []any{
 	(ExportStatus)(0),               // 0: api.cin.admin.v1.ExportStatus
 	(*ListOrderRequest)(nil),        // 1: api.cin.admin.v1.ListOrderRequest
@@ -1635,6 +1850,9 @@ var file_api_cin_admin_v1_order_proto_goTypes = []any{
 	(*RefundItem)(nil),              // 19: api.cin.admin.v1.RefundItem
 	(*AuditRefundRequest)(nil),      // 20: api.cin.admin.v1.AuditRefundRequest
 	(*AuditRefundReply)(nil),        // 21: api.cin.admin.v1.AuditRefundReply
+	(*GetLogisticsRequest)(nil),     // 22: api.cin.admin.v1.GetLogisticsRequest
+	(*GetLogisticsReply)(nil),       // 23: api.cin.admin.v1.GetLogisticsReply
+	(*LogisticsTrace)(nil),          // 24: api.cin.admin.v1.LogisticsTrace
 }
 var file_api_cin_admin_v1_order_proto_depIdxs = []int32{
 	3,  // 0: api.cin.admin.v1.ListOrderReply.items:type_name -> api.cin.admin.v1.OrderItem
@@ -1643,29 +1861,32 @@ var file_api_cin_admin_v1_order_proto_depIdxs = []int32{
 	0,  // 3: api.cin.admin.v1.ExportOrderReply.status:type_name -> api.cin.admin.v1.ExportStatus
 	0,  // 4: api.cin.admin.v1.ExportTaskStatusReply.status:type_name -> api.cin.admin.v1.ExportStatus
 	19, // 5: api.cin.admin.v1.ListRefundReply.items:type_name -> api.cin.admin.v1.RefundItem
-	1,  // 6: api.cin.admin.v1.AdminOrder.ListOrder:input_type -> api.cin.admin.v1.ListOrderRequest
-	15, // 7: api.cin.admin.v1.AdminOrder.OrderStats:input_type -> api.cin.admin.v1.OrderStatsRequest
-	11, // 8: api.cin.admin.v1.AdminOrder.ExportOrder:input_type -> api.cin.admin.v1.ExportOrderRequest
-	13, // 9: api.cin.admin.v1.AdminOrder.ExportTaskStatus:input_type -> api.cin.admin.v1.ExportTaskStatusRequest
-	5,  // 10: api.cin.admin.v1.AdminOrder.GetOrder:input_type -> api.cin.admin.v1.GetOrderRequest
-	7,  // 11: api.cin.admin.v1.AdminOrder.ShipOrder:input_type -> api.cin.admin.v1.ShipOrderRequest
-	9,  // 12: api.cin.admin.v1.AdminOrder.CancelOrder:input_type -> api.cin.admin.v1.CancelOrderRequest
-	17, // 13: api.cin.admin.v1.AdminOrder.ListRefund:input_type -> api.cin.admin.v1.ListRefundRequest
-	20, // 14: api.cin.admin.v1.AdminOrder.AuditRefund:input_type -> api.cin.admin.v1.AuditRefundRequest
-	2,  // 15: api.cin.admin.v1.AdminOrder.ListOrder:output_type -> api.cin.admin.v1.ListOrderReply
-	16, // 16: api.cin.admin.v1.AdminOrder.OrderStats:output_type -> api.cin.admin.v1.OrderStatsReply
-	12, // 17: api.cin.admin.v1.AdminOrder.ExportOrder:output_type -> api.cin.admin.v1.ExportOrderReply
-	14, // 18: api.cin.admin.v1.AdminOrder.ExportTaskStatus:output_type -> api.cin.admin.v1.ExportTaskStatusReply
-	6,  // 19: api.cin.admin.v1.AdminOrder.GetOrder:output_type -> api.cin.admin.v1.GetOrderReply
-	8,  // 20: api.cin.admin.v1.AdminOrder.ShipOrder:output_type -> api.cin.admin.v1.ShipOrderReply
-	10, // 21: api.cin.admin.v1.AdminOrder.CancelOrder:output_type -> api.cin.admin.v1.CancelOrderReply
-	18, // 22: api.cin.admin.v1.AdminOrder.ListRefund:output_type -> api.cin.admin.v1.ListRefundReply
-	21, // 23: api.cin.admin.v1.AdminOrder.AuditRefund:output_type -> api.cin.admin.v1.AuditRefundReply
-	15, // [15:24] is the sub-list for method output_type
-	6,  // [6:15] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	24, // 6: api.cin.admin.v1.GetLogisticsReply.traces:type_name -> api.cin.admin.v1.LogisticsTrace
+	1,  // 7: api.cin.admin.v1.AdminOrder.ListOrder:input_type -> api.cin.admin.v1.ListOrderRequest
+	15, // 8: api.cin.admin.v1.AdminOrder.OrderStats:input_type -> api.cin.admin.v1.OrderStatsRequest
+	11, // 9: api.cin.admin.v1.AdminOrder.ExportOrder:input_type -> api.cin.admin.v1.ExportOrderRequest
+	13, // 10: api.cin.admin.v1.AdminOrder.ExportTaskStatus:input_type -> api.cin.admin.v1.ExportTaskStatusRequest
+	5,  // 11: api.cin.admin.v1.AdminOrder.GetOrder:input_type -> api.cin.admin.v1.GetOrderRequest
+	7,  // 12: api.cin.admin.v1.AdminOrder.ShipOrder:input_type -> api.cin.admin.v1.ShipOrderRequest
+	9,  // 13: api.cin.admin.v1.AdminOrder.CancelOrder:input_type -> api.cin.admin.v1.CancelOrderRequest
+	17, // 14: api.cin.admin.v1.AdminOrder.ListRefund:input_type -> api.cin.admin.v1.ListRefundRequest
+	20, // 15: api.cin.admin.v1.AdminOrder.AuditRefund:input_type -> api.cin.admin.v1.AuditRefundRequest
+	22, // 16: api.cin.admin.v1.AdminOrder.GetLogistics:input_type -> api.cin.admin.v1.GetLogisticsRequest
+	2,  // 17: api.cin.admin.v1.AdminOrder.ListOrder:output_type -> api.cin.admin.v1.ListOrderReply
+	16, // 18: api.cin.admin.v1.AdminOrder.OrderStats:output_type -> api.cin.admin.v1.OrderStatsReply
+	12, // 19: api.cin.admin.v1.AdminOrder.ExportOrder:output_type -> api.cin.admin.v1.ExportOrderReply
+	14, // 20: api.cin.admin.v1.AdminOrder.ExportTaskStatus:output_type -> api.cin.admin.v1.ExportTaskStatusReply
+	6,  // 21: api.cin.admin.v1.AdminOrder.GetOrder:output_type -> api.cin.admin.v1.GetOrderReply
+	8,  // 22: api.cin.admin.v1.AdminOrder.ShipOrder:output_type -> api.cin.admin.v1.ShipOrderReply
+	10, // 23: api.cin.admin.v1.AdminOrder.CancelOrder:output_type -> api.cin.admin.v1.CancelOrderReply
+	18, // 24: api.cin.admin.v1.AdminOrder.ListRefund:output_type -> api.cin.admin.v1.ListRefundReply
+	21, // 25: api.cin.admin.v1.AdminOrder.AuditRefund:output_type -> api.cin.admin.v1.AuditRefundReply
+	23, // 26: api.cin.admin.v1.AdminOrder.GetLogistics:output_type -> api.cin.admin.v1.GetLogisticsReply
+	17, // [17:27] is the sub-list for method output_type
+	7,  // [7:17] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_api_cin_admin_v1_order_proto_init() }
@@ -1679,7 +1900,7 @@ func file_api_cin_admin_v1_order_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_order_proto_rawDesc), len(file_api_cin_admin_v1_order_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   21,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

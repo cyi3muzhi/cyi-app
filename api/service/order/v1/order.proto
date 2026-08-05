@@ -36,6 +36,8 @@ service Order {
 	rpc ListRefund (ListRefundRequest) returns (ListRefundReply);
 	// 审核退款（管理端调用）：通过 -> 已退款并恢复库存；拒绝 -> 订单恢复申请前状态
 	rpc AuditRefund (AuditRefundRequest) returns (AuditRefundReply);
+	// 查询物流轨迹（用户端/管理端调用）：返回物流公司、单号、发货时间与轨迹节点时间线
+	rpc GetLogistics (GetLogisticsRequest) returns (GetLogisticsReply);
 }
 
 message CreateOrderRequest {
@@ -305,3 +307,24 @@ message AuditRefundRequest {
 
 // 审核退款响应
 message AuditRefundReply {}
+
+// 查询物流轨迹请求
+message GetLogisticsRequest {
+	int64 order_id = 1; // 订单ID
+}
+
+// 查询物流轨迹响应
+message GetLogisticsReply {
+	int64 order_id = 1; // 订单ID
+	string logistics_company = 2; // 物流公司
+	string logistics_no = 3; // 快递单号
+	int64 ship_time = 4; // 发货时间（Unix 秒，0=未发货）
+	repeated LogisticsTrace traces = 5; // 轨迹节点（按时间升序）
+}
+
+// 物流轨迹节点
+message LogisticsTrace {
+	int64 time = 1; // 节点时间（Unix 秒）
+	string desc = 2; // 节点描述
+	int32 status = 3; // 节点状态: 1-已发货 2-运输中 3-派送中 4-已签收
+}
