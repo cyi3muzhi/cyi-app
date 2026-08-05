@@ -3,6 +3,7 @@ package biz
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	orderRpc "cyi-app/api/service/order/v1"
 	"github.com/go-kratos/blades/tools"
@@ -35,12 +36,15 @@ func RegisterOrderTools(r *ToolRegistry, client orderRpc.OrderClient) {
 			if reply.Total == 0 {
 				return "没有找到匹配的订单", nil
 			}
-			result := fmt.Sprintf("共 %d 条订单：\n", reply.Total)
+			var sb strings.Builder
+			sb.WriteString(fmt.Sprintf("共 %d 条订单：\n\n", reply.Total))
+			sb.WriteString("| 订单ID | 订单号 | 金额 | 状态 |\n")
+			sb.WriteString("|---|---|---|---|\n")
 			for _, item := range reply.Items {
-				result += fmt.Sprintf("- 订单#%d | %s | ￥%.2f | %s\n",
-					item.OrderId, item.OrderNo, float64(item.PayAmount)/100, orderStatusText(int32(item.Status)))
+				sb.WriteString(fmt.Sprintf("| %d | %s | ￥%.2f | %s |\n",
+					item.OrderId, item.OrderNo, float64(item.PayAmount)/100, orderStatusText(int32(item.Status))))
 			}
-			return result, nil
+			return sb.String(), nil
 		})
 	r.Add(t1)
 
@@ -53,12 +57,19 @@ func RegisterOrderTools(r *ToolRegistry, client orderRpc.OrderClient) {
 			if err != nil {
 				return "", err
 			}
-			return fmt.Sprintf("订单 #%d\n单号: %s\n状态: %s\n支付金额: ￥%.2f",
-				reply.OrderId, reply.OrderNo, orderStatusText(int32(reply.Status)), float64(reply.PayAmount)/100), nil
+			var sb strings.Builder
+			sb.WriteString(fmt.Sprintf("订单 #%d 详情：\n\n", reply.OrderId))
+			sb.WriteString("| 字段 | 值 |\n")
+			sb.WriteString("|---|---|\n")
+			sb.WriteString(fmt.Sprintf("| 订单号 | %s |\n", reply.OrderNo))
+			sb.WriteString(fmt.Sprintf("| 状态 | %s |\n", orderStatusText(int32(reply.Status))))
+			sb.WriteString(fmt.Sprintf("| 支付金额 | ￥%.2f |\n", float64(reply.PayAmount)/100))
+			return sb.String(), nil
 		})
 	r.Add(t2)
 }
 
+// orderStatusText 订单状态中文描述
 func orderStatusText(status int32) string {
 	switch status {
 	case 1:

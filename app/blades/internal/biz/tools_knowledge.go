@@ -12,14 +12,14 @@ func RegisterKnowledgeTools(r *ToolRegistry, rag *RAGEngine) {
 		func(ctx context.Context, input struct {
 			Query string `json:"query"`
 		}) (string, error) {
-			contextStr, err := rag.Retrieve(ctx, "", input.Query, 3)
+			results, err := rag.Retrieve(ctx, "", input.Query, 3)
 			if err != nil {
 				return "", err
 			}
-			if contextStr == "" {
+			if len(results) == 0 {
 				return "知识库中没有找到相关信息", nil
 			}
-			return contextStr, nil
+			return FormatResults(results), nil
 		})
 	r.Add(t1)
 }

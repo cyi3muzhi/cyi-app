@@ -11,6 +11,7 @@ import (
 
 // RegisterUserTools 注册用户工具
 func RegisterUserTools(r *ToolRegistry, client userRpc.UserClient) {
+	// query_users 用户总数统计
 	t1, _ := tools.NewFunc("query_users", "查询平台用户总数和统计信息",
 		func(ctx context.Context, input struct{}) (string, error) {
 			reply, err := client.UserCount(ctx, &emptypb.Empty{})

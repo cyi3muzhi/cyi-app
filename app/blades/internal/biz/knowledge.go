@@ -46,30 +46,12 @@ func (uc *KnowledgeUseCase) UploadDocument(ctx context.Context, docID, source, t
 	return count, len(content), nil
 }
 
-// SearchKnowledge 搜索知识库
+// SearchKnowledge 搜索知识库（直接返回结构化结果，避免重复检索）
 func (uc *KnowledgeUseCase) SearchKnowledge(ctx context.Context, source, query string, topK int) ([]*SearchResult, error) {
 	if uc.rag == nil {
 		return nil, nil
 	}
-
-	contextStr, err := uc.rag.Retrieve(ctx, source, query, topK)
-	if err != nil {
-		return nil, fmt.Errorf("search knowledge failed: %w", err)
-	}
-	if contextStr == "" {
-		return nil, nil
-	}
-	// contextStr 是纯文本格式，这里转为 SearchResult 便于 gRPC 传输
-	// 通过 RAG 引擎重新检索获取结构化结果
-	queryVec, err := uc.rag.embedder.Embed(ctx, query)
-	if err != nil {
-		return nil, fmt.Errorf("embed query failed: %w", err)
-	}
-	results, err := uc.rag.vectorDB.Search(ctx, source, queryVec, topK)
-	if err != nil {
-		return nil, fmt.Errorf("vector search failed: %w", err)
-	}
-	return results, nil
+	return uc.rag.Retrieve(ctx, source, query, topK)
 }
 
 // DeleteDocument 删除文档

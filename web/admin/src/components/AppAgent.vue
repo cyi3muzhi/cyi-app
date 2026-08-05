@@ -269,10 +269,46 @@ function convertTextTable(content: string): string {
   return out.join('\n')
 }
 
+/**
+ * 修复 AI 流式输出的 Markdown 格式问题：
+ * 1. 标题标记后缺空格（##text → ## text）
+ * 2. 标题/段落与表格之间缺空行
+ * 3. 确保 marked 能正确解析所有 Markdown 元素
+ */
+function fixMarkdownSpacing(content: string): string {
+  const lines = content.split('\n')
+  const out: string[] = []
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i]
+    const trimmed = line.trim()
+
+    // 修复1: 标题标记后没有空格（AI 常输出 "##text" 而非 "## text"）
+    const headingMatch = trimmed.match(/^(#{1,6})(\S)/)
+    if (headingMatch && !/^#{1,6}\s/.test(trimmed)) {
+      line = trimmed.replace(/^(#{1,6})/, '$1 ')
+    }
+
+    out.push(line)
+
+    // 修复2: 检测当前行是否为可识别的标题
+    const isHeading = /^#{1,6}\s/.test(line.trim())
+
+    // 修复3: 当前行是标题或段落，下一行是表格行（以 | 开头）→ 中间补空行
+    const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : ''
+    const nextIsTable = nextLine.startsWith('|')
+    // 当前行是标题，或者是非空段落（不以 | 开头且不是空行），下一行是表格 → 补空行
+    const isParagraph = trimmed && !trimmed.startsWith('|') && !isHeading
+    if ((isHeading || isParagraph) && nextIsTable) {
+      out.push('')
+    }
+  }
+  return out.join('\n')
+}
+
 function formatMessage(content: string): string {
   try {
-    // 先转换文本表格，再交给 marked 渲染
-    return marked.parse(convertTextTable(content)) as string
+    // 处理顺序：补空行 → 转换文本表格 → marked 渲染
+    return marked.parse(convertTextTable(fixMarkdownSpacing(content))) as string
   } catch {
     // 流式渲染时内容可能不完整，解析失败则原样返回
     return content
@@ -863,15 +899,37 @@ function handleScroll() {
 .message-text h4,
 .message-text h5,
 .message-text h6 {
-  margin: 12px 0 6px;
+  margin: 16px 0 8px;
   font-weight: 600;
   color: #1e293b;
+  line-height: 1.4;
 }
 
-.message-text h1 { font-size: 1.25rem; }
-.message-text h2 { font-size: 1.125rem; }
-.message-text h3 { font-size: 1rem; }
-.message-text h4 { font-size: 0.9375rem; }
+/* ## 主标题：大号、加粗、带底部边线 */
+.message-text h2 {
+  font-size: 1.05rem;
+  padding-bottom: 6px;
+  border-bottom: 2px solid linear-gradient(90deg, #667eea 0%, transparent 100%);
+}
+
+/* ### 子标题：带左侧色条、缩小一点 */
+.message-text h3 {
+  font-size: 0.95rem;
+  padding-left: 10px;
+  border-left: 3px solid #667eea;
+  margin-top: 14px;
+  color: #475569;
+  font-weight: 600;
+}
+
+/* 加粗文字突出显示 */
+.message-text strong {
+  font-weight: 700;
+  color: #0f172a;
+  background: linear-gradient(120deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
 
 /* Markdown 分隔线 */
 .message-text hr {
@@ -943,7 +1001,19 @@ function handleScroll() {
 }
 
 .message-text li {
-  margin: 3px 0;
+  margin: 4px 0;
+  line-height: 1.65;
+}
+
+/* 列表项中的加粗关键词颜色强化 */
+.message-text li strong {
+  color: #4f46e5;
+}
+
+/* 有序列表序号加粗 */
+.message-text ol li::marker {
+  font-weight: 700;
+  color: #667eea;
 }
 
 /* Markdown 代码 */

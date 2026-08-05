@@ -21,9 +21,11 @@ var ProviderSet = wire.NewSet(
 	wire.Bind(new(biz.VectorStore), new(*VectorStore)),
 	NewProductServiceClient,
 	NewStockServiceClient,
+	NewCategoryServiceClient,
 	NewUserServiceClient,
 	NewAdminRoleClient,
 	NewOrderServiceClient,
+	NewMarketingServiceClient,
 )
 
 // ProviderVectorStoreDimension 从配置获取向量维度

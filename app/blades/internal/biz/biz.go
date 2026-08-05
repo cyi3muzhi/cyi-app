@@ -1,6 +1,7 @@
 package biz
 
 import (
+	marketingRpc "cyi-app/api/service/marketing/v1"
 	orderRpc "cyi-app/api/service/order/v1"
 	productRpc "cyi-app/api/service/product/v1"
 	userRpc "cyi-app/api/service/user/v1"
@@ -30,8 +31,10 @@ func NewTextSplitterConfig() TextSplitterConfig {
 func InitToolRegistry(
 	pc productRpc.ProductClient,
 	sc productRpc.StockClient,
+	cc productRpc.CategoryClient,
 	uc userRpc.UserClient,
 	oc orderRpc.OrderClient,
+	mc marketingRpc.CouponServiceClient,
 	rag *RAGEngine,
 	rdb redis.UniversalClient,
 	roleClient userRpc.AdminRoleClient,
@@ -41,6 +44,9 @@ func InitToolRegistry(
 	RegisterProductTools(r, pc)
 	RegisterStockTools(r, sc, pc)
 	RegisterUserTools(r, uc)
+	RegisterStatsTools(r, oc, uc, pc)
+	RegisterMarketingTools(r, mc)
+	RegisterCategoryTools(r, cc)
 	RegisterKnowledgeTools(r, rag)
 	RegisterPreferenceTool(r, rdb)
 	RegisterPermissionTool(r, roleClient)

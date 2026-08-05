@@ -3,6 +3,7 @@ package biz
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 // ragRetrieveKeywords 触发 RAG 检索的关键词列表
@@ -111,8 +112,8 @@ func (e *RAGEngine) IndexDocument(ctx context.Context, docID, source, title, con
 	return len(chunks), nil
 }
 
-// Retrieve 检索相关知识
-func (e *RAGEngine) Retrieve(ctx context.Context, source, query string, topK int) (string, error) {
+// Retrieve 检索相关知识，返回结构化结果（调用方按需格式化）
+func (e *RAGEngine) Retrieve(ctx context.Context, source, query string, topK int) ([]*SearchResult, error) {
 	if topK <= 0 {
 		topK = 5
 		if e.config != nil && e.config.TopK > 0 {
@@ -122,27 +123,35 @@ func (e *RAGEngine) Retrieve(ctx context.Context, source, query string, topK int
 
 	queryVec, err := e.embedder.Embed(ctx, query)
 	if err != nil {
-		return "", fmt.Errorf("embed query failed: %w", err)
+		return nil, fmt.Errorf("embed query failed: %w", err)
 	}
 
 	results, err := e.vectorDB.Search(ctx, source, queryVec, topK)
 	if err != nil {
-		return "", fmt.Errorf("vector search failed: %w", err)
+		return nil, fmt.Errorf("vector search failed: %w", err)
 	}
 
-	if len(results) == 0 {
-		return "", nil
-	}
-
-	context := "以下是与问题相关的知识库内容：\n\n"
+	// 过滤低相关度结果
+	filtered := make([]*SearchResult, 0, len(results))
 	for _, r := range results {
-		if r.Score < 0.3 {
-			continue
+		if r.Score >= 0.3 {
+			filtered = append(filtered, r)
 		}
-		context += fmt.Sprintf("- %s（相关度: %.0f%%）\n%s\n\n", r.Title, r.Score*100, r.Content)
 	}
+	return filtered, nil
+}
 
-	return context, nil
+// FormatResults 将检索结果格式化为文本（供 AI 上下文使用）
+func FormatResults(results []*SearchResult) string {
+	if len(results) == 0 {
+		return ""
+	}
+	var sb strings.Builder
+	sb.WriteString("以下是与问题相关的知识库内容：\n\n")
+	for _, r := range results {
+		sb.WriteString(fmt.Sprintf("- %s（相关度: %.0f%%）\n%s\n\n", r.Title, r.Score*100, r.Content))
+	}
+	return sb.String()
 }
 
 // ShouldRetrieve 判断是否需要 RAG 检索
@@ -151,20 +160,7 @@ func (e *RAGEngine) ShouldRetrieve(message string) bool {
 		return true
 	}
 	for _, kw := range ragRetrieveKeywords {
-		if stringsContains(message, kw) {
-			return true
-		}
-	}
-	return false
-}
-
-func stringsContains(s, substr string) bool {
-	return len(substr) > 0 && len(s) >= len(substr) && stringContains(s, substr)
-}
-
-func stringContains(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
+		if strings.Contains(message, kw) {
 			return true
 		}
 	}

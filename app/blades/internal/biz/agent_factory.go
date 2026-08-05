@@ -3,6 +3,7 @@ package biz
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,12 +23,21 @@ type toolPerm struct {
 
 // toolModulePerms 工具名 → 所需最小模块权限（模块 key 与 user 服务 permModules 一致）
 var toolModulePerms = map[string]toolPerm{
-	"search_products":    {"products", "view"},
-	"get_product_detail": {"products", "view"},
-	"query_stock":        {"products", "view"},
-	"query_orders":       {"orders", "view"},
-	"query_order_detail": {"orders", "view"},
-	"query_users":        {"users", "view"},
+	"search_products":       {"products", "view"},
+	"get_product_detail":    {"products", "view"},
+	"query_stock":           {"products", "view"},
+	"query_orders":          {"orders", "view"},
+	"query_order_detail":    {"orders", "view"},
+	"query_order_stats":     {"orders", "view"},
+	"query_order_trend":     {"orders", "view"},
+	"query_dashboard_stats": {"orders", "view"},
+	"query_users":           {"users", "view"},
+	"query_user_stats":      {"users", "view"},
+	"query_user_detail":     {"users", "view"},
+	"query_coupons":         {"coupons", "view"},
+	"query_coupon_stats":    {"coupons", "view"},
+	"query_coupon_records":  {"coupons", "view"},
+	"query_categories":      {"categories", "view"},
 }
 
 // AgentInstance 一个 Agent 实例（对应一个端）
@@ -40,40 +50,28 @@ type AgentInstance struct {
 	knowledgeTag string
 }
 
-// Chat 发送消息（非流式）
-func (inst *AgentInstance) Chat(ctx context.Context, message string, enableRAG bool, history []*blades.Message, instruction *blades.Message) (string, error) {
-	if enableRAG && inst.rag != nil && inst.rag.ShouldRetrieve(message) {
-		contextStr, err := inst.rag.Retrieve(ctx, inst.knowledgeTag, message, 0)
-		if err == nil && contextStr != "" {
-			message = contextStr + "\n\n用户问题：" + message
-		}
-	}
+// Chat 发送消息（非流式）。RAG 上下文由调用方通过 instruction 传入，不再在此处拼接。
+func (inst *AgentInstance) Chat(ctx context.Context, message string, instruction *blades.Message, history []*blades.Message) (string, error) {
 	invocation := &blades.Invocation{
 		Message:     blades.UserMessage(message),
 		History:     history,
 		Instruction: instruction,
 	}
 	stream := inst.agent.Run(ctx, invocation)
-	var response string
+	var sb strings.Builder
 	for msg, err := range stream {
 		if err != nil {
-			return response, err
+			return sb.String(), err
 		}
 		if msg != nil {
-			response += msg.Text()
+			sb.WriteString(msg.Text())
 		}
 	}
-	return response, nil
+	return sb.String(), nil
 }
 
-// ChatStream 流式聊天
-func (inst *AgentInstance) ChatStream(ctx context.Context, message string, enableRAG bool, history []*blades.Message, instruction *blades.Message, chunkCb func(string, bool)) error {
-	if enableRAG && inst.rag != nil && inst.rag.ShouldRetrieve(message) {
-		contextStr, err := inst.rag.Retrieve(ctx, inst.knowledgeTag, message, 0)
-		if err == nil && contextStr != "" {
-			message = contextStr + "\n\n用户问题：" + message
-		}
-	}
+// ChatStream 流式聊天。RAG 上下文由调用方通过 instruction 传入，不再在此处拼接。
+func (inst *AgentInstance) ChatStream(ctx context.Context, message string, instruction *blades.Message, history []*blades.Message, chunkCb func(string, bool)) error {
 	invocation := &blades.Invocation{
 		Message:     blades.UserMessage(message),
 		Streamable:  true,
@@ -81,15 +79,15 @@ func (inst *AgentInstance) ChatStream(ctx context.Context, message string, enabl
 		Instruction: instruction,
 	}
 	stream := inst.agent.Run(ctx, invocation)
-	var fullResponse string
+	var sb strings.Builder
 	for msg, err := range stream {
 		if err != nil {
-			chunkCb(fullResponse, true)
+			chunkCb(sb.String(), true)
 			return err
 		}
 		if msg != nil {
 			chunk := msg.Text()
-			fullResponse += chunk
+			sb.WriteString(chunk)
 			chunkCb(chunk, false)
 		}
 	}
@@ -128,7 +126,7 @@ func NewAgentFactory(cfg *BladesConfig, rag *RAGEngine, reg *ToolRegistry, rc us
 	}
 }
 
-// GetOrCreate 获取或创建 Agent 实例（按 source+role 缓存，3分钟 TTL）
+// GetOrCreate 获取或创建 Agent 实例（按 source+role 缓存，15 分钟 TTL）
 func (f *AgentFactory) GetOrCreate(ctx context.Context, source, role string) (*AgentInstance, error) {
 	cacheKey := source + ":" + role
 	f.mu.RLock()
@@ -219,6 +217,8 @@ func (f *AgentFactory) getAllowedTools(ctx context.Context, source, role string)
 	// 查角色的模块权限
 	resp, err := f.roleClient.GetRolePermissions(ctx, &userRpc.GetRolePermissionsRequest{Role: role})
 	if err != nil || resp == nil {
+		// 权限查询失败时降级为通用工具，并记录告警日志便于排查
+		log.NewHelper(f.logger).Warnf("get role permissions failed (role=%s): %v, falling back to common tools only", role, err)
 		return common
 	}
 
@@ -231,15 +231,15 @@ func (f *AgentFactory) getAllowedTools(ctx context.Context, source, role string)
 	}
 
 	// 检查每个工具有无对应模块权限
-	var tools_ []string
+	var allowedToolNames []string
 	for name, perm := range toolModulePerms {
 		if actions, ok := modPerms[perm.module]; ok {
 			if actions[perm.action] {
-				tools_ = append(tools_, name)
+				allowedToolNames = append(allowedToolNames, name)
 			}
 		}
 	}
-	return append(common, tools_...)
+	return append(common, allowedToolNames...)
 }
 
 func (f *AgentFactory) getSourceConfig(source string) (prompt, knowledgeTag string) {
@@ -250,7 +250,14 @@ func (f *AgentFactory) getSourceConfig(source string) (prompt, knowledgeTag stri
 
 你是商城管理助手。你可以使用工具查询订单、商品、用户等数据。
 
-当用户询问数据（如"有多少商品"、"昨天订单多少"、"总用户数"）时，你必须使用工具来获取实时数据，不要编造答案。
+当用户询问数据（如"有多少商品"、"昨天订单多少"、"总用户数"、"今天生意怎么样"）时，你必须使用工具来获取实时数据，不要编造答案。
+
+常用数据查询：
+1. "今天订单/待处理/营收" → 使用 query_order_stats
+2. "运营概览/店铺数据" → 使用 query_dashboard_stats
+3. "总用户/新增/活跃" → 使用 query_user_stats
+4. "优惠券/发放记录" → 使用 query_coupons、query_coupon_stats、query_coupon_records
+5. "分类结构" → 使用 query_categories
 
 用户可能会告诉你他们的偏好（如昵称、称呼方式等），当用户设置偏好时，请使用 save_user_preference 工具保存。
 
@@ -282,11 +289,57 @@ func (f *AgentFactory) getSourceConfig(source string) (prompt, knowledgeTag stri
 	}
 }
 
-// formatRules 统一的输出格式规范，拼接在各场景提示词之后，保证 AI 回复结构清晰、易于阅读
+// formatRules 统一的输出格式规范，拼接在各场景提示词之后，保证 AI 回复结构清晰、层次感强
 const formatRules = `
-输出格式要求（必须遵守）：
-1. 使用 Markdown 结构化输出：重点小节用 ## 标题，要点用 - 或 1. 列表，强调用 **加粗**
-2. 查询类结果（订单、商品、用户等数据）优先用 Markdown 表格展示。表格语法：每行以 | 开头和结尾，列之间用 | 分隔，表头下方必须有一行 |---|---| 分隔行，表头用中文，列数不超过 5 列。严禁使用 Tab 制表符或空格分隔的文本表格
-3. 先直接给出结论，再补充细节；不要客套寒暄，结尾不要写"还有什么可以帮您"之类的套话
-4. 内容分点表述，每点尽量一句话；避免一大段文字堆砌
-5. 整个回答不要用代码块包裹，除非是给用户的命令示例`
+输出格式规范（严格遵守，层次分明）：
+
+【结构层级】
+- ## 用于主标题（如"运营概览"、"优惠券统计"）
+- ### 用于分区子标题（如"核心指标"、"明细列表"）
+- 正文用段落或列表，关键数据用 **加粗** 标注
+
+【示例1 - 数据概览类】
+## 今日运营概览
+
+### 核心指标
+| 指标 | 数值 | 变化 |
+|---|---|---|
+| 订单数 | 128 单 | ↑ 12% |
+| 营收 | ￥3,680 | ↑ 8% |
+
+### 重点关注
+- 热销商品：**iPhone 17 Pro Max**（4 单）
+- 待处理订单：**5 单**（超时 2 单）
+
+【示例2 - 列表详情类】
+## 用户管理
+
+### 用户统计
+- 总用户数：**520** 人
+- 本月新增：**38** 人
+- 活跃用户：**210** 人
+
+### 用户详情
+| 昵称 | 手机 | 会员等级 | 消费总额 |
+|---|---|---|---|
+| 张三 | 138****1234 | VIP2 | ￥1,280 |
+
+【示例3 - 说明/规则类】
+## 优惠券规则
+
+### 领取条件
+- 新人注册自动发放
+- 满 100 元可用券自动触发
+
+### 使用规则
+- 每笔订单限用 **1 张** 优惠券
+- 优惠券 **不可提现、不可叠加**
+- 有效期以券面说明为准
+
+【核心规则】
+1. 主标题(##) → 子标题(###) → 正文 的层级结构
+2. 关键数据、数字、强调内容用 **加粗**
+3. 每个区块之间留一个空行
+4. 先给总结性结论，再分区块展开细节
+5. 不要客套寒暄，结尾不要写"还有什么可以帮您"
+6. 整个回答不要用代码块包裹`

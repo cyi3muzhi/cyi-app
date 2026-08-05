@@ -99,11 +99,9 @@ func registerAgentSSEServer(s *kratosHttp.Server, adminService *service.AdminSer
 
 		// 使用 ChatSSEHandler 处理流式聊天
 		_, err = adminService.ChatSSEHandler(r.Context(), req.Message, adminID, func(data []byte) {
-			// 过滤空白 chunk
-			var chunkData struct {
-				Chunk string `json:"chunk"`
-			}
-			if json.Unmarshal(data, &chunkData) == nil && strings.TrimSpace(chunkData.Chunk) == "" {
+			// 只过滤真正空的 chunk（nil 或空字节），保留换行符等空白字符
+			// 因为 Markdown 格式依赖空行（\n\n）来分隔标题、表格等元素
+			if len(data) == 0 {
 				return
 			}
 			fmt.Fprintf(w, "event: chunk\ndata: %s\n\n", data)

@@ -53,19 +53,11 @@ func (vs *VectorStore) CreateIndex(ctx context.Context) error {
 	return err
 }
 
-// Store 存储文档块
+// Store 存储文档块（支持部分失败回滚）
 func (vs *VectorStore) Store(ctx context.Context, doc *biz.KnowledgeDoc) error {
 	key := fmt.Sprintf("kb:%s:%d", doc.DocID, doc.ChunkIdx)
 
-	vecBytes := make([]byte, len(doc.Embedding)*4)
-	for i, v := range doc.Embedding {
-		bits := math.Float32bits(v)
-		vecBytes[i*4] = byte(bits)
-		vecBytes[i*4+1] = byte(bits >> 8)
-		vecBytes[i*4+2] = byte(bits >> 16)
-		vecBytes[i*4+3] = byte(bits >> 24)
-	}
-
+	vecBytes := float32ToBytes(doc.Embedding)
 	tagsJSON, _ := json.Marshal(doc.Tags)
 
 	_, err := vs.client.HSet(ctx, key, map[string]interface{}{
@@ -80,16 +72,129 @@ func (vs *VectorStore) Store(ctx context.Context, doc *biz.KnowledgeDoc) error {
 	return err
 }
 
-// Search 向量搜索
-// 使用 SCAN + HGETALL 遍历所有文档块，在 Go 端计算余弦相似度，避免 FT.SEARCH 返回格式兼容问题
+// StoreBatch 批量存储文档块（部分失败时回滚已写入的 chunk）
+func (vs *VectorStore) StoreBatch(ctx context.Context, docs []*biz.KnowledgeDoc) error {
+	writtenKeys := make([]string, 0, len(docs))
+	for _, doc := range docs {
+		key := fmt.Sprintf("kb:%s:%d", doc.DocID, doc.ChunkIdx)
+		if err := vs.Store(ctx, doc); err != nil {
+			// 回滚已写入的 chunk，避免残留不完整索引
+			for _, k := range writtenKeys {
+				vs.client.Del(ctx, k)
+			}
+			return fmt.Errorf("store chunk %s failed (rolled back %d chunks): %w", key, len(writtenKeys), err)
+		}
+		writtenKeys = append(writtenKeys, key)
+	}
+	return nil
+}
+
+// Search 向量搜索（优先使用 FT.SEARCH KNN，失败时回退到 SCAN）
 func (vs *VectorStore) Search(ctx context.Context, source string, queryVec []float32, topK int) ([]*biz.SearchResult, error) {
+	if topK <= 0 {
+		topK = 5
+	}
+
+	// 优先使用 FT.SEARCH KNN（利用索引，性能好）
+	results, err := vs.searchByFT(ctx, source, queryVec, topK)
+	if err == nil && len(results) > 0 {
+		return results, nil
+	}
+
+	// FT.SEARCH 失败或无结果时回退到 SCAN 方式
+	return vs.searchByScan(ctx, source, queryVec, topK)
+}
+
+// searchByFT 使用 FT.SEARCH KNN 进行向量检索
+func (vs *VectorStore) searchByFT(ctx context.Context, source string, queryVec []float32, topK int) ([]*biz.SearchResult, error) {
+	vecBytes := float32ToBytes(queryVec)
+
+	// 构建 KNN 查询：*=>[KNN $K @embedding $BLOB] 或带 source 过滤
+	var query string
+	if source != "" {
+		query = fmt.Sprintf("@source:{%s|public}=>[KNN $K @embedding $BLOB]", source)
+	} else {
+		query = "*=>[KNN $K @embedding $BLOB]"
+	}
+
+	args := []interface{}{
+		"FT.SEARCH", vs.indexName,
+		query,
+		"RETURN", "6", "doc_id", "title", "content", "source", "tags", "__embedding_score",
+		"LIMIT", "0", strconv.Itoa(topK),
+		"DIALECT", "2",
+		"PARAMS", "4", "K", strconv.Itoa(topK), "BLOB", vecBytes,
+	}
+
+	result, err := vs.client.Do(ctx, args...).Result()
+	if err != nil {
+		return nil, fmt.Errorf("FT.SEARCH failed: %w", err)
+	}
+
+	return parseFTSearchResult(result)
+}
+
+// parseFTSearchResult 解析 FT.SEARCH 的返回结果
+// 格式：[total, key1, fields1[], key2, fields2[], ...]
+func parseFTSearchResult(result interface{}) ([]*biz.SearchResult, error) {
+	arr, ok := result.([]interface{})
+	if !ok || len(arr) < 2 {
+		return nil, nil
+	}
+
+	// arr[0] 是总数（int64），后面是 [key, fields, key, fields, ...]
+	results := make([]*biz.SearchResult, 0)
+	for i := 1; i+1 < len(arr); i += 2 {
+		// key（string）
+		_, ok := arr[i].(string)
+		if !ok {
+			continue
+		}
+		// fields：[]interface{}{field1, value1, field2, value2, ...}
+		fields, ok := arr[i+1].([]interface{})
+		if !ok {
+			continue
+		}
+
+		fieldMap := make(map[string]string, len(fields)/2)
+		for j := 0; j+1 < len(fields); j += 2 {
+			fname, _ := fields[j].(string)
+			fval, _ := fields[j+1].(string)
+			fieldMap[fname] = fval
+		}
+
+		tags := make(map[string]string)
+		if tagsStr := fieldMap["tags"]; tagsStr != "" && tagsStr != "null" {
+			json.Unmarshal([]byte(tagsStr), &tags)
+		}
+
+		var score float64
+		if scoreStr := fieldMap["__embedding_score"]; scoreStr != "" {
+			if v, err := strconv.ParseFloat(scoreStr, 64); err == nil {
+				score = v
+			}
+		}
+
+		results = append(results, &biz.SearchResult{
+			DocID:   fieldMap["doc_id"],
+			Title:   fieldMap["title"],
+			Content: fieldMap["content"],
+			Source:  fieldMap["source"],
+			Score:   score,
+			Tags:    tags,
+		})
+	}
+	return results, nil
+}
+
+// searchByScan 使用 SCAN + HGETALL 方式进行向量检索（fallback）
+func (vs *VectorStore) searchByScan(ctx context.Context, source string, queryVec []float32, topK int) ([]*biz.SearchResult, error) {
 	type candidate struct {
 		sr    *biz.SearchResult
 		score float64
 	}
 	candidates := make([]candidate, 0)
 
-	// 遍历所有 kb: 前缀的 key
 	iter := vs.client.Scan(ctx, 0, "kb:*", 200).Iterator()
 	for iter.Next(ctx) {
 		key := iter.Val()
@@ -100,29 +205,24 @@ func (vs *VectorStore) Search(ctx context.Context, source string, queryVec []flo
 		}
 
 		docSource := fields["source"]
-		// source 过滤：匹配指定 source 或 public
 		if source != "" && docSource != source && docSource != "public" {
 			continue
 		}
 
-		// 读取存储的 embedding（二进制字符串）
 		embStr := fields["embedding"]
 		if embStr == "" {
 			continue
 		}
 
-		// 将二进制数据还原为 float32 向量
 		docVec := bytesToFloat32([]byte(embStr))
 		if len(docVec) != len(queryVec) {
 			continue
 		}
 
-		// 计算余弦相似度
 		score := cosineSimilarity(queryVec, docVec)
 
 		tags := make(map[string]string)
-		tagsStr := fields["tags"]
-		if tagsStr != "" && tagsStr != "null" {
+		if tagsStr := fields["tags"]; tagsStr != "" && tagsStr != "null" {
 			json.Unmarshal([]byte(tagsStr), &tags)
 		}
 
@@ -143,12 +243,10 @@ func (vs *VectorStore) Search(ctx context.Context, source string, queryVec []flo
 		return nil, fmt.Errorf("scan for search failed: %w", err)
 	}
 
-	// 按相似度降序排序
 	sort.Slice(candidates, func(i, j int) bool {
 		return candidates[i].score > candidates[j].score
 	})
 
-	// 取 Top-K
 	if topK > len(candidates) {
 		topK = len(candidates)
 	}
@@ -157,6 +255,19 @@ func (vs *VectorStore) Search(ctx context.Context, source string, queryVec []flo
 		results = append(results, candidates[i].sr)
 	}
 	return results, nil
+}
+
+// float32ToBytes 将 float32 切片转为小端字节序列
+func float32ToBytes(vec []float32) []byte {
+	buf := make([]byte, len(vec)*4)
+	for i, v := range vec {
+		bits := math.Float32bits(v)
+		buf[i*4] = byte(bits)
+		buf[i*4+1] = byte(bits >> 8)
+		buf[i*4+2] = byte(bits >> 16)
+		buf[i*4+3] = byte(bits >> 24)
+	}
+	return buf
 }
 
 // bytesToFloat32 将小端字节序列还原为 float32 切片
@@ -198,18 +309,14 @@ func (vs *VectorStore) DeleteDoc(ctx context.Context, docID string, source strin
 }
 
 // ListDocuments 列出所有知识文档
-// 使用 SCAN + HGETALL 方式遍历 kb: 前缀的 key，避免 FT.SEARCH 返回格式兼容问题
 func (vs *VectorStore) ListDocuments(ctx context.Context, source string) ([]*biz.DocInfo, error) {
-	// 按 doc_id 去重，统计 chunk 数量
 	docMap := make(map[string]*biz.DocInfo)
 	chunkCount := make(map[string]int)
 
-	// 使用 SCAN 遍历所有 kb: 前缀的 key
 	iter := vs.client.Scan(ctx, 0, "kb:*", 200).Iterator()
 	for iter.Next(ctx) {
 		key := iter.Val()
 
-		// 用 HGETALL 获取该文档块的所有字段
 		fields, err := vs.client.HGetAll(ctx, key).Result()
 		if err != nil {
 			continue
@@ -221,15 +328,13 @@ func (vs *VectorStore) ListDocuments(ctx context.Context, source string) ([]*biz
 		}
 
 		docSource := fields["source"]
-		// 如果指定了 source 过滤，跳过不匹配的
 		if source != "" && docSource != source {
 			continue
 		}
 
 		if _, exists := docMap[docID]; !exists {
 			tags := make(map[string]string)
-			tagsStr := fields["tags"]
-			if tagsStr != "" && tagsStr != "null" {
+			if tagsStr := fields["tags"]; tagsStr != "" && tagsStr != "null" {
 				json.Unmarshal([]byte(tagsStr), &tags)
 			}
 			docMap[docID] = &biz.DocInfo{
@@ -247,110 +352,10 @@ func (vs *VectorStore) ListDocuments(ctx context.Context, source string) ([]*biz
 		return nil, fmt.Errorf("scan documents failed: %w", err)
 	}
 
-	// 转换为列表
 	docs := make([]*biz.DocInfo, 0, len(docMap))
 	for docID, info := range docMap {
 		info.ChunkCount = chunkCount[docID]
 		docs = append(docs, info)
 	}
 	return docs, nil
-}
-
-// parseFTSearchResult 解析 FT.SEARCH 的返回结果
-// 兼容 go-redis v9 多种返回格式：[]interface{} 或 map[interface{}]interface{}
-func parseFTSearchResult(result interface{}) []map[string]interface{} {
-	entries := make([]map[string]interface{}, 0)
-
-	switch v := result.(type) {
-	case []interface{}:
-		// 标准格式：[total, key1, fields1[], key2, fields2[], ...]
-		if len(v) < 2 {
-			return nil
-		}
-		// v[0] 是总数（int64），后面是 [key, fields, key, fields, ...]
-		i := 1
-		for i < len(v) {
-			// key（string 类型）
-			if _, ok := v[i].(string); !ok {
-				i++
-				continue
-			}
-			i++
-			if i >= len(v) {
-				break
-			}
-			// fields：可能是 []interface{} 或 map[interface{}]interface{}
-			entry := convertToFieldMap(v[i])
-			if entry != nil {
-				entries = append(entries, entry)
-			}
-			i++
-		}
-
-	case map[interface{}]interface{}:
-		// go-redis v9 某些版本返回 map 格式
-		// 递归遍历，提取所有嵌套的文档字段
-		extractEntriesFromMap(v, &entries)
-
-	default:
-		// 尝试递归遍历未知类型
-		fmt.Printf("[DEBUG parseFTSearchResult] unknown type: %T\n", result)
-	}
-
-	return entries
-}
-
-// convertToFieldMap 将字段数据（[]interface{} 或 map[interface{}]interface{}）转为 map[string]interface{}
-func convertToFieldMap(data interface{}) map[string]interface{} {
-	entry := make(map[string]interface{})
-
-	switch v := data.(type) {
-	case []interface{}:
-		// [field1, value1, field2, value2, ...]
-		for j := 0; j < len(v)-1; j += 2 {
-			fname, _ := v[j].(string)
-			entry[fname] = v[j+1]
-		}
-	case map[interface{}]interface{}:
-		for k, val := range v {
-			keyStr, _ := k.(string)
-			entry[keyStr] = val
-		}
-	default:
-		return nil
-	}
-
-	if len(entry) == 0 {
-		return nil
-	}
-	return entry
-}
-
-// extractEntriesFromMap 递归从 map 中提取文档字段
-func extractEntriesFromMap(m map[interface{}]interface{}, entries *[]map[string]interface{}) {
-	for _, val := range m {
-		switch v := val.(type) {
-		case map[interface{}]interface{}:
-			// 检查是否是文档字段（包含 doc_id 或 title 等）
-			entry := make(map[string]interface{})
-			for k, fv := range v {
-				keyStr, _ := k.(string)
-				entry[keyStr] = fv
-			}
-			if _, ok := entry["doc_id"]; ok {
-				*entries = append(*entries, entry)
-			} else {
-				// 递归查找
-				extractEntriesFromMap(v, entries)
-			}
-		case []interface{}:
-			// 可能是 [field, value, ...] 格式
-			entry := convertToFieldMap(v)
-			if entry != nil {
-				if _, ok := entry["doc_id"]; ok {
-					*entries = append(*entries, entry)
-				}
-			}
-		}
-	}
 }

@@ -13,7 +13,7 @@ import (
 )
 
 // RegisterStockTools 注册库存查询工具
-// pc 用于后备查询 SKU 的默认库存
+// sc 用于查询 SKU 实时库存，pc 用于后备查询 SKU 的默认库存
 func RegisterStockTools(r *ToolRegistry, sc productRpc.StockClient, pc productRpc.ProductClient) {
 	t1, _ := tools.NewFunc("query_stock", "查询指定 SKU 的库存信息（总库存、可用库存、预留库存）。当用户问库存、有没有货、还剩多少时使用此工具",
 		func(ctx context.Context, input struct {
@@ -23,15 +23,21 @@ func RegisterStockTools(r *ToolRegistry, sc productRpc.StockClient, pc productRp
 				SkuId: input.SkuID,
 			})
 			if err == nil {
-				return fmt.Sprintf("SKU %d 库存信息：\n总库存：%d\n可用库存：%d\n预留库存：%d",
-					input.SkuID, reply.Total, reply.Available, reply.Reserved), nil
+				var sb strings.Builder
+				sb.WriteString(fmt.Sprintf("SKU %d 库存信息：\n\n", input.SkuID))
+				sb.WriteString("| 库存类型 | 数量 |\n")
+				sb.WriteString("|---|---|\n")
+				sb.WriteString(fmt.Sprintf("| 总库存 | %d |\n", reply.Total))
+				sb.WriteString(fmt.Sprintf("| 可用库存 | %d |\n", reply.Available))
+				sb.WriteString(fmt.Sprintf("| 预留库存 | %d |\n", reply.Reserved))
+				return sb.String(), nil
 			}
 
 			// 记录不存在时，从商品详情获取 SKU 的默认库存作为后备
 			if isNotFoundError(err) {
 				skuStock := getSkuStockFromProduct(ctx, pc, input.SkuID)
-				return fmt.Sprintf("SKU %d 暂无独立库存记录，SKU 默认库存：%d（请联系管理员初始化库存），错误详情：%v",
-					input.SkuID, skuStock, err), nil
+				return fmt.Sprintf("SKU %d 暂无独立库存记录，SKU 默认库存：%d（请联系管理员初始化库存）",
+					input.SkuID, skuStock), nil
 			}
 
 			// 其他错误（网络、超时等）返回错误
@@ -56,6 +62,5 @@ func getSkuStockFromProduct(ctx context.Context, pc productRpc.ProductClient, sk
 	if pc == nil {
 		return 0
 	}
-	// 通过商品 ID 查询不现实（不知道商品 ID），这里返回 0 让调用者知道未初始化
 	return 0
 }
