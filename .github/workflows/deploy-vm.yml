@@ -294,6 +294,7 @@ jobs:
       - name: Package all artifacts
         run: |
           mkdir -p /tmp/deploy-artifacts
+          mkdir -p /tmp/deploy-artifacts/docker-compose
           found=0
           for f in /tmp/*.tar.gz; do
             if [ -f "$f" ]; then
@@ -301,15 +302,21 @@ jobs:
               found=1
             fi
           done
-          # 如果没有任何 tar.gz（比如只改了 nginx 配置，没有构建任何服务）
-          # 放一个占位文件，保证 artifact 至少有一个文件（否则 upload-artifact@v4 会报错：artifact not found）
+          # 把 docker-compose 配置文件也加入 artifact，确保 VM 上的配置与代码仓库同步
+          if [ -d "deploy/docker-compose" ]; then
+            cp -r deploy/docker-compose/*.yml /tmp/deploy-artifacts/docker-compose/ 2>/dev/null || true
+            cp -r deploy/docker-compose/prometheus /tmp/deploy-artifacts/docker-compose/ 2>/dev/null || true
+            echo "✅ docker-compose 配置已加入 artifact"
+            found=1
+          fi
+          # 如果没有任何文件（极端情况），放一个占位文件
           if [ "$found" -eq 0 ]; then
             echo "⚠️  没有检测到需要构建的服务，只修改了配置文件"
             echo "placeholder" > /tmp/deploy-artifacts/.placeholder
             echo "deploy_mode=config-only" > /tmp/deploy-artifacts/.deploy_mode
           fi
           echo "产物清单:"
-          ls -lh /tmp/deploy-artifacts/
+          ls -lhR /tmp/deploy-artifacts/
           echo ""
           du -sh /tmp/deploy-artifacts/
 
@@ -341,8 +348,8 @@ jobs:
           ls -lh /tmp/deploy-artifacts/
           du -sh /tmp/deploy-artifacts/
 
-      # ---------- 检查/初始化部署目录（配置已在虚拟机上，artifact 不传配置）----------
-      - name: Ensure deploy directories
+      # ---------- 检查/初始化部署目录 + 同步 docker-compose 配置 ----------
+      - name: Ensure deploy directories and sync config
         run: |
           DEPLOY_DIR="$HOME/cyi-app/deploy"
           mkdir -p "$DEPLOY_DIR/docker-compose" "$DEPLOY_DIR/nginx"
@@ -351,6 +358,29 @@ jobs:
           if [ ! -f "$DEPLOY_DIR/docker-compose/.env" ]; then
             echo "创建默认 .env..."
             printf 'INTERFACE_HTTP_PORT=8010\nINTERFACE_GRPC_PORT=9010\nTASK_PORT=10100\nUSER_GRPC_PORT=9100\nORDER_GRPC_PORT=9101\nPRODUCT_GRPC_PORT=9102\nMARKETING_GRPC_PORT=9103\nBLADES_HTTP_PORT=30800\nBLADES_GRPC_PORT=30900\nADMIN_HTTP_PORT=8080\nADMIN_GRPC_PORT=9091\nNGINX_HTTP_PORT=80\nCONSUL_PORT=8500\nREDIS_PORT=6379\nMYSQL_PORT=3306\nJAEGER_UI_PORT=16686\nJAEGER_HTTP_PORT=14268\nJAEGER_GRPC_PORT=14250\nJAEGER_THRIFT_BINARY_PORT=6831\nJAEGER_THRIFT_COMPACT_PORT=6832\nJAEGER_OTLP_GRPC_PORT=4318\nJAEGER_OTLP_HTTP_PORT=4317\nRUSTFS_WEB_PORT=9000\nRUSTFS_API_PORT=9001\nELASTICSEARCH_PORT=9200\nELASTICSEARCH_TRANSPORT_PORT=9300\nLOGSTASH_BEATS_PORT=5044\nLOGSTASH_API_PORT=9600\nKIBANA_PORT=5601\nPROMETHEUS_PORT=9090\nGRAFANA_PORT=3000\nNATS_PORT=4222\nNATS_HTTP_PORT=8222\n' > "$DEPLOY_DIR/docker-compose/.env"
+          fi
+
+          # 同步 artifact 中的 docker-compose 配置文件到部署目录
+          # 注意：不覆盖 .env 文件（保留 VM 上的本地配置）
+          ARTIFACT_COMPOSE="/tmp/deploy-artifacts/docker-compose"
+          TARGET_COMPOSE="$DEPLOY_DIR/docker-compose"
+          if [ -d "$ARTIFACT_COMPOSE" ]; then
+            echo "🔄 同步 docker-compose 配置文件..."
+            # 复制所有 yml 文件
+            for f in "$ARTIFACT_COMPOSE"/*.yml; do
+              if [ -f "$f" ]; then
+                cp -f "$f" "$TARGET_COMPOSE/"
+                echo "  ✅ 已同步: $(basename $f)"
+              fi
+            done
+            # 同步 prometheus 子目录
+            if [ -d "$ARTIFACT_COMPOSE/prometheus" ]; then
+              mkdir -p "$TARGET_COMPOSE/prometheus"
+              cp -rf "$ARTIFACT_COMPOSE/prometheus/"* "$TARGET_COMPOSE/prometheus/" 2>/dev/null || true
+              echo "  ✅ 已同步 prometheus 配置"
+            fi
+          else
+            echo "⚠️  artifact 中没有 docker-compose 配置，使用 VM 上已有配置"
           fi
           
           echo "部署目录就绪: $DEPLOY_DIR"
