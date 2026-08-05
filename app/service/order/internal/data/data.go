@@ -24,6 +24,7 @@ import (
 // ProviderSet is data providers.
 var ProviderSet = wire.NewSet(
 	NewOrderRepo,
+	NewRefundRepo,
 	NewProductRepo,
 	NewStockRepo,
 	NewData,
@@ -91,7 +92,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 	// 仅在非生产环境自动迁移表结构（生产环境禁止使用 AutoMigrate）
 	env := os.Getenv("SERVICE_ENV")
 	if env != "production" {
-		if err := db.AutoMigrate(&mod.Order{}, &mod.OrderItem{}, &mod.OrderLogistics{}, &mod.PaymentLog{}); err != nil {
+		if err := db.AutoMigrate(&mod.Order{}, &mod.OrderItem{}, &mod.OrderLogistics{}, &mod.PaymentLog{}, &mod.OrderRefund{}); err != nil {
 			panic(err)
 		}
 		// 订单超时扫描复合索引：(status, create_time) 加速 task 服务 cron 兜底扫描
@@ -120,6 +121,7 @@ func generateCode(db *gorm.DB) {
 		&mod.OrderItem{},
 		&mod.OrderLogistics{},
 		&mod.PaymentLog{},
+		&mod.OrderRefund{},
 	)
 	g.ApplyInterface(func(mod.IOrder) {},
 		mod.Order{},
@@ -132,6 +134,9 @@ func generateCode(db *gorm.DB) {
 	)
 	g.ApplyInterface(func(mod.IPaymentLog) {},
 		mod.PaymentLog{},
+	)
+	g.ApplyInterface(func(mod.IOrderRefund) {},
+		mod.OrderRefund{},
 	)
 	g.Execute()
 }

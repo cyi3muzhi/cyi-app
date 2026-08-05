@@ -71,3 +71,26 @@ export function cartCheckout(data: {
 }) {
   return request.post<any, { orderId: number }>('/order/v1/cart_checkout', data)
 }
+
+/** 退款记录项结构 */
+export interface RefundItemDTO {
+  refundId: number // 退款单ID
+  orderId: number // 订单ID
+  orderNo: string // 订单号
+  refundAmount: number // 退款金额（单位：分）
+  reason: string // 退款原因
+  status: number // 状态: 1-待审核 2-已通过 3-已拒绝
+  statusText: string // 状态文本
+  rejectReason: string // 拒绝原因
+  createdAt: string // 申请时间（格式化字符串）
+}
+
+/** 申请退款（仅已支付/待发货订单可申请） */
+export function applyRefund(orderId: number, reason: string) {
+  return request.post<any, { refundId: number }>('/order/v1/refund/apply', { orderId, reason })
+}
+
+/** 我的退款记录 */
+export function getRefunds(params: { page?: number; pageSize?: number; status?: string }) {
+  return request.get<any, { items: RefundItemDTO[]; total: number }>('/order/v1/refunds', { params })
+}

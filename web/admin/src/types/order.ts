@@ -94,3 +94,34 @@ export interface OrderStatsResponse {
   todayCount: number    // 今日订单数
   refundCount: number   // 退款/售后数（退款中+已退款）
 }
+
+/** 退款单列表查询参数 */
+export interface RefundListParams {
+  page?: number
+  page_size?: number
+  status?: string       // 状态筛选: 1-待审核 2-已通过 3-已拒绝
+  keyword?: string      // 订单号搜索
+}
+
+/** 退款单列表项 */
+export interface RefundItem {
+  refundId: number      // 退款单ID
+  orderId: number       // 订单ID
+  orderNo: string       // 订单号
+  userId: number        // 用户ID
+  userName: string      // 用户名
+  refundAmount: number  // 退款金额（分）
+  reason: string        // 退款原因
+  status: number        // 状态: 1-待审核 2-已通过 3-已拒绝
+  statusText: string    // 状态文本
+  rejectReason: string  // 拒绝原因
+  auditor: string       // 审核人
+  createdAt: string     // 申请时间
+  originStatus: number  // 申请前的订单状态
+}
+
+/** 退款单列表响应 */
+export interface RefundListResponse {
+  items: RefundItem[]
+  total: number
+}

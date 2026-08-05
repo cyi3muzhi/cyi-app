@@ -31,6 +31,7 @@ app/service/order/
 │   │   ├── order_async.go               # OrderTimeoutTaskRepo 接口（投递超时取消延迟任务）
 │   │   ├── order_item.go                # 订单行项目实体
 │   │   ├── order_value.go               # Money 值对象
+│   │   ├── refund.go                    # RefundUseCase 退款用例（申请/审核/列表）
 │   │   ├── order_status.go              # 订单状态接口、基类、工厂、Order 委托方法
 │   │   ├── wait_pay_status.go           # 待支付状态处理器
 │   │   ├── pay_status.go                # 已支付/待发货状态处理器
@@ -50,6 +51,7 @@ app/service/order/
 │   │   ├── asynq.go         # asynq 客户端 + 订单超时任务投递（延迟队列）
 │   │   ├── client_conn.go   # 商品/库存服务 gRPC 客户端连接
 │   │   ├── order.go         # 订单数据访问
+│   │   ├── refund.go        # 退款单数据访问
 │   │   ├── product.go       # 商品仓储实现（远程调用商品服务）
 │   │   ├── stock_nats.go    # 库存仓储实现（远程调用商品服务，NATS 事件广播库存变更）
 │   │   ├── curd/
@@ -57,12 +59,14 @@ app/service/order/
 │   │   │   ├── order.gen.go     # 订单 CURD
 │   │   │   ├── order_item.gen.go # 订单项 CURD
 │   │   │   ├── order_logistics.gen.go # 物流 CURD
-│   │   │   └── payment_log.gen.go    # 支付日志 CURD
+│   │   │   ├── payment_log.gen.go    # 支付日志 CURD
+│   │   │   └── order_refund.gen.go   # 退款单 CURD
 │   │   └── models/
 │   │       ├── order.go         # 订单模型
 │   │       ├── order_item.go    # 订单项模型
 │   │       ├── logistics.go     # 物流模型
-│   │       └── payment_log.go   # 支付日志模型
+│   │       ├── payment_log.go   # 支付日志模型
+│   │       └── order_refund.go  # 退款单模型
 │   ├── server/
 │   │   ├── server.go       # 服务器配置（Consul 注册/发现、gRPC/HTTP 服务器）
 │   │   └── grpc.go         # gRPC 服务注册
@@ -119,6 +123,7 @@ app/service/order/
 | UseCase | 职责 |
 |---------|------|
 | `OrderUseCase` | 订单管理（创建、查询、更新、支付、发货），含商品校验、库存校验、预留库存、扣减库存、物流信息写入；下单成功后投递 30 分钟超时自动取消延迟任务（Asynq）；支付幂等 + 失败补偿库存 + 写支付流水；取消自动返还优惠券 |
+| `RefundUseCase` | 退款售后（仅退款）：用户申请退款（仅已支付/待发货订单）→ 订单进入退款中并生成退款单；管理端审核通过 → 退款完成并恢复库存；审核拒绝 → 订单恢复申请前状态；退款单列表查询（管理端全量/用户端按用户过滤） |
 | `OrderTimeoutTaskRepo` | 订单超时任务投递仓库（data 层基于 asynq 延迟队列实现：`ProcessIn(30min)` + 固定 TaskID 去重） |
 
 > 待付款订单超时自动取消链路：**订单服务**下单成功 → 投递 `delay:order_timeout_cancel` 延迟任务（30 分钟，固定 TaskID `order_timeout:{orderId}`）→ **task 服务**消费时通过 `GetOrder` 校验状态，仍为待付款才调 `CancelOrder`（userID=0 系统操作）自动取消，已支付/已取消等状态幂等跳过。共享类型定义于 `pkg/ordertask`。
@@ -142,6 +147,9 @@ app/service/order/
 | `ReceiveOrder` | gRPC | 确认收货（用户端调用：已发货/待收货→已完成，校验订单归属） |
 | `CancelOrder` | gRPC | 取消订单（用户端/管理端调用：待支付/已支付→已取消，含释放预留库存；userID>0 校验归属；若核销过优惠券自动返还） |
 | `ListOverdueWaitPayOrders` | gRPC | 查询超时未支付的待付款订单（task 服务 cron 兜底扫描用，status=1 且创建时间早于 now-timeoutSeconds，秒级下推过滤） |
+| `ApplyRefund` | gRPC | 申请退款（用户端调用：仅已支付/待发货订单→退款中，并生成退款单；校验订单归属） |
+| `ListRefund` | gRPC | 退款单列表（管理端全量/用户端按 user_id 过滤，支持状态筛选、订单号搜索） |
+| `AuditRefund` | gRPC | 审核退款（管理端调用：通过→退款完成并恢复库存；拒绝→订单恢复申请前状态，记录拒绝原因与审核人） |
 
 ### 订单状态机
 
@@ -211,11 +219,14 @@ OrderStatus (接口)
            Cancel  ←  ─ ─ ─ ─ ─ ─ ─ ─ ┘
 ```
 
-**退款流程**：
+**退款流程**（仅退款售后，用户申请 → 管理端审核）：
 
 ```
-Pay/Ship/Complete → Refunding → Refunded
+Pay/WaitShip → Refunding → Refunded        （审核通过：恢复库存，订单终态）
+              ↘ 审核拒绝 → 恢复申请前状态 Pay/WaitShip（订单继续等待发货）
 ```
+
+退款单记录于 `order_refund` 表（退款原因、申请前订单状态、审核结果、审核人），支持管理端全量查询与用户端按用户查询。
 
 #### 关键文件说明
 

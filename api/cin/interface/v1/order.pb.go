@@ -1051,6 +1051,327 @@ func (x *GetOrderReply) GetOrder() *OrderItem {
 	return nil
 }
 
+// 申请退款请求
+type ApplyRefundRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"` // 退款原因
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApplyRefundRequest) Reset() {
+	*x = ApplyRefundRequest{}
+	mi := &file_api_cin_interface_v1_order_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApplyRefundRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApplyRefundRequest) ProtoMessage() {}
+
+func (x *ApplyRefundRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_order_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApplyRefundRequest.ProtoReflect.Descriptor instead.
+func (*ApplyRefundRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_order_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ApplyRefundRequest) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+func (x *ApplyRefundRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+// 申请退款响应
+type ApplyRefundReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RefundId      int64                  `protobuf:"varint,1,opt,name=refund_id,json=refundId,proto3" json:"refund_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApplyRefundReply) Reset() {
+	*x = ApplyRefundReply{}
+	mi := &file_api_cin_interface_v1_order_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApplyRefundReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApplyRefundReply) ProtoMessage() {}
+
+func (x *ApplyRefundReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_order_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApplyRefundReply.ProtoReflect.Descriptor instead.
+func (*ApplyRefundReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_order_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *ApplyRefundReply) GetRefundId() int64 {
+	if x != nil {
+		return x.RefundId
+	}
+	return 0
+}
+
+// 我的退款记录请求
+type ListRefundRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"` // 按退款单状态筛选（1-待审核 2-已通过 3-已拒绝；空字符串表示全部）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListRefundRequest) Reset() {
+	*x = ListRefundRequest{}
+	mi := &file_api_cin_interface_v1_order_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListRefundRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRefundRequest) ProtoMessage() {}
+
+func (x *ListRefundRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_order_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRefundRequest.ProtoReflect.Descriptor instead.
+func (*ListRefundRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_order_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ListRefundRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListRefundRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListRefundRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+// 我的退款记录响应
+type ListRefundReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*RefundItem          `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListRefundReply) Reset() {
+	*x = ListRefundReply{}
+	mi := &file_api_cin_interface_v1_order_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListRefundReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRefundReply) ProtoMessage() {}
+
+func (x *ListRefundReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_order_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRefundReply.ProtoReflect.Descriptor instead.
+func (*ListRefundReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_order_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *ListRefundReply) GetItems() []*RefundItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *ListRefundReply) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+// 退款记录项
+type RefundItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RefundId      int64                  `protobuf:"varint,1,opt,name=refund_id,json=refundId,proto3" json:"refund_id,omitempty"`             // 退款单ID
+	OrderId       int64                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`                // 订单ID
+	OrderNo       string                 `protobuf:"bytes,3,opt,name=order_no,json=orderNo,proto3" json:"order_no,omitempty"`                 // 订单号
+	RefundAmount  int64                  `protobuf:"varint,4,opt,name=refund_amount,json=refundAmount,proto3" json:"refund_amount,omitempty"` // 退款金额（单位：分）
+	Reason        string                 `protobuf:"bytes,5,opt,name=reason,proto3" json:"reason,omitempty"`                                  // 退款原因
+	Status        int32                  `protobuf:"varint,6,opt,name=status,proto3" json:"status,omitempty"`                                 // 状态: 1-待审核 2-已通过 3-已拒绝
+	StatusText    string                 `protobuf:"bytes,7,opt,name=status_text,json=statusText,proto3" json:"status_text,omitempty"`        // 状态文本
+	RejectReason  string                 `protobuf:"bytes,8,opt,name=reject_reason,json=rejectReason,proto3" json:"reject_reason,omitempty"`  // 拒绝原因
+	CreatedAt     string                 `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`           // 申请时间（格式化字符串）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RefundItem) Reset() {
+	*x = RefundItem{}
+	mi := &file_api_cin_interface_v1_order_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RefundItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RefundItem) ProtoMessage() {}
+
+func (x *RefundItem) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_interface_v1_order_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RefundItem.ProtoReflect.Descriptor instead.
+func (*RefundItem) Descriptor() ([]byte, []int) {
+	return file_api_cin_interface_v1_order_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *RefundItem) GetRefundId() int64 {
+	if x != nil {
+		return x.RefundId
+	}
+	return 0
+}
+
+func (x *RefundItem) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+func (x *RefundItem) GetOrderNo() string {
+	if x != nil {
+		return x.OrderNo
+	}
+	return ""
+}
+
+func (x *RefundItem) GetRefundAmount() int64 {
+	if x != nil {
+		return x.RefundAmount
+	}
+	return 0
+}
+
+func (x *RefundItem) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *RefundItem) GetStatus() int32 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *RefundItem) GetStatusText() string {
+	if x != nil {
+		return x.StatusText
+	}
+	return ""
+}
+
+func (x *RefundItem) GetRejectReason() string {
+	if x != nil {
+		return x.RejectReason
+	}
+	return ""
+}
+
+func (x *RefundItem) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
 var File_api_cin_interface_v1_order_proto protoreflect.FileDescriptor
 
 const file_api_cin_interface_v1_order_proto_rawDesc = "" +
@@ -1131,13 +1452,41 @@ const file_api_cin_interface_v1_order_proto_rawDesc = "" +
 	"\x0fGetOrderRequest\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\x03R\aorderId\"F\n" +
 	"\rGetOrderReply\x125\n" +
-	"\x05order\x18\x01 \x01(\v2\x1f.api.cin.interface.v1.OrderItemR\x05order2\xe7\x06\n" +
+	"\x05order\x18\x01 \x01(\v2\x1f.api.cin.interface.v1.OrderItemR\x05order\"P\n" +
+	"\x12ApplyRefundRequest\x12\"\n" +
+	"\border_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aorderId\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"/\n" +
+	"\x10ApplyRefundReply\x12\x1b\n" +
+	"\trefund_id\x18\x01 \x01(\x03R\brefundId\"\\\n" +
+	"\x11ListRefundRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\tR\x06status\"_\n" +
+	"\x0fListRefundReply\x126\n" +
+	"\x05items\x18\x01 \x03(\v2 .api.cin.interface.v1.RefundItemR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\x99\x02\n" +
+	"\n" +
+	"RefundItem\x12\x1b\n" +
+	"\trefund_id\x18\x01 \x01(\x03R\brefundId\x12\x19\n" +
+	"\border_id\x18\x02 \x01(\x03R\aorderId\x12\x19\n" +
+	"\border_no\x18\x03 \x01(\tR\aorderNo\x12#\n" +
+	"\rrefund_amount\x18\x04 \x01(\x03R\frefundAmount\x12\x16\n" +
+	"\x06reason\x18\x05 \x01(\tR\x06reason\x12\x16\n" +
+	"\x06status\x18\x06 \x01(\x05R\x06status\x12\x1f\n" +
+	"\vstatus_text\x18\a \x01(\tR\n" +
+	"statusText\x12#\n" +
+	"\rreject_reason\x18\b \x01(\tR\frejectReason\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\t \x01(\tR\tcreatedAt2\xe5\b\n" +
 	"\x05Order\x12y\n" +
 	"\n" +
 	"PlaceOrder\x12'.api.cin.interface.v1.PlaceOrderRequest\x1a%.api.cin.interface.v1.PlaceOrderReply\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/order/v1/create\x12p\n" +
 	"\bPayOrder\x12%.api.cin.interface.v1.PayOrderRequest\x1a#.api.cin.interface.v1.PayOrderReply\"\x18\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/order/v1/pay\x12\x86\x01\n" +
 	"\fCartCheckout\x12).api.cin.interface.v1.CartCheckoutRequest\x1a'.api.cin.interface.v1.CartCheckoutReply\"\"\x82\xd3\xe4\x93\x02\x1c:\x01*\"\x17/order/v1/cart_checkout\x12q\n" +
-	"\tListOrder\x12&.api.cin.interface.v1.ListOrderRequest\x1a$.api.cin.interface.v1.ListOrderReply\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/order/v1/list\x12t\n" +
+	"\tListOrder\x12&.api.cin.interface.v1.ListOrderRequest\x1a$.api.cin.interface.v1.ListOrderReply\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/order/v1/list\x12\x82\x01\n" +
+	"\vApplyRefund\x12(.api.cin.interface.v1.ApplyRefundRequest\x1a&.api.cin.interface.v1.ApplyRefundReply\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/order/v1/refund/apply\x12w\n" +
+	"\n" +
+	"ListRefund\x12'.api.cin.interface.v1.ListRefundRequest\x1a%.api.cin.interface.v1.ListRefundReply\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/order/v1/refunds\x12t\n" +
 	"\bGetOrder\x12%.api.cin.interface.v1.GetOrderRequest\x1a#.api.cin.interface.v1.GetOrderReply\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/order/v1/{order_id}\x12\x80\x01\n" +
 	"\fReceiveOrder\x12).api.cin.interface.v1.ReceiveOrderRequest\x1a'.api.cin.interface.v1.ReceiveOrderReply\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/order/v1/receive\x12|\n" +
 	"\vCancelOrder\x12(.api.cin.interface.v1.CancelOrderRequest\x1a&.api.cin.interface.v1.CancelOrderReply\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/order/v1/cancelB9\n" +
@@ -1155,7 +1504,7 @@ func file_api_cin_interface_v1_order_proto_rawDescGZIP() []byte {
 	return file_api_cin_interface_v1_order_proto_rawDescData
 }
 
-var file_api_cin_interface_v1_order_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_api_cin_interface_v1_order_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
 var file_api_cin_interface_v1_order_proto_goTypes = []any{
 	(*PlaceOrderRequest)(nil),   // 0: api.cin.interface.v1.PlaceOrderRequest
 	(*PlaceOrderReply)(nil),     // 1: api.cin.interface.v1.PlaceOrderReply
@@ -1174,31 +1523,41 @@ var file_api_cin_interface_v1_order_proto_goTypes = []any{
 	(*OrderProduct)(nil),        // 14: api.cin.interface.v1.OrderProduct
 	(*GetOrderRequest)(nil),     // 15: api.cin.interface.v1.GetOrderRequest
 	(*GetOrderReply)(nil),       // 16: api.cin.interface.v1.GetOrderReply
+	(*ApplyRefundRequest)(nil),  // 17: api.cin.interface.v1.ApplyRefundRequest
+	(*ApplyRefundReply)(nil),    // 18: api.cin.interface.v1.ApplyRefundReply
+	(*ListRefundRequest)(nil),   // 19: api.cin.interface.v1.ListRefundRequest
+	(*ListRefundReply)(nil),     // 20: api.cin.interface.v1.ListRefundReply
+	(*RefundItem)(nil),          // 21: api.cin.interface.v1.RefundItem
 }
 var file_api_cin_interface_v1_order_proto_depIdxs = []int32{
 	10, // 0: api.cin.interface.v1.CartCheckoutRequest.items:type_name -> api.cin.interface.v1.CartItem
 	13, // 1: api.cin.interface.v1.ListOrderReply.items:type_name -> api.cin.interface.v1.OrderItem
 	14, // 2: api.cin.interface.v1.OrderItem.products:type_name -> api.cin.interface.v1.OrderProduct
 	13, // 3: api.cin.interface.v1.GetOrderReply.order:type_name -> api.cin.interface.v1.OrderItem
-	0,  // 4: api.cin.interface.v1.Order.PlaceOrder:input_type -> api.cin.interface.v1.PlaceOrderRequest
-	2,  // 5: api.cin.interface.v1.Order.PayOrder:input_type -> api.cin.interface.v1.PayOrderRequest
-	8,  // 6: api.cin.interface.v1.Order.CartCheckout:input_type -> api.cin.interface.v1.CartCheckoutRequest
-	11, // 7: api.cin.interface.v1.Order.ListOrder:input_type -> api.cin.interface.v1.ListOrderRequest
-	15, // 8: api.cin.interface.v1.Order.GetOrder:input_type -> api.cin.interface.v1.GetOrderRequest
-	4,  // 9: api.cin.interface.v1.Order.ReceiveOrder:input_type -> api.cin.interface.v1.ReceiveOrderRequest
-	6,  // 10: api.cin.interface.v1.Order.CancelOrder:input_type -> api.cin.interface.v1.CancelOrderRequest
-	1,  // 11: api.cin.interface.v1.Order.PlaceOrder:output_type -> api.cin.interface.v1.PlaceOrderReply
-	3,  // 12: api.cin.interface.v1.Order.PayOrder:output_type -> api.cin.interface.v1.PayOrderReply
-	9,  // 13: api.cin.interface.v1.Order.CartCheckout:output_type -> api.cin.interface.v1.CartCheckoutReply
-	12, // 14: api.cin.interface.v1.Order.ListOrder:output_type -> api.cin.interface.v1.ListOrderReply
-	16, // 15: api.cin.interface.v1.Order.GetOrder:output_type -> api.cin.interface.v1.GetOrderReply
-	5,  // 16: api.cin.interface.v1.Order.ReceiveOrder:output_type -> api.cin.interface.v1.ReceiveOrderReply
-	7,  // 17: api.cin.interface.v1.Order.CancelOrder:output_type -> api.cin.interface.v1.CancelOrderReply
-	11, // [11:18] is the sub-list for method output_type
-	4,  // [4:11] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	21, // 4: api.cin.interface.v1.ListRefundReply.items:type_name -> api.cin.interface.v1.RefundItem
+	0,  // 5: api.cin.interface.v1.Order.PlaceOrder:input_type -> api.cin.interface.v1.PlaceOrderRequest
+	2,  // 6: api.cin.interface.v1.Order.PayOrder:input_type -> api.cin.interface.v1.PayOrderRequest
+	8,  // 7: api.cin.interface.v1.Order.CartCheckout:input_type -> api.cin.interface.v1.CartCheckoutRequest
+	11, // 8: api.cin.interface.v1.Order.ListOrder:input_type -> api.cin.interface.v1.ListOrderRequest
+	17, // 9: api.cin.interface.v1.Order.ApplyRefund:input_type -> api.cin.interface.v1.ApplyRefundRequest
+	19, // 10: api.cin.interface.v1.Order.ListRefund:input_type -> api.cin.interface.v1.ListRefundRequest
+	15, // 11: api.cin.interface.v1.Order.GetOrder:input_type -> api.cin.interface.v1.GetOrderRequest
+	4,  // 12: api.cin.interface.v1.Order.ReceiveOrder:input_type -> api.cin.interface.v1.ReceiveOrderRequest
+	6,  // 13: api.cin.interface.v1.Order.CancelOrder:input_type -> api.cin.interface.v1.CancelOrderRequest
+	1,  // 14: api.cin.interface.v1.Order.PlaceOrder:output_type -> api.cin.interface.v1.PlaceOrderReply
+	3,  // 15: api.cin.interface.v1.Order.PayOrder:output_type -> api.cin.interface.v1.PayOrderReply
+	9,  // 16: api.cin.interface.v1.Order.CartCheckout:output_type -> api.cin.interface.v1.CartCheckoutReply
+	12, // 17: api.cin.interface.v1.Order.ListOrder:output_type -> api.cin.interface.v1.ListOrderReply
+	18, // 18: api.cin.interface.v1.Order.ApplyRefund:output_type -> api.cin.interface.v1.ApplyRefundReply
+	20, // 19: api.cin.interface.v1.Order.ListRefund:output_type -> api.cin.interface.v1.ListRefundReply
+	16, // 20: api.cin.interface.v1.Order.GetOrder:output_type -> api.cin.interface.v1.GetOrderReply
+	5,  // 21: api.cin.interface.v1.Order.ReceiveOrder:output_type -> api.cin.interface.v1.ReceiveOrderReply
+	7,  // 22: api.cin.interface.v1.Order.CancelOrder:output_type -> api.cin.interface.v1.CancelOrderReply
+	14, // [14:23] is the sub-list for method output_type
+	5,  // [5:14] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_api_cin_interface_v1_order_proto_init() }
@@ -1212,7 +1571,7 @@ func file_api_cin_interface_v1_order_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_interface_v1_order_proto_rawDesc), len(file_api_cin_interface_v1_order_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   17,
+			NumMessages:   22,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

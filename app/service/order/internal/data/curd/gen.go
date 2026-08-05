@@ -16,6 +16,7 @@ var (
 	Order          *order
 	OrderItem      *orderItem
 	OrderLogistics *orderLogistics
+	OrderRefund    *orderRefund
 	PaymentLog     *paymentLog
 )
 
@@ -24,6 +25,7 @@ func SetDefault(db *gorm.DB) {
 	Order = &Q.Order
 	OrderItem = &Q.OrderItem
 	OrderLogistics = &Q.OrderLogistics
+	OrderRefund = &Q.OrderRefund
 	PaymentLog = &Q.PaymentLog
 }
 
@@ -33,6 +35,7 @@ func Use(db *gorm.DB) *Query {
 		Order:          newOrder(db),
 		OrderItem:      newOrderItem(db),
 		OrderLogistics: newOrderLogistics(db),
+		OrderRefund:    newOrderRefund(db),
 		PaymentLog:     newPaymentLog(db),
 	}
 }
@@ -43,6 +46,7 @@ type Query struct {
 	Order          order
 	OrderItem      orderItem
 	OrderLogistics orderLogistics
+	OrderRefund    orderRefund
 	PaymentLog     paymentLog
 }
 
@@ -54,6 +58,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		Order:          q.Order.clone(db),
 		OrderItem:      q.OrderItem.clone(db),
 		OrderLogistics: q.OrderLogistics.clone(db),
+		OrderRefund:    q.OrderRefund.clone(db),
 		PaymentLog:     q.PaymentLog.clone(db),
 	}
 }
@@ -62,6 +67,7 @@ type queryCtx struct {
 	Order          orderDo
 	OrderItem      orderItemDo
 	OrderLogistics orderLogisticsDo
+	OrderRefund    orderRefundDo
 	PaymentLog     paymentLogDo
 }
 
@@ -70,6 +76,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		Order:          *q.Order.WithContext(ctx),
 		OrderItem:      *q.OrderItem.WithContext(ctx),
 		OrderLogistics: *q.OrderLogistics.WithContext(ctx),
+		OrderRefund:    *q.OrderRefund.WithContext(ctx),
 		PaymentLog:     *q.PaymentLog.WithContext(ctx),
 	}
 }

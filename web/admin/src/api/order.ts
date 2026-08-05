@@ -2,10 +2,13 @@
  * cyi商城管理后台 - 订单管理 API
  */
 import request from './index'
-import type { OrderListParams, OrderListResponse, OrderDetailResponse, ShipOrderData, ExportOrderParams, ExportOrderResponse, ExportTaskStatusResponse, OrderStatsResponse } from '../types/order'
+import type { OrderListParams, OrderListResponse, OrderDetailResponse, ShipOrderData, ExportOrderParams, ExportOrderResponse, ExportTaskStatusResponse, OrderStatsResponse, RefundListParams, RefundListResponse } from '../types/order'
 
 /** 订单管理 API 基础路径 */
 const BASE = '/admin/v1/orders'
+
+/** 退款/售后 API 基础路径 */
+const REFUND_BASE = '/admin/v1/refunds'
 
 /**
  * 获取订单列表
@@ -60,5 +63,28 @@ export async function getExportTaskStatus(taskId: string): Promise<ExportTaskSta
  */
 export async function orderStats(): Promise<OrderStatsResponse> {
   const res = await request.get<any, OrderStatsResponse>(`${BASE}/stats`)
+  return res
+}
+
+/**
+ * 获取退款/售后单列表
+ */
+export async function listRefunds(params: RefundListParams): Promise<RefundListResponse> {
+  const res = await request.get<any, RefundListResponse>(REFUND_BASE, { params })
+  return res
+}
+
+/**
+ * 审核退款（通过/拒绝）
+ * @param refundId - 退款单ID
+ * @param approve - true=通过（退款）；false=拒绝
+ * @param rejectReason - 拒绝原因（拒绝时必填）
+ */
+export async function auditRefund(refundId: number, approve: boolean, rejectReason = ''): Promise<{ success: boolean }> {
+  const res = await request.post<any, { success: boolean }>(`${REFUND_BASE}/${refundId}/audit`, {
+    refund_id: refundId,
+    approve,
+    reject_reason: rejectReason
+  })
   return res
 }

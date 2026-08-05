@@ -189,6 +189,41 @@
       <button class="pay-later-btn" :disabled="paying" @click="closePayDialog">稍后支付</button>
     </div>
   </div>
+
+  <!-- 退款申请弹窗（待发货订单申请退款） -->
+  <div v-if="refundVisible" class="pay-overlay" @click.self="closeRefundDialog">
+    <div class="pay-modal">
+      <button class="pay-close" aria-label="关闭" @click="closeRefundDialog">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+      <div class="pay-icon refund-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+        </svg>
+      </div>
+      <h3 class="pay-title">申请退款</h3>
+      <p class="refund-tip">订单支付后商家尚未发货，可申请全额退款</p>
+      <div class="refund-amount">退款金额 <b>&yen;{{ ((order?.amount || 0) / 100).toFixed(2) }}</b></div>
+
+      <!-- 退款原因选择 -->
+      <div class="refund-reasons">
+        <button
+          v-for="opt in refundReasons"
+          :key="opt"
+          :class="['refund-reason', refundReason === opt ? 'refund-reason-active' : '']"
+          @click="refundReason = opt"
+        >{{ opt }}</button>
+      </div>
+
+      <button class="pay-now-btn" :disabled="submitting" @click="onSubmitRefund">
+        <span v-if="submitting" class="btn-spinner"></span>
+        {{ submitting ? '提交中...' : '提交申请' }}
+      </button>
+      <button class="pay-later-btn" :disabled="submitting" @click="closeRefundDialog">取消</button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -199,7 +234,7 @@
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getOrderDetail, payOrder, receiveOrder, cancelOrder, PAY_TIMEOUT_SECONDS, type OrderItemDTO } from '@/api/order'
+import { getOrderDetail, payOrder, receiveOrder, cancelOrder, applyRefund, PAY_TIMEOUT_SECONDS, type OrderItemDTO } from '@/api/order'
 import { toast } from '@/utils/toast'
 import type { OrderStatus } from '@/types/order'
 
@@ -281,6 +316,8 @@ function statusLabel(status: string): string {
     pending_review: '待评价',
     completed: '已完成',
     cancelled: '已取消',
+    refunding: '退款中',
+    refunded: '已退款',
     refund: '退款中'
   }
   return map[status] || '未知'
@@ -298,6 +335,8 @@ function statusColorOf(status: string): string {
     pending_review: 'var(--shop-warning)',
     completed: 'var(--shop-success)',
     cancelled: 'var(--shop-muted-foreground)',
+    refunding: 'var(--shop-warning)',
+    refunded: 'var(--shop-muted-foreground)',
     refund: 'var(--shop-destructive)'
   }
   return map[status] || 'var(--shop-muted-foreground)'
@@ -316,6 +355,7 @@ const orderActions = computed<Array<{ key: string; label: string; primary: boole
       { key: 'pay', label: '去付款', primary: true }
     ],
     pending_ship: [
+      { key: 'refund', label: '申请退款', primary: false },
       { key: 'remind', label: '提醒发货', primary: false }
     ],
     pending_receive: [
@@ -350,6 +390,10 @@ function onAction(action: string) {
   }
   if (action === 'again') {
     router.push('/cart')
+    return
+  }
+  if (action === 'refund') {
+    openRefundDialog()
     return
   }
   if (action === 'review') {
@@ -433,6 +477,52 @@ async function onPay() {
 /** 商品图片加载失败占位 */
 function onImageError(e: Event) {
   ;(e.target as HTMLImageElement).style.display = 'none'
+}
+
+// ---- 退款申请弹窗 ----
+const refundVisible = ref(false)
+const submitting = ref(false)
+const refundReason = ref('')
+/** 退款原因选项 */
+const refundReasons = ['不想要了', '拍错了', '商品与描述不符', '多拍/重复下单', '其他原因']
+
+/**
+ * 打开退款申请弹窗（仅待发货订单可申请）
+ */
+function openRefundDialog() {
+  if (order.value?.status !== 'pending_ship') return
+  refundReason.value = ''
+  refundVisible.value = true
+}
+
+/**
+ * 关闭退款申请弹窗（提交中禁止关闭）
+ */
+function closeRefundDialog() {
+  if (submitting.value) return
+  refundVisible.value = false
+}
+
+/**
+ * 提交退款申请（带防抖）
+ */
+async function onSubmitRefund() {
+  if (submitting.value || !order.value) return
+  if (!refundReason.value) {
+    toast('请选择退款原因', 'error')
+    return
+  }
+  submitting.value = true
+  try {
+    await applyRefund(order.value.id, refundReason.value)
+    toast('退款申请已提交，等待商家审核', 'success')
+    refundVisible.value = false
+    loadDetail()
+  } catch (e: any) {
+    toast(e?.response?.data?.message || e?.message || '退款申请失败，请重试', 'error')
+  } finally {
+    submitting.value = false
+  }
 }
 
 onMounted(async () => {
@@ -679,6 +769,54 @@ onUnmounted(() => {
 
 @keyframes paySpin {
   to { transform: rotate(360deg); }
+}
+
+/* ---- 退款申请弹窗 ---- */
+.refund-icon {
+  background: var(--shop-destructive-bg, #fef2f2);
+  color: var(--shop-destructive);
+}
+.refund-tip {
+  margin-top: 8px;
+  font-size: 0.8125rem;
+  color: var(--shop-muted-foreground);
+}
+.refund-amount {
+  margin-top: 12px;
+  font-size: 0.875rem;
+  color: var(--shop-foreground);
+}
+.refund-amount b {
+  font-size: 1.375rem;
+  color: var(--shop-destructive);
+  margin-left: 4px;
+}
+.refund-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 20px;
+}
+.refund-reason {
+  padding: 7px 14px;
+  border: 1px solid var(--shop-border);
+  border-radius: var(--shop-radius-lg);
+  background: var(--shop-card);
+  color: var(--shop-foreground);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--shop-font-sans);
+}
+.refund-reason:hover {
+  border-color: var(--shop-primary);
+  color: var(--shop-primary);
+}
+.refund-reason-active {
+  border-color: var(--shop-destructive);
+  background: var(--shop-destructive-bg, #fef2f2);
+  color: var(--shop-destructive);
+  font-weight: 600;
 }
 
 /* ---- 加载/错误状态 ---- */

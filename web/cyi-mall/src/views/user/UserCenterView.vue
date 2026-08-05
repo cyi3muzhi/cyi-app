@@ -144,6 +144,22 @@
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </router-link>
+
+      <!-- 退款/售后入口 -->
+      <router-link to="/user/refunds" class="entry-card refund">
+        <div class="entry-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+          </svg>
+        </div>
+        <div class="entry-info">
+          <p class="entry-title">退款/售后</p>
+          <p class="entry-desc">查看退款进度与处理结果</p>
+        </div>
+        <svg class="entry-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </router-link>
     </div>
   </section>
 
@@ -693,6 +709,13 @@ onMounted(loadCenter)
   background: linear-gradient(135deg, hsl(0, 84%, 60%), hsl(24, 90%, 56%));
   color: #fff;
   box-shadow: 0 3px 8px hsla(0, 84%, 55%, 0.35);
+}
+
+/* 退款/售后卡片：蓝紫渐变图标 */
+.entry-card.refund .entry-icon {
+  background: linear-gradient(135deg, hsl(240, 84%, 62%), hsl(270, 84%, 60%));
+  color: #fff;
+  box-shadow: 0 3px 8px hsla(255, 84%, 55%, 0.35);
 }
 
 .entry-info {

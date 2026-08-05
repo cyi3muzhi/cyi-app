@@ -1232,6 +1232,63 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.DeleteProductReply'
+    /admin/v1/refunds:
+        get:
+            tags:
+                - AdminOrder
+            description: 退款/售后单列表
+            operationId: AdminOrder_ListRefund
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: status
+                  in: query
+                  schema:
+                    type: string
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ListRefundReply'
+    /admin/v1/refunds/{refundId}/audit:
+        post:
+            tags:
+                - AdminOrder
+            description: 审核退款（通过/拒绝）
+            operationId: AdminOrder_AuditRefund
+            parameters:
+                - name: refundId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.AuditRefundRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.AuditRefundReply'
     /admin/v1/role-name-map:
         get:
             tags:
@@ -2074,6 +2131,57 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.ReceiveOrderReply'
+    /order/v1/refund/apply:
+        post:
+            tags:
+                - Order
+            description: |-
+                申请退款（仅已支付/待发货订单）
+                 注意：必须放在 GetOrder 之前注册，避免 /refund/apply 被 {order_id} 通配匹配
+            operationId: Order_ApplyRefund
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.ApplyRefundRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ApplyRefundReply'
+    /order/v1/refunds:
+        get:
+            tags:
+                - Order
+            description: |-
+                我的退款记录
+                 注意：必须放在 GetOrder 之前注册，避免 /refunds 被 {order_id} 通配匹配
+            operationId: Order_ListRefund
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: status
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ListRefundReply'
     /order/v1/{orderId}:
         get:
             tags:
@@ -2587,6 +2695,22 @@ components:
                     type: string
                 avatar:
                     type: string
+        api.cin.admin.v1.AuditRefundReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+            description: 审核退款响应
+        api.cin.admin.v1.AuditRefundRequest:
+            type: object
+            properties:
+                refundId:
+                    type: string
+                approve:
+                    type: boolean
+                rejectReason:
+                    type: string
+            description: 审核退款请求
         api.cin.admin.v1.BannerCopyOption:
             type: object
             properties:
@@ -3493,6 +3617,17 @@ components:
                 total:
                     type: integer
                     format: int32
+        api.cin.admin.v1.ListRefundReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.RefundItem'
+                total:
+                    type: integer
+                    format: int32
+            description: 退款单列表响应
         api.cin.admin.v1.ListRolesReply:
             type: object
             properties:
@@ -3680,6 +3815,38 @@ components:
                     type: array
                     items:
                         type: string
+        api.cin.admin.v1.RefundItem:
+            type: object
+            properties:
+                refundId:
+                    type: string
+                orderId:
+                    type: string
+                orderNo:
+                    type: string
+                userId:
+                    type: string
+                userName:
+                    type: string
+                refundAmount:
+                    type: string
+                reason:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                statusText:
+                    type: string
+                rejectReason:
+                    type: string
+                auditor:
+                    type: string
+                createdAt:
+                    type: string
+                originStatus:
+                    type: integer
+                    format: int32
+            description: 退款单项
         api.cin.admin.v1.RevenueCategory:
             type: object
             properties:
@@ -4246,6 +4413,20 @@ components:
                     type: string
                 sessionId:
                     type: string
+        api.cin.interface.v1.ApplyRefundReply:
+            type: object
+            properties:
+                refundId:
+                    type: string
+            description: 申请退款响应
+        api.cin.interface.v1.ApplyRefundRequest:
+            type: object
+            properties:
+                orderId:
+                    type: string
+                reason:
+                    type: string
+            description: 申请退款请求
         api.cin.interface.v1.AvailableCouponItem:
             type: object
             properties:
@@ -4603,6 +4784,17 @@ components:
                 total:
                     type: integer
                     format: int32
+        api.cin.interface.v1.ListRefundReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.RefundItem'
+                total:
+                    type: integer
+                    format: int32
+            description: 我的退款记录响应
         api.cin.interface.v1.ListUsableCouponsReply:
             type: object
             properties:
@@ -4800,6 +4992,29 @@ components:
             properties:
                 orderId:
                     type: string
+        api.cin.interface.v1.RefundItem:
+            type: object
+            properties:
+                refundId:
+                    type: string
+                orderId:
+                    type: string
+                orderNo:
+                    type: string
+                refundAmount:
+                    type: string
+                reason:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                statusText:
+                    type: string
+                rejectReason:
+                    type: string
+                createdAt:
+                    type: string
+            description: 退款记录项
         api.cin.interface.v1.RegisterReply:
             type: object
             properties:

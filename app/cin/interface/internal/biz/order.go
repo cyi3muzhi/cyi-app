@@ -58,6 +58,19 @@ type Order struct {
 	LogisticsNo      string `json:"logistics_no"`      // 快递单号
 }
 
+// Refund 退款单（用户端展示）
+type Refund struct {
+	ID           int64  `json:"id"`            // 退款单ID
+	OrderID      int64  `json:"order_id"`      // 订单ID
+	OrderNo      string `json:"order_no"`      // 订单号
+	RefundAmount int64  `json:"refund_amount"` // 退款金额（分）
+	Reason       string `json:"reason"`        // 退款原因
+	Status       int32  `json:"status"`        // 状态: 1-待审核 2-已通过 3-已拒绝
+	StatusText   string `json:"status_text"`   // 状态文本
+	RejectReason string `json:"reject_reason"` // 拒绝原因
+	CreatedAt    int64  `json:"created_at"`    // 申请时间（Unix 秒）
+}
+
 type OrderRepo interface {
 	CreateOrder(ctx context.Context, order *Order) error
 	PayOrder(ctx context.Context, orderID int64, userID int64) error
@@ -70,6 +83,10 @@ type OrderRepo interface {
 	ListOrder(ctx context.Context, userID int64, page, pageSize int32, status string) ([]*Order, int32, error)
 	// GetOrderDetail 查询当前用户订单详情（含商品明细）
 	GetOrderDetail(ctx context.Context, orderID int64, userID int64) (*Order, error)
+	// ApplyRefund 申请退款（校验订单归属，仅已支付/待发货订单可申请）
+	ApplyRefund(ctx context.Context, orderID int64, userID int64, reason string) (int64, error)
+	// ListRefund 查询当前用户退款记录（支持按状态筛选）
+	ListRefund(ctx context.Context, userID int64, page, pageSize int32, status string) ([]*Refund, int32, error)
 }
 
 type OrderUseCase struct {
@@ -126,4 +143,17 @@ func (u *OrderUseCase) GetOrderDetail(ctx context.Context, orderID int64, userID
 		return nil, v1.ErrorOrderIdNotExist("order id not exist")
 	}
 	return u.repo.GetOrderDetail(ctx, orderID, userID)
+}
+
+// ApplyRefund 申请退款（仅已支付/待发货订单可申请）
+func (u *OrderUseCase) ApplyRefund(ctx context.Context, orderID int64, userID int64, reason string) (int64, error) {
+	if orderID == 0 {
+		return 0, v1.ErrorOrderIdNotExist("order id not exist")
+	}
+	return u.repo.ApplyRefund(ctx, orderID, userID, reason)
+}
+
+// ListRefund 查询当前用户退款记录（支持按状态筛选）
+func (u *OrderUseCase) ListRefund(ctx context.Context, userID int64, page, pageSize int32, status string) ([]*Refund, int32, error) {
+	return u.repo.ListRefund(ctx, userID, page, pageSize, status)
 }

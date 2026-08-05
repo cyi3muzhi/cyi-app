@@ -23,6 +23,8 @@ const (
 	Order_PayOrder_FullMethodName     = "/api.cin.interface.v1.Order/PayOrder"
 	Order_CartCheckout_FullMethodName = "/api.cin.interface.v1.Order/CartCheckout"
 	Order_ListOrder_FullMethodName    = "/api.cin.interface.v1.Order/ListOrder"
+	Order_ApplyRefund_FullMethodName  = "/api.cin.interface.v1.Order/ApplyRefund"
+	Order_ListRefund_FullMethodName   = "/api.cin.interface.v1.Order/ListRefund"
 	Order_GetOrder_FullMethodName     = "/api.cin.interface.v1.Order/GetOrder"
 	Order_ReceiveOrder_FullMethodName = "/api.cin.interface.v1.Order/ReceiveOrder"
 	Order_CancelOrder_FullMethodName  = "/api.cin.interface.v1.Order/CancelOrder"
@@ -42,6 +44,12 @@ type OrderClient interface {
 	CartCheckout(ctx context.Context, in *CartCheckoutRequest, opts ...grpc.CallOption) (*CartCheckoutReply, error)
 	// 订单列表
 	ListOrder(ctx context.Context, in *ListOrderRequest, opts ...grpc.CallOption) (*ListOrderReply, error)
+	// 申请退款（仅已支付/待发货订单）
+	// 注意：必须放在 GetOrder 之前注册，避免 /refund/apply 被 {order_id} 通配匹配
+	ApplyRefund(ctx context.Context, in *ApplyRefundRequest, opts ...grpc.CallOption) (*ApplyRefundReply, error)
+	// 我的退款记录
+	// 注意：必须放在 GetOrder 之前注册，避免 /refunds 被 {order_id} 通配匹配
+	ListRefund(ctx context.Context, in *ListRefundRequest, opts ...grpc.CallOption) (*ListRefundReply, error)
 	// 订单详情
 	GetOrder(ctx context.Context, in *GetOrderRequest, opts ...grpc.CallOption) (*GetOrderReply, error)
 	// 确认收货
@@ -98,6 +106,26 @@ func (c *orderClient) ListOrder(ctx context.Context, in *ListOrderRequest, opts 
 	return out, nil
 }
 
+func (c *orderClient) ApplyRefund(ctx context.Context, in *ApplyRefundRequest, opts ...grpc.CallOption) (*ApplyRefundReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApplyRefundReply)
+	err := c.cc.Invoke(ctx, Order_ApplyRefund_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orderClient) ListRefund(ctx context.Context, in *ListRefundRequest, opts ...grpc.CallOption) (*ListRefundReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListRefundReply)
+	err := c.cc.Invoke(ctx, Order_ListRefund_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *orderClient) GetOrder(ctx context.Context, in *GetOrderRequest, opts ...grpc.CallOption) (*GetOrderReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetOrderReply)
@@ -142,6 +170,12 @@ type OrderServer interface {
 	CartCheckout(context.Context, *CartCheckoutRequest) (*CartCheckoutReply, error)
 	// 订单列表
 	ListOrder(context.Context, *ListOrderRequest) (*ListOrderReply, error)
+	// 申请退款（仅已支付/待发货订单）
+	// 注意：必须放在 GetOrder 之前注册，避免 /refund/apply 被 {order_id} 通配匹配
+	ApplyRefund(context.Context, *ApplyRefundRequest) (*ApplyRefundReply, error)
+	// 我的退款记录
+	// 注意：必须放在 GetOrder 之前注册，避免 /refunds 被 {order_id} 通配匹配
+	ListRefund(context.Context, *ListRefundRequest) (*ListRefundReply, error)
 	// 订单详情
 	GetOrder(context.Context, *GetOrderRequest) (*GetOrderReply, error)
 	// 确认收货
@@ -169,6 +203,12 @@ func (UnimplementedOrderServer) CartCheckout(context.Context, *CartCheckoutReque
 }
 func (UnimplementedOrderServer) ListOrder(context.Context, *ListOrderRequest) (*ListOrderReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListOrder not implemented")
+}
+func (UnimplementedOrderServer) ApplyRefund(context.Context, *ApplyRefundRequest) (*ApplyRefundReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ApplyRefund not implemented")
+}
+func (UnimplementedOrderServer) ListRefund(context.Context, *ListRefundRequest) (*ListRefundReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRefund not implemented")
 }
 func (UnimplementedOrderServer) GetOrder(context.Context, *GetOrderRequest) (*GetOrderReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOrder not implemented")
@@ -272,6 +312,42 @@ func _Order_ListOrder_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Order_ApplyRefund_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApplyRefundRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServer).ApplyRefund(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Order_ApplyRefund_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServer).ApplyRefund(ctx, req.(*ApplyRefundRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Order_ListRefund_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRefundRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServer).ListRefund(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Order_ListRefund_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServer).ListRefund(ctx, req.(*ListRefundRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Order_GetOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetOrderRequest)
 	if err := dec(in); err != nil {
@@ -348,6 +424,14 @@ var Order_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListOrder",
 			Handler:    _Order_ListOrder_Handler,
+		},
+		{
+			MethodName: "ApplyRefund",
+			Handler:    _Order_ApplyRefund_Handler,
+		},
+		{
+			MethodName: "ListRefund",
+			Handler:    _Order_ListRefund_Handler,
 		},
 		{
 			MethodName: "GetOrder",

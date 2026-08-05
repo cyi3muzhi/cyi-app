@@ -108,3 +108,17 @@ func IsOrderProductEmpty(err error) bool {
 func ErrorOrderProductEmpty(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, OrderErrorReason_ORDER_PRODUCT_EMPTY.String(), fmt.Sprintf(format, args...))
 }
+
+// 退款单不存在
+func IsRefundNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OrderErrorReason_REFUND_NOT_FOUND.String() && e.Code == 422
+}
+
+// 退款单不存在
+func ErrorRefundNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OrderErrorReason_REFUND_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+}

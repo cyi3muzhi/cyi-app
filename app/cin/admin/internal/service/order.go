@@ -5,6 +5,9 @@ import (
 
 	adminv1 "cyi-app/api/cin/admin/v1"
 	"cyi-app/app/cin/admin/internal/biz"
+	middleware "cyi-app/pkg/kratos/server/middleware"
+
+	"github.com/go-kratos/kratos/v2/middleware/auth/jwt"
 )
 
 // ListOrder 获取订单列表
@@ -68,6 +71,52 @@ func (s *AdminService) OrderStats(ctx context.Context, req *adminv1.OrderStatsRe
 		TodayCount:   today,
 		RefundCount:  refund,
 	}, nil
+}
+
+// ListRefund 退款/售后单列表
+func (s *AdminService) ListRefund(ctx context.Context, req *adminv1.ListRefundRequest) (*adminv1.ListRefundReply, error) {
+	items, total, err := s.oc.ListRefund(ctx, req.Page, req.PageSize, req.Status, req.Keyword)
+	if err != nil {
+		return nil, err
+	}
+	replyItems := make([]*adminv1.RefundItem, 0, len(items))
+	for _, item := range items {
+		replyItems = append(replyItems, &adminv1.RefundItem{
+			RefundId:     item.ID,
+			OrderId:      item.OrderID,
+			OrderNo:      item.OrderNo,
+			UserId:       item.UserID,
+			UserName:     item.UserName,
+			RefundAmount: item.RefundAmount,
+			Reason:       item.Reason,
+			Status:       item.Status,
+			StatusText:   item.StatusText,
+			RejectReason: item.RejectReason,
+			Auditor:      item.Auditor,
+			CreatedAt:    item.CreatedAt,
+			OriginStatus: item.OriginStatus,
+		})
+	}
+	return &adminv1.ListRefundReply{Items: replyItems, Total: total}, nil
+}
+
+// AuditRefund 审核退款（通过/拒绝）
+func (s *AdminService) AuditRefund(ctx context.Context, req *adminv1.AuditRefundRequest) (*adminv1.AuditRefundReply, error) {
+	// 获取当前管理员名称作为审核人
+	auditor := ""
+	if claims, ok := jwt.FromContext(ctx); ok {
+		if uc, ok := claims.(*middleware.UserClaims); ok {
+			if uc.Name != "" {
+				auditor = uc.Name
+			} else {
+				auditor = uc.Username
+			}
+		}
+	}
+	if err := s.oc.AuditRefund(ctx, req.RefundId, req.Approve, req.RejectReason, auditor); err != nil {
+		return nil, err
+	}
+	return &adminv1.AuditRefundReply{Success: true}, nil
 }
 
 // bizToAdminProtoOrder 将 biz Order 转换为 admin proto OrderItem

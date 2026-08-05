@@ -293,3 +293,81 @@ func (r *orderRepo) CancelOrder(ctx context.Context, orderID int64, reason strin
 	}
 	return nil
 }
+
+// ListRefund 通过 gRPC 调用订单服务获取退款/售后单列表，并填充用户名
+func (r *orderRepo) ListRefund(ctx context.Context, page, pageSize int32, status string, keyword string) ([]*biz.Refund, int32, error) {
+	reply, err := r.data.oc.ListRefund(ctx, &orderRpc.ListRefundRequest{
+		Page:     page,
+		PageSize: pageSize,
+		Status:   status,
+		Keyword:  keyword,
+	})
+	if err != nil {
+		r.log.Errorf("list refund failed: %v", err)
+		return nil, 0, err
+	}
+
+	items := make([]*biz.Refund, 0, len(reply.Items))
+	userIDSet := make(map[int64]struct{})
+	for _, item := range reply.Items {
+		items = append(items, &biz.Refund{
+			ID:           item.RefundId,
+			OrderID:      item.OrderId,
+			OrderNo:      item.OrderNo,
+			UserID:       item.UserId,
+			RefundAmount: item.RefundAmount,
+			Reason:       item.Reason,
+			Status:       item.Status,
+			StatusText:   refundStatusText(item.Status),
+			RejectReason: item.RejectReason,
+			Auditor:      item.Auditor,
+			CreatedAt:    time.Unix(item.CreatedAt, 0).Format("2006-01-02 15:04:05"),
+			OriginStatus: item.OriginStatus,
+		})
+		if _, ok := userIDSet[item.UserId]; !ok {
+			userIDSet[item.UserId] = struct{}{}
+		}
+	}
+
+	// 批量查询用户名并填充
+	userIDs := make([]int64, 0, len(userIDSet))
+	for uid := range userIDSet {
+		userIDs = append(userIDs, uid)
+	}
+	userNameMap := r.batchGetUserNames(ctx, userIDs)
+	for _, item := range items {
+		if name, ok := userNameMap[item.UserID]; ok {
+			item.UserName = name
+		}
+	}
+	return items, reply.Total, nil
+}
+
+// AuditRefund 通过 gRPC 调用订单服务审核退款（通过/拒绝）
+func (r *orderRepo) AuditRefund(ctx context.Context, refundID int64, approve bool, rejectReason, auditor string) error {
+	_, err := r.data.oc.AuditRefund(ctx, &orderRpc.AuditRefundRequest{
+		RefundId:     refundID,
+		Approve:      approve,
+		RejectReason: rejectReason,
+		Auditor:      auditor,
+	})
+	if err != nil {
+		r.log.Errorf("audit refund failed, refundID=%d, approve=%v: %v", refundID, approve, err)
+		return err
+	}
+	return nil
+}
+
+// refundStatusText 退款单状态 -> 中文文本
+func refundStatusText(status int32) string {
+	switch status {
+	case 1:
+		return "待审核"
+	case 2:
+		return "已通过"
+	case 3:
+		return "已拒绝"
+	default:
+		return "未知"
+	}
+}

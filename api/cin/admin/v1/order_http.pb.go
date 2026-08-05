@@ -19,15 +19,19 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationAdminOrderAuditRefund = "/api.cin.admin.v1.AdminOrder/AuditRefund"
 const OperationAdminOrderCancelOrder = "/api.cin.admin.v1.AdminOrder/CancelOrder"
 const OperationAdminOrderExportOrder = "/api.cin.admin.v1.AdminOrder/ExportOrder"
 const OperationAdminOrderExportTaskStatus = "/api.cin.admin.v1.AdminOrder/ExportTaskStatus"
 const OperationAdminOrderGetOrder = "/api.cin.admin.v1.AdminOrder/GetOrder"
 const OperationAdminOrderListOrder = "/api.cin.admin.v1.AdminOrder/ListOrder"
+const OperationAdminOrderListRefund = "/api.cin.admin.v1.AdminOrder/ListRefund"
 const OperationAdminOrderOrderStats = "/api.cin.admin.v1.AdminOrder/OrderStats"
 const OperationAdminOrderShipOrder = "/api.cin.admin.v1.AdminOrder/ShipOrder"
 
 type AdminOrderHTTPServer interface {
+	// AuditRefund 审核退款（通过/拒绝）
+	AuditRefund(context.Context, *AuditRefundRequest) (*AuditRefundReply, error)
 	// CancelOrder 取消订单
 	CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error)
 	// ExportOrder 导出订单
@@ -40,6 +44,8 @@ type AdminOrderHTTPServer interface {
 	GetOrder(context.Context, *GetOrderRequest) (*GetOrderReply, error)
 	// ListOrder 订单列表
 	ListOrder(context.Context, *ListOrderRequest) (*ListOrderReply, error)
+	// ListRefund 退款/售后单列表
+	ListRefund(context.Context, *ListRefundRequest) (*ListRefundReply, error)
 	// OrderStats 订单统计（顶部统计卡片数据）
 	// 注意：必须放在 GetOrder 之前注册，避免 /stats 被当作 {order_id} 匹配
 	OrderStats(context.Context, *OrderStatsRequest) (*OrderStatsReply, error)
@@ -56,6 +62,8 @@ func RegisterAdminOrderHTTPServer(s *http.Server, srv AdminOrderHTTPServer) {
 	r.GET("/admin/v1/orders/{order_id}", _AdminOrder_GetOrder0_HTTP_Handler(srv))
 	r.POST("/admin/v1/orders/{order_id}/ship", _AdminOrder_ShipOrder0_HTTP_Handler(srv))
 	r.POST("/admin/v1/orders/{order_id}/cancel", _AdminOrder_CancelOrder0_HTTP_Handler(srv))
+	r.GET("/admin/v1/refunds", _AdminOrder_ListRefund0_HTTP_Handler(srv))
+	r.POST("/admin/v1/refunds/{refund_id}/audit", _AdminOrder_AuditRefund0_HTTP_Handler(srv))
 }
 
 func _AdminOrder_ListOrder0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx http.Context) error {
@@ -209,7 +217,53 @@ func _AdminOrder_CancelOrder0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx ht
 	}
 }
 
+func _AdminOrder_ListRefund0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListRefundRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminOrderListRefund)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListRefund(ctx, req.(*ListRefundRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListRefundReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _AdminOrder_AuditRefund0_HTTP_Handler(srv AdminOrderHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in AuditRefundRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminOrderAuditRefund)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.AuditRefund(ctx, req.(*AuditRefundRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*AuditRefundReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type AdminOrderHTTPClient interface {
+	// AuditRefund 审核退款（通过/拒绝）
+	AuditRefund(ctx context.Context, req *AuditRefundRequest, opts ...http.CallOption) (rsp *AuditRefundReply, err error)
 	// CancelOrder 取消订单
 	CancelOrder(ctx context.Context, req *CancelOrderRequest, opts ...http.CallOption) (rsp *CancelOrderReply, err error)
 	// ExportOrder 导出订单
@@ -222,6 +276,8 @@ type AdminOrderHTTPClient interface {
 	GetOrder(ctx context.Context, req *GetOrderRequest, opts ...http.CallOption) (rsp *GetOrderReply, err error)
 	// ListOrder 订单列表
 	ListOrder(ctx context.Context, req *ListOrderRequest, opts ...http.CallOption) (rsp *ListOrderReply, err error)
+	// ListRefund 退款/售后单列表
+	ListRefund(ctx context.Context, req *ListRefundRequest, opts ...http.CallOption) (rsp *ListRefundReply, err error)
 	// OrderStats 订单统计（顶部统计卡片数据）
 	// 注意：必须放在 GetOrder 之前注册，避免 /stats 被当作 {order_id} 匹配
 	OrderStats(ctx context.Context, req *OrderStatsRequest, opts ...http.CallOption) (rsp *OrderStatsReply, err error)
@@ -235,6 +291,20 @@ type AdminOrderHTTPClientImpl struct {
 
 func NewAdminOrderHTTPClient(client *http.Client) AdminOrderHTTPClient {
 	return &AdminOrderHTTPClientImpl{client}
+}
+
+// AuditRefund 审核退款（通过/拒绝）
+func (c *AdminOrderHTTPClientImpl) AuditRefund(ctx context.Context, in *AuditRefundRequest, opts ...http.CallOption) (*AuditRefundReply, error) {
+	var out AuditRefundReply
+	pattern := "/admin/v1/refunds/{refund_id}/audit"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminOrderAuditRefund))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // CancelOrder 取消订单
@@ -301,6 +371,20 @@ func (c *AdminOrderHTTPClientImpl) ListOrder(ctx context.Context, in *ListOrderR
 	pattern := "/admin/v1/orders"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAdminOrderListOrder))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ListRefund 退款/售后单列表
+func (c *AdminOrderHTTPClientImpl) ListRefund(ctx context.Context, in *ListRefundRequest, opts ...http.CallOption) (*ListRefundReply, error) {
+	var out ListRefundReply
+	pattern := "/admin/v1/refunds"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminOrderListRefund))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

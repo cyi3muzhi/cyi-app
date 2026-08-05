@@ -19,15 +19,20 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationOrderApplyRefund = "/api.cin.interface.v1.Order/ApplyRefund"
 const OperationOrderCancelOrder = "/api.cin.interface.v1.Order/CancelOrder"
 const OperationOrderCartCheckout = "/api.cin.interface.v1.Order/CartCheckout"
 const OperationOrderGetOrder = "/api.cin.interface.v1.Order/GetOrder"
 const OperationOrderListOrder = "/api.cin.interface.v1.Order/ListOrder"
+const OperationOrderListRefund = "/api.cin.interface.v1.Order/ListRefund"
 const OperationOrderPayOrder = "/api.cin.interface.v1.Order/PayOrder"
 const OperationOrderPlaceOrder = "/api.cin.interface.v1.Order/PlaceOrder"
 const OperationOrderReceiveOrder = "/api.cin.interface.v1.Order/ReceiveOrder"
 
 type OrderHTTPServer interface {
+	// ApplyRefund 申请退款（仅已支付/待发货订单）
+	// 注意：必须放在 GetOrder 之前注册，避免 /refund/apply 被 {order_id} 通配匹配
+	ApplyRefund(context.Context, *ApplyRefundRequest) (*ApplyRefundReply, error)
 	// CancelOrder 取消订单
 	CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error)
 	// CartCheckout 购物车结算
@@ -36,6 +41,9 @@ type OrderHTTPServer interface {
 	GetOrder(context.Context, *GetOrderRequest) (*GetOrderReply, error)
 	// ListOrder 订单列表
 	ListOrder(context.Context, *ListOrderRequest) (*ListOrderReply, error)
+	// ListRefund 我的退款记录
+	// 注意：必须放在 GetOrder 之前注册，避免 /refunds 被 {order_id} 通配匹配
+	ListRefund(context.Context, *ListRefundRequest) (*ListRefundReply, error)
 	// PayOrder 支付订单
 	PayOrder(context.Context, *PayOrderRequest) (*PayOrderReply, error)
 	// PlaceOrder 下单
@@ -50,6 +58,8 @@ func RegisterOrderHTTPServer(s *http.Server, srv OrderHTTPServer) {
 	r.POST("/order/v1/pay", _Order_PayOrder0_HTTP_Handler(srv))
 	r.POST("/order/v1/cart_checkout", _Order_CartCheckout0_HTTP_Handler(srv))
 	r.GET("/order/v1/list", _Order_ListOrder1_HTTP_Handler(srv))
+	r.POST("/order/v1/refund/apply", _Order_ApplyRefund0_HTTP_Handler(srv))
+	r.GET("/order/v1/refunds", _Order_ListRefund1_HTTP_Handler(srv))
 	r.GET("/order/v1/{order_id}", _Order_GetOrder1_HTTP_Handler(srv))
 	r.POST("/order/v1/receive", _Order_ReceiveOrder0_HTTP_Handler(srv))
 	r.POST("/order/v1/cancel", _Order_CancelOrder1_HTTP_Handler(srv))
@@ -140,6 +150,47 @@ func _Order_ListOrder1_HTTP_Handler(srv OrderHTTPServer) func(ctx http.Context) 
 	}
 }
 
+func _Order_ApplyRefund0_HTTP_Handler(srv OrderHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ApplyRefundRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationOrderApplyRefund)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ApplyRefund(ctx, req.(*ApplyRefundRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ApplyRefundReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Order_ListRefund1_HTTP_Handler(srv OrderHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListRefundRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationOrderListRefund)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListRefund(ctx, req.(*ListRefundRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListRefundReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 func _Order_GetOrder1_HTTP_Handler(srv OrderHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in GetOrderRequest
@@ -207,6 +258,9 @@ func _Order_CancelOrder1_HTTP_Handler(srv OrderHTTPServer) func(ctx http.Context
 }
 
 type OrderHTTPClient interface {
+	// ApplyRefund 申请退款（仅已支付/待发货订单）
+	// 注意：必须放在 GetOrder 之前注册，避免 /refund/apply 被 {order_id} 通配匹配
+	ApplyRefund(ctx context.Context, req *ApplyRefundRequest, opts ...http.CallOption) (rsp *ApplyRefundReply, err error)
 	// CancelOrder 取消订单
 	CancelOrder(ctx context.Context, req *CancelOrderRequest, opts ...http.CallOption) (rsp *CancelOrderReply, err error)
 	// CartCheckout 购物车结算
@@ -215,6 +269,9 @@ type OrderHTTPClient interface {
 	GetOrder(ctx context.Context, req *GetOrderRequest, opts ...http.CallOption) (rsp *GetOrderReply, err error)
 	// ListOrder 订单列表
 	ListOrder(ctx context.Context, req *ListOrderRequest, opts ...http.CallOption) (rsp *ListOrderReply, err error)
+	// ListRefund 我的退款记录
+	// 注意：必须放在 GetOrder 之前注册，避免 /refunds 被 {order_id} 通配匹配
+	ListRefund(ctx context.Context, req *ListRefundRequest, opts ...http.CallOption) (rsp *ListRefundReply, err error)
 	// PayOrder 支付订单
 	PayOrder(ctx context.Context, req *PayOrderRequest, opts ...http.CallOption) (rsp *PayOrderReply, err error)
 	// PlaceOrder 下单
@@ -229,6 +286,21 @@ type OrderHTTPClientImpl struct {
 
 func NewOrderHTTPClient(client *http.Client) OrderHTTPClient {
 	return &OrderHTTPClientImpl{client}
+}
+
+// ApplyRefund 申请退款（仅已支付/待发货订单）
+// 注意：必须放在 GetOrder 之前注册，避免 /refund/apply 被 {order_id} 通配匹配
+func (c *OrderHTTPClientImpl) ApplyRefund(ctx context.Context, in *ApplyRefundRequest, opts ...http.CallOption) (*ApplyRefundReply, error) {
+	var out ApplyRefundReply
+	pattern := "/order/v1/refund/apply"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationOrderApplyRefund))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // CancelOrder 取消订单
@@ -279,6 +351,21 @@ func (c *OrderHTTPClientImpl) ListOrder(ctx context.Context, in *ListOrderReques
 	pattern := "/order/v1/list"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationOrderListOrder))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ListRefund 我的退款记录
+// 注意：必须放在 GetOrder 之前注册，避免 /refunds 被 {order_id} 通配匹配
+func (c *OrderHTTPClientImpl) ListRefund(ctx context.Context, in *ListRefundRequest, opts ...http.CallOption) (*ListRefundReply, error) {
+	var out ListRefundReply
+	pattern := "/order/v1/refunds"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationOrderListRefund))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

@@ -39,6 +39,8 @@ const (
 	OrderErrorReason_STOCK_OPERATION_FAILED OrderErrorReason = 5
 	// 订单商品为空
 	OrderErrorReason_ORDER_PRODUCT_EMPTY OrderErrorReason = 6
+	// 退款单不存在
+	OrderErrorReason_REFUND_NOT_FOUND OrderErrorReason = 7
 )
 
 // Enum value maps for OrderErrorReason.
@@ -51,6 +53,7 @@ var (
 		4: "INSUFFICIENT_STOCK",
 		5: "STOCK_OPERATION_FAILED",
 		6: "ORDER_PRODUCT_EMPTY",
+		7: "REFUND_NOT_FOUND",
 	}
 	OrderErrorReason_value = map[string]int32{
 		"ORDER_STATUS_INVALID":   0,
@@ -60,6 +63,7 @@ var (
 		"INSUFFICIENT_STOCK":     4,
 		"STOCK_OPERATION_FAILED": 5,
 		"ORDER_PRODUCT_EMPTY":    6,
+		"REFUND_NOT_FOUND":       7,
 	}
 )
 
@@ -94,7 +98,7 @@ var File_service_order_v1_order_error_proto protoreflect.FileDescriptor
 
 const file_service_order_v1_order_error_proto_rawDesc = "" +
 	"\n" +
-	"\"service/order/v1/order_error.proto\x12\x14api.service.order.v1\x1a\x13errors/errors.proto*\xed\x01\n" +
+	"\"service/order/v1/order_error.proto\x12\x14api.service.order.v1\x1a\x13errors/errors.proto*\x89\x02\n" +
 	"\x10OrderErrorReason\x12\x1e\n" +
 	"\x14ORDER_STATUS_INVALID\x10\x00\x1a\x04\xa8E\xa6\x03\x12\x18\n" +
 	"\x0eUSER_NOT_ORDER\x10\x01\x1a\x04\xa8E\xa6\x03\x12\x19\n" +
@@ -102,7 +106,8 @@ const file_service_order_v1_order_error_proto_rawDesc = "" +
 	"\x15PRODUCT_NOT_AVAILABLE\x10\x03\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
 	"\x12INSUFFICIENT_STOCK\x10\x04\x1a\x04\xa8E\xa6\x03\x12 \n" +
 	"\x16STOCK_OPERATION_FAILED\x10\x05\x1a\x04\xa8E\xa6\x03\x12\x1d\n" +
-	"\x13ORDER_PRODUCT_EMPTY\x10\x06\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B!Z\x1fcyi-app/api/service/order/v1;v1b\x06proto3"
+	"\x13ORDER_PRODUCT_EMPTY\x10\x06\x1a\x04\xa8E\xa6\x03\x12\x1a\n" +
+	"\x10REFUND_NOT_FOUND\x10\a\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B!Z\x1fcyi-app/api/service/order/v1;v1b\x06proto3"
 
 var (
 	file_service_order_v1_order_error_proto_rawDescOnce sync.Once

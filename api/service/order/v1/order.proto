@@ -30,6 +30,12 @@ service Order {
 	rpc CancelOrder (CancelOrderRequest) returns (CancelOrderReply);
 	// 查询超时未支付的待付款订单（task 服务 cron 兜底扫描用，status=1 且超过超时阈值）
 	rpc ListOverdueWaitPayOrders (ListOverdueWaitPayOrdersRequest) returns (ListOverdueWaitPayOrdersReply);
+	// 申请退款（用户端调用）：已支付/待发货 -> 退款中，并生成退款单
+	rpc ApplyRefund (ApplyRefundRequest) returns (ApplyRefundReply);
+	// 退款单列表（管理端/用户端调用）：user_id>0 时查询个人退款单
+	rpc ListRefund (ListRefundRequest) returns (ListRefundReply);
+	// 审核退款（管理端调用）：通过 -> 已退款并恢复库存；拒绝 -> 订单恢复申请前状态
+	rpc AuditRefund (AuditRefundRequest) returns (AuditRefundReply);
 }
 
 message CreateOrderRequest {
@@ -235,3 +241,67 @@ message ListOverdueWaitPayOrdersReply {
 	repeated ListOrderItem items = 1; // 复用列表项结构（含 order_id / created_at / user_id）
 	int32 total = 2;
 }
+
+// 退款单状态枚举
+enum RefundStatus {
+    RefundStatusUnspecified = 0; // 未指定
+    RefundPending = 1; // 待审核
+    RefundApproved = 2; // 已通过（已退款）
+    RefundRejected = 3; // 已拒绝
+}
+
+// 申请退款请求（用户端调用）
+message ApplyRefundRequest {
+	int64 order_id = 1; // 订单ID
+	int64 user_id = 2; // 用户ID（校验订单归属）
+	string reason = 3; // 退款原因
+}
+
+// 申请退款响应
+message ApplyRefundReply {
+	int64 refund_id = 1; // 退款单ID
+}
+
+// 退款单列表请求（管理端/用户端共用）
+message ListRefundRequest {
+	int32 page = 1;
+	int32 page_size = 2;
+	string status = 3; // 按退款单状态筛选（1-待审核 2-已通过 3-已拒绝；空字符串表示全部）
+	string keyword = 4; // 按订单号模糊搜索
+	int64 user_id = 5; // 按用户过滤（>0 时生效，个人中心使用）
+}
+
+// 退款单列表响应
+message ListRefundReply {
+	repeated RefundItem items = 1;
+	int32 total = 2;
+}
+
+// 退款单项
+message RefundItem {
+	int64 refund_id = 1; // 退款单ID
+	int64 order_id = 2; // 订单ID
+	string order_no = 3; // 订单号
+	int64 user_id = 4; // 用户ID
+	int64 refund_amount = 5; // 退款金额（单位：分，即订单实付金额）
+	string reason = 6; // 退款原因
+	int32 status = 7; // 退款单状态（1-待审核 2-已通过 3-已拒绝）
+	string status_text = 8; // 退款单状态文本
+	string reject_reason = 9; // 拒绝原因
+	string auditor = 10; // 审核人
+	int64 created_at = 11; // 申请时间（Unix 秒）
+	int64 audit_time = 12; // 审核时间（Unix 秒，0=未审核）
+	int32 origin_status = 13; // 申请退款前的订单状态（拒绝后恢复用）
+}
+
+// 审核退款请求（管理端调用）
+message AuditRefundRequest {
+	int64 refund_id = 1; // 退款单ID
+	bool approve = 2; // true=审核通过（退款并恢复库存）；false=审核拒绝
+	string reject_reason = 3; // 拒绝原因（approve=false 时必填）
+	int64 auditor_id = 4; // 审核人ID
+	string auditor = 5; // 审核人名称
+}
+
+// 审核退款响应
+message AuditRefundReply {}

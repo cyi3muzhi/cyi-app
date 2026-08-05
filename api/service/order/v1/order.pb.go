@@ -91,6 +91,59 @@ func (OrderStatus) EnumDescriptor() ([]byte, []int) {
 	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{0}
 }
 
+// 退款单状态枚举
+type RefundStatus int32
+
+const (
+	RefundStatus_RefundStatusUnspecified RefundStatus = 0 // 未指定
+	RefundStatus_RefundPending           RefundStatus = 1 // 待审核
+	RefundStatus_RefundApproved          RefundStatus = 2 // 已通过（已退款）
+	RefundStatus_RefundRejected          RefundStatus = 3 // 已拒绝
+)
+
+// Enum value maps for RefundStatus.
+var (
+	RefundStatus_name = map[int32]string{
+		0: "RefundStatusUnspecified",
+		1: "RefundPending",
+		2: "RefundApproved",
+		3: "RefundRejected",
+	}
+	RefundStatus_value = map[string]int32{
+		"RefundStatusUnspecified": 0,
+		"RefundPending":           1,
+		"RefundApproved":          2,
+		"RefundRejected":          3,
+	}
+)
+
+func (x RefundStatus) Enum() *RefundStatus {
+	p := new(RefundStatus)
+	*p = x
+	return p
+}
+
+func (x RefundStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (RefundStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_api_service_order_v1_order_proto_enumTypes[1].Descriptor()
+}
+
+func (RefundStatus) Type() protoreflect.EnumType {
+	return &file_api_service_order_v1_order_proto_enumTypes[1]
+}
+
+func (x RefundStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use RefundStatus.Descriptor instead.
+func (RefundStatus) EnumDescriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{1}
+}
+
 type CreateOrderRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	UserId         int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -1943,6 +1996,497 @@ func (x *ListOverdueWaitPayOrdersReply) GetTotal() int32 {
 	return 0
 }
 
+// 申请退款请求（用户端调用）
+type ApplyRefundRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       int64                  `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"` // 订单ID
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`    // 用户ID（校验订单归属）
+	Reason        string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`                   // 退款原因
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApplyRefundRequest) Reset() {
+	*x = ApplyRefundRequest{}
+	mi := &file_api_service_order_v1_order_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApplyRefundRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApplyRefundRequest) ProtoMessage() {}
+
+func (x *ApplyRefundRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_order_v1_order_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApplyRefundRequest.ProtoReflect.Descriptor instead.
+func (*ApplyRefundRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *ApplyRefundRequest) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+func (x *ApplyRefundRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *ApplyRefundRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+// 申请退款响应
+type ApplyRefundReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RefundId      int64                  `protobuf:"varint,1,opt,name=refund_id,json=refundId,proto3" json:"refund_id,omitempty"` // 退款单ID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApplyRefundReply) Reset() {
+	*x = ApplyRefundReply{}
+	mi := &file_api_service_order_v1_order_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApplyRefundReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApplyRefundReply) ProtoMessage() {}
+
+func (x *ApplyRefundReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_order_v1_order_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApplyRefundReply.ProtoReflect.Descriptor instead.
+func (*ApplyRefundReply) Descriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *ApplyRefundReply) GetRefundId() int64 {
+	if x != nil {
+		return x.RefundId
+	}
+	return 0
+}
+
+// 退款单列表请求（管理端/用户端共用）
+type ListRefundRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`                // 按退款单状态筛选（1-待审核 2-已通过 3-已拒绝；空字符串表示全部）
+	Keyword       string                 `protobuf:"bytes,4,opt,name=keyword,proto3" json:"keyword,omitempty"`              // 按订单号模糊搜索
+	UserId        int64                  `protobuf:"varint,5,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // 按用户过滤（>0 时生效，个人中心使用）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListRefundRequest) Reset() {
+	*x = ListRefundRequest{}
+	mi := &file_api_service_order_v1_order_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListRefundRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRefundRequest) ProtoMessage() {}
+
+func (x *ListRefundRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_order_v1_order_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRefundRequest.ProtoReflect.Descriptor instead.
+func (*ListRefundRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *ListRefundRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListRefundRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListRefundRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *ListRefundRequest) GetKeyword() string {
+	if x != nil {
+		return x.Keyword
+	}
+	return ""
+}
+
+func (x *ListRefundRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+// 退款单列表响应
+type ListRefundReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*RefundItem          `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListRefundReply) Reset() {
+	*x = ListRefundReply{}
+	mi := &file_api_service_order_v1_order_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListRefundReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRefundReply) ProtoMessage() {}
+
+func (x *ListRefundReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_order_v1_order_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRefundReply.ProtoReflect.Descriptor instead.
+func (*ListRefundReply) Descriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *ListRefundReply) GetItems() []*RefundItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *ListRefundReply) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+// 退款单项
+type RefundItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RefundId      int64                  `protobuf:"varint,1,opt,name=refund_id,json=refundId,proto3" json:"refund_id,omitempty"`              // 退款单ID
+	OrderId       int64                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`                 // 订单ID
+	OrderNo       string                 `protobuf:"bytes,3,opt,name=order_no,json=orderNo,proto3" json:"order_no,omitempty"`                  // 订单号
+	UserId        int64                  `protobuf:"varint,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`                    // 用户ID
+	RefundAmount  int64                  `protobuf:"varint,5,opt,name=refund_amount,json=refundAmount,proto3" json:"refund_amount,omitempty"`  // 退款金额（单位：分，即订单实付金额）
+	Reason        string                 `protobuf:"bytes,6,opt,name=reason,proto3" json:"reason,omitempty"`                                   // 退款原因
+	Status        int32                  `protobuf:"varint,7,opt,name=status,proto3" json:"status,omitempty"`                                  // 退款单状态（1-待审核 2-已通过 3-已拒绝）
+	StatusText    string                 `protobuf:"bytes,8,opt,name=status_text,json=statusText,proto3" json:"status_text,omitempty"`         // 退款单状态文本
+	RejectReason  string                 `protobuf:"bytes,9,opt,name=reject_reason,json=rejectReason,proto3" json:"reject_reason,omitempty"`   // 拒绝原因
+	Auditor       string                 `protobuf:"bytes,10,opt,name=auditor,proto3" json:"auditor,omitempty"`                                // 审核人
+	CreatedAt     int64                  `protobuf:"varint,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`          // 申请时间（Unix 秒）
+	AuditTime     int64                  `protobuf:"varint,12,opt,name=audit_time,json=auditTime,proto3" json:"audit_time,omitempty"`          // 审核时间（Unix 秒，0=未审核）
+	OriginStatus  int32                  `protobuf:"varint,13,opt,name=origin_status,json=originStatus,proto3" json:"origin_status,omitempty"` // 申请退款前的订单状态（拒绝后恢复用）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RefundItem) Reset() {
+	*x = RefundItem{}
+	mi := &file_api_service_order_v1_order_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RefundItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RefundItem) ProtoMessage() {}
+
+func (x *RefundItem) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_order_v1_order_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RefundItem.ProtoReflect.Descriptor instead.
+func (*RefundItem) Descriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *RefundItem) GetRefundId() int64 {
+	if x != nil {
+		return x.RefundId
+	}
+	return 0
+}
+
+func (x *RefundItem) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+func (x *RefundItem) GetOrderNo() string {
+	if x != nil {
+		return x.OrderNo
+	}
+	return ""
+}
+
+func (x *RefundItem) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *RefundItem) GetRefundAmount() int64 {
+	if x != nil {
+		return x.RefundAmount
+	}
+	return 0
+}
+
+func (x *RefundItem) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *RefundItem) GetStatus() int32 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *RefundItem) GetStatusText() string {
+	if x != nil {
+		return x.StatusText
+	}
+	return ""
+}
+
+func (x *RefundItem) GetRejectReason() string {
+	if x != nil {
+		return x.RejectReason
+	}
+	return ""
+}
+
+func (x *RefundItem) GetAuditor() string {
+	if x != nil {
+		return x.Auditor
+	}
+	return ""
+}
+
+func (x *RefundItem) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+func (x *RefundItem) GetAuditTime() int64 {
+	if x != nil {
+		return x.AuditTime
+	}
+	return 0
+}
+
+func (x *RefundItem) GetOriginStatus() int32 {
+	if x != nil {
+		return x.OriginStatus
+	}
+	return 0
+}
+
+// 审核退款请求（管理端调用）
+type AuditRefundRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RefundId      int64                  `protobuf:"varint,1,opt,name=refund_id,json=refundId,proto3" json:"refund_id,omitempty"`            // 退款单ID
+	Approve       bool                   `protobuf:"varint,2,opt,name=approve,proto3" json:"approve,omitempty"`                              // true=审核通过（退款并恢复库存）；false=审核拒绝
+	RejectReason  string                 `protobuf:"bytes,3,opt,name=reject_reason,json=rejectReason,proto3" json:"reject_reason,omitempty"` // 拒绝原因（approve=false 时必填）
+	AuditorId     int64                  `protobuf:"varint,4,opt,name=auditor_id,json=auditorId,proto3" json:"auditor_id,omitempty"`         // 审核人ID
+	Auditor       string                 `protobuf:"bytes,5,opt,name=auditor,proto3" json:"auditor,omitempty"`                               // 审核人名称
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AuditRefundRequest) Reset() {
+	*x = AuditRefundRequest{}
+	mi := &file_api_service_order_v1_order_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AuditRefundRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuditRefundRequest) ProtoMessage() {}
+
+func (x *AuditRefundRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_order_v1_order_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuditRefundRequest.ProtoReflect.Descriptor instead.
+func (*AuditRefundRequest) Descriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *AuditRefundRequest) GetRefundId() int64 {
+	if x != nil {
+		return x.RefundId
+	}
+	return 0
+}
+
+func (x *AuditRefundRequest) GetApprove() bool {
+	if x != nil {
+		return x.Approve
+	}
+	return false
+}
+
+func (x *AuditRefundRequest) GetRejectReason() string {
+	if x != nil {
+		return x.RejectReason
+	}
+	return ""
+}
+
+func (x *AuditRefundRequest) GetAuditorId() int64 {
+	if x != nil {
+		return x.AuditorId
+	}
+	return 0
+}
+
+func (x *AuditRefundRequest) GetAuditor() string {
+	if x != nil {
+		return x.Auditor
+	}
+	return ""
+}
+
+// 审核退款响应
+type AuditRefundReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AuditRefundReply) Reset() {
+	*x = AuditRefundReply{}
+	mi := &file_api_service_order_v1_order_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AuditRefundReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuditRefundReply) ProtoMessage() {}
+
+func (x *AuditRefundReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_service_order_v1_order_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuditRefundReply.ProtoReflect.Descriptor instead.
+func (*AuditRefundReply) Descriptor() ([]byte, []int) {
+	return file_api_service_order_v1_order_proto_rawDescGZIP(), []int{37}
+}
+
 var File_api_service_order_v1_order_proto protoreflect.FileDescriptor
 
 const file_api_service_order_v1_order_proto_rawDesc = "" +
@@ -2084,7 +2628,49 @@ const file_api_service_order_v1_order_proto_rawDesc = "" +
 	"\x0ftimeout_seconds\x18\x03 \x01(\x03R\x0etimeoutSeconds\"p\n" +
 	"\x1dListOverdueWaitPayOrdersReply\x129\n" +
 	"\x05items\x18\x01 \x03(\v2#.api.service.order.v1.ListOrderItemR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total*\x9f\x01\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"`\n" +
+	"\x12ApplyRefundRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\x03R\aorderId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x16\n" +
+	"\x06reason\x18\x03 \x01(\tR\x06reason\"/\n" +
+	"\x10ApplyRefundReply\x12\x1b\n" +
+	"\trefund_id\x18\x01 \x01(\x03R\brefundId\"\x8f\x01\n" +
+	"\x11ListRefundRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\tR\x06status\x12\x18\n" +
+	"\akeyword\x18\x04 \x01(\tR\akeyword\x12\x17\n" +
+	"\auser_id\x18\x05 \x01(\x03R\x06userId\"_\n" +
+	"\x0fListRefundReply\x126\n" +
+	"\x05items\x18\x01 \x03(\v2 .api.service.order.v1.RefundItemR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\x90\x03\n" +
+	"\n" +
+	"RefundItem\x12\x1b\n" +
+	"\trefund_id\x18\x01 \x01(\x03R\brefundId\x12\x19\n" +
+	"\border_id\x18\x02 \x01(\x03R\aorderId\x12\x19\n" +
+	"\border_no\x18\x03 \x01(\tR\aorderNo\x12\x17\n" +
+	"\auser_id\x18\x04 \x01(\x03R\x06userId\x12#\n" +
+	"\rrefund_amount\x18\x05 \x01(\x03R\frefundAmount\x12\x16\n" +
+	"\x06reason\x18\x06 \x01(\tR\x06reason\x12\x16\n" +
+	"\x06status\x18\a \x01(\x05R\x06status\x12\x1f\n" +
+	"\vstatus_text\x18\b \x01(\tR\n" +
+	"statusText\x12#\n" +
+	"\rreject_reason\x18\t \x01(\tR\frejectReason\x12\x18\n" +
+	"\aauditor\x18\n" +
+	" \x01(\tR\aauditor\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\v \x01(\x03R\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"audit_time\x18\f \x01(\x03R\tauditTime\x12#\n" +
+	"\rorigin_status\x18\r \x01(\x05R\foriginStatus\"\xa9\x01\n" +
+	"\x12AuditRefundRequest\x12\x1b\n" +
+	"\trefund_id\x18\x01 \x01(\x03R\brefundId\x12\x18\n" +
+	"\aapprove\x18\x02 \x01(\bR\aapprove\x12#\n" +
+	"\rreject_reason\x18\x03 \x01(\tR\frejectReason\x12\x1d\n" +
+	"\n" +
+	"auditor_id\x18\x04 \x01(\x03R\tauditorId\x12\x18\n" +
+	"\aauditor\x18\x05 \x01(\tR\aauditor\"\x12\n" +
+	"\x10AuditRefundReply*\x9f\x01\n" +
 	"\vOrderStatus\x12\x1a\n" +
 	"\x16OrderStatusUnspecified\x10\x00\x12\v\n" +
 	"\aWaitPay\x10\x01\x12\a\n" +
@@ -2096,8 +2682,12 @@ const file_api_service_order_v1_order_proto_rawDesc = "" +
 	"\n" +
 	"\x06Cancel\x10\a\x12\r\n" +
 	"\tRefunding\x10\b\x12\f\n" +
-	"\bRefunded\x10\t2\xfd\n" +
-	"\n" +
+	"\bRefunded\x10\t*f\n" +
+	"\fRefundStatus\x12\x1b\n" +
+	"\x17RefundStatusUnspecified\x10\x00\x12\x11\n" +
+	"\rRefundPending\x10\x01\x12\x12\n" +
+	"\x0eRefundApproved\x10\x02\x12\x12\n" +
+	"\x0eRefundRejected\x10\x032\x9d\r\n" +
 	"\x05Order\x12_\n" +
 	"\vCreateOrder\x12(.api.service.order.v1.CreateOrderRequest\x1a&.api.service.order.v1.CreateOrderReply\x12_\n" +
 	"\vUpdateOrder\x12(.api.service.order.v1.UpdateOrderRequest\x1a&.api.service.order.v1.UpdateOrderReply\x12_\n" +
@@ -2113,7 +2703,11 @@ const file_api_service_order_v1_order_proto_rawDesc = "" +
 	"\tShipOrder\x12&.api.service.order.v1.ShipOrderRequest\x1a$.api.service.order.v1.ShipOrderReply\x12b\n" +
 	"\fReceiveOrder\x12).api.service.order.v1.ReceiveOrderRequest\x1a'.api.service.order.v1.ReceiveOrderReply\x12_\n" +
 	"\vCancelOrder\x12(.api.service.order.v1.CancelOrderRequest\x1a&.api.service.order.v1.CancelOrderReply\x12\x86\x01\n" +
-	"\x18ListOverdueWaitPayOrders\x125.api.service.order.v1.ListOverdueWaitPayOrdersRequest\x1a3.api.service.order.v1.ListOverdueWaitPayOrdersReplyB9\n" +
+	"\x18ListOverdueWaitPayOrders\x125.api.service.order.v1.ListOverdueWaitPayOrdersRequest\x1a3.api.service.order.v1.ListOverdueWaitPayOrdersReply\x12_\n" +
+	"\vApplyRefund\x12(.api.service.order.v1.ApplyRefundRequest\x1a&.api.service.order.v1.ApplyRefundReply\x12\\\n" +
+	"\n" +
+	"ListRefund\x12'.api.service.order.v1.ListRefundRequest\x1a%.api.service.order.v1.ListRefundReply\x12_\n" +
+	"\vAuditRefund\x12(.api.service.order.v1.AuditRefundRequest\x1a&.api.service.order.v1.AuditRefundReplyB9\n" +
 	"\x14api.service.order.v1P\x01Z\x1fcyi-app/api/service/order/v1;v1b\x06proto3"
 
 var (
@@ -2128,82 +2722,97 @@ func file_api_service_order_v1_order_proto_rawDescGZIP() []byte {
 	return file_api_service_order_v1_order_proto_rawDescData
 }
 
-var file_api_service_order_v1_order_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_service_order_v1_order_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
+var file_api_service_order_v1_order_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_api_service_order_v1_order_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
 var file_api_service_order_v1_order_proto_goTypes = []any{
 	(OrderStatus)(0),                        // 0: api.service.order.v1.OrderStatus
-	(*CreateOrderRequest)(nil),              // 1: api.service.order.v1.CreateOrderRequest
-	(*CreateOrderReply)(nil),                // 2: api.service.order.v1.CreateOrderReply
-	(*UpdateOrderRequest)(nil),              // 3: api.service.order.v1.UpdateOrderRequest
-	(*UpdateOrderReply)(nil),                // 4: api.service.order.v1.UpdateOrderReply
-	(*DeleteOrderRequest)(nil),              // 5: api.service.order.v1.DeleteOrderRequest
-	(*DeleteOrderReply)(nil),                // 6: api.service.order.v1.DeleteOrderReply
-	(*GetOrderRequest)(nil),                 // 7: api.service.order.v1.GetOrderRequest
-	(*GetOrderReply)(nil),                   // 8: api.service.order.v1.GetOrderReply
-	(*OrderItemProto)(nil),                  // 9: api.service.order.v1.OrderItemProto
-	(*ListOrderRequest)(nil),                // 10: api.service.order.v1.ListOrderRequest
-	(*ListOrderReply)(nil),                  // 11: api.service.order.v1.ListOrderReply
-	(*ListOrderItem)(nil),                   // 12: api.service.order.v1.ListOrderItem
-	(*PayOrderRequest)(nil),                 // 13: api.service.order.v1.PayOrderRequest
-	(*PayOrderReply)(nil),                   // 14: api.service.order.v1.PayOrderReply
-	(*OrderStatsRequest)(nil),               // 15: api.service.order.v1.OrderStatsRequest
-	(*OrderStatsReply)(nil),                 // 16: api.service.order.v1.OrderStatsReply
-	(*GetOrderTrendRequest)(nil),            // 17: api.service.order.v1.GetOrderTrendRequest
-	(*GetOrderTrendReply)(nil),              // 18: api.service.order.v1.GetOrderTrendReply
-	(*TrendItem)(nil),                       // 19: api.service.order.v1.TrendItem
-	(*BatchGetOrderRequest)(nil),            // 20: api.service.order.v1.BatchGetOrderRequest
-	(*BatchGetOrderReply)(nil),              // 21: api.service.order.v1.BatchGetOrderReply
-	(*GetUserOrderStatsRequest)(nil),        // 22: api.service.order.v1.GetUserOrderStatsRequest
-	(*GetUserOrderStatsReply)(nil),          // 23: api.service.order.v1.GetUserOrderStatsReply
-	(*ShipOrderRequest)(nil),                // 24: api.service.order.v1.ShipOrderRequest
-	(*ShipOrderReply)(nil),                  // 25: api.service.order.v1.ShipOrderReply
-	(*ReceiveOrderRequest)(nil),             // 26: api.service.order.v1.ReceiveOrderRequest
-	(*ReceiveOrderReply)(nil),               // 27: api.service.order.v1.ReceiveOrderReply
-	(*CancelOrderRequest)(nil),              // 28: api.service.order.v1.CancelOrderRequest
-	(*CancelOrderReply)(nil),                // 29: api.service.order.v1.CancelOrderReply
-	(*ListOverdueWaitPayOrdersRequest)(nil), // 30: api.service.order.v1.ListOverdueWaitPayOrdersRequest
-	(*ListOverdueWaitPayOrdersReply)(nil),   // 31: api.service.order.v1.ListOverdueWaitPayOrdersReply
+	(RefundStatus)(0),                       // 1: api.service.order.v1.RefundStatus
+	(*CreateOrderRequest)(nil),              // 2: api.service.order.v1.CreateOrderRequest
+	(*CreateOrderReply)(nil),                // 3: api.service.order.v1.CreateOrderReply
+	(*UpdateOrderRequest)(nil),              // 4: api.service.order.v1.UpdateOrderRequest
+	(*UpdateOrderReply)(nil),                // 5: api.service.order.v1.UpdateOrderReply
+	(*DeleteOrderRequest)(nil),              // 6: api.service.order.v1.DeleteOrderRequest
+	(*DeleteOrderReply)(nil),                // 7: api.service.order.v1.DeleteOrderReply
+	(*GetOrderRequest)(nil),                 // 8: api.service.order.v1.GetOrderRequest
+	(*GetOrderReply)(nil),                   // 9: api.service.order.v1.GetOrderReply
+	(*OrderItemProto)(nil),                  // 10: api.service.order.v1.OrderItemProto
+	(*ListOrderRequest)(nil),                // 11: api.service.order.v1.ListOrderRequest
+	(*ListOrderReply)(nil),                  // 12: api.service.order.v1.ListOrderReply
+	(*ListOrderItem)(nil),                   // 13: api.service.order.v1.ListOrderItem
+	(*PayOrderRequest)(nil),                 // 14: api.service.order.v1.PayOrderRequest
+	(*PayOrderReply)(nil),                   // 15: api.service.order.v1.PayOrderReply
+	(*OrderStatsRequest)(nil),               // 16: api.service.order.v1.OrderStatsRequest
+	(*OrderStatsReply)(nil),                 // 17: api.service.order.v1.OrderStatsReply
+	(*GetOrderTrendRequest)(nil),            // 18: api.service.order.v1.GetOrderTrendRequest
+	(*GetOrderTrendReply)(nil),              // 19: api.service.order.v1.GetOrderTrendReply
+	(*TrendItem)(nil),                       // 20: api.service.order.v1.TrendItem
+	(*BatchGetOrderRequest)(nil),            // 21: api.service.order.v1.BatchGetOrderRequest
+	(*BatchGetOrderReply)(nil),              // 22: api.service.order.v1.BatchGetOrderReply
+	(*GetUserOrderStatsRequest)(nil),        // 23: api.service.order.v1.GetUserOrderStatsRequest
+	(*GetUserOrderStatsReply)(nil),          // 24: api.service.order.v1.GetUserOrderStatsReply
+	(*ShipOrderRequest)(nil),                // 25: api.service.order.v1.ShipOrderRequest
+	(*ShipOrderReply)(nil),                  // 26: api.service.order.v1.ShipOrderReply
+	(*ReceiveOrderRequest)(nil),             // 27: api.service.order.v1.ReceiveOrderRequest
+	(*ReceiveOrderReply)(nil),               // 28: api.service.order.v1.ReceiveOrderReply
+	(*CancelOrderRequest)(nil),              // 29: api.service.order.v1.CancelOrderRequest
+	(*CancelOrderReply)(nil),                // 30: api.service.order.v1.CancelOrderReply
+	(*ListOverdueWaitPayOrdersRequest)(nil), // 31: api.service.order.v1.ListOverdueWaitPayOrdersRequest
+	(*ListOverdueWaitPayOrdersReply)(nil),   // 32: api.service.order.v1.ListOverdueWaitPayOrdersReply
+	(*ApplyRefundRequest)(nil),              // 33: api.service.order.v1.ApplyRefundRequest
+	(*ApplyRefundReply)(nil),                // 34: api.service.order.v1.ApplyRefundReply
+	(*ListRefundRequest)(nil),               // 35: api.service.order.v1.ListRefundRequest
+	(*ListRefundReply)(nil),                 // 36: api.service.order.v1.ListRefundReply
+	(*RefundItem)(nil),                      // 37: api.service.order.v1.RefundItem
+	(*AuditRefundRequest)(nil),              // 38: api.service.order.v1.AuditRefundRequest
+	(*AuditRefundReply)(nil),                // 39: api.service.order.v1.AuditRefundReply
 }
 var file_api_service_order_v1_order_proto_depIdxs = []int32{
-	9,  // 0: api.service.order.v1.CreateOrderRequest.items:type_name -> api.service.order.v1.OrderItemProto
-	9,  // 1: api.service.order.v1.GetOrderReply.items:type_name -> api.service.order.v1.OrderItemProto
-	12, // 2: api.service.order.v1.ListOrderReply.items:type_name -> api.service.order.v1.ListOrderItem
-	19, // 3: api.service.order.v1.GetOrderTrendReply.items:type_name -> api.service.order.v1.TrendItem
-	8,  // 4: api.service.order.v1.BatchGetOrderReply.orders:type_name -> api.service.order.v1.GetOrderReply
-	12, // 5: api.service.order.v1.ListOverdueWaitPayOrdersReply.items:type_name -> api.service.order.v1.ListOrderItem
-	1,  // 6: api.service.order.v1.Order.CreateOrder:input_type -> api.service.order.v1.CreateOrderRequest
-	3,  // 7: api.service.order.v1.Order.UpdateOrder:input_type -> api.service.order.v1.UpdateOrderRequest
-	5,  // 8: api.service.order.v1.Order.DeleteOrder:input_type -> api.service.order.v1.DeleteOrderRequest
-	7,  // 9: api.service.order.v1.Order.GetOrder:input_type -> api.service.order.v1.GetOrderRequest
-	10, // 10: api.service.order.v1.Order.ListOrder:input_type -> api.service.order.v1.ListOrderRequest
-	13, // 11: api.service.order.v1.Order.PayOrder:input_type -> api.service.order.v1.PayOrderRequest
-	15, // 12: api.service.order.v1.Order.OrderStats:input_type -> api.service.order.v1.OrderStatsRequest
-	17, // 13: api.service.order.v1.Order.GetOrderTrend:input_type -> api.service.order.v1.GetOrderTrendRequest
-	20, // 14: api.service.order.v1.Order.BatchGetOrder:input_type -> api.service.order.v1.BatchGetOrderRequest
-	22, // 15: api.service.order.v1.Order.GetUserOrderStats:input_type -> api.service.order.v1.GetUserOrderStatsRequest
-	24, // 16: api.service.order.v1.Order.ShipOrder:input_type -> api.service.order.v1.ShipOrderRequest
-	26, // 17: api.service.order.v1.Order.ReceiveOrder:input_type -> api.service.order.v1.ReceiveOrderRequest
-	28, // 18: api.service.order.v1.Order.CancelOrder:input_type -> api.service.order.v1.CancelOrderRequest
-	30, // 19: api.service.order.v1.Order.ListOverdueWaitPayOrders:input_type -> api.service.order.v1.ListOverdueWaitPayOrdersRequest
-	2,  // 20: api.service.order.v1.Order.CreateOrder:output_type -> api.service.order.v1.CreateOrderReply
-	4,  // 21: api.service.order.v1.Order.UpdateOrder:output_type -> api.service.order.v1.UpdateOrderReply
-	6,  // 22: api.service.order.v1.Order.DeleteOrder:output_type -> api.service.order.v1.DeleteOrderReply
-	8,  // 23: api.service.order.v1.Order.GetOrder:output_type -> api.service.order.v1.GetOrderReply
-	11, // 24: api.service.order.v1.Order.ListOrder:output_type -> api.service.order.v1.ListOrderReply
-	14, // 25: api.service.order.v1.Order.PayOrder:output_type -> api.service.order.v1.PayOrderReply
-	16, // 26: api.service.order.v1.Order.OrderStats:output_type -> api.service.order.v1.OrderStatsReply
-	18, // 27: api.service.order.v1.Order.GetOrderTrend:output_type -> api.service.order.v1.GetOrderTrendReply
-	21, // 28: api.service.order.v1.Order.BatchGetOrder:output_type -> api.service.order.v1.BatchGetOrderReply
-	23, // 29: api.service.order.v1.Order.GetUserOrderStats:output_type -> api.service.order.v1.GetUserOrderStatsReply
-	25, // 30: api.service.order.v1.Order.ShipOrder:output_type -> api.service.order.v1.ShipOrderReply
-	27, // 31: api.service.order.v1.Order.ReceiveOrder:output_type -> api.service.order.v1.ReceiveOrderReply
-	29, // 32: api.service.order.v1.Order.CancelOrder:output_type -> api.service.order.v1.CancelOrderReply
-	31, // 33: api.service.order.v1.Order.ListOverdueWaitPayOrders:output_type -> api.service.order.v1.ListOverdueWaitPayOrdersReply
-	20, // [20:34] is the sub-list for method output_type
-	6,  // [6:20] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	10, // 0: api.service.order.v1.CreateOrderRequest.items:type_name -> api.service.order.v1.OrderItemProto
+	10, // 1: api.service.order.v1.GetOrderReply.items:type_name -> api.service.order.v1.OrderItemProto
+	13, // 2: api.service.order.v1.ListOrderReply.items:type_name -> api.service.order.v1.ListOrderItem
+	20, // 3: api.service.order.v1.GetOrderTrendReply.items:type_name -> api.service.order.v1.TrendItem
+	9,  // 4: api.service.order.v1.BatchGetOrderReply.orders:type_name -> api.service.order.v1.GetOrderReply
+	13, // 5: api.service.order.v1.ListOverdueWaitPayOrdersReply.items:type_name -> api.service.order.v1.ListOrderItem
+	37, // 6: api.service.order.v1.ListRefundReply.items:type_name -> api.service.order.v1.RefundItem
+	2,  // 7: api.service.order.v1.Order.CreateOrder:input_type -> api.service.order.v1.CreateOrderRequest
+	4,  // 8: api.service.order.v1.Order.UpdateOrder:input_type -> api.service.order.v1.UpdateOrderRequest
+	6,  // 9: api.service.order.v1.Order.DeleteOrder:input_type -> api.service.order.v1.DeleteOrderRequest
+	8,  // 10: api.service.order.v1.Order.GetOrder:input_type -> api.service.order.v1.GetOrderRequest
+	11, // 11: api.service.order.v1.Order.ListOrder:input_type -> api.service.order.v1.ListOrderRequest
+	14, // 12: api.service.order.v1.Order.PayOrder:input_type -> api.service.order.v1.PayOrderRequest
+	16, // 13: api.service.order.v1.Order.OrderStats:input_type -> api.service.order.v1.OrderStatsRequest
+	18, // 14: api.service.order.v1.Order.GetOrderTrend:input_type -> api.service.order.v1.GetOrderTrendRequest
+	21, // 15: api.service.order.v1.Order.BatchGetOrder:input_type -> api.service.order.v1.BatchGetOrderRequest
+	23, // 16: api.service.order.v1.Order.GetUserOrderStats:input_type -> api.service.order.v1.GetUserOrderStatsRequest
+	25, // 17: api.service.order.v1.Order.ShipOrder:input_type -> api.service.order.v1.ShipOrderRequest
+	27, // 18: api.service.order.v1.Order.ReceiveOrder:input_type -> api.service.order.v1.ReceiveOrderRequest
+	29, // 19: api.service.order.v1.Order.CancelOrder:input_type -> api.service.order.v1.CancelOrderRequest
+	31, // 20: api.service.order.v1.Order.ListOverdueWaitPayOrders:input_type -> api.service.order.v1.ListOverdueWaitPayOrdersRequest
+	33, // 21: api.service.order.v1.Order.ApplyRefund:input_type -> api.service.order.v1.ApplyRefundRequest
+	35, // 22: api.service.order.v1.Order.ListRefund:input_type -> api.service.order.v1.ListRefundRequest
+	38, // 23: api.service.order.v1.Order.AuditRefund:input_type -> api.service.order.v1.AuditRefundRequest
+	3,  // 24: api.service.order.v1.Order.CreateOrder:output_type -> api.service.order.v1.CreateOrderReply
+	5,  // 25: api.service.order.v1.Order.UpdateOrder:output_type -> api.service.order.v1.UpdateOrderReply
+	7,  // 26: api.service.order.v1.Order.DeleteOrder:output_type -> api.service.order.v1.DeleteOrderReply
+	9,  // 27: api.service.order.v1.Order.GetOrder:output_type -> api.service.order.v1.GetOrderReply
+	12, // 28: api.service.order.v1.Order.ListOrder:output_type -> api.service.order.v1.ListOrderReply
+	15, // 29: api.service.order.v1.Order.PayOrder:output_type -> api.service.order.v1.PayOrderReply
+	17, // 30: api.service.order.v1.Order.OrderStats:output_type -> api.service.order.v1.OrderStatsReply
+	19, // 31: api.service.order.v1.Order.GetOrderTrend:output_type -> api.service.order.v1.GetOrderTrendReply
+	22, // 32: api.service.order.v1.Order.BatchGetOrder:output_type -> api.service.order.v1.BatchGetOrderReply
+	24, // 33: api.service.order.v1.Order.GetUserOrderStats:output_type -> api.service.order.v1.GetUserOrderStatsReply
+	26, // 34: api.service.order.v1.Order.ShipOrder:output_type -> api.service.order.v1.ShipOrderReply
+	28, // 35: api.service.order.v1.Order.ReceiveOrder:output_type -> api.service.order.v1.ReceiveOrderReply
+	30, // 36: api.service.order.v1.Order.CancelOrder:output_type -> api.service.order.v1.CancelOrderReply
+	32, // 37: api.service.order.v1.Order.ListOverdueWaitPayOrders:output_type -> api.service.order.v1.ListOverdueWaitPayOrdersReply
+	34, // 38: api.service.order.v1.Order.ApplyRefund:output_type -> api.service.order.v1.ApplyRefundReply
+	36, // 39: api.service.order.v1.Order.ListRefund:output_type -> api.service.order.v1.ListRefundReply
+	39, // 40: api.service.order.v1.Order.AuditRefund:output_type -> api.service.order.v1.AuditRefundReply
+	24, // [24:41] is the sub-list for method output_type
+	7,  // [7:24] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_api_service_order_v1_order_proto_init() }
@@ -2216,8 +2825,8 @@ func file_api_service_order_v1_order_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_service_order_v1_order_proto_rawDesc), len(file_api_service_order_v1_order_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   31,
+			NumEnums:      2,
+			NumMessages:   38,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

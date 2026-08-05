@@ -144,6 +144,46 @@ func (s *CinInterface) GetOrder(ctx context.Context, req *v1.GetOrderRequest) (*
 	return &v1.GetOrderReply{Order: orderBizToProto(order)}, nil
 }
 
+// ApplyRefund 申请退款（当前登录用户对自己的订单发起，仅已支付/待发货可申请）
+func (s *CinInterface) ApplyRefund(ctx context.Context, req *v1.ApplyRefundRequest) (*v1.ApplyRefundReply, error) {
+	userID, err := service.GetUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	refundID, err := s.oc.ApplyRefund(ctx, req.OrderId, userID, req.Reason)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ApplyRefundReply{RefundId: refundID}, nil
+}
+
+// ListRefund 我的退款记录（当前登录用户）
+func (s *CinInterface) ListRefund(ctx context.Context, req *v1.ListRefundRequest) (*v1.ListRefundReply, error) {
+	userID, err := service.GetUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	items, total, err := s.oc.ListRefund(ctx, userID, req.Page, req.PageSize, req.Status)
+	if err != nil {
+		return nil, err
+	}
+	replyItems := make([]*v1.RefundItem, 0, len(items))
+	for _, item := range items {
+		replyItems = append(replyItems, &v1.RefundItem{
+			RefundId:     item.ID,
+			OrderId:      item.OrderID,
+			OrderNo:      item.OrderNo,
+			RefundAmount: item.RefundAmount,
+			Reason:       item.Reason,
+			Status:       item.Status,
+			StatusText:   item.StatusText,
+			RejectReason: item.RejectReason,
+			CreatedAt:    time.Unix(item.CreatedAt, 0).Format("2006-01-02 15:04:05"),
+		})
+	}
+	return &v1.ListRefundReply{Items: replyItems, Total: total}, nil
+}
+
 // orderBizToProto biz.Order -> v1.OrderItem 转换（含状态字符串映射、时间格式化）
 func orderBizToProto(o *biz.Order) *v1.OrderItem {
 	// 支付截止时间：待付款订单 = 下单时间 + 30 分钟，其余状态为 0
@@ -152,14 +192,14 @@ func orderBizToProto(o *biz.Order) *v1.OrderItem {
 		payDeadline = o.CreatedAt + 30*60
 	}
 	item := &v1.OrderItem{
-		Id:         o.ID,
-		OrderNo:    o.OrderNo,
-		CreatedAt:  time.Unix(o.CreatedAt, 0).Format("2006-01-02 15:04:05"),
-		Amount:     o.PayAmount,
-		Status:     orderStatusStr(o.Status),
-		StatusText: orderStatusText(o.Status),
+		Id:          o.ID,
+		OrderNo:     o.OrderNo,
+		CreatedAt:   time.Unix(o.CreatedAt, 0).Format("2006-01-02 15:04:05"),
+		Amount:      o.PayAmount,
+		Status:      orderStatusStr(o.Status),
+		StatusText:  orderStatusText(o.Status),
 		PayDeadline: payDeadline,
-		Products:   []*v1.OrderProduct{},
+		Products:    []*v1.OrderProduct{},
 		// 物流信息（发货后展示）
 		LogisticsCompany: o.LogisticsCompany,
 		LogisticsNo:      o.LogisticsNo,
@@ -183,6 +223,7 @@ func orderBizToProto(o *biz.Order) *v1.OrderItem {
 
 // orderStatusStr 订单状态数字 -> 前端状态字符串（与前端 OrderStatus 类型对齐）
 // 状态 2（已支付）/3（待发货）归入"待发货"；状态 4（已发货）/5（待收货）归入"待收货"
+// 状态 8（退款中）/9（已退款）分别映射，便于列表区分展示
 func orderStatusStr(status int32) string {
 	switch status {
 	case 1:
@@ -195,8 +236,10 @@ func orderStatusStr(status int32) string {
 		return "completed"
 	case 7:
 		return "cancelled"
-	case 8, 9:
-		return "refund"
+	case 8:
+		return "refunding"
+	case 9:
+		return "refunded"
 	default:
 		return "unknown"
 	}

@@ -1091,6 +1091,375 @@ func (x *OrderStatsReply) GetRefundCount() int32 {
 	return 0
 }
 
+// 退款单列表请求
+type ListRefundRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`   // 状态筛选（1-待审核 2-已通过 3-已拒绝；空=全部）
+	Keyword       string                 `protobuf:"bytes,4,opt,name=keyword,proto3" json:"keyword,omitempty"` // 订单号模糊搜索
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListRefundRequest) Reset() {
+	*x = ListRefundRequest{}
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListRefundRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRefundRequest) ProtoMessage() {}
+
+func (x *ListRefundRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRefundRequest.ProtoReflect.Descriptor instead.
+func (*ListRefundRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_order_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ListRefundRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListRefundRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListRefundRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *ListRefundRequest) GetKeyword() string {
+	if x != nil {
+		return x.Keyword
+	}
+	return ""
+}
+
+// 退款单列表响应
+type ListRefundReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*RefundItem          `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListRefundReply) Reset() {
+	*x = ListRefundReply{}
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListRefundReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRefundReply) ProtoMessage() {}
+
+func (x *ListRefundReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRefundReply.ProtoReflect.Descriptor instead.
+func (*ListRefundReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_order_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ListRefundReply) GetItems() []*RefundItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *ListRefundReply) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+// 退款单项
+type RefundItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RefundId      int64                  `protobuf:"varint,1,opt,name=refund_id,json=refundId,proto3" json:"refund_id,omitempty"`              // 退款单ID
+	OrderId       int64                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`                 // 订单ID
+	OrderNo       string                 `protobuf:"bytes,3,opt,name=order_no,json=orderNo,proto3" json:"order_no,omitempty"`                  // 订单号
+	UserId        int64                  `protobuf:"varint,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`                    // 用户ID
+	UserName      string                 `protobuf:"bytes,5,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`               // 用户名
+	RefundAmount  int64                  `protobuf:"varint,6,opt,name=refund_amount,json=refundAmount,proto3" json:"refund_amount,omitempty"`  // 退款金额（单位：分）
+	Reason        string                 `protobuf:"bytes,7,opt,name=reason,proto3" json:"reason,omitempty"`                                   // 退款原因
+	Status        int32                  `protobuf:"varint,8,opt,name=status,proto3" json:"status,omitempty"`                                  // 状态: 1-待审核 2-已通过 3-已拒绝
+	StatusText    string                 `protobuf:"bytes,9,opt,name=status_text,json=statusText,proto3" json:"status_text,omitempty"`         // 状态文本
+	RejectReason  string                 `protobuf:"bytes,10,opt,name=reject_reason,json=rejectReason,proto3" json:"reject_reason,omitempty"`  // 拒绝原因
+	Auditor       string                 `protobuf:"bytes,11,opt,name=auditor,proto3" json:"auditor,omitempty"`                                // 审核人
+	CreatedAt     string                 `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`           // 申请时间（格式化字符串）
+	OriginStatus  int32                  `protobuf:"varint,13,opt,name=origin_status,json=originStatus,proto3" json:"origin_status,omitempty"` // 申请前的订单状态
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RefundItem) Reset() {
+	*x = RefundItem{}
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RefundItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RefundItem) ProtoMessage() {}
+
+func (x *RefundItem) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RefundItem.ProtoReflect.Descriptor instead.
+func (*RefundItem) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_order_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *RefundItem) GetRefundId() int64 {
+	if x != nil {
+		return x.RefundId
+	}
+	return 0
+}
+
+func (x *RefundItem) GetOrderId() int64 {
+	if x != nil {
+		return x.OrderId
+	}
+	return 0
+}
+
+func (x *RefundItem) GetOrderNo() string {
+	if x != nil {
+		return x.OrderNo
+	}
+	return ""
+}
+
+func (x *RefundItem) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *RefundItem) GetUserName() string {
+	if x != nil {
+		return x.UserName
+	}
+	return ""
+}
+
+func (x *RefundItem) GetRefundAmount() int64 {
+	if x != nil {
+		return x.RefundAmount
+	}
+	return 0
+}
+
+func (x *RefundItem) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *RefundItem) GetStatus() int32 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *RefundItem) GetStatusText() string {
+	if x != nil {
+		return x.StatusText
+	}
+	return ""
+}
+
+func (x *RefundItem) GetRejectReason() string {
+	if x != nil {
+		return x.RejectReason
+	}
+	return ""
+}
+
+func (x *RefundItem) GetAuditor() string {
+	if x != nil {
+		return x.Auditor
+	}
+	return ""
+}
+
+func (x *RefundItem) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *RefundItem) GetOriginStatus() int32 {
+	if x != nil {
+		return x.OriginStatus
+	}
+	return 0
+}
+
+// 审核退款请求
+type AuditRefundRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RefundId      int64                  `protobuf:"varint,1,opt,name=refund_id,json=refundId,proto3" json:"refund_id,omitempty"`
+	Approve       bool                   `protobuf:"varint,2,opt,name=approve,proto3" json:"approve,omitempty"`                              // true=通过（退款）；false=拒绝
+	RejectReason  string                 `protobuf:"bytes,3,opt,name=reject_reason,json=rejectReason,proto3" json:"reject_reason,omitempty"` // 拒绝原因（approve=false 时必填）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AuditRefundRequest) Reset() {
+	*x = AuditRefundRequest{}
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AuditRefundRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuditRefundRequest) ProtoMessage() {}
+
+func (x *AuditRefundRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuditRefundRequest.ProtoReflect.Descriptor instead.
+func (*AuditRefundRequest) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_order_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *AuditRefundRequest) GetRefundId() int64 {
+	if x != nil {
+		return x.RefundId
+	}
+	return 0
+}
+
+func (x *AuditRefundRequest) GetApprove() bool {
+	if x != nil {
+		return x.Approve
+	}
+	return false
+}
+
+func (x *AuditRefundRequest) GetRejectReason() string {
+	if x != nil {
+		return x.RejectReason
+	}
+	return ""
+}
+
+// 审核退款响应
+type AuditRefundReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AuditRefundReply) Reset() {
+	*x = AuditRefundReply{}
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AuditRefundReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuditRefundReply) ProtoMessage() {}
+
+func (x *AuditRefundReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_cin_admin_v1_order_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuditRefundReply.ProtoReflect.Descriptor instead.
+func (*AuditRefundReply) Descriptor() ([]byte, []int) {
+	return file_api_cin_admin_v1_order_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *AuditRefundReply) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_api_cin_admin_v1_order_proto protoreflect.FileDescriptor
 
 const file_api_cin_admin_v1_order_proto_rawDesc = "" +
@@ -1173,7 +1542,39 @@ const file_api_cin_admin_v1_order_proto_rawDesc = "" +
 	"\rpending_count\x18\x02 \x01(\x05R\fpendingCount\x12\x1f\n" +
 	"\vtoday_count\x18\x03 \x01(\x05R\n" +
 	"todayCount\x12!\n" +
-	"\frefund_count\x18\x04 \x01(\x05R\vrefundCount*c\n" +
+	"\frefund_count\x18\x04 \x01(\x05R\vrefundCount\"v\n" +
+	"\x11ListRefundRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\tR\x06status\x12\x18\n" +
+	"\akeyword\x18\x04 \x01(\tR\akeyword\"[\n" +
+	"\x0fListRefundReply\x122\n" +
+	"\x05items\x18\x01 \x03(\v2\x1c.api.cin.admin.v1.RefundItemR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\x8e\x03\n" +
+	"\n" +
+	"RefundItem\x12\x1b\n" +
+	"\trefund_id\x18\x01 \x01(\x03R\brefundId\x12\x19\n" +
+	"\border_id\x18\x02 \x01(\x03R\aorderId\x12\x19\n" +
+	"\border_no\x18\x03 \x01(\tR\aorderNo\x12\x17\n" +
+	"\auser_id\x18\x04 \x01(\x03R\x06userId\x12\x1b\n" +
+	"\tuser_name\x18\x05 \x01(\tR\buserName\x12#\n" +
+	"\rrefund_amount\x18\x06 \x01(\x03R\frefundAmount\x12\x16\n" +
+	"\x06reason\x18\a \x01(\tR\x06reason\x12\x16\n" +
+	"\x06status\x18\b \x01(\x05R\x06status\x12\x1f\n" +
+	"\vstatus_text\x18\t \x01(\tR\n" +
+	"statusText\x12#\n" +
+	"\rreject_reason\x18\n" +
+	" \x01(\tR\frejectReason\x12\x18\n" +
+	"\aauditor\x18\v \x01(\tR\aauditor\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\f \x01(\tR\tcreatedAt\x12#\n" +
+	"\rorigin_status\x18\r \x01(\x05R\foriginStatus\"y\n" +
+	"\x12AuditRefundRequest\x12$\n" +
+	"\trefund_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\brefundId\x12\x18\n" +
+	"\aapprove\x18\x02 \x01(\bR\aapprove\x12#\n" +
+	"\rreject_reason\x18\x03 \x01(\tR\frejectReason\",\n" +
+	"\x10AuditRefundReply\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess*c\n" +
 	"\fExportStatus\x12\x1b\n" +
 	"\x17ExportStatusUnspecified\x10\x00\x12\v\n" +
 	"\aPENDING\x10\x01\x12\x0e\n" +
@@ -1181,7 +1582,7 @@ const file_api_cin_admin_v1_order_proto_rawDesc = "" +
 	"PROCESSING\x10\x02\x12\r\n" +
 	"\tCOMPLETED\x10\x03\x12\n" +
 	"\n" +
-	"\x06FAILED\x10\x042\xfb\x06\n" +
+	"\x06FAILED\x10\x042\xf6\b\n" +
 	"\n" +
 	"AdminOrder\x12k\n" +
 	"\tListOrder\x12\".api.cin.admin.v1.ListOrderRequest\x1a .api.cin.admin.v1.ListOrderReply\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/admin/v1/orders\x12t\n" +
@@ -1191,7 +1592,10 @@ const file_api_cin_admin_v1_order_proto_rawDesc = "" +
 	"\x10ExportTaskStatus\x12).api.cin.admin.v1.ExportTaskStatusRequest\x1a'.api.cin.admin.v1.ExportTaskStatusReply\")\x82\xd3\xe4\x93\x02#\x12!/admin/v1/orders/export/{task_id}\x12s\n" +
 	"\bGetOrder\x12!.api.cin.admin.v1.GetOrderRequest\x1a\x1f.api.cin.admin.v1.GetOrderReply\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/admin/v1/orders/{order_id}\x12~\n" +
 	"\tShipOrder\x12\".api.cin.admin.v1.ShipOrderRequest\x1a .api.cin.admin.v1.ShipOrderReply\"+\x82\xd3\xe4\x93\x02%:\x01*\" /admin/v1/orders/{order_id}/ship\x12\x86\x01\n" +
-	"\vCancelOrder\x12$.api.cin.admin.v1.CancelOrderRequest\x1a\".api.cin.admin.v1.CancelOrderReply\"-\x82\xd3\xe4\x93\x02':\x01*\"\"/admin/v1/orders/{order_id}/cancelB6\n" +
+	"\vCancelOrder\x12$.api.cin.admin.v1.CancelOrderRequest\x1a\".api.cin.admin.v1.CancelOrderReply\"-\x82\xd3\xe4\x93\x02':\x01*\"\"/admin/v1/orders/{order_id}/cancel\x12o\n" +
+	"\n" +
+	"ListRefund\x12#.api.cin.admin.v1.ListRefundRequest\x1a!.api.cin.admin.v1.ListRefundReply\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/admin/v1/refunds\x12\x87\x01\n" +
+	"\vAuditRefund\x12$.api.cin.admin.v1.AuditRefundRequest\x1a\".api.cin.admin.v1.AuditRefundReply\".\x82\xd3\xe4\x93\x02(:\x01*\"#/admin/v1/refunds/{refund_id}/auditB6\n" +
 	"\x10api.cin.admin.v1P\x01Z cyi-app/api/cin/admin/v1;adminv1b\x06proto3"
 
 var (
@@ -1207,7 +1611,7 @@ func file_api_cin_admin_v1_order_proto_rawDescGZIP() []byte {
 }
 
 var file_api_cin_admin_v1_order_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_cin_admin_v1_order_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_api_cin_admin_v1_order_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_api_cin_admin_v1_order_proto_goTypes = []any{
 	(ExportStatus)(0),               // 0: api.cin.admin.v1.ExportStatus
 	(*ListOrderRequest)(nil),        // 1: api.cin.admin.v1.ListOrderRequest
@@ -1226,6 +1630,11 @@ var file_api_cin_admin_v1_order_proto_goTypes = []any{
 	(*ExportTaskStatusReply)(nil),   // 14: api.cin.admin.v1.ExportTaskStatusReply
 	(*OrderStatsRequest)(nil),       // 15: api.cin.admin.v1.OrderStatsRequest
 	(*OrderStatsReply)(nil),         // 16: api.cin.admin.v1.OrderStatsReply
+	(*ListRefundRequest)(nil),       // 17: api.cin.admin.v1.ListRefundRequest
+	(*ListRefundReply)(nil),         // 18: api.cin.admin.v1.ListRefundReply
+	(*RefundItem)(nil),              // 19: api.cin.admin.v1.RefundItem
+	(*AuditRefundRequest)(nil),      // 20: api.cin.admin.v1.AuditRefundRequest
+	(*AuditRefundReply)(nil),        // 21: api.cin.admin.v1.AuditRefundReply
 }
 var file_api_cin_admin_v1_order_proto_depIdxs = []int32{
 	3,  // 0: api.cin.admin.v1.ListOrderReply.items:type_name -> api.cin.admin.v1.OrderItem
@@ -1233,25 +1642,30 @@ var file_api_cin_admin_v1_order_proto_depIdxs = []int32{
 	3,  // 2: api.cin.admin.v1.GetOrderReply.order:type_name -> api.cin.admin.v1.OrderItem
 	0,  // 3: api.cin.admin.v1.ExportOrderReply.status:type_name -> api.cin.admin.v1.ExportStatus
 	0,  // 4: api.cin.admin.v1.ExportTaskStatusReply.status:type_name -> api.cin.admin.v1.ExportStatus
-	1,  // 5: api.cin.admin.v1.AdminOrder.ListOrder:input_type -> api.cin.admin.v1.ListOrderRequest
-	15, // 6: api.cin.admin.v1.AdminOrder.OrderStats:input_type -> api.cin.admin.v1.OrderStatsRequest
-	11, // 7: api.cin.admin.v1.AdminOrder.ExportOrder:input_type -> api.cin.admin.v1.ExportOrderRequest
-	13, // 8: api.cin.admin.v1.AdminOrder.ExportTaskStatus:input_type -> api.cin.admin.v1.ExportTaskStatusRequest
-	5,  // 9: api.cin.admin.v1.AdminOrder.GetOrder:input_type -> api.cin.admin.v1.GetOrderRequest
-	7,  // 10: api.cin.admin.v1.AdminOrder.ShipOrder:input_type -> api.cin.admin.v1.ShipOrderRequest
-	9,  // 11: api.cin.admin.v1.AdminOrder.CancelOrder:input_type -> api.cin.admin.v1.CancelOrderRequest
-	2,  // 12: api.cin.admin.v1.AdminOrder.ListOrder:output_type -> api.cin.admin.v1.ListOrderReply
-	16, // 13: api.cin.admin.v1.AdminOrder.OrderStats:output_type -> api.cin.admin.v1.OrderStatsReply
-	12, // 14: api.cin.admin.v1.AdminOrder.ExportOrder:output_type -> api.cin.admin.v1.ExportOrderReply
-	14, // 15: api.cin.admin.v1.AdminOrder.ExportTaskStatus:output_type -> api.cin.admin.v1.ExportTaskStatusReply
-	6,  // 16: api.cin.admin.v1.AdminOrder.GetOrder:output_type -> api.cin.admin.v1.GetOrderReply
-	8,  // 17: api.cin.admin.v1.AdminOrder.ShipOrder:output_type -> api.cin.admin.v1.ShipOrderReply
-	10, // 18: api.cin.admin.v1.AdminOrder.CancelOrder:output_type -> api.cin.admin.v1.CancelOrderReply
-	12, // [12:19] is the sub-list for method output_type
-	5,  // [5:12] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	19, // 5: api.cin.admin.v1.ListRefundReply.items:type_name -> api.cin.admin.v1.RefundItem
+	1,  // 6: api.cin.admin.v1.AdminOrder.ListOrder:input_type -> api.cin.admin.v1.ListOrderRequest
+	15, // 7: api.cin.admin.v1.AdminOrder.OrderStats:input_type -> api.cin.admin.v1.OrderStatsRequest
+	11, // 8: api.cin.admin.v1.AdminOrder.ExportOrder:input_type -> api.cin.admin.v1.ExportOrderRequest
+	13, // 9: api.cin.admin.v1.AdminOrder.ExportTaskStatus:input_type -> api.cin.admin.v1.ExportTaskStatusRequest
+	5,  // 10: api.cin.admin.v1.AdminOrder.GetOrder:input_type -> api.cin.admin.v1.GetOrderRequest
+	7,  // 11: api.cin.admin.v1.AdminOrder.ShipOrder:input_type -> api.cin.admin.v1.ShipOrderRequest
+	9,  // 12: api.cin.admin.v1.AdminOrder.CancelOrder:input_type -> api.cin.admin.v1.CancelOrderRequest
+	17, // 13: api.cin.admin.v1.AdminOrder.ListRefund:input_type -> api.cin.admin.v1.ListRefundRequest
+	20, // 14: api.cin.admin.v1.AdminOrder.AuditRefund:input_type -> api.cin.admin.v1.AuditRefundRequest
+	2,  // 15: api.cin.admin.v1.AdminOrder.ListOrder:output_type -> api.cin.admin.v1.ListOrderReply
+	16, // 16: api.cin.admin.v1.AdminOrder.OrderStats:output_type -> api.cin.admin.v1.OrderStatsReply
+	12, // 17: api.cin.admin.v1.AdminOrder.ExportOrder:output_type -> api.cin.admin.v1.ExportOrderReply
+	14, // 18: api.cin.admin.v1.AdminOrder.ExportTaskStatus:output_type -> api.cin.admin.v1.ExportTaskStatusReply
+	6,  // 19: api.cin.admin.v1.AdminOrder.GetOrder:output_type -> api.cin.admin.v1.GetOrderReply
+	8,  // 20: api.cin.admin.v1.AdminOrder.ShipOrder:output_type -> api.cin.admin.v1.ShipOrderReply
+	10, // 21: api.cin.admin.v1.AdminOrder.CancelOrder:output_type -> api.cin.admin.v1.CancelOrderReply
+	18, // 22: api.cin.admin.v1.AdminOrder.ListRefund:output_type -> api.cin.admin.v1.ListRefundReply
+	21, // 23: api.cin.admin.v1.AdminOrder.AuditRefund:output_type -> api.cin.admin.v1.AuditRefundReply
+	15, // [15:24] is the sub-list for method output_type
+	6,  // [6:15] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_api_cin_admin_v1_order_proto_init() }
@@ -1265,7 +1679,7 @@ func file_api_cin_admin_v1_order_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_admin_v1_order_proto_rawDesc), len(file_api_cin_admin_v1_order_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   16,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

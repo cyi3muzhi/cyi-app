@@ -23,4 +23,6 @@ enum OrderErrorReason {
 	STOCK_OPERATION_FAILED = 5 [(errors.code) = 422];
 	// 订单商品为空
 	ORDER_PRODUCT_EMPTY = 6 [(errors.code) = 422];
+	// 退款单不存在
+	REFUND_NOT_FOUND = 7 [(errors.code) = 422];
 }

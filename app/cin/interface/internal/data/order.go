@@ -245,3 +245,46 @@ func (r *orderRepo) GetOrderDetail(ctx context.Context, orderID int64, userID in
 	}
 	return order, nil
 }
+
+// ApplyRefund 申请退款（调用订单服务，校验订单归属）
+func (r *orderRepo) ApplyRefund(ctx context.Context, orderID int64, userID int64, reason string) (int64, error) {
+	reply, err := r.data.oc.ApplyRefund(ctx, &orderV1.ApplyRefundRequest{
+		OrderId: orderID,
+		UserId:  userID,
+		Reason:  reason,
+	})
+	if err != nil {
+		r.log.Errorf("apply refund failed, orderID=%d, userID=%d: %v", orderID, userID, err)
+		return 0, err
+	}
+	return reply.RefundId, nil
+}
+
+// ListRefund 查询当前用户退款记录（支持按状态筛选）
+func (r *orderRepo) ListRefund(ctx context.Context, userID int64, page, pageSize int32, status string) ([]*biz.Refund, int32, error) {
+	reply, err := r.data.oc.ListRefund(ctx, &orderV1.ListRefundRequest{
+		Page:     page,
+		PageSize: pageSize,
+		UserId:   userID,
+		Status:   status,
+	})
+	if err != nil {
+		r.log.Errorf("list refund failed, userID=%d: %v", userID, err)
+		return nil, 0, err
+	}
+	items := make([]*biz.Refund, 0, len(reply.Items))
+	for _, item := range reply.Items {
+		items = append(items, &biz.Refund{
+			ID:           item.RefundId,
+			OrderID:      item.OrderId,
+			OrderNo:      item.OrderNo,
+			RefundAmount: item.RefundAmount,
+			Reason:       item.Reason,
+			Status:       item.Status,
+			StatusText:   item.StatusText,
+			RejectReason: item.RejectReason,
+			CreatedAt:    item.CreatedAt,
+		})
+	}
+	return items, reply.Total, nil
+}

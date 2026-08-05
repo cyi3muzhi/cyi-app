@@ -14,12 +14,14 @@ import (
 type OrderService struct {
 	v1.UnimplementedOrderServer
 	uc  *biz.OrderUseCase
+	ruc *biz.RefundUseCase
 	log log.Logger
 }
 
-func NewOrderService(uc *biz.OrderUseCase, logger log.Logger) *OrderService {
+func NewOrderService(uc *biz.OrderUseCase, ruc *biz.RefundUseCase, logger log.Logger) *OrderService {
 	return &OrderService{
 		uc:  uc,
+		ruc: ruc,
 		log: logger,
 	}
 }
@@ -263,4 +265,67 @@ func (s *OrderService) ListOverdueWaitPayOrders(ctx context.Context, req *v1.Lis
 		Items: replyItems,
 		Total: total,
 	}, nil
+}
+
+// ApplyRefund 申请退款（用户端调用）：已支付/待发货 -> 退款中，并生成退款单
+func (s *OrderService) ApplyRefund(ctx context.Context, req *v1.ApplyRefundRequest) (*v1.ApplyRefundReply, error) {
+	refund, err := s.ruc.ApplyRefund(ctx, req.OrderId, req.UserId, req.Reason)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ApplyRefundReply{RefundId: refund.ID}, nil
+}
+
+// ListRefund 退款单列表（管理端全量 / 用户端按 user_id 过滤）
+func (s *OrderService) ListRefund(ctx context.Context, req *v1.ListRefundRequest) (*v1.ListRefundReply, error) {
+	items, total, err := s.ruc.ListRefund(ctx, req.Page, req.PageSize, req.Status, req.Keyword, req.UserId)
+	if err != nil {
+		return nil, err
+	}
+	replyItems := make([]*v1.RefundItem, 0, len(items))
+	for _, item := range items {
+		replyItems = append(replyItems, refundToReply(item))
+	}
+	return &v1.ListRefundReply{Items: replyItems, Total: total}, nil
+}
+
+// AuditRefund 审核退款（管理端调用）：通过 -> 已退款并恢复库存；拒绝 -> 订单恢复申请前状态
+func (s *OrderService) AuditRefund(ctx context.Context, req *v1.AuditRefundRequest) (*v1.AuditRefundReply, error) {
+	if err := s.ruc.AuditRefund(ctx, req.RefundId, req.Approve, req.RejectReason, req.Auditor); err != nil {
+		return nil, err
+	}
+	return &v1.AuditRefundReply{}, nil
+}
+
+// refundToReply biz.Refund -> proto RefundItem 转换
+func refundToReply(refund *biz.Refund) *v1.RefundItem {
+	return &v1.RefundItem{
+		RefundId:     refund.ID,
+		OrderId:      refund.OrderID,
+		OrderNo:      refund.OrderNo,
+		UserId:       refund.UserID,
+		RefundAmount: refund.RefundAmount.Amount,
+		Reason:       refund.Reason,
+		Status:       refund.Status,
+		StatusText:   refundStatusText(refund.Status),
+		RejectReason: refund.RejectReason,
+		Auditor:      refund.Auditor,
+		CreatedAt:    refund.CreateTime,
+		AuditTime:    refund.AuditTime,
+		OriginStatus: refund.OriginStatus,
+	}
+}
+
+// refundStatusText 退款单状态 -> 中文文本
+func refundStatusText(status int32) string {
+	switch status {
+	case int32(v1.RefundStatus_RefundPending):
+		return "待审核"
+	case int32(v1.RefundStatus_RefundApproved):
+		return "已通过"
+	case int32(v1.RefundStatus_RefundRejected):
+		return "已拒绝"
+	default:
+		return "未知状态"
+	}
 }

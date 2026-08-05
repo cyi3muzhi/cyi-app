@@ -32,4 +32,6 @@ export type OrderStatus =
   | 'pending_review'    // 待评价
   | 'completed'         // 已完成
   | 'cancelled'         // 已取消
-  | 'refund'            // 退款/售后
+  | 'refunding'         // 退款中
+  | 'refunded'          // 已退款
+  | 'refund'            // 退款/售后（旧版兜底）

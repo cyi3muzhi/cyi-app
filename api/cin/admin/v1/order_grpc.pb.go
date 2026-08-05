@@ -26,6 +26,8 @@ const (
 	AdminOrder_GetOrder_FullMethodName         = "/api.cin.admin.v1.AdminOrder/GetOrder"
 	AdminOrder_ShipOrder_FullMethodName        = "/api.cin.admin.v1.AdminOrder/ShipOrder"
 	AdminOrder_CancelOrder_FullMethodName      = "/api.cin.admin.v1.AdminOrder/CancelOrder"
+	AdminOrder_ListRefund_FullMethodName       = "/api.cin.admin.v1.AdminOrder/ListRefund"
+	AdminOrder_AuditRefund_FullMethodName      = "/api.cin.admin.v1.AdminOrder/AuditRefund"
 )
 
 // AdminOrderClient is the client API for AdminOrder service.
@@ -51,6 +53,10 @@ type AdminOrderClient interface {
 	ShipOrder(ctx context.Context, in *ShipOrderRequest, opts ...grpc.CallOption) (*ShipOrderReply, error)
 	// 取消订单
 	CancelOrder(ctx context.Context, in *CancelOrderRequest, opts ...grpc.CallOption) (*CancelOrderReply, error)
+	// 退款/售后单列表
+	ListRefund(ctx context.Context, in *ListRefundRequest, opts ...grpc.CallOption) (*ListRefundReply, error)
+	// 审核退款（通过/拒绝）
+	AuditRefund(ctx context.Context, in *AuditRefundRequest, opts ...grpc.CallOption) (*AuditRefundReply, error)
 }
 
 type adminOrderClient struct {
@@ -131,6 +137,26 @@ func (c *adminOrderClient) CancelOrder(ctx context.Context, in *CancelOrderReque
 	return out, nil
 }
 
+func (c *adminOrderClient) ListRefund(ctx context.Context, in *ListRefundRequest, opts ...grpc.CallOption) (*ListRefundReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListRefundReply)
+	err := c.cc.Invoke(ctx, AdminOrder_ListRefund_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminOrderClient) AuditRefund(ctx context.Context, in *AuditRefundRequest, opts ...grpc.CallOption) (*AuditRefundReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AuditRefundReply)
+	err := c.cc.Invoke(ctx, AdminOrder_AuditRefund_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminOrderServer is the server API for AdminOrder service.
 // All implementations must embed UnimplementedAdminOrderServer
 // for forward compatibility.
@@ -154,6 +180,10 @@ type AdminOrderServer interface {
 	ShipOrder(context.Context, *ShipOrderRequest) (*ShipOrderReply, error)
 	// 取消订单
 	CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error)
+	// 退款/售后单列表
+	ListRefund(context.Context, *ListRefundRequest) (*ListRefundReply, error)
+	// 审核退款（通过/拒绝）
+	AuditRefund(context.Context, *AuditRefundRequest) (*AuditRefundReply, error)
 	mustEmbedUnimplementedAdminOrderServer()
 }
 
@@ -184,6 +214,12 @@ func (UnimplementedAdminOrderServer) ShipOrder(context.Context, *ShipOrderReques
 }
 func (UnimplementedAdminOrderServer) CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelOrder not implemented")
+}
+func (UnimplementedAdminOrderServer) ListRefund(context.Context, *ListRefundRequest) (*ListRefundReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRefund not implemented")
+}
+func (UnimplementedAdminOrderServer) AuditRefund(context.Context, *AuditRefundRequest) (*AuditRefundReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AuditRefund not implemented")
 }
 func (UnimplementedAdminOrderServer) mustEmbedUnimplementedAdminOrderServer() {}
 func (UnimplementedAdminOrderServer) testEmbeddedByValue()                    {}
@@ -332,6 +368,42 @@ func _AdminOrder_CancelOrder_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminOrder_ListRefund_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRefundRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminOrderServer).ListRefund(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminOrder_ListRefund_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminOrderServer).ListRefund(ctx, req.(*ListRefundRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminOrder_AuditRefund_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuditRefundRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminOrderServer).AuditRefund(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminOrder_AuditRefund_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminOrderServer).AuditRefund(ctx, req.(*AuditRefundRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminOrder_ServiceDesc is the grpc.ServiceDesc for AdminOrder service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -366,6 +438,14 @@ var AdminOrder_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CancelOrder",
 			Handler:    _AdminOrder_CancelOrder_Handler,
+		},
+		{
+			MethodName: "ListRefund",
+			Handler:    _AdminOrder_ListRefund_Handler,
+		},
+		{
+			MethodName: "AuditRefund",
+			Handler:    _AdminOrder_AuditRefund_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

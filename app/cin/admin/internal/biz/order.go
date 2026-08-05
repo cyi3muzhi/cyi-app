@@ -49,6 +49,27 @@ type OrderRepo interface {
 	CancelOrder(ctx context.Context, orderID int64, reason string) error
 	// OrderStats 获取订单统计数据
 	OrderStats(ctx context.Context) (total, pending, today, refund int32, err error)
+	// ListRefund 获取退款/售后单列表（含用户名）
+	ListRefund(ctx context.Context, page, pageSize int32, status string, keyword string) ([]*Refund, int32, error)
+	// AuditRefund 审核退款（通过/拒绝）
+	AuditRefund(ctx context.Context, refundID int64, approve bool, rejectReason, auditor string) error
+}
+
+// Refund 退款/售后单领域模型（管理端展示）
+type Refund struct {
+	ID           int64  // 退款单ID
+	OrderID      int64  // 订单ID
+	OrderNo      string // 订单号
+	UserID       int64  // 用户ID
+	UserName     string // 用户名
+	RefundAmount int64  // 退款金额（分）
+	Reason       string // 退款原因
+	Status       int32  // 状态: 1-待审核 2-已通过 3-已拒绝
+	StatusText   string // 状态文本
+	RejectReason string // 拒绝原因
+	Auditor      string // 审核人
+	CreatedAt    string // 申请时间（格式化字符串）
+	OriginStatus int32  // 申请前的订单状态
 }
 
 // OrderUseCase 订单管理业务用例
@@ -88,4 +109,14 @@ func (uc *OrderUseCase) Ship(ctx context.Context, orderID int64, logisticsCompan
 // Cancel 取消订单
 func (uc *OrderUseCase) Cancel(ctx context.Context, orderID int64, reason string) error {
 	return uc.repo.CancelOrder(ctx, orderID, reason)
+}
+
+// ListRefund 获取退款/售后单列表
+func (uc *OrderUseCase) ListRefund(ctx context.Context, page, pageSize int32, status string, keyword string) ([]*Refund, int32, error) {
+	return uc.repo.ListRefund(ctx, page, pageSize, status, keyword)
+}
+
+// AuditRefund 审核退款（通过/拒绝）
+func (uc *OrderUseCase) AuditRefund(ctx context.Context, refundID int64, approve bool, rejectReason, auditor string) error {
+	return uc.repo.AuditRefund(ctx, refundID, approve, rejectReason, auditor)
 }

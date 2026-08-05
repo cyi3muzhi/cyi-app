@@ -269,7 +269,8 @@ const orderTabs = ref<OrderTab[]>([
   { key: 'pending_receive', label: '待收货', count: 0 },
   { key: 'pending_review', label: '待评价', count: 0 },
   { key: 'completed', label: '已完成', count: 0 },
-  { key: 'cancelled', label: '已取消', count: 0 }
+  { key: 'cancelled', label: '已取消', count: 0 },
+  { key: 'refund', label: '退款/售后', count: 0 }
 ])
 
 /**
@@ -439,7 +440,9 @@ function statusLabel(status: OrderStatus): string {
     pending_review: '待评价',
     completed: '已完成',
     cancelled: '已取消',
-    refund: '退款中'
+    refunding: '退款中',
+    refunded: '已退款',
+    refund: '退款/售后'
   }
   return map[status] || '未知'
 }
@@ -457,6 +460,8 @@ function statusColor(status: OrderStatus): string {
     pending_review: 'var(--shop-warning)',
     completed: 'var(--shop-success)',
     cancelled: 'var(--shop-muted-foreground)',
+    refunding: 'var(--shop-warning)',
+    refunded: 'var(--shop-muted-foreground)',
     refund: 'var(--shop-destructive)'
   }
   return map[status] || 'var(--shop-muted-foreground)'
@@ -489,6 +494,12 @@ function getActions(status: OrderStatus): Array<{ key: string; label: string; pr
       { key: 'again', label: '再次购买', primary: true }
     ],
     cancelled: [
+      { key: 'detail', label: '查看详情', primary: false }
+    ],
+    refunding: [
+      { key: 'detail', label: '查看详情', primary: false }
+    ],
+    refunded: [
       { key: 'detail', label: '查看详情', primary: false }
     ],
     refund: [

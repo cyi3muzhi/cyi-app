@@ -33,6 +33,9 @@ const (
 	Order_ReceiveOrder_FullMethodName             = "/api.service.order.v1.Order/ReceiveOrder"
 	Order_CancelOrder_FullMethodName              = "/api.service.order.v1.Order/CancelOrder"
 	Order_ListOverdueWaitPayOrders_FullMethodName = "/api.service.order.v1.Order/ListOverdueWaitPayOrders"
+	Order_ApplyRefund_FullMethodName              = "/api.service.order.v1.Order/ApplyRefund"
+	Order_ListRefund_FullMethodName               = "/api.service.order.v1.Order/ListRefund"
+	Order_AuditRefund_FullMethodName              = "/api.service.order.v1.Order/AuditRefund"
 )
 
 // OrderClient is the client API for Order service.
@@ -62,6 +65,12 @@ type OrderClient interface {
 	CancelOrder(ctx context.Context, in *CancelOrderRequest, opts ...grpc.CallOption) (*CancelOrderReply, error)
 	// 查询超时未支付的待付款订单（task 服务 cron 兜底扫描用，status=1 且超过超时阈值）
 	ListOverdueWaitPayOrders(ctx context.Context, in *ListOverdueWaitPayOrdersRequest, opts ...grpc.CallOption) (*ListOverdueWaitPayOrdersReply, error)
+	// 申请退款（用户端调用）：已支付/待发货 -> 退款中，并生成退款单
+	ApplyRefund(ctx context.Context, in *ApplyRefundRequest, opts ...grpc.CallOption) (*ApplyRefundReply, error)
+	// 退款单列表（管理端/用户端调用）：user_id>0 时查询个人退款单
+	ListRefund(ctx context.Context, in *ListRefundRequest, opts ...grpc.CallOption) (*ListRefundReply, error)
+	// 审核退款（管理端调用）：通过 -> 已退款并恢复库存；拒绝 -> 订单恢复申请前状态
+	AuditRefund(ctx context.Context, in *AuditRefundRequest, opts ...grpc.CallOption) (*AuditRefundReply, error)
 }
 
 type orderClient struct {
@@ -212,6 +221,36 @@ func (c *orderClient) ListOverdueWaitPayOrders(ctx context.Context, in *ListOver
 	return out, nil
 }
 
+func (c *orderClient) ApplyRefund(ctx context.Context, in *ApplyRefundRequest, opts ...grpc.CallOption) (*ApplyRefundReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApplyRefundReply)
+	err := c.cc.Invoke(ctx, Order_ApplyRefund_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orderClient) ListRefund(ctx context.Context, in *ListRefundRequest, opts ...grpc.CallOption) (*ListRefundReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListRefundReply)
+	err := c.cc.Invoke(ctx, Order_ListRefund_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orderClient) AuditRefund(ctx context.Context, in *AuditRefundRequest, opts ...grpc.CallOption) (*AuditRefundReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AuditRefundReply)
+	err := c.cc.Invoke(ctx, Order_AuditRefund_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrderServer is the server API for Order service.
 // All implementations must embed UnimplementedOrderServer
 // for forward compatibility.
@@ -239,6 +278,12 @@ type OrderServer interface {
 	CancelOrder(context.Context, *CancelOrderRequest) (*CancelOrderReply, error)
 	// 查询超时未支付的待付款订单（task 服务 cron 兜底扫描用，status=1 且超过超时阈值）
 	ListOverdueWaitPayOrders(context.Context, *ListOverdueWaitPayOrdersRequest) (*ListOverdueWaitPayOrdersReply, error)
+	// 申请退款（用户端调用）：已支付/待发货 -> 退款中，并生成退款单
+	ApplyRefund(context.Context, *ApplyRefundRequest) (*ApplyRefundReply, error)
+	// 退款单列表（管理端/用户端调用）：user_id>0 时查询个人退款单
+	ListRefund(context.Context, *ListRefundRequest) (*ListRefundReply, error)
+	// 审核退款（管理端调用）：通过 -> 已退款并恢复库存；拒绝 -> 订单恢复申请前状态
+	AuditRefund(context.Context, *AuditRefundRequest) (*AuditRefundReply, error)
 	mustEmbedUnimplementedOrderServer()
 }
 
@@ -290,6 +335,15 @@ func (UnimplementedOrderServer) CancelOrder(context.Context, *CancelOrderRequest
 }
 func (UnimplementedOrderServer) ListOverdueWaitPayOrders(context.Context, *ListOverdueWaitPayOrdersRequest) (*ListOverdueWaitPayOrdersReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListOverdueWaitPayOrders not implemented")
+}
+func (UnimplementedOrderServer) ApplyRefund(context.Context, *ApplyRefundRequest) (*ApplyRefundReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ApplyRefund not implemented")
+}
+func (UnimplementedOrderServer) ListRefund(context.Context, *ListRefundRequest) (*ListRefundReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRefund not implemented")
+}
+func (UnimplementedOrderServer) AuditRefund(context.Context, *AuditRefundRequest) (*AuditRefundReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AuditRefund not implemented")
 }
 func (UnimplementedOrderServer) mustEmbedUnimplementedOrderServer() {}
 func (UnimplementedOrderServer) testEmbeddedByValue()               {}
@@ -564,6 +618,60 @@ func _Order_ListOverdueWaitPayOrders_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Order_ApplyRefund_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApplyRefundRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServer).ApplyRefund(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Order_ApplyRefund_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServer).ApplyRefund(ctx, req.(*ApplyRefundRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Order_ListRefund_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRefundRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServer).ListRefund(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Order_ListRefund_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServer).ListRefund(ctx, req.(*ListRefundRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Order_AuditRefund_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuditRefundRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServer).AuditRefund(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Order_AuditRefund_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServer).AuditRefund(ctx, req.(*AuditRefundRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Order_ServiceDesc is the grpc.ServiceDesc for Order service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -626,6 +734,18 @@ var Order_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListOverdueWaitPayOrders",
 			Handler:    _Order_ListOverdueWaitPayOrders_Handler,
+		},
+		{
+			MethodName: "ApplyRefund",
+			Handler:    _Order_ApplyRefund_Handler,
+		},
+		{
+			MethodName: "ListRefund",
+			Handler:    _Order_ListRefund_Handler,
+		},
+		{
+			MethodName: "AuditRefund",
+			Handler:    _Order_AuditRefund_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

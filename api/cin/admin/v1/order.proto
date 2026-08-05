@@ -58,6 +58,19 @@ service AdminOrder {
       body: "*"
     };
   }
+  // 退款/售后单列表
+  rpc ListRefund (ListRefundRequest) returns (ListRefundReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/refunds"
+    };
+  }
+  // 审核退款（通过/拒绝）
+  rpc AuditRefund (AuditRefundRequest) returns (AuditRefundReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/refunds/{refund_id}/audit"
+      body: "*"
+    };
+  }
 }
 
 message ListOrderRequest {
@@ -172,4 +185,47 @@ message OrderStatsReply {
   int32 pending_count = 2; // 待处理数（待支付 + 待发货）
   int32 today_count = 3; // 今日订单数
   int32 refund_count = 4; // 退款/售后数（退款中 + 已退款）
+}
+
+// 退款单列表请求
+message ListRefundRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string status = 3; // 状态筛选（1-待审核 2-已通过 3-已拒绝；空=全部）
+  string keyword = 4; // 订单号模糊搜索
+}
+
+// 退款单列表响应
+message ListRefundReply {
+  repeated RefundItem items = 1;
+  int32 total = 2;
+}
+
+// 退款单项
+message RefundItem {
+  int64 refund_id = 1; // 退款单ID
+  int64 order_id = 2; // 订单ID
+  string order_no = 3; // 订单号
+  int64 user_id = 4; // 用户ID
+  string user_name = 5; // 用户名
+  int64 refund_amount = 6; // 退款金额（单位：分）
+  string reason = 7; // 退款原因
+  int32 status = 8; // 状态: 1-待审核 2-已通过 3-已拒绝
+  string status_text = 9; // 状态文本
+  string reject_reason = 10; // 拒绝原因
+  string auditor = 11; // 审核人
+  string created_at = 12; // 申请时间（格式化字符串）
+  int32 origin_status = 13; // 申请前的订单状态
+}
+
+// 审核退款请求
+message AuditRefundRequest {
+  int64 refund_id = 1 [(validate.rules).int64 = {gt: 0}];
+  bool approve = 2; // true=通过（退款）；false=拒绝
+  string reject_reason = 3; // 拒绝原因（approve=false 时必填）
+}
+
+// 审核退款响应
+message AuditRefundReply {
+  bool success = 1;
 }

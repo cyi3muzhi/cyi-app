@@ -241,6 +241,8 @@ app/cin/admin/
 | `GetOrder` | GET | `/admin/v1/orders/{order_id}` | 订单详情 |
 | `ShipOrder` | POST | `/admin/v1/orders/{order_id}/ship` | 发货 |
 | `CancelOrder` | POST | `/admin/v1/orders/{order_id}/cancel` | 取消订单 |
+| `ListRefund` | GET | `/admin/v1/refunds` | 退款/售后单列表（支持状态筛选、订单号搜索，含用户名） |
+| `AuditRefund` | POST | `/admin/v1/refunds/{refund_id}/audit` | 审核退款（通过→退款并恢复库存；拒绝→订单恢复原状态，需填拒绝原因） |
 
 #### 用户接口（AdminUser）
 
