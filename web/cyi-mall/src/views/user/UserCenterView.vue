@@ -114,6 +114,23 @@
   <!-- ============================================================ -->
   <section class="entry-section">
     <div class="container-shop entry-grid">
+      <!-- 消息中心入口 -->
+      <router-link to="/user/messages" class="entry-card message">
+        <div class="entry-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span v-if="msgUnread > 0" class="msg-badge">{{ msgUnread > 99 ? '99+' : msgUnread }}</span>
+        </div>
+        <div class="entry-info">
+          <p class="entry-title">消息中心</p>
+          <p class="entry-desc">{{ msgUnread > 0 ? `有 ${msgUnread} 条未读消息` : '查看订单与系统通知' }}</p>
+        </div>
+        <svg class="entry-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </router-link>
+
       <router-link to="/user/address" class="entry-card">
         <div class="entry-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -212,6 +229,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getUserCenter } from '@/api/user'
+import { getUnreadCount } from '@/api/message'
 import { useUserStore } from '@/store/user'
 import { useCartStore } from '@/store/cart'
 import type { User, UserCenter } from '@/types/user'
@@ -369,7 +387,23 @@ async function loadCenter() {
   }
 }
 
-onMounted(loadCenter)
+/** 消息中心未读数 */
+const msgUnread = ref(0)
+
+/** 获取消息未读数（失败静默，不影响页面） */
+async function loadMsgUnread() {
+  try {
+    const res = await getUnreadCount()
+    msgUnread.value = res.count || 0
+  } catch {
+    msgUnread.value = 0
+  }
+}
+
+onMounted(() => {
+  loadCenter()
+  loadMsgUnread()
+})
 </script>
 
 <style scoped>
@@ -716,6 +750,35 @@ onMounted(loadCenter)
   background: linear-gradient(135deg, hsl(240, 84%, 62%), hsl(270, 84%, 60%));
   color: #fff;
   box-shadow: 0 3px 8px hsla(255, 84%, 55%, 0.35);
+}
+
+/* 消息中心卡片：青绿渐变图标 */
+.entry-card.message .entry-icon {
+  background: linear-gradient(135deg, hsl(174, 84%, 42%), hsl(160, 84%, 45%));
+  color: #fff;
+  box-shadow: 0 3px 8px hsla(160, 84%, 40%, 0.35);
+}
+
+/* 消息未读角标 */
+.msg-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--shop-destructive);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 2px 6px hsla(0, 84%, 50%, 0.4);
+}
+
+.entry-card.message .entry-icon {
+  position: relative;
 }
 
 .entry-info {

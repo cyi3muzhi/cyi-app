@@ -31,6 +31,7 @@ type AdminService struct {
 	adminv1.UnimplementedAdminCouponServer
 	adminv1.UnimplementedBannerServer
 	adminv1.UnimplementedAgentServer
+	adminv1.UnimplementedAdminMessageServer
 	log       *log.Helper
 	dc        *biz.DashboardUseCase
 	pc        *biz.ProductUseCase
@@ -46,10 +47,11 @@ type AdminService struct {
 	settUC    *biz.SettingsUseCase
 	br        *data.BannerRepo
 	userUC    *biz.UserUseCase
+	msgUC     *biz.MessageUseCase
 }
 
 // NewAdminService 创建 AdminService
-func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.AuthUseCase, rc *biz.RoleUseCase, sc *biz.StaffUseCase, cc *biz.CategoryUseCase, oc *biz.OrderUseCase, ec *biz.ExportUseCase, couponUC *biz.CouponUseCase, ur *data.UploadRepo, agentUC *biz.AgentUseCase, settingsUC *biz.SettingsUseCase, br *data.BannerRepo, userUC *biz.UserUseCase, logger log.Logger) *AdminService {
+func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.AuthUseCase, rc *biz.RoleUseCase, sc *biz.StaffUseCase, cc *biz.CategoryUseCase, oc *biz.OrderUseCase, ec *biz.ExportUseCase, couponUC *biz.CouponUseCase, ur *data.UploadRepo, agentUC *biz.AgentUseCase, settingsUC *biz.SettingsUseCase, br *data.BannerRepo, userUC *biz.UserUseCase, msgUC *biz.MessageUseCase, logger log.Logger) *AdminService {
 	return &AdminService{
 		log:       log.NewHelper(logger),
 		dc:        dc,
@@ -66,5 +68,6 @@ func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.A
 		settUC:    settingsUC,
 		br:        br,
 		userUC:    userUC,
+		msgUC:     msgUC,
 	}
 }

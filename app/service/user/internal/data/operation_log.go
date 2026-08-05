@@ -140,33 +140,31 @@ func (r *operationLogRepo) loadAdminAvatars(ctx context.Context, logs []*mod.Adm
 	return avatarMap
 }
 
-// Count 统计操作日志数量（今日/本周/本月/累计）
+// Count 统计操作日志数量（今日/近7天/近30天/累计）
+// 近7天与近30天采用滚动时间窗口（当前时刻往前推），每次统计使用独立查询，
+// 避免 GORM 链式 Where 在同一 Statement 上累加条件导致结果互相污染
 func (r *operationLogRepo) Count(ctx context.Context) (*biz.OperationLogStats, error) {
 	loc, _ := time.LoadLocation("Asia/Shanghai")
 	now := time.Now().In(loc)
 	// 今日零点
 	startToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc).Unix()
-	// 本周一零点（周一为一周开始）
-	weekday := int(now.Weekday())
-	if weekday == 0 {
-		weekday = 7
-	}
-	startWeek := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc).AddDate(0, 0, -(weekday - 1)).Unix()
-	// 本月1号零点
-	startMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, loc).Unix()
+	// 近7天：当前时刻往前推 7 天（滚动窗口）
+	startWeek := now.AddDate(0, 0, -7).Unix()
+	// 近30天：当前时刻往前推 30 天（滚动窗口）
+	startMonth := now.AddDate(0, 0, -30).Unix()
 
 	stats := &biz.OperationLogStats{}
-	base := r.data.db.WithContext(ctx).Model(&mod.AdminOperationLog{})
-	if err := base.Count(&stats.Total).Error; err != nil {
+	model := &mod.AdminOperationLog{}
+	if err := r.data.db.WithContext(ctx).Model(model).Count(&stats.Total).Error; err != nil {
 		return nil, err
 	}
-	if err := base.Where("create_time >= ?", startToday).Count(&stats.Today).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Model(model).Where("create_time >= ?", startToday).Count(&stats.Today).Error; err != nil {
 		return nil, err
 	}
-	if err := base.Where("create_time >= ?", startWeek).Count(&stats.Week).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Model(model).Where("create_time >= ?", startWeek).Count(&stats.Week).Error; err != nil {
 		return nil, err
 	}
-	if err := base.Where("create_time >= ?", startMonth).Count(&stats.Month).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Model(model).Where("create_time >= ?", startMonth).Count(&stats.Month).Error; err != nil {
 		return nil, err
 	}
 	return stats, nil

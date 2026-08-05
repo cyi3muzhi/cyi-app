@@ -14,6 +14,10 @@ var (
 	ErrUserRegisterFailed = errors.New("user register failed")
 	// ErrAddressNotFound 收货地址不存在
 	ErrAddressNotFound = errors.New("address not found")
+	// ErrMessageNotFound 消息不存在
+	ErrMessageNotFound = errors.New("message not found")
+	// ErrMessageCreateFailed 消息创建失败
+	ErrMessageCreateFailed = errors.New("message create failed")
 )
 
 // LoginReply 登录响应（biz 层定义，避免依赖 proto）

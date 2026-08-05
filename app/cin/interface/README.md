@@ -134,6 +134,7 @@ app/cin/interface/
 | `CartUseCase` | 购物车管理（Redis 存储 + 商品信息聚合，按商品+SKU 维度） |
 | `CouponUseCase` | 优惠券领取、我的优惠券列表、领券中心（可领取券）、结算可用券筛选 |
 | `BladesUseCase` | AI 聊天助手 |
+| `MessageUseCase` | 消息中心（消息列表、未读数、标记已读/全部已读） |
 | `BannerUseCase` | 轮播图查询 |
 | `CategoryUseCase` | 商品分类查询 |
 | `SettingsUseCase` | 店铺设置查询 |
@@ -189,6 +190,10 @@ app/cin/interface/
 | **Stock** | `UpdateStock` | gRPC/HTTP | 更新库存 |
 | **Upload** | `GetUploadToken` | gRPC/HTTP | 获取上传凭证（OSS 预签名直传，用于头像等） |
 | **Blades** | `AiChat` | gRPC/HTTP | AI 聊天（非流式） |
+| **Message** | `ListMyMessage` | gRPC/HTTP | 我的消息列表（GET /message/v1/list，分页 + 类型筛选，含未读数） |
+| | `UnreadMessageCount` | gRPC/HTTP | 我的未读消息数（GET /message/v1/unread_count） |
+| | `MarkMessageRead` | gRPC/HTTP | 标记单条消息已读（POST /message/v1/read/{id}） |
+| | `MarkAllMessageRead` | gRPC/HTTP | 全部标记已读（POST /message/v1/read_all） |
 
 #### 流式路由（通过 HandleFunc 注册）
 

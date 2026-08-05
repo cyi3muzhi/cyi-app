@@ -102,6 +102,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '发放记录' }
       },
       {
+        path: 'messages',
+        name: 'Messages',
+        component: () => import('../views/messages/MessagesView.vue'),
+        meta: { title: '消息中心' }
+      },
+      {
         path: 'logs',
         name: 'Logs',
         component: () => import('../views/logs/LogsView.vue'),

@@ -31,6 +31,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	discovery := server.NewDiscovery(registry)
 	userClient := data.NewUserServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	messageClient := data.NewMessageServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	orderClient := data.NewOrderServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	productClient := data.NewProductServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	categoryClient := data.NewCategoryServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
@@ -44,12 +45,14 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	if err != nil {
 		return nil, nil, err
 	}
-	dataData, cleanup, err := data.NewData(confData, userClient, orderClient, productClient, categoryClient, stockClient, couponServiceClient, adminSettingsClient, adminBannerClient, universalClient, logger, client, rustFSClient)
+	dataData, cleanup, err := data.NewData(confData, userClient, messageClient, orderClient, productClient, categoryClient, stockClient, couponServiceClient, adminSettingsClient, adminBannerClient, universalClient, logger, client, rustFSClient)
 	if err != nil {
 		return nil, nil, err
 	}
 	userRepo := data.NewUserRepo(dataData, auth, logger)
 	userUseCase := biz.NewUserUseCase(userRepo, logger)
+	messageRepo := data.NewMessageRepo(dataData, logger)
+	messageUseCase := biz.NewMessageUseCase(messageRepo, logger)
 	orderRepo := data.NewOrderRepo(dataData, logger)
 	orderUseCase := biz.NewOrderUseCase(orderRepo, logger)
 	productRepo := data.NewProductRepo(dataData, logger)
@@ -68,7 +71,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	cartRepo := data.NewCartRepo(dataData, logger)
 	cartUseCase := biz.NewCartUseCase(cartRepo, productRepo, logger)
 	uploadRepo := data.NewUploadRepo(dataData, logger)
-	cinInterface := service.NewCinInterface(userUseCase, orderUseCase, productUseCase, categoryUseCase, stockUseCase, bladesUseCase, couponUseCase, settingsUseCase, bannerUseCase, cartUseCase, uploadRepo, logger, auth)
+	cinInterface := service.NewCinInterface(userUseCase, messageUseCase, orderUseCase, productUseCase, categoryUseCase, stockUseCase, bladesUseCase, couponUseCase, settingsUseCase, bannerUseCase, cartUseCase, uploadRepo, logger, auth)
 	server2 := server.NewGRPCServer(grpcServer, cinInterface)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	server3 := server.NewHTTPServer(httpServer, cinInterface, auth)

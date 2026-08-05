@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package api.cin.admin.v1;
+
+option go_package = "cyi-app/api/cin/admin/v1;adminv1";
+option java_multiple_files = true;
+option java_package = "api.cin.admin.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+// AdminMessage 管理后台 - 消息中心服务
+service AdminMessage {
+  // 发送消息（全体/指定用户）
+  rpc SendMessage (SendMessageRequest) returns (SendMessageReply) {
+    option (google.api.http) = {
+      post: "/admin/v1/messages"
+      body: "*"
+    };
+  }
+  // 消息列表（分页筛选）
+  rpc ListMessage (ListMessageRequest) returns (ListMessageReply) {
+    option (google.api.http) = {
+      get: "/admin/v1/messages"
+    };
+  }
+  // 下线/删除消息
+  rpc DeleteMessage (DeleteMessageRequest) returns (DeleteMessageReply) {
+    option (google.api.http) = {
+      delete: "/admin/v1/messages/{id}"
+    };
+  }
+}
+
+// MessageItem 消息项
+message MessageItem {
+  // 消息ID
+  int64 id = 1;
+  // 标题
+  string title = 2;
+  // 内容（支持换行文本）
+  string content = 3;
+  // 消息类型 1=订单 2=系统 3=营销
+  int32 msg_type = 4;
+  // 创建时间（Unix 秒）
+  int64 created_at = 5;
+  // 创建人（管理员ID）
+  int64 created_by = 6;
+  // 发送范围 0=全体用户 1=指定用户
+  int32 target_type = 7;
+  // 指定用户ID列表（JSON 数组，仅 target_type=1 时有值）
+  string target_user_ids = 8;
+  // 消息状态 1=启用 2=下线
+  int32 status = 9;
+}
+
+// SendMessageRequest 发送消息请求
+message SendMessageRequest {
+  // 标题
+  string title = 1 [(validate.rules).string = {min_len: 1, max_len: 128}];
+  // 内容
+  string content = 2 [(validate.rules).string = {min_len: 1, max_len: 5000}];
+  // 消息类型 1=订单 2=系统 3=营销
+  int32 msg_type = 3 [(validate.rules).int32 = {in: [1, 2, 3]}];
+  // 发送范围 0=全体用户 1=指定用户
+  int32 target_type = 4 [(validate.rules).int32 = {in: [0, 1]}];
+  // 指定用户ID列表（仅 target_type=1 时必填）
+  repeated int64 target_user_ids = 5;
+}
+
+// SendMessageReply 发送消息响应
+message SendMessageReply {
+  // 新消息ID
+  int64 id = 1;
+}
+
+// ListMessageRequest 消息列表请求
+message ListMessageRequest {
+  // 页码
+  int32 page = 1;
+  // 每页数量
+  int32 page_size = 2;
+  // 消息类型筛选（0=全部）
+  int32 msg_type = 3;
+  // 状态筛选（0=全部 1=启用 2=下线）
+  int32 status = 4;
+  // 标题关键字
+  string keyword = 5;
+}
+
+// ListMessageReply 消息列表响应
+message ListMessageReply {
+  // 消息列表
+  repeated MessageItem items = 1;
+  // 总数
+  int32 total = 2;
+}
+
+// DeleteMessageRequest 下线/删除消息请求
+message DeleteMessageRequest {
+  // 消息ID
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+// DeleteMessageReply 下线/删除消息响应
+message DeleteMessageReply {
+  // 是否成功
+  bool success = 1;
+}

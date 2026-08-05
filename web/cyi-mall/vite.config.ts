@@ -40,6 +40,10 @@ export default defineConfig({
         target: 'http://localhost:18000',
         changeOrigin: true
       },
+      '/message/v1': {
+        target: 'http://localhost:18000',
+        changeOrigin: true
+      },
       '/api/v1': {
         target: 'http://localhost:18000',
         changeOrigin: true

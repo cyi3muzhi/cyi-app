@@ -10,6 +10,7 @@ import (
 var ProviderSet = wire.NewSet(
 	NewUserUseCase,
 	NewAddressUseCase,
+	NewMessageUseCase,
 	NewAdminUserUseCase,
 	NewRoleUseCase,
 	NewSettingsUseCase,

@@ -15,7 +15,7 @@ service AdminLogs {
       get: "/admin/v1/logs"
     };
   }
-  // 操作日志统计（今日/本周/本月/累计）
+  // 操作日志统计（今日/近7天/近30天/累计）
   rpc CountOperationLogs (CountOperationLogsRequest) returns (CountOperationLogsReply) {
     option (google.api.http) = {
       get: "/admin/v1/logs/stats"
@@ -74,8 +74,8 @@ message CountOperationLogsRequest {}
 // CountOperationLogsReply 操作日志统计响应
 message CountOperationLogsReply {
   int64 today = 1;  // 今日操作数
-  int64 week = 2;   // 本周操作数
-  int64 month = 3;  // 本月操作数
+  int64 week = 2;   // 近7天操作数（滚动窗口）
+  int64 month = 3;  // 近30天操作数（滚动窗口）
   int64 total = 4;  // 累计操作数
 }
 

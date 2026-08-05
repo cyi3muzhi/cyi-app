@@ -60,6 +60,10 @@ const (
 	UserServiceErrorReason_ADDRESS_UPDATE_FAILED UserServiceErrorReason = 15
 	// 收货地址删除失败
 	UserServiceErrorReason_ADDRESS_DELETE_FAILED UserServiceErrorReason = 16
+	// 消息不存在
+	UserServiceErrorReason_MESSAGE_NOT_FOUND UserServiceErrorReason = 17
+	// 消息创建失败
+	UserServiceErrorReason_MESSAGE_CREATE_FAILED UserServiceErrorReason = 18
 )
 
 // Enum value maps for UserServiceErrorReason.
@@ -82,6 +86,8 @@ var (
 		14: "ADDRESS_CREATE_FAILED",
 		15: "ADDRESS_UPDATE_FAILED",
 		16: "ADDRESS_DELETE_FAILED",
+		17: "MESSAGE_NOT_FOUND",
+		18: "MESSAGE_CREATE_FAILED",
 	}
 	UserServiceErrorReason_value = map[string]int32{
 		"USER_NOT_FOUND":             0,
@@ -101,6 +107,8 @@ var (
 		"ADDRESS_CREATE_FAILED":      14,
 		"ADDRESS_UPDATE_FAILED":      15,
 		"ADDRESS_DELETE_FAILED":      16,
+		"MESSAGE_NOT_FOUND":          17,
+		"MESSAGE_CREATE_FAILED":      18,
 	}
 )
 
@@ -135,7 +143,7 @@ var File_api_service_user_v1_user_error_proto protoreflect.FileDescriptor
 
 const file_api_service_user_v1_user_error_proto_rawDesc = "" +
 	"\n" +
-	"$api/service/user/v1/user_error.proto\x12\x13api.service.user.v1\x1a\x13errors/errors.proto*\xa6\x04\n" +
+	"$api/service/user/v1/user_error.proto\x12\x13api.service.user.v1\x1a\x13errors/errors.proto*\xe4\x04\n" +
 	"\x16UserServiceErrorReason\x12\x18\n" +
 	"\x0eUSER_NOT_FOUND\x10\x00\x1a\x04\xa8E\xa6\x03\x12\x19\n" +
 	"\x0fCONTENT_MISSING\x10\x01\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
@@ -154,7 +162,9 @@ const file_api_service_user_v1_user_error_proto_rawDesc = "" +
 	"\x11ADDRESS_NOT_FOUND\x10\r\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
 	"\x15ADDRESS_CREATE_FAILED\x10\x0e\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
 	"\x15ADDRESS_UPDATE_FAILED\x10\x0f\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
-	"\x15ADDRESS_DELETE_FAILED\x10\x10\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
+	"\x15ADDRESS_DELETE_FAILED\x10\x10\x1a\x04\xa8E\xa6\x03\x12\x1b\n" +
+	"\x11MESSAGE_NOT_FOUND\x10\x11\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
+	"\x15MESSAGE_CREATE_FAILED\x10\x12\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B Z\x1ecyi-app/api/service/user/v1;v1b\x06proto3"
 
 var (
 	file_api_service_user_v1_user_error_proto_rawDescOnce sync.Once

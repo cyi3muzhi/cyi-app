@@ -36,6 +36,7 @@ func NewHTTPServer(s *ts.HttpServer, adminService *service.AdminService, logsSer
 	adminv1.RegisterUploadHTTPServer(s.HttpServer, adminService)
 	adminv1.RegisterAdminCouponHTTPServer(s.HttpServer, adminService)
 	adminv1.RegisterBannerHTTPServer(s.HttpServer, adminService)
+	adminv1.RegisterAdminMessageHTTPServer(s.HttpServer, adminService)
 	// 注册 Agent proto 接口（替代 registerAgentRoutes 中除 SSE 外的所有路由）
 	adminv1.RegisterAgentHTTPServer(s.HttpServer, adminService)
 	// 注册操作日志查询接口（独立服务）

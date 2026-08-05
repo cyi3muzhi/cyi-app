@@ -45,4 +45,8 @@ enum UserServiceErrorReason {
 	ADDRESS_UPDATE_FAILED = 15 [(errors.code) = 422];
 	// 收货地址删除失败
 	ADDRESS_DELETE_FAILED = 16 [(errors.code) = 422];
+	// 消息不存在
+	MESSAGE_NOT_FOUND = 17 [(errors.code) = 422];
+	// 消息创建失败
+	MESSAGE_CREATE_FAILED = 18 [(errors.code) = 422];
 }

@@ -12,6 +12,7 @@ import (
 const _ = errors.SupportPackageIsVersion1
 
 // 用户模块 0-99
+// 用户不存在
 func IsUserNotExist(err error) bool {
 	if err == nil {
 		return false
@@ -21,10 +22,12 @@ func IsUserNotExist(err error) bool {
 }
 
 // 用户模块 0-99
+// 用户不存在
 func ErrorUserNotExist(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, CinInterfaceErrorReason_USER_NOT_EXIST.String(), fmt.Sprintf(format, args...))
 }
 
+// 用户未找到
 func IsUserNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -33,10 +36,12 @@ func IsUserNotFound(err error) bool {
 	return e.Reason == CinInterfaceErrorReason_USER_NOT_FOUND.String() && e.Code == 422
 }
 
+// 用户未找到
 func ErrorUserNotFound(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, CinInterfaceErrorReason_USER_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
 
+// 密码错误
 func IsPasswordError(err error) bool {
 	if err == nil {
 		return false
@@ -45,10 +50,12 @@ func IsPasswordError(err error) bool {
 	return e.Reason == CinInterfaceErrorReason_PASSWORD_ERROR.String() && e.Code == 422
 }
 
+// 密码错误
 func ErrorPasswordError(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, CinInterfaceErrorReason_PASSWORD_ERROR.String(), fmt.Sprintf(format, args...))
 }
 
+// 用户信息更新失败
 func IsUserUpdateFailed(err error) bool {
 	if err == nil {
 		return false
@@ -57,11 +64,13 @@ func IsUserUpdateFailed(err error) bool {
 	return e.Reason == CinInterfaceErrorReason_USER_UPDATE_FAILED.String() && e.Code == 422
 }
 
+// 用户信息更新失败
 func ErrorUserUpdateFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, CinInterfaceErrorReason_USER_UPDATE_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
 // 订单模块 100-199
+// 订单不存在
 func IsOrderIdNotExist(err error) bool {
 	if err == nil {
 		return false
@@ -71,10 +80,12 @@ func IsOrderIdNotExist(err error) bool {
 }
 
 // 订单模块 100-199
+// 订单不存在
 func ErrorOrderIdNotExist(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, CinInterfaceErrorReason_ORDER_ID_NOT_EXIST.String(), fmt.Sprintf(format, args...))
 }
 
+// 订单已支付
 func IsOrderAlreadyPaid(err error) bool {
 	if err == nil {
 		return false
@@ -83,11 +94,13 @@ func IsOrderAlreadyPaid(err error) bool {
 	return e.Reason == CinInterfaceErrorReason_ORDER_ALREADY_PAID.String() && e.Code == 422
 }
 
+// 订单已支付
 func ErrorOrderAlreadyPaid(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, CinInterfaceErrorReason_ORDER_ALREADY_PAID.String(), fmt.Sprintf(format, args...))
 }
 
 // 商品模块 200-299
+// 商品不可用（已下架等）
 func IsProductNotAvailable(err error) bool {
 	if err == nil {
 		return false
@@ -97,10 +110,12 @@ func IsProductNotAvailable(err error) bool {
 }
 
 // 商品模块 200-299
+// 商品不可用（已下架等）
 func ErrorProductNotAvailable(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, CinInterfaceErrorReason_PRODUCT_NOT_AVAILABLE.String(), fmt.Sprintf(format, args...))
 }
 
+// 库存不足
 func IsInsufficientStock(err error) bool {
 	if err == nil {
 		return false
@@ -109,10 +124,12 @@ func IsInsufficientStock(err error) bool {
 	return e.Reason == CinInterfaceErrorReason_INSUFFICIENT_STOCK.String() && e.Code == 422
 }
 
+// 库存不足
 func ErrorInsufficientStock(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, CinInterfaceErrorReason_INSUFFICIENT_STOCK.String(), fmt.Sprintf(format, args...))
 }
 
+// 库存操作失败
 func IsStockOperationFailed(err error) bool {
 	if err == nil {
 		return false
@@ -121,6 +138,7 @@ func IsStockOperationFailed(err error) bool {
 	return e.Reason == CinInterfaceErrorReason_STOCK_OPERATION_FAILED.String() && e.Code == 422
 }
 
+// 库存操作失败
 func ErrorStockOperationFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, CinInterfaceErrorReason_STOCK_OPERATION_FAILED.String(), fmt.Sprintf(format, args...))
 }

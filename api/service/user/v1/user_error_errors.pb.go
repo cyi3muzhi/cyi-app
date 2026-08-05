@@ -11,6 +11,7 @@ import (
 // is compatible with the kratos package it is being compiled against.
 const _ = errors.SupportPackageIsVersion1
 
+// 用户不存在
 func IsUserNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -19,10 +20,12 @@ func IsUserNotFound(err error) bool {
 	return e.Reason == UserServiceErrorReason_USER_NOT_FOUND.String() && e.Code == 422
 }
 
+// 用户不存在
 func ErrorUserNotFound(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, UserServiceErrorReason_USER_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
 
+// 请求内容缺失
 func IsContentMissing(err error) bool {
 	if err == nil {
 		return false
@@ -31,6 +34,7 @@ func IsContentMissing(err error) bool {
 	return e.Reason == UserServiceErrorReason_CONTENT_MISSING.String() && e.Code == 422
 }
 
+// 请求内容缺失
 func ErrorContentMissing(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, UserServiceErrorReason_CONTENT_MISSING.String(), fmt.Sprintf(format, args...))
 }
@@ -243,4 +247,32 @@ func IsAddressDeleteFailed(err error) bool {
 // 收货地址删除失败
 func ErrorAddressDeleteFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, UserServiceErrorReason_ADDRESS_DELETE_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+// 消息不存在
+func IsMessageNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == UserServiceErrorReason_MESSAGE_NOT_FOUND.String() && e.Code == 422
+}
+
+// 消息不存在
+func ErrorMessageNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, UserServiceErrorReason_MESSAGE_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+}
+
+// 消息创建失败
+func IsMessageCreateFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == UserServiceErrorReason_MESSAGE_CREATE_FAILED.String() && e.Code == 422
+}
+
+// 消息创建失败
+func ErrorMessageCreateFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, UserServiceErrorReason_MESSAGE_CREATE_FAILED.String(), fmt.Sprintf(format, args...))
 }

@@ -20,6 +20,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'user/orders/:id', name: 'OrderDetail', component: () => import('../views/user/OrderDetailView.vue'), meta: { title: '订单详情', requiresAuth: true } },
       { path: 'user/address', name: 'AddressList', component: () => import('../views/user/AddressView.vue'), meta: { title: '收货地址', requiresAuth: true } },
       { path: 'user/coupons', name: 'MyCoupons', component: () => import('../views/coupons/MyCouponView.vue'), meta: { title: '我的优惠券', requiresAuth: true } },
+      { path: 'user/messages', name: 'MessageCenter', component: () => import('../views/user/MessageCenterView.vue'), meta: { title: '消息中心', requiresAuth: true } },
       { path: 'user/refunds', name: 'RefundList', component: () => import('../views/user/RefundListView.vue'), meta: { title: '退款/售后', requiresAuth: true } },
       { path: 'coupons', name: 'CouponCenter', component: () => import('../views/coupons/CouponCenterView.vue'), meta: { title: '领券中心', requiresAuth: true } }
     ]

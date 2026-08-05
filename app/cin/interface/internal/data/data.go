@@ -26,6 +26,8 @@ var ProviderSet = wire.NewSet(
 	NewData,
 	NewUserRepo,
 	NewUserServiceClient,
+	NewMessageRepo,
+	NewMessageServiceClient,
 	NewOrderRepo,
 	NewOrderServiceClient,
 	NewProductRepo,
@@ -50,6 +52,7 @@ var ProviderSet = wire.NewSet(
 // Data .
 type Data struct {
 	uc  userRpc.UserClient
+	mc  userRpc.MessageClient
 	oc  orderRpc.OrderClient
 	pc  productRpc.ProductClient
 	cc  productRpc.CategoryClient
@@ -63,11 +66,11 @@ type Data struct {
 }
 
 // NewData .
-func NewData(c *conf.Data, uc userRpc.UserClient, oc orderRpc.OrderClient, pc productRpc.ProductClient, cc productRpc.CategoryClient, sc productRpc.StockClient, mcc marketingV1.CouponServiceClient, asc userRpc.AdminSettingsClient, abc userRpc.AdminBannerClient, rc redis.UniversalClient, logger log.Logger, mq *asynq.Client, oss *rustfs.RustFSClient) (*Data, func(), error) {
+func NewData(c *conf.Data, uc userRpc.UserClient, mc userRpc.MessageClient, oc orderRpc.OrderClient, pc productRpc.ProductClient, cc productRpc.CategoryClient, sc productRpc.StockClient, mcc marketingV1.CouponServiceClient, asc userRpc.AdminSettingsClient, abc userRpc.AdminBannerClient, rc redis.UniversalClient, logger log.Logger, mq *asynq.Client, oss *rustfs.RustFSClient) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{uc: uc, oc: oc, pc: pc, cc: cc, sc: sc, mcc: mcc, asc: asc, abc: abc, rc: rc, mq: mq, oss: oss}, cleanup, nil
+	return &Data{uc: uc, mc: mc, oc: oc, pc: pc, cc: cc, sc: sc, mcc: mcc, asc: asc, abc: abc, rc: rc, mq: mq, oss: oss}, cleanup, nil
 }
 
 // NewOssClient 创建 OSS 客户端（用户服务 bucket）

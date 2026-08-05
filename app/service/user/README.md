@@ -144,6 +144,7 @@ app/service/user/
 | `BannerUseCase` | Banner 管理（列表、创建、更新、删除、上下架） |
 | `SettingsUseCase` | 店铺设置（获取、更新） |
 | `OperationLogUseCase` | 操作日志（NATS 消费写入、分页查询、统计、操作人列表） |
+| `MessageUseCase` | 消息中心（发送通知、消息列表、已读管理、未读数统计） |
 
 ### 认证流程
 
@@ -258,8 +259,24 @@ user 服务 OperationLogConsumer.Start() 订阅
 | 接口 | 方法 | 说明 |
 |------|------|------|
 | `ListOperationLog` | gRPC | 操作日志分页查询（日期/操作人/模块/关键词筛选） |
-| `CountOperationLog` | gRPC | 操作日志统计（今日/本周/本月/累计） |
+| `CountOperationLog` | gRPC | 操作日志统计（今日/近7天/近30天/累计） |
 | `ListOperationLogOperators` | gRPC | 操作人列表（按姓名去重） |
+
+#### 消息中心服务（Message）
+
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `CreateMessage` | gRPC | 发送消息（全体用户/指定用户，类型：订单/系统/营销） |
+| `AdminListMessage` | gRPC | 管理后台消息列表（分页 + 类型/状态/关键字筛选） |
+| `DeleteMessage` | gRPC | 下线/删除消息（软删除） |
+| `ListMyMessage` | gRPC | 我的消息列表（分页 + 类型筛选，含已读状态） |
+| `UnreadMessageCount` | gRPC | 我的未读消息数 |
+| `MarkMessageRead` | gRPC | 标记单条消息已读 |
+| `MarkAllMessageRead` | gRPC | 全部标记已读 |
+
+- 数据表：`message`（消息内容）+ `user_message`（用户已读状态，唯一索引 user_id+message_id）
+- 可见性：`target_type=0` 全体消息对所有人可见；`target_type=1` 仅对 `target_user_ids` 中指定用户可见
+- 未读判定：用户消息表中无已读记录（或未读）即为未读，标记已读采用 UPSERT 幂等写入
 
 ## 运行方式
 

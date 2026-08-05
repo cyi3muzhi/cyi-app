@@ -3,28 +3,28 @@
   <div class="stock-alert-page">
     <!-- 统计卡片 -->
     <div class="stats-grid">
-      <div class="stat-card stat-all" @click="switchTab('')">
+      <div class="stat-card stat-all anim-enter" style="animation-delay: 0.02s" @click="switchTab('')">
         <div class="stat-icon"><el-icon :size="22"><Box /></el-icon></div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.all }}</div>
           <div class="stat-label">全部商品</div>
         </div>
       </div>
-      <div class="stat-card stat-empty" @click="switchTab('empty')">
+      <div class="stat-card stat-empty anim-enter" style="animation-delay: 0.06s" @click="switchTab('empty')">
         <div class="stat-icon"><el-icon :size="22"><CircleClose /></el-icon></div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.empty }}</div>
           <div class="stat-label">缺货商品</div>
         </div>
       </div>
-      <div class="stat-card stat-low" @click="switchTab('low')">
+      <div class="stat-card stat-low anim-enter" style="animation-delay: 0.1s" @click="switchTab('low')">
         <div class="stat-icon"><el-icon :size="22"><Warning /></el-icon></div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.low }}</div>
           <div class="stat-label">低库存预警（≤ {{ threshold }}）</div>
         </div>
       </div>
-      <div class="stat-card stat-normal" @click="switchTab('')">
+      <div class="stat-card stat-normal anim-enter" style="animation-delay: 0.14s" @click="switchTab('')">
         <div class="stat-icon"><el-icon :size="22"><CircleCheck /></el-icon></div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.normal }}</div>
@@ -34,7 +34,7 @@
     </div>
 
     <!-- 阈值设置条 -->
-    <div class="threshold-bar">
+    <div class="threshold-bar anim-enter" style="animation-delay: 0.18s">
       <div class="threshold-left">
         <el-icon :size="16" color="#f59e0b"><Bell /></el-icon>
         <span class="threshold-text">库存预警阈值</span>
@@ -57,7 +57,7 @@
     </div>
 
     <!-- 筛选工具栏 -->
-    <div class="toolbar">
+    <div class="toolbar anim-enter" style="animation-delay: 0.22s">
       <div class="search-input-wrap">
         <el-icon class="search-icon"><Search /></el-icon>
         <input v-model="filters.keyword" type="text" placeholder="搜索商品名称..."
@@ -73,7 +73,7 @@
     </div>
 
     <!-- Tabs -->
-    <div class="tab-bar-wrap">
+    <div class="tab-bar-wrap anim-enter" style="animation-delay: 0.26s">
       <div class="tab-bar-inner" ref="barInner">
         <div class="tab-slider" :style="sliderStyle" />
         <div v-for="tab in tabItems" :key="tab.key"
@@ -90,7 +90,7 @@
     </div>
 
     <!-- 表格 -->
-    <el-table :data="products" v-loading="loading" stripe style="width:100%">
+    <el-table class="stock-table anim-enter" :data="products" v-loading="loading" stripe style="width:100%; animation-delay: 0.3s">
       <template #empty>
         <el-empty :description="loading ? '加载中...' : '暂无商品'" />
       </template>
@@ -122,8 +122,8 @@
               :show-text="false"
             />
             <span :class="stockClass(row.stock)" class="stock-num">{{ row.stock }}</span>
-            <el-tag v-if="row.stock === 0" size="small" type="danger" effect="dark" round>缺货</el-tag>
-            <el-tag v-else-if="row.stock <= threshold" size="small" type="warning" effect="plain" round>预警</el-tag>
+            <el-tag v-if="row.stock === 0" size="small" type="danger" effect="dark" round class="tag-alert">缺货</el-tag>
+            <el-tag v-else-if="row.stock <= threshold" size="small" type="warning" effect="plain" round class="tag-alert tag-warn">预警</el-tag>
           </div>
         </template>
       </el-table-column>
@@ -704,6 +704,99 @@ onMounted(async () => {
 .sku-spec { font-size: 13px; font-weight: 500; color: #1e293b; }
 .sku-current { font-size: 12px; color: #94a3b8; margin-top: 2px; }
 .sku-input { width: 140px; }
+
+/* ============================================
+   动效
+   ============================================ */
+
+/* 页面区块入场动画（both 锁定结束状态，避免动画结束后触发多余的 transform 过渡闪动） */
+@keyframes stockFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.anim-enter {
+  animation: stockFadeUp 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* 统计卡片 hover：图标弹跳 + 阴影加深（不动 transform，避免与入场动画锁定值冲突） */
+.stat-card {
+  transition: box-shadow 0.25s ease;
+}
+.stat-card:hover {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+}
+.stat-card:hover .stat-icon {
+  animation: iconBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes iconBounce {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* 缺货 / 预警 tag 呼吸提示 */
+.tag-alert {
+  animation: alertPulse 2s ease-in-out infinite;
+}
+.tag-warn {
+  animation: warnPulse 2s ease-in-out infinite;
+}
+@keyframes alertPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+}
+@keyframes warnPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 0 0 5px rgba(245, 158, 11, 0); }
+}
+
+/* 库存进度条：数值变化时平滑过渡 */
+.stock-bar :deep(.el-progress-bar__inner) {
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 表格行 hover：渐变高亮 */
+.stock-table :deep(.el-table__row:hover > td) {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.015) 70%, transparent) !important;
+}
+
+/* 商品图片 hover：放大 + 发光 */
+.product-img-cell {
+  transition: box-shadow 0.25s ease;
+}
+.product-img-cell:hover {
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.22);
+}
+.product-img-cell:hover .product-img {
+  transform: scale(1.1);
+}
+.product-img {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 搜索框 focus 光晕 */
+.search-input {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.search-input:focus {
+  border-color: #409eff;
+  box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.15);
+}
+
+/* Tab 项点击反馈 */
+.tab-item:active {
+  transform: scale(0.96);
+}
+
+/* 分页 hover */
+.pagination-wrap :deep(.el-pager li),
+.pagination-wrap :deep(.btn-prev),
+.pagination-wrap :deep(.btn-next) {
+  transition: all 0.2s ease;
+}
+.pagination-wrap :deep(.el-pager li:hover) {
+  transform: translateY(-2px);
+}
 </style>
 
 <!-- 图片预览样式（全局，因为 teleport 到 body） -->

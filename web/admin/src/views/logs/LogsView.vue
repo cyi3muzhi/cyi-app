@@ -381,8 +381,8 @@ const logStats = ref({ today: 0, week: 0, month: 0, total: 0 })
 
 const statsCards = computed(() => [
   { label: '今日操作', caption: '今日零点起', value: logStats.value.today.toLocaleString(), icon: Clock, color: 'blue' },
-  { label: '本周操作', caption: '近 7 天累计', value: logStats.value.week.toLocaleString(), icon: Calendar, color: 'green' },
-  { label: '本月操作', caption: '近 30 天累计', value: logStats.value.month.toLocaleString(), icon: List, color: 'orange' },
+  { label: '近7天操作', caption: '最近 7 天', value: logStats.value.week.toLocaleString(), icon: Calendar, color: 'green' },
+  { label: '近30天操作', caption: '最近 30 天', value: logStats.value.month.toLocaleString(), icon: List, color: 'orange' },
   { label: '累计操作', caption: '全部历史记录', value: logStats.value.total.toLocaleString(), icon: View, color: 'purple' }
 ])
 

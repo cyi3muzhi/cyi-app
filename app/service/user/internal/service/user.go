@@ -241,6 +241,12 @@ func convertBizError(err error) error {
 	if errors.Is(err, biz.ErrUserRegisterFailed) {
 		return pb.ErrorUserRegisterFailed("%s", err.Error())
 	}
+	if errors.Is(err, biz.ErrMessageNotFound) {
+		return pb.ErrorMessageNotFound("%s", err.Error())
+	}
+	if errors.Is(err, biz.ErrMessageCreateFailed) {
+		return pb.ErrorMessageCreateFailed("%s", err.Error())
+	}
 	return err
 }
 

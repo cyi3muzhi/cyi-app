@@ -25,10 +25,10 @@ type OperationLogItem struct {
 
 // OperationLogStats 操作日志统计
 type OperationLogStats struct {
-	Today int64
-	Week  int64
-	Month int64
-	Total int64
+	Today int64 // 今日操作数（今日零点起）
+	Week  int64 // 近7天操作数（滚动窗口）
+	Month int64 // 近30天操作数（滚动窗口）
+	Total int64 // 累计操作数
 }
 
 // OperationLogRepo 操作日志数据仓库接口

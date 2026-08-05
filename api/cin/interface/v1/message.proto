@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package api.cin.interface.v1;
+
+option go_package = "cyi-app/api/cin/interface/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.cin.interface.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+// Message 消息中心服务（用户端）
+service Message {
+  // 我的消息列表（分页 + 类型筛选）
+  rpc ListMyMessage (ListMyMessageRequest) returns (ListMyMessageReply) {
+    option (google.api.http) = {
+      get: "/message/v1/list"
+    };
+  }
+  // 我的未读消息数
+  rpc UnreadMessageCount (UnreadMessageCountRequest) returns (UnreadMessageCountReply) {
+    option (google.api.http) = {
+      get: "/message/v1/unread_count"
+    };
+  }
+  // 标记单条消息已读
+  rpc MarkMessageRead (MarkMessageReadRequest) returns (MarkMessageReadReply) {
+    option (google.api.http) = {
+      post: "/message/v1/read/{id}"
+      body: "*"
+    };
+  }
+  // 全部标记已读
+  rpc MarkAllMessageRead (MarkAllMessageReadRequest) returns (MarkAllMessageReadReply) {
+    option (google.api.http) = {
+      post: "/message/v1/read_all"
+      body: "*"
+    };
+  }
+}
+
+// MessageItem 消息项
+message MessageItem {
+  // 消息ID
+  int64 id = 1;
+  // 标题
+  string title = 2;
+  // 内容（支持换行文本）
+  string content = 3;
+  // 消息类型 1=订单 2=系统 3=营销
+  int32 msg_type = 4;
+  // 是否已读 0=未读 1=已读
+  int32 is_read = 5;
+  // 创建时间（Unix 秒）
+  int64 created_at = 6;
+  // 已读时间（Unix 秒，未读为 0）
+  int64 read_at = 7;
+}
+
+// ListMyMessageRequest 我的消息列表请求
+message ListMyMessageRequest {
+  // 页码
+  int32 page = 1 [(validate.rules).int32 = {gte: 1}];
+  // 每页数量
+  int32 page_size = 2 [(validate.rules).int32 = {gte: 1, lte: 100}];
+  // 消息类型筛选（0=全部 1=订单 2=系统 3=营销）
+  int32 msg_type = 3;
+}
+
+// ListMyMessageReply 我的消息列表响应
+message ListMyMessageReply {
+  // 消息列表
+  repeated MessageItem items = 1;
+  // 总数
+  int32 total = 2;
+  // 未读消息数
+  int64 unread_count = 3;
+}
+
+// UnreadMessageCountRequest 未读消息数请求（无入参）
+message UnreadMessageCountRequest {}
+
+// UnreadMessageCountReply 未读消息数响应
+message UnreadMessageCountReply {
+  // 未读消息数
+  int64 count = 1;
+}
+
+// MarkMessageReadRequest 标记单条消息已读请求
+message MarkMessageReadRequest {
+  // 消息ID
+  int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+
+// MarkMessageReadReply 标记单条消息已读响应
+message MarkMessageReadReply {
+  // 是否成功
+  bool success = 1;
+}
+
+// MarkAllMessageReadRequest 全部标记已读请求（无入参）
+message MarkAllMessageReadRequest {}
+
+// MarkAllMessageReadReply 全部标记已读响应
+message MarkAllMessageReadReply {
+  // 是否成功
+  bool success = 1;
+}

@@ -881,6 +881,87 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.admin.v1.CountOperationLogsReply'
+    /admin/v1/messages:
+        get:
+            tags:
+                - AdminMessage
+            description: 消息列表（分页筛选）
+            operationId: AdminMessage_ListMessage
+            parameters:
+                - name: page
+                  in: query
+                  description: 页码
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  description: 每页数量
+                  schema:
+                    type: integer
+                    format: int32
+                - name: msgType
+                  in: query
+                  description: 消息类型筛选（0=全部）
+                  schema:
+                    type: integer
+                    format: int32
+                - name: status
+                  in: query
+                  description: 状态筛选（0=全部 1=启用 2=下线）
+                  schema:
+                    type: integer
+                    format: int32
+                - name: keyword
+                  in: query
+                  description: 标题关键字
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.ListMessageReply'
+        post:
+            tags:
+                - AdminMessage
+            description: 发送消息（全体/指定用户）
+            operationId: AdminMessage_SendMessage
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.admin.v1.SendMessageRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.SendMessageReply'
+    /admin/v1/messages/{id}:
+        delete:
+            tags:
+                - AdminMessage
+            description: 下线/删除消息
+            operationId: AdminMessage_DeleteMessage
+            parameters:
+                - name: id
+                  in: path
+                  description: 消息ID
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.admin.v1.DeleteMessageReply'
     /admin/v1/orders:
         get:
             tags:
@@ -2143,6 +2224,96 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.cin.interface.v1.GetCategoryReply'
+    /message/v1/list:
+        get:
+            tags:
+                - Message
+            description: 我的消息列表（分页 + 类型筛选）
+            operationId: Message_ListMyMessage
+            parameters:
+                - name: page
+                  in: query
+                  description: 页码
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  description: 每页数量
+                  schema:
+                    type: integer
+                    format: int32
+                - name: msgType
+                  in: query
+                  description: 消息类型筛选（0=全部 1=订单 2=系统 3=营销）
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.ListMyMessageReply'
+    /message/v1/read/{id}:
+        post:
+            tags:
+                - Message
+            description: 标记单条消息已读
+            operationId: Message_MarkMessageRead
+            parameters:
+                - name: id
+                  in: path
+                  description: 消息ID
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.MarkMessageReadRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.MarkMessageReadReply'
+    /message/v1/read_all:
+        post:
+            tags:
+                - Message
+            description: 全部标记已读
+            operationId: Message_MarkAllMessageRead
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.cin.interface.v1.MarkAllMessageReadRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.MarkAllMessageReadReply'
+    /message/v1/unread_count:
+        get:
+            tags:
+                - Message
+            description: 我的未读消息数
+            operationId: Message_UnreadMessageCount
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.cin.interface.v1.UnreadMessageCountReply'
     /order/v1/cancel:
         post:
             tags:
@@ -3476,6 +3647,13 @@ components:
                     type: string
                     description: 来源
             description: DeleteKnowledgeRequest 删除知识库文档请求
+        api.cin.admin.v1.DeleteMessageReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                    description: 是否成功
+            description: DeleteMessageReply 下线/删除消息响应
         api.cin.admin.v1.DeleteProductReply:
             type: object
             properties:
@@ -4020,6 +4198,19 @@ components:
                         $ref: '#/components/schemas/api.cin.admin.v1.AdminKnowledgeDocInfo'
                     description: 文档列表
             description: ListKnowledgeReply 列出知识库文档响应
+        api.cin.admin.v1.ListMessageReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.admin.v1.MessageItem'
+                    description: 消息列表
+                total:
+                    type: integer
+                    description: 总数
+                    format: int32
+            description: ListMessageReply 消息列表响应
         api.cin.admin.v1.ListOperationLogOperatorsReply:
             type: object
             properties:
@@ -4163,6 +4354,40 @@ components:
                     type: string
                     description: 要登出的 token
             description: LogoutRequest 管理员登出请求
+        api.cin.admin.v1.MessageItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 消息ID
+                title:
+                    type: string
+                    description: 标题
+                content:
+                    type: string
+                    description: 内容（支持换行文本）
+                msgType:
+                    type: integer
+                    description: 消息类型 1=订单 2=系统 3=营销
+                    format: int32
+                createdAt:
+                    type: string
+                    description: 创建时间（Unix 秒）
+                createdBy:
+                    type: string
+                    description: 创建人（管理员ID）
+                targetType:
+                    type: integer
+                    description: 发送范围 0=全体用户 1=指定用户
+                    format: int32
+                targetUserIds:
+                    type: string
+                    description: 指定用户ID列表（JSON 数组，仅 target_type=1 时有值）
+                status:
+                    type: integer
+                    description: 消息状态 1=启用 2=下线
+                    format: int32
+            description: MessageItem 消息项
         api.cin.admin.v1.OrderItem:
             type: object
             properties:
@@ -4455,6 +4680,36 @@ components:
                     description: 返回数量上限
                     format: int32
             description: SearchKnowledgeRequest 搜索知识库请求
+        api.cin.admin.v1.SendMessageReply:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 新消息ID
+            description: SendMessageReply 发送消息响应
+        api.cin.admin.v1.SendMessageRequest:
+            type: object
+            properties:
+                title:
+                    type: string
+                    description: 标题
+                content:
+                    type: string
+                    description: 内容
+                msgType:
+                    type: integer
+                    description: 消息类型 1=订单 2=系统 3=营销
+                    format: int32
+                targetType:
+                    type: integer
+                    description: 发送范围 0=全体用户 1=指定用户
+                    format: int32
+                targetUserIds:
+                    type: array
+                    items:
+                        type: string
+                    description: 指定用户ID列表（仅 target_type=1 时必填）
+            description: SendMessageRequest 发送消息请求
         api.cin.admin.v1.ShipOrderReply:
             type: object
             properties:
@@ -5635,6 +5890,22 @@ components:
                     description: 总数
                     format: int32
             description: ListMyCouponsReply 我的优惠券列表响应
+        api.cin.interface.v1.ListMyMessageReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.cin.interface.v1.MessageItem'
+                    description: 消息列表
+                total:
+                    type: integer
+                    description: 总数
+                    format: int32
+                unreadCount:
+                    type: string
+                    description: 未读消息数
+            description: ListMyMessageReply 我的消息列表响应
         api.cin.interface.v1.ListOrderReply:
             type: object
             properties:
@@ -5716,6 +5987,58 @@ components:
                     type: integer
                     format: int32
             description: 物流轨迹节点
+        api.cin.interface.v1.MarkAllMessageReadReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                    description: 是否成功
+            description: MarkAllMessageReadReply 全部标记已读响应
+        api.cin.interface.v1.MarkAllMessageReadRequest:
+            type: object
+            properties: {}
+            description: MarkAllMessageReadRequest 全部标记已读请求（无入参）
+        api.cin.interface.v1.MarkMessageReadReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                    description: 是否成功
+            description: MarkMessageReadReply 标记单条消息已读响应
+        api.cin.interface.v1.MarkMessageReadRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 消息ID
+            description: MarkMessageReadRequest 标记单条消息已读请求
+        api.cin.interface.v1.MessageItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 消息ID
+                title:
+                    type: string
+                    description: 标题
+                content:
+                    type: string
+                    description: 内容（支持换行文本）
+                msgType:
+                    type: integer
+                    description: 消息类型 1=订单 2=系统 3=营销
+                    format: int32
+                isRead:
+                    type: integer
+                    description: 是否已读 0=未读 1=已读
+                    format: int32
+                createdAt:
+                    type: string
+                    description: 创建时间（Unix 秒）
+                readAt:
+                    type: string
+                    description: 已读时间（Unix 秒，未读为 0）
+            description: MessageItem 消息项
         api.cin.interface.v1.MyCouponItem:
             type: object
             properties:
@@ -6099,6 +6422,13 @@ components:
                 skuId:
                     type: string
             description: ToggleCartItemRequest 选中/取消选中单个商品请求
+        api.cin.interface.v1.UnreadMessageCountReply:
+            type: object
+            properties:
+                count:
+                    type: string
+                    description: 未读消息数
+            description: UnreadMessageCountReply 未读消息数响应
         api.cin.interface.v1.UpdateAddressReply:
             type: object
             properties:
@@ -6316,6 +6646,8 @@ tags:
       description: |-
         操作日志服务（管理端查询）
          日志写入由 HTTP 中间件发布 NATS 事件，user 服务订阅落库
+    - name: AdminMessage
+      description: AdminMessage 管理后台 - 消息中心服务
     - name: AdminOrder
       description: 管理后台 - 订单管理服务
     - name: AdminProduct
@@ -6329,9 +6661,9 @@ tags:
     - name: Auth
       description: 用户认证服务
     - name: Banner
-      description: 公开 Banner 服务
-    - name: Banner
       description: 管理后台 - Banner 管理服务
+    - name: Banner
+      description: 公开 Banner 服务
     - name: Blades
       description: AI 智能助手服务
     - name: Cart
@@ -6340,6 +6672,8 @@ tags:
       description: 商品分类服务
     - name: Dashboard
       description: 仪表盘服务
+    - name: Message
+      description: Message 消息中心服务（用户端）
     - name: Order
       description: 订单服务
     - name: Product

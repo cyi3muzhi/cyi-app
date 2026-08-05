@@ -9,7 +9,7 @@ option go_package = "cyi-app/api/service/user/v1;v1";
 service OperationLog {
   // 分页查询操作日志（支持日期/操作人/模块/关键词筛选）
   rpc ListOperationLog (ListOperationLogRequest) returns (ListOperationLogReply);
-  // 操作日志统计（今日/本周/本月/累计）
+  // 操作日志统计（今日/近7天/近30天/累计）
   rpc CountOperationLog (CountOperationLogRequest) returns (CountOperationLogReply);
   // 操作人列表（筛选下拉选项，按姓名去重）
   rpc ListOperationLogOperators (ListOperationLogOperatorsRequest) returns (ListOperationLogOperatorsReply);
@@ -57,8 +57,8 @@ message CountOperationLogRequest {}
 // CountOperationLogReply 操作日志统计响应
 message CountOperationLogReply {
   int64 today = 1; // 今日操作数
-  int64 week = 2; // 本周操作数
-  int64 month = 3; // 本月操作数
+  int64 week = 2; // 近7天操作数（滚动窗口）
+  int64 month = 3; // 近30天操作数（滚动窗口）
   int64 total = 4; // 累计操作数
 }
 

@@ -1,6 +1,8 @@
 package biz
 
 import (
+	"cyi-app/app/cin/admin/internal/conf"
+
 	"github.com/google/wire"
 )
 
@@ -18,10 +20,12 @@ var ProviderSet = wire.NewSet(
 	NewSettingsUseCase,
 	NewAgentUseCase,
 	NewUserUseCase,
+	NewMessageUseCase,
 	NewOperationLogUseCase,
 	ProvideApiKey,
 )
 
-func ProvideApiKey(apiKey string) string {
-	return apiKey
+// ProvideApiKey 提供 JWT 签名密钥（用于 wire 注入）
+func ProvideApiKey(cfg *conf.Auth) string {
+	return cfg.ApiKey
 }

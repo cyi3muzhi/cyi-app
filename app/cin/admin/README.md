@@ -140,6 +140,7 @@ app/cin/admin/
 | `UserUseCase` | 用户管理（列表、详情、创建、更新、冻结/解冻、统计） |
 | `BannerUseCase` | Banner 管理（列表、创建、更新、删除、上下架） |
 | `SettingsUseCase` | 系统设置（获取、更新、修改密码） |
+| `MessageUseCase` | 消息中心（发送消息、消息列表、下线消息） |
 | `OperationLogUseCase` | 操作日志（分页查询、统计、操作人列表） |
 
 ### 认证流程
@@ -307,7 +308,7 @@ app/cin/admin/
 | 接口 | 方法 | 路径 | 说明 |
 |------|------|------|------|
 | `ListOperationLogs` | GET | `/admin/v1/logs` | 操作日志分页查询（支持日期/操作人/模块/关键词筛选） |
-| `CountOperationLogs` | GET | `/admin/v1/logs/stats` | 操作日志统计（今日/本周/本月/累计） |
+| `CountOperationLogs` | GET | `/admin/v1/logs/stats` | 操作日志统计（今日/近7天/近30天/累计） |
 | `ListOperationLogOperators` | GET | `/admin/v1/logs/operators` | 操作人列表（筛选下拉） |
 
 #### 智能助手接口（Agent）
@@ -336,6 +337,17 @@ app/cin/admin/
 | `UpdateBanner` | PUT | `/admin/v1/banners/{id}` | 更新 Banner |
 | `DeleteBanner` | DELETE | `/admin/v1/banners/{id}` | 删除 Banner |
 | `ToggleBannerStatus` | POST | `/admin/v1/banners/{id}/toggle` | 上下架 Banner |
+
+#### 消息中心接口（AdminMessage）
+
+| 接口 | 方法 | 路径 | 说明 |
+|------|------|------|------|
+| `SendMessage` | POST | `/admin/v1/messages` | 发送消息（全体/指定用户，类型：订单/系统/营销） |
+| `ListMessage` | GET | `/admin/v1/messages` | 消息列表（分页 + 类型/状态/关键字筛选） |
+| `DeleteMessage` | DELETE | `/admin/v1/messages/{id}` | 下线/删除消息 |
+
+- 权限点：`messages.view`（查看）/ `messages.send`（发送）/ `messages.delete`（下线），已在权限清单中注册
+- 数据由 user 服务的消息中心模块存储（`message` + `user_message` 表），admin BFF 通过 gRPC 调用
 
 ### 操作日志链路
 

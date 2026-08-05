@@ -140,6 +140,26 @@ func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Au
 	return userRpc.NewUserClient(conn)
 }
 
+// NewMessageServiceClient 创建用户服务消息中心 gRPC 客户端（用于管理后台发送通知/管理消息）
+func NewMessageServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) userRpc.MessageClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.USER_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			ServiceKey:     auth.ServiceKey[grpc.USER_SERVICE],
+			Meter:          metric,
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.USER_SERVICE, err))
+	}
+	return userRpc.NewMessageClient(conn)
+}
+
 // NewOperationLogClient 创建用户服务操作日志 gRPC 客户端
 func NewOperationLogClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) userRpc.OperationLogClient {
 	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(

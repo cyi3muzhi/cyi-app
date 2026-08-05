@@ -1,0 +1,170 @@
+syntax = "proto3";
+
+package api.service.user.v1;
+
+option go_package = "cyi-app/api/service/user/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.service.user.v1";
+
+import "validate/validate.proto";
+
+// Message 消息中心服务
+// 同时服务用户端（消息列表/已读管理）和管理后台（发送通知/管理消息）
+service Message {
+	// 创建消息（管理后台发送通知）
+	rpc CreateMessage (CreateMessageRequest) returns (CreateMessageReply);
+	// 管理后台消息列表（分页）
+	rpc AdminListMessage (AdminListMessageRequest) returns (AdminListMessageReply);
+	// 下线/删除消息（管理后台）
+	rpc DeleteMessage (DeleteMessageRequest) returns (DeleteMessageReply);
+	// 我的消息列表（用户端，分页 + 类型筛选）
+	rpc ListMyMessage (ListMyMessageRequest) returns (ListMyMessageReply);
+	// 我的未读消息数（用户端）
+	rpc UnreadMessageCount (UnreadMessageCountRequest) returns (UnreadMessageCountReply);
+	// 标记单条消息已读（用户端）
+	rpc MarkMessageRead (MarkMessageReadRequest) returns (MarkMessageReadReply);
+	// 全部标记已读（用户端）
+	rpc MarkAllMessageRead (MarkAllMessageReadRequest) returns (MarkAllMessageReadReply);
+}
+
+// MessageInfo 消息信息
+message MessageInfo {
+	// 消息ID
+	int64 id = 1;
+	// 标题
+	string title = 2;
+	// 内容（支持换行文本）
+	string content = 3;
+	// 消息类型 1=订单 2=系统 3=营销
+	int32 msg_type = 4;
+	// 是否已读 0=未读 1=已读（用户端视角）
+	int32 is_read = 5;
+	// 创建时间（Unix 秒）
+	int64 created_at = 6;
+	// 创建人（管理员ID）
+	int64 created_by = 7;
+	// 发送范围 0=全体用户 1=指定用户
+	int32 target_type = 8;
+	// 指定用户ID列表（JSON 数组，仅 target_type=1 时有值）
+	string target_user_ids = 9;
+	// 消息状态 1=启用 2=下线
+	int32 status = 10;
+	// 已读时间（Unix 秒，未读为 0）
+	int64 read_at = 11;
+}
+
+// ========== CreateMessage ==========
+// CreateMessageRequest 创建消息请求
+message CreateMessageRequest {
+	// 标题
+	string title = 1 [(validate.rules).string = {min_len: 1, max_len: 128}];
+	// 内容
+	string content = 2 [(validate.rules).string = {min_len: 1, max_len: 5000}];
+	// 消息类型 1=订单 2=系统 3=营销
+	int32 msg_type = 3 [(validate.rules).int32 = {in: [1, 2, 3]}];
+	// 发送范围 0=全体用户 1=指定用户
+	int32 target_type = 4 [(validate.rules).int32 = {in: [0, 1]}];
+	// 指定用户ID列表（仅 target_type=1 时必填）
+	repeated int64 target_user_ids = 5;
+	// 创建人（管理员ID）
+	int64 created_by = 6;
+}
+// CreateMessageReply 创建消息响应
+message CreateMessageReply {
+	// 新消息ID
+	int64 id = 1;
+}
+
+// ========== AdminListMessage ==========
+// AdminListMessageRequest 管理后台消息列表请求
+message AdminListMessageRequest {
+	// 页码
+	int32 page = 1 [(validate.rules).int32 = {gte: 1}];
+	// 每页数量
+	int32 page_size = 2 [(validate.rules).int32 = {gte: 1, lte: 100}];
+	// 消息类型筛选（0=全部）
+	int32 msg_type = 3;
+	// 状态筛选（0=全部 1=启用 2=下线）
+	int32 status = 4;
+	// 标题关键字
+	string keyword = 5;
+}
+// AdminListMessageReply 管理后台消息列表响应
+message AdminListMessageReply {
+	// 消息列表
+	repeated MessageInfo items = 1;
+	// 总数
+	int32 total = 2;
+}
+
+// ========== DeleteMessage ==========
+// DeleteMessageRequest 下线/删除消息请求
+message DeleteMessageRequest {
+	// 消息ID
+	int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+// DeleteMessageReply 下线/删除消息响应
+message DeleteMessageReply {
+	// 是否成功
+	bool success = 1;
+}
+
+// ========== ListMyMessage ==========
+// ListMyMessageRequest 我的消息列表请求
+message ListMyMessageRequest {
+	// 用户ID
+	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+	// 页码
+	int32 page = 2 [(validate.rules).int32 = {gte: 1}];
+	// 每页数量
+	int32 page_size = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
+	// 消息类型筛选（0=全部 1=订单 2=系统 3=营销）
+	int32 msg_type = 4;
+}
+// ListMyMessageReply 我的消息列表响应
+message ListMyMessageReply {
+	// 消息列表
+	repeated MessageInfo items = 1;
+	// 总数
+	int32 total = 2;
+	// 未读消息数
+	int64 unread_count = 3;
+}
+
+// ========== UnreadMessageCount ==========
+// UnreadMessageCountRequest 未读消息数请求
+message UnreadMessageCountRequest {
+	// 用户ID
+	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+// UnreadMessageCountReply 未读消息数响应
+message UnreadMessageCountReply {
+	// 未读消息数
+	int64 count = 1;
+}
+
+// ========== MarkMessageRead ==========
+// MarkMessageReadRequest 标记单条消息已读请求
+message MarkMessageReadRequest {
+	// 用户ID
+	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+	// 消息ID
+	int64 message_id = 2 [(validate.rules).int64 = {gt: 0}];
+}
+// MarkMessageReadReply 标记单条消息已读响应
+message MarkMessageReadReply {
+	// 是否成功
+	bool success = 1;
+}
+
+// ========== MarkAllMessageRead ==========
+// MarkAllMessageReadRequest 全部标记已读请求
+message MarkAllMessageReadRequest {
+	// 用户ID
+	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+// MarkAllMessageReadReply 全部标记已读响应
+message MarkAllMessageReadReply {
+	// 是否成功
+	bool success = 1;
+}

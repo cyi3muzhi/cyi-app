@@ -2,7 +2,7 @@
   <!-- 商品管理列表页 -->
   <div class="product-list">
     <!-- Toolbar -->
-    <div class="toolbar">
+    <div class="toolbar anim-enter" style="animation-delay: 0.02s">
       <el-button type="primary" @click="$router.push('/products/add')">
         <el-icon><Plus /></el-icon> 添加商品
       </el-button>
@@ -18,18 +18,20 @@
 
     <!-- Bulk Action Bar -->
     <div class="bulk-bar-placeholder">
-      <div v-show="selectedIds.length > 0" class="bulk-bar">
-        <span>已选择 <strong class="bulk-count">{{ selectedIds.length }}</strong> 项</span>
-        <div class="bulk-actions">
-          <el-button size="small" @click="bulkAction('上架')">批量上架</el-button>
-          <el-button size="small" @click="bulkAction('下架')">批量下架</el-button>
-          <el-button size="small" type="danger" plain @click="bulkAction('删除')">批量删除</el-button>
+      <transition name="bulk-slide">
+        <div v-show="selectedIds.length > 0" class="bulk-bar">
+          <span>已选择 <strong class="bulk-count">{{ selectedIds.length }}</strong> 项</span>
+          <div class="bulk-actions">
+            <el-button size="small" @click="bulkAction('上架')">批量上架</el-button>
+            <el-button size="small" @click="bulkAction('下架')">批量下架</el-button>
+            <el-button size="small" type="danger" plain @click="bulkAction('删除')">批量删除</el-button>
+          </div>
         </div>
-      </div>
+      </transition>
     </div>
 
     <!-- Tabs -->
-    <div class="tab-bar-wrap">
+    <div class="tab-bar-wrap anim-enter" style="animation-delay: 0.06s">
       <div class="tab-bar-inner" ref="barInner">
         <div class="tab-slider" :style="sliderStyle" />
         <div v-for="tab in tabItems" :key="tab.key"
@@ -45,7 +47,7 @@
     </div>
 
     <!-- Table -->
-    <el-table :data="products" v-loading="loading" @selection-change="onSelectionChange" stripe style="width:100%">
+    <el-table class="prod-table anim-enter" :data="products" v-loading="loading" @selection-change="onSelectionChange" stripe style="width:100%; animation-delay: 0.1s">
       <template #empty>
         <el-empty :description="loading ? '加载中...' : '暂无商品'" />
       </template>
@@ -300,6 +302,76 @@ onMounted(async () => {
 .product-img-cell { width:60px; height:60px; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:4px; background:#f5f5f5; position:relative; }
 .product-img { max-width:100%; max-height:100%; cursor:pointer; object-fit:cover; }
 .img-placeholder-text { color:#ccc; font-size:12px; }
+
+/* ============================================
+   动效
+   ============================================ */
+
+/* 页面区块入场动画 */
+@keyframes prodFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.anim-enter {
+  animation: prodFadeUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* 表格行 hover：渐变高亮 + 轻微右移 */
+.prod-table :deep(.el-table__row) {
+  transition: background-color 0.2s ease;
+}
+.prod-table :deep(.el-table__row:hover > td) {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.015) 70%, transparent) !important;
+}
+
+/* 商品图片 hover：放大 + 发光 */
+.product-img-cell {
+  transition: box-shadow 0.25s ease, border-radius 0.25s ease;
+}
+.product-img-cell:hover {
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.22);
+}
+.product-img-cell:hover .product-img {
+  transform: scale(1.1);
+}
+.product-img {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 搜索框 focus 光晕 */
+.search-input {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.search-input:focus {
+  border-color: #409eff;
+  box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.15);
+}
+
+/* Tab 项点击反馈 */
+.tab-item:active {
+  transform: scale(0.96);
+}
+
+/* 批量操作栏滑入滑出 */
+.bulk-slide-enter-active,
+.bulk-slide-leave-active {
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.bulk-slide-enter-from,
+.bulk-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* 分页 hover */
+.pagination-wrap :deep(.el-pager li),
+.pagination-wrap :deep(.btn-prev),
+.pagination-wrap :deep(.btn-next) {
+  transition: all 0.2s ease;
+}
+.pagination-wrap :deep(.el-pager li:hover) {
+  transform: translateY(-2px);
+}
 </style>
 
 <!-- 图片预览样式（全局，因为 teleport 到 body） -->

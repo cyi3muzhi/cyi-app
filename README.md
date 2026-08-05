@@ -136,14 +136,14 @@ cyi-app/
 ├── api/                    # Protobuf API 定义
 │   ├── blades/v1/          # AI 助手 API
 │   ├── cin/
-│   │   ├── admin/v1/       # 管理后台 API（含操作日志 logs）
-│   │   └── interface/v1/   # 接口网关 API
+│   │   ├── admin/v1/       # 管理后台 API（含操作日志 logs、消息中心 message）
+│   │   └── interface/v1/   # 接口网关 API（含消息中心 message）
 │   ├── common/             # 公共错误码
 │   ├── service/
 │   │   ├── marketing/v1/   # 营销（优惠券）API
 │   │   ├── order/v1/       # 订单 API
 │   │   ├── product/v1/     # 商品 & 库存 API
-│   │   └── user/v1/        # 用户 API（含操作日志 operation_log）
+│   │   └── user/v1/        # 用户 API（含操作日志 operation_log、消息中心 message）
 │   └── task/v1/            # 任务 API
 ├── app/                    # 服务实现
 │   ├── blades/             # AI 助手服务

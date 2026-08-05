@@ -11,6 +11,7 @@ import (
 // is compatible with the kratos package it is being compiled against.
 const _ = errors.SupportPackageIsVersion1
 
+// 优惠券不存在
 func IsCouponNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -19,10 +20,12 @@ func IsCouponNotFound(err error) bool {
 	return e.Reason == MarketingErrorReason_COUPON_NOT_FOUND.String() && e.Code == 422
 }
 
+// 优惠券不存在
 func ErrorCouponNotFound(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, MarketingErrorReason_COUPON_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
 
+// 优惠券已作废
 func IsCouponVoided(err error) bool {
 	if err == nil {
 		return false
@@ -31,10 +34,12 @@ func IsCouponVoided(err error) bool {
 	return e.Reason == MarketingErrorReason_COUPON_VOIDED.String() && e.Code == 422
 }
 
+// 优惠券已作废
 func ErrorCouponVoided(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, MarketingErrorReason_COUPON_VOIDED.String(), fmt.Sprintf(format, args...))
 }
 
+// 优惠券类型无效
 func IsCouponInvalidType(err error) bool {
 	if err == nil {
 		return false
@@ -43,10 +48,12 @@ func IsCouponInvalidType(err error) bool {
 	return e.Reason == MarketingErrorReason_COUPON_INVALID_TYPE.String() && e.Code == 422
 }
 
+// 优惠券类型无效
 func ErrorCouponInvalidType(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, MarketingErrorReason_COUPON_INVALID_TYPE.String(), fmt.Sprintf(format, args...))
 }
 
+// 优惠券面值无效
 func IsCouponInvalidValue(err error) bool {
 	if err == nil {
 		return false
@@ -55,10 +62,12 @@ func IsCouponInvalidValue(err error) bool {
 	return e.Reason == MarketingErrorReason_COUPON_INVALID_VALUE.String() && e.Code == 422
 }
 
+// 优惠券面值无效
 func ErrorCouponInvalidValue(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, MarketingErrorReason_COUPON_INVALID_VALUE.String(), fmt.Sprintf(format, args...))
 }
 
+// 优惠券有效期无效
 func IsCouponDateInvalid(err error) bool {
 	if err == nil {
 		return false
@@ -67,10 +76,12 @@ func IsCouponDateInvalid(err error) bool {
 	return e.Reason == MarketingErrorReason_COUPON_DATE_INVALID.String() && e.Code == 422
 }
 
+// 优惠券有效期无效
 func ErrorCouponDateInvalid(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, MarketingErrorReason_COUPON_DATE_INVALID.String(), fmt.Sprintf(format, args...))
 }
 
+// 优惠券状态无效
 func IsCouponStatusInvalid(err error) bool {
 	if err == nil {
 		return false
@@ -79,10 +90,12 @@ func IsCouponStatusInvalid(err error) bool {
 	return e.Reason == MarketingErrorReason_COUPON_STATUS_INVALID.String() && e.Code == 422
 }
 
+// 优惠券状态无效
 func ErrorCouponStatusInvalid(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, MarketingErrorReason_COUPON_STATUS_INVALID.String(), fmt.Sprintf(format, args...))
 }
 
+// 创建优惠券失败
 func IsCouponCreateFailed(err error) bool {
 	if err == nil {
 		return false
@@ -91,10 +104,12 @@ func IsCouponCreateFailed(err error) bool {
 	return e.Reason == MarketingErrorReason_COUPON_CREATE_FAILED.String() && e.Code == 422
 }
 
+// 创建优惠券失败
 func ErrorCouponCreateFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, MarketingErrorReason_COUPON_CREATE_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
+// 更新优惠券失败
 func IsCouponUpdateFailed(err error) bool {
 	if err == nil {
 		return false
@@ -103,10 +118,12 @@ func IsCouponUpdateFailed(err error) bool {
 	return e.Reason == MarketingErrorReason_COUPON_UPDATE_FAILED.String() && e.Code == 422
 }
 
+// 更新优惠券失败
 func ErrorCouponUpdateFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, MarketingErrorReason_COUPON_UPDATE_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
+// 删除优惠券失败
 func IsCouponDeleteFailed(err error) bool {
 	if err == nil {
 		return false
@@ -115,6 +132,7 @@ func IsCouponDeleteFailed(err error) bool {
 	return e.Reason == MarketingErrorReason_COUPON_DELETE_FAILED.String() && e.Code == 422
 }
 
+// 删除优惠券失败
 func ErrorCouponDeleteFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, MarketingErrorReason_COUPON_DELETE_FAILED.String(), fmt.Sprintf(format, args...))
 }

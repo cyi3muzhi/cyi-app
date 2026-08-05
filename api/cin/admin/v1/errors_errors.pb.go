@@ -12,6 +12,7 @@ import (
 const _ = errors.SupportPackageIsVersion1
 
 // 通用 0-99
+// 未授权（401）
 func IsUnauthorized(err error) bool {
 	if err == nil {
 		return false
@@ -21,10 +22,12 @@ func IsUnauthorized(err error) bool {
 }
 
 // 通用 0-99
+// 未授权（401）
 func ErrorUnauthorized(format string, args ...interface{}) *errors.Error {
 	return errors.New(401, AdminErrorReason_UNAUTHORIZED.String(), fmt.Sprintf(format, args...))
 }
 
+// 无权限（403）
 func IsForbidden(err error) bool {
 	if err == nil {
 		return false
@@ -33,10 +36,12 @@ func IsForbidden(err error) bool {
 	return e.Reason == AdminErrorReason_FORBIDDEN.String() && e.Code == 403
 }
 
+// 无权限（403）
 func ErrorForbidden(format string, args ...interface{}) *errors.Error {
 	return errors.New(403, AdminErrorReason_FORBIDDEN.String(), fmt.Sprintf(format, args...))
 }
 
+// 资源不存在（404）
 func IsNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -45,11 +50,13 @@ func IsNotFound(err error) bool {
 	return e.Reason == AdminErrorReason_NOT_FOUND.String() && e.Code == 404
 }
 
+// 资源不存在（404）
 func ErrorNotFound(format string, args ...interface{}) *errors.Error {
 	return errors.New(404, AdminErrorReason_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
 
 // 商品模块 100-199
+// 商品不存在
 func IsProductNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -59,10 +66,12 @@ func IsProductNotFound(err error) bool {
 }
 
 // 商品模块 100-199
+// 商品不存在
 func ErrorProductNotFound(format string, args ...interface{}) *errors.Error {
 	return errors.New(404, AdminErrorReason_PRODUCT_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
 
+// 商品创建失败
 func IsProductCreateFailed(err error) bool {
 	if err == nil {
 		return false
@@ -71,10 +80,12 @@ func IsProductCreateFailed(err error) bool {
 	return e.Reason == AdminErrorReason_PRODUCT_CREATE_FAILED.String() && e.Code == 422
 }
 
+// 商品创建失败
 func ErrorProductCreateFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, AdminErrorReason_PRODUCT_CREATE_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
+// 商品更新失败
 func IsProductUpdateFailed(err error) bool {
 	if err == nil {
 		return false
@@ -83,10 +94,12 @@ func IsProductUpdateFailed(err error) bool {
 	return e.Reason == AdminErrorReason_PRODUCT_UPDATE_FAILED.String() && e.Code == 422
 }
 
+// 商品更新失败
 func ErrorProductUpdateFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, AdminErrorReason_PRODUCT_UPDATE_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
+// 商品删除失败
 func IsProductDeleteFailed(err error) bool {
 	if err == nil {
 		return false
@@ -95,11 +108,13 @@ func IsProductDeleteFailed(err error) bool {
 	return e.Reason == AdminErrorReason_PRODUCT_DELETE_FAILED.String() && e.Code == 422
 }
 
+// 商品删除失败
 func ErrorProductDeleteFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, AdminErrorReason_PRODUCT_DELETE_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
 // 订单模块 200-299
+// 订单不存在
 func IsOrderNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -109,10 +124,12 @@ func IsOrderNotFound(err error) bool {
 }
 
 // 订单模块 200-299
+// 订单不存在
 func ErrorOrderNotFound(format string, args ...interface{}) *errors.Error {
 	return errors.New(404, AdminErrorReason_ORDER_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
 
+// 订单发货失败
 func IsOrderShipFailed(err error) bool {
 	if err == nil {
 		return false
@@ -121,10 +138,12 @@ func IsOrderShipFailed(err error) bool {
 	return e.Reason == AdminErrorReason_ORDER_SHIP_FAILED.String() && e.Code == 422
 }
 
+// 订单发货失败
 func ErrorOrderShipFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, AdminErrorReason_ORDER_SHIP_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
+// 订单取消失败
 func IsOrderCancelFailed(err error) bool {
 	if err == nil {
 		return false
@@ -133,11 +152,13 @@ func IsOrderCancelFailed(err error) bool {
 	return e.Reason == AdminErrorReason_ORDER_CANCEL_FAILED.String() && e.Code == 422
 }
 
+// 订单取消失败
 func ErrorOrderCancelFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, AdminErrorReason_ORDER_CANCEL_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
 // 用户模块 300-399
+// 用户不存在
 func IsUserNotFoundAdmin(err error) bool {
 	if err == nil {
 		return false
@@ -147,10 +168,12 @@ func IsUserNotFoundAdmin(err error) bool {
 }
 
 // 用户模块 300-399
+// 用户不存在
 func ErrorUserNotFoundAdmin(format string, args ...interface{}) *errors.Error {
 	return errors.New(404, AdminErrorReason_USER_NOT_FOUND_ADMIN.String(), fmt.Sprintf(format, args...))
 }
 
+// 用户创建失败
 func IsUserCreateFailed(err error) bool {
 	if err == nil {
 		return false
@@ -159,10 +182,12 @@ func IsUserCreateFailed(err error) bool {
 	return e.Reason == AdminErrorReason_USER_CREATE_FAILED.String() && e.Code == 422
 }
 
+// 用户创建失败
 func ErrorUserCreateFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, AdminErrorReason_USER_CREATE_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
+// 用户更新失败
 func IsUserUpdateFailedAdmin(err error) bool {
 	if err == nil {
 		return false
@@ -171,10 +196,12 @@ func IsUserUpdateFailedAdmin(err error) bool {
 	return e.Reason == AdminErrorReason_USER_UPDATE_FAILED_ADMIN.String() && e.Code == 422
 }
 
+// 用户更新失败
 func ErrorUserUpdateFailedAdmin(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, AdminErrorReason_USER_UPDATE_FAILED_ADMIN.String(), fmt.Sprintf(format, args...))
 }
 
+// 用户状态切换失败
 func IsUserToggleStatusFailed(err error) bool {
 	if err == nil {
 		return false
@@ -183,11 +210,13 @@ func IsUserToggleStatusFailed(err error) bool {
 	return e.Reason == AdminErrorReason_USER_TOGGLE_STATUS_FAILED.String() && e.Code == 422
 }
 
+// 用户状态切换失败
 func ErrorUserToggleStatusFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, AdminErrorReason_USER_TOGGLE_STATUS_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
 // 优惠券模块 400-499
+// 优惠券不存在
 func IsCouponNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -197,10 +226,12 @@ func IsCouponNotFound(err error) bool {
 }
 
 // 优惠券模块 400-499
+// 优惠券不存在
 func ErrorCouponNotFound(format string, args ...interface{}) *errors.Error {
 	return errors.New(404, AdminErrorReason_COUPON_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
 
+// 优惠券创建失败
 func IsCouponCreateFailed(err error) bool {
 	if err == nil {
 		return false
@@ -209,10 +240,12 @@ func IsCouponCreateFailed(err error) bool {
 	return e.Reason == AdminErrorReason_COUPON_CREATE_FAILED.String() && e.Code == 422
 }
 
+// 优惠券创建失败
 func ErrorCouponCreateFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, AdminErrorReason_COUPON_CREATE_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
+// 优惠券更新失败
 func IsCouponUpdateFailed(err error) bool {
 	if err == nil {
 		return false
@@ -221,10 +254,12 @@ func IsCouponUpdateFailed(err error) bool {
 	return e.Reason == AdminErrorReason_COUPON_UPDATE_FAILED.String() && e.Code == 422
 }
 
+// 优惠券更新失败
 func ErrorCouponUpdateFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, AdminErrorReason_COUPON_UPDATE_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
+// 优惠券删除失败
 func IsCouponDeleteFailed(err error) bool {
 	if err == nil {
 		return false
@@ -233,10 +268,12 @@ func IsCouponDeleteFailed(err error) bool {
 	return e.Reason == AdminErrorReason_COUPON_DELETE_FAILED.String() && e.Code == 422
 }
 
+// 优惠券删除失败
 func ErrorCouponDeleteFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, AdminErrorReason_COUPON_DELETE_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
+// 优惠券状态无效
 func IsCouponStatusInvalid(err error) bool {
 	if err == nil {
 		return false
@@ -245,6 +282,7 @@ func IsCouponStatusInvalid(err error) bool {
 	return e.Reason == AdminErrorReason_COUPON_STATUS_INVALID.String() && e.Code == 422
 }
 
+// 优惠券状态无效
 func ErrorCouponStatusInvalid(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, AdminErrorReason_COUPON_STATUS_INVALID.String(), fmt.Sprintf(format, args...))
 }

@@ -11,8 +11,9 @@ import (
 )
 
 // NewGRPCServer new a gRPC server.
-func NewServer(s *ts.GrpcServer, userService *service.UserService, adminUserService *service.AdminUserService, adminRoleService *service.AdminRoleService, adminSettingsService *service.AdminSettingsService, adminBannerService *service.AdminBannerService, operationLogService *service.OperationLogService) *grpc.Server {
+func NewServer(s *ts.GrpcServer, userService *service.UserService, messageService *service.MessageService, adminUserService *service.AdminUserService, adminRoleService *service.AdminRoleService, adminSettingsService *service.AdminSettingsService, adminBannerService *service.AdminBannerService, operationLogService *service.OperationLogService) *grpc.Server {
 	v1.RegisterUserServer(s.GrpcServer, userService)
+	v1.RegisterMessageServer(s.GrpcServer, messageService)
 	v1.RegisterAdminUserServer(s.GrpcServer, adminUserService)
 	v1.RegisterAdminRoleServer(s.GrpcServer, adminRoleService)
 	v1.RegisterAdminSettingsServer(s.GrpcServer, adminSettingsService)

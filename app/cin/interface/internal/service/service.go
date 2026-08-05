@@ -26,12 +26,14 @@ type CinInterface struct {
 	v1.UnimplementedStockServer
 	v1.UnimplementedBladesServer
 	v1.UnimplementedUserCouponServer
+	v1.UnimplementedMessageServer
 	v1.UnimplementedSettingsServer
 	v1.UnimplementedBannerServer
 	v1.UnimplementedCategoryServer
 	v1.UnimplementedUploadServer
 	log      *log.Helper
 	uc       *biz.UserUseCase
+	msgUC    *biz.MessageUseCase
 	oc       *biz.OrderUseCase
 	pc       *biz.ProductUseCase
 	catUC    *biz.CategoryUseCase
@@ -45,10 +47,11 @@ type CinInterface struct {
 	auth     *conf.Auth
 }
 
-func NewCinInterface(uc *biz.UserUseCase, oc *biz.OrderUseCase, pc *biz.ProductUseCase, catUC *biz.CategoryUseCase, sc *biz.StockUseCase, bc *biz.BladesUseCase, cc *biz.CouponUseCase, settUC *biz.SettingsUseCase, bannerUC *biz.BannerUseCase, cartUC *biz.CartUseCase, uploadR *data.UploadRepo, logger log.Logger, auth *conf.Auth) *CinInterface {
+func NewCinInterface(uc *biz.UserUseCase, msgUC *biz.MessageUseCase, oc *biz.OrderUseCase, pc *biz.ProductUseCase, catUC *biz.CategoryUseCase, sc *biz.StockUseCase, bc *biz.BladesUseCase, cc *biz.CouponUseCase, settUC *biz.SettingsUseCase, bannerUC *biz.BannerUseCase, cartUC *biz.CartUseCase, uploadR *data.UploadRepo, logger log.Logger, auth *conf.Auth) *CinInterface {
 	return &CinInterface{
 		log:      log.NewHelper(logger),
 		uc:       uc,
+		msgUC:    msgUC,
 		oc:       oc,
 		pc:       pc,
 		catUC:    catUC,

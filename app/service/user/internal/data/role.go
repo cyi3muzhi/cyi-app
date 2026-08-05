@@ -80,6 +80,11 @@ var permModules = []biz.PermModule{
 		{Key: "chat", Label: "AI 对话"},
 		{Key: "generate", Label: "AI 生成"},
 	}},
+	{Key: "messages", Title: "消息中心", Items: []biz.PermItem{
+		{Key: "view", Label: "查看消息"},
+		{Key: "send", Label: "发送消息"},
+		{Key: "delete", Label: "下线消息"},
+	}},
 }
 
 // ListRoles 获取所有角色

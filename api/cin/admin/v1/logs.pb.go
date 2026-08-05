@@ -355,8 +355,8 @@ func (*CountOperationLogsRequest) Descriptor() ([]byte, []int) {
 type CountOperationLogsReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Today         int64                  `protobuf:"varint,1,opt,name=today,proto3" json:"today,omitempty"` // 今日操作数
-	Week          int64                  `protobuf:"varint,2,opt,name=week,proto3" json:"week,omitempty"`   // 本周操作数
-	Month         int64                  `protobuf:"varint,3,opt,name=month,proto3" json:"month,omitempty"` // 本月操作数
+	Week          int64                  `protobuf:"varint,2,opt,name=week,proto3" json:"week,omitempty"`   // 近7天操作数（滚动窗口）
+	Month         int64                  `protobuf:"varint,3,opt,name=month,proto3" json:"month,omitempty"` // 近30天操作数（滚动窗口）
 	Total         int64                  `protobuf:"varint,4,opt,name=total,proto3" json:"total,omitempty"` // 累计操作数
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
