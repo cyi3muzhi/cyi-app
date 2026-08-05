@@ -1,4 +1,4 @@
-/** 悦选商城管理后台 - 订单管理类型定义 */
+/** cyi商城管理后台 - 订单管理类型定义 */
 
 /** 订单商品明细 */
 export interface OrderProduct {

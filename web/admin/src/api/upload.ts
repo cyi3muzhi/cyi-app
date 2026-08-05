@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - 文件上传 API（前端直传 OSS）
+ * cyi商城管理后台 - 文件上传 API（前端直传 OSS）
  */
 import request from './index'
 

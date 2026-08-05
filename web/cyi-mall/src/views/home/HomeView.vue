@@ -123,7 +123,7 @@
       <div class="container-shop promo-content">
         <span class="promo-tag">限时活动</span>
         <h2 class="promo-title">全场满299减50 · 新人专享礼包</h2>
-        <p class="promo-desc">活动时间：2026.07.15 - 2026.07.31 | 部分商品除外 | 最终解释权归悦选商城所有</p>
+        <p class="promo-desc">活动时间：2026.07.15 - 2026.07.31 | 部分商品除外 | 最终解释权归cyi商城所有</p>
         <router-link to="/products" class="promo-btn">立即选购</router-link>
       </div>
     </section>

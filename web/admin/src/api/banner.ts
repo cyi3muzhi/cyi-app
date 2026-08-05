@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - Banner 管理 API
+ * cyi商城管理后台 - Banner 管理 API
  */
 import request from './index'
 

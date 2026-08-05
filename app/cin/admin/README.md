@@ -21,6 +21,7 @@
 app/cin/admin/
 ├── cmd/admin/
 │   ├── main.go          # 服务入口
+│   ├── tracer.go        # Jaeger 追踪初始化
 │   ├── wire.go          # 依赖注入配置
 │   └── wire_gen.go      # Wire 生成文件
 ├── configs/
@@ -31,43 +32,58 @@ app/cin/admin/
 │   └── register.yaml    # 注册配置
 ├── internal/
 │   ├── biz/
+│   │   ├── agent.go       # AI 智能助手业务逻辑（聊天、生成文案、知识库）
 │   │   ├── auth.go       # 认证业务逻辑（登录、登出、头像、在线管理）
 │   │   ├── biz.go        # 业务层依赖注入
 │   │   ├── category.go   # 商品分类管理业务逻辑
+│   │   ├── coupon.go     # 优惠券管理业务逻辑
 │   │   ├── dashboard.go  # 仪表盘业务逻辑
 │   │   ├── export.go     # 订单导出业务逻辑（投递异步任务、查询状态、生成下载链接）
+│   │   ├── operation_log.go # 操作日志业务逻辑（查询、统计、操作人列表）
 │   │   ├── order.go      # 订单管理业务逻辑（列表、详情、发货、取消、统计）
 │   │   ├── product.go    # 商品业务逻辑
 │   │   ├── role.go       # 角色与权限管理业务逻辑
+│   │   ├── settings.go   # 系统设置业务逻辑
 │   │   ├── staff.go      # 员工管理业务逻辑
-│   │   └── staff_test.go # 员工管理单元测试
+│   │   ├── staff_test.go # 员工管理单元测试
+│   │   └── user.go       # 用户管理业务逻辑
 │   ├── conf/
 │   │   ├── conf.pb.go   # 配置结构体
 │   │   └── conf.proto   # 配置定义
 │   ├── data/
 │   │   ├── asynq.go       # Asynq 客户端初始化（投递导出任务）
 │   │   ├── auth.go        # 认证数据访问（gRPC 调用 user service、OSS 上传）
+│   │   ├── banner.go      # Banner 数据访问（gRPC 调用 user service）
 │   │   ├── casbin.go      # Casbin Enforcer 和远程权限校验器
 │   │   ├── category.go    # 分类数据访问（gRPC 调用 product service）
 │   │   ├── client_conn.go # 下游微服务 gRPC 客户端连接
+│   │   ├── coupon.go      # 优惠券数据访问（gRPC 调用 marketing service）
 │   │   ├── dashboard.go   # 仪表盘数据访问
 │   │   ├── data.go        # 数据层初始化与依赖注入
 │   │   ├── export.go      # 导出数据访问（Asynq 投递、Redis 状态读写、OSS 下载链接缓存）
+│   │   ├── operation_log.go # 操作日志数据访问（gRPC 查询 user service、NATS 发布器）
 │   │   ├── order.go       # 订单数据访问（gRPC 调用 order service）
+│   │   ├── oss_helper.go  # OSS 公开 URL 解析辅助
 │   │   ├── product.go     # 商品数据访问（gRPC 调用 product service）
 │   │   ├── role.go        # 角色数据访问（gRPC 调用 user service）
+│   │   ├── settings.go    # 系统设置数据访问（gRPC 调用 user service）
 │   │   ├── staff.go       # 员工数据访问（gRPC 调用 user service）
 │   │   ├── upload.go      # 文件上传数据访问（OSS）
-│   │   └── upload_test.go # 文件上传单元测试
+│   │   ├── upload_test.go # 文件上传单元测试
+│   │   └── user.go        # 用户管理数据访问（gRPC 调用 user service）
 │   ├── server/
 │   │   ├── grpc.go      # gRPC 服务注册
 │   │   ├── http.go      # HTTP 服务注册
 │   │   └── server.go    # 服务器配置（HTTP/gRPC/服务发现）
 │   └── service/
+│       ├── agent.go      # AI 智能助手服务（聊天、生成文案、快捷提问、知识库）
 │       ├── auth.go      # 认证服务（登录、登出、个人信息、权限查询）
+│       ├── banner.go    # Banner 管理服务
 │       ├── category.go  # 分类服务
+│       ├── coupon.go    # 优惠券管理服务
 │       ├── dashboard.go # 仪表盘服务
 │       ├── export.go    # 订单导出服务（投递任务、查询状态）
+│       ├── logs.go      # 操作日志服务（列表、统计、操作人列表）
 │       ├── order.go     # 订单服务（列表、详情、发货、取消、统计）
 │       ├── product.go   # 商品服务
 │       ├── role.go      # 角色与权限服务
@@ -103,6 +119,7 @@ app/cin/admin/
 | `registry.consul.scheme` | Consul 协议 | - |
 | `trace.endpoint` | Jaeger 链路追踪地址 | - |
 | `log.level` | 日志级别 | - |
+| `NATS_URL`（环境变量） | NATS 地址，操作日志发布用（Docker 环境配 `nats://nats:4222`） | `nats://localhost:4222` |
 
 ## 核心业务逻辑
 
@@ -111,6 +128,7 @@ app/cin/admin/
 | UseCase | 职责 |
 |---------|------|
 | `AuthUseCase` | 管理员认证（登录、登出、头像管理、在线管理、信息更新） |
+| `AgentUseCase` | AI 智能助手（聊天、生成商品描述、Banner 文案、分类 SEO、运营摘要、快捷提问、知识库管理） |
 | `DashboardUseCase` | 仪表盘数据统计、订单趋势、营收分类占比 |
 | `OrderUseCase` | 订单管理（列表、详情、发货、取消、统计） |
 | `ExportUseCase` | 订单导出（投递异步任务到 task 服务、查询任务状态、生成下载链接） |
@@ -120,6 +138,9 @@ app/cin/admin/
 | `StaffUseCase` | 员工管理（列表、创建、更新、状态切换） |
 | `CouponUseCase` | 优惠券管理（CRUD、上下架、统计、发放记录） |
 | `UserUseCase` | 用户管理（列表、详情、创建、更新、冻结/解冻、统计） |
+| `BannerUseCase` | Banner 管理（列表、创建、更新、删除、上下架） |
+| `SettingsUseCase` | 系统设置（获取、更新、修改密码） |
+| `OperationLogUseCase` | 操作日志（分页查询、统计、操作人列表） |
 
 ### 认证流程
 
@@ -276,6 +297,55 @@ app/cin/admin/
 | `UpdateSettings` | PUT | `/admin/v1/settings` | 更新系统设置 |
 | `ChangePassword` | PUT | `/admin/v1/settings/password` | 修改密码 |
 
+#### 操作日志接口（AdminLogs）
+
+| 接口 | 方法 | 路径 | 说明 |
+|------|------|------|------|
+| `ListOperationLogs` | GET | `/admin/v1/logs` | 操作日志分页查询（支持日期/操作人/模块/关键词筛选） |
+| `CountOperationLogs` | GET | `/admin/v1/logs/stats` | 操作日志统计（今日/本周/本月/累计） |
+| `ListOperationLogOperators` | GET | `/admin/v1/logs/operators` | 操作人列表（筛选下拉） |
+
+#### 智能助手接口（Agent）
+
+| 接口 | 方法 | 路径 | 说明 |
+|------|------|------|------|
+| `Chat` | POST | `/admin/v1/agent/chat` | 非流式聊天（支持工具查询/RAG） |
+| `GenerateDescription` | POST | `/admin/v1/agent/generate-description` | AI 生成商品描述 |
+| `ExpandDescription` | POST | `/admin/v1/agent/expand-description` | AI 扩写商品描述 |
+| `GenerateBannerCopy` | POST | `/admin/v1/agent/generate-banner` | AI 生成 Banner 文案 |
+| `GenerateCategorySEO` | POST | `/admin/v1/agent/generate-seo` | AI 生成分类 SEO |
+| `GenerateSummary` | POST | `/admin/v1/agent/generate-summary` | AI 生成运营摘要 |
+| `SuggestQuestions` | POST | `/admin/v1/agent/suggest-questions` | AI 推荐快捷提问 |
+| `GetChatHistory` | GET | `/admin/v1/agent/chat/history` | 获取聊天历史 |
+| `ClearChatHistory` | POST | `/admin/v1/agent/chat/clear` | 清除聊天历史 |
+| `ListKnowledge` | GET | `/admin/v1/agent/knowledge/list` | 列出知识库文档 |
+| `DeleteKnowledge` | POST | `/admin/v1/agent/knowledge/delete` | 删除知识库文档 |
+| `SearchKnowledge` | POST | `/admin/v1/agent/knowledge/search` | 搜索知识库 |
+
+#### Banner 接口（AdminBanner）
+
+| 接口 | 方法 | 路径 | 说明 |
+|------|------|------|------|
+| `ListBanners` | GET | `/admin/v1/banners` | Banner 列表 |
+| `CreateBanner` | POST | `/admin/v1/banners` | 创建 Banner |
+| `UpdateBanner` | PUT | `/admin/v1/banners/{id}` | 更新 Banner |
+| `DeleteBanner` | DELETE | `/admin/v1/banners/{id}` | 删除 Banner |
+| `ToggleBannerStatus` | POST | `/admin/v1/banners/{id}/toggle` | 上下架 Banner |
+
+### 操作日志链路
+
+管理员的写操作（非 GET）由 HTTP 中间件自动记录，通过 NATS 异步落库：
+
+```
+管理员写操作请求
+      ↓
+admin HTTP 操作日志中间件（认证之后，从 JWT 取操作人）
+      ↓ 发布事件到 NATS admin.operation 主题
+user 服务订阅 → 写入 admin_operation_log 表
+      ↓
+管理端查询 GET /admin/v1/logs（admin → user 服务 gRPC 读库返回）
+```
+
 ## 运行方式
 
 ### 本地开发
@@ -309,6 +379,7 @@ make build
 | admin BFF | Product Service | gRPC |
 | admin BFF | Order Service | gRPC |
 | admin BFF | Redis（Asynq） | 投递导出任务到 `export` 队列，由 task 服务消费 |
+| admin BFF | NATS | 发布操作日志事件（admin.operation 主题） |
 
 ### 订单导出流程（异步）
 

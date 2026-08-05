@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - 认证 API
+ * cyi商城管理后台 - 认证 API
  */
 import request from './index'
 import type { LoginReply, GetAdminInfoReply, ChangeAvatarReply, UpdateAdminInfoReply } from '../types/api'

@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - 全局状态
+ * cyi商城管理后台 - 全局状态
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
@@ -53,7 +53,7 @@ export const useAppStore = defineStore('app', () => {
   const orderPendingCount = ref('')
 
   // 商城名称（从系统设置加载）
-  const shopName = ref('悦选商城')
+  const shopName = ref('cyi商城')
 
   /** 从系统设置加载商城名称 */
   async function fetchShopName() {

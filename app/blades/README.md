@@ -20,6 +20,7 @@ AI 智能助手服务，基于 DeepSeek API 提供聊天对话能力。
 app/blades/
 ├── cmd/blades/
 │   ├── main.go              # 服务入口
+│   ├── confadapter.go       # Consul 配置适配
 │   ├── wire.go              # 依赖注入配置
 │   └── wire_gen.go          # Wire 生成文件
 ├── configs/
@@ -31,7 +32,10 @@ app/blades/
 │   │   ├── agent.go             # AgentUseCase 会话管理 + 偏好存储
 │   │   ├── agent_factory.go     # AgentFactory 多端 Agent 工厂
 │   │   ├── agent_middleware.go  # Agent 中间件（日志/恢复）
+│   │   ├── agent_test.go        # Agent 测试
 │   │   ├── biz.go               # 业务层依赖注入
+│   │   ├── config.go            # 配置加载
+│   │   ├── context.go           # 上下文工具（userID/source/role）
 │   │   ├── embedding.go         # Embedding 客户端
 │   │   ├── knowledge.go         # 知识库管理用例
 │   │   ├── providers.go         # Embedding/RAG 配置 provider
@@ -43,6 +47,7 @@ app/blades/
 │   │   ├── tools_permission.go  # 权限查询工具
 │   │   ├── tools_preference.go  # 偏好保存工具
 │   │   ├── tools_product.go     # 商品查询工具
+│   │   ├── tools_stock.go       # 库存查询工具
 │   │   └── tools_user.go        # 用户查询工具
 │   ├── conf/
 │   │   ├── conf.pb.go       # 配置结构体
@@ -84,6 +89,7 @@ app/blades/
 - `AgentFactory.GetOrCreate(ctx, source, role)`: 按端和角色获取或创建 Agent 实例（3 分钟缓存，动态按权限过滤工具）
 - `AgentInstance.Chat/ChatStream`: 发送消息（支持 RAG + 会话历史 + 工具调用 + 偏好注入）
 - `AgentLogging/AgentRecovery`: Agent 中间件（日志记录 + panic 恢复）
+- **输出格式规范**：所有场景提示词统一拼接 `formatRules`，要求 AI 使用 Markdown 结构化输出（查询结果用 `|` 管道表格、要点用列表、结论置前、禁止客套寒暄），保证回复在前端（marked 渲染）展示整齐
 
 ### KnowledgeUseCase
 
@@ -99,6 +105,7 @@ app/blades/
 |------|------|----------|
 | `search_products` | 搜索查询商品列表 | products.view |
 | `get_product_detail` | 查询商品详细信息 | products.view |
+| `query_stock` | 查询 SKU 实时库存 | products.view |
 | `query_orders` | 查询订单列表 | orders.view |
 | `query_order_detail` | 查询订单详情 | orders.view |
 | `query_users` | 查询用户列表 | users.view |

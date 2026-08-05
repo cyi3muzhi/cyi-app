@@ -25,7 +25,7 @@ func NewSettingsRepo(data *Data, logger log.Logger) biz.SettingsRepo {
 // defaultSettings 返回默认系统设置
 func defaultSettings() *biz.SystemSettings {
 	return &biz.SystemSettings{
-		ShopName:               "悦选商城",
+		ShopName:               "cyi商城",
 		ShopDescription:        "精选好物，品质生活",
 		ContactPhone:           "400-888-8888",
 		ContactEmail:           "service@yuexuan.com",

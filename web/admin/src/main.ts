@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - 入口文件
+ * cyi商城管理后台 - 入口文件
  */
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'

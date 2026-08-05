@@ -36,6 +36,7 @@ app/cin/interface/
 │   │   ├── biz.go       # 业务层依赖注入
 │   │   ├── cart.go      # 购物车业务逻辑
 │   │   ├── category.go  # 分类业务
+│   │   ├── coupon.go    # 优惠券业务逻辑
 │   │   ├── order.go     # 订单业务逻辑
 │   │   ├── product.go   # 商品业务逻辑
 │   │   ├── settings.go  # 店铺设置业务
@@ -45,11 +46,15 @@ app/cin/interface/
 │   │   ├── conf.pb.go   # 配置结构体
 │   │   └── conf.proto   # 配置定义
 │   ├── data/
+│   │   ├── banner.go    # 轮播图数据访问
 │   │   ├── cart.go      # 购物车数据访问（Redis Hash）
+│   │   ├── category.go  # 分类数据访问
 │   │   ├── client_conn.go # 客户端连接
+│   │   ├── coupon.go    # 优惠券数据访问（gRPC 调用 marketing service）
 │   │   ├── data.go      # 数据层初始化
 │   │   ├── order.go     # 订单数据访问
 │   │   ├── product.go   # 商品数据访问
+│   │   ├── settings.go  # 店铺设置数据访问
 │   │   ├── stock.go     # 库存数据访问
 │   │   ├── upload.go    # 文件上传数据访问（OSS 预签名）
 │   │   └── user.go      # 用户数据访问
@@ -59,11 +64,15 @@ app/cin/interface/
 │   │   ├── server.go    # 服务器配置
 │   │   └── stream_route.go # 流式路由（WebSocket/SSE）
 │   └── service/
+│       ├── banner.go    # 轮播图服务
 │       ├── blades.go    # AI 助手服务
 │       ├── cart.go      # 购物车服务
+│       ├── category.go  # 分类服务
+│       ├── coupon.go    # 优惠券服务
 │       ├── order.go     # 订单服务
 │       ├── product.go   # 商品服务
 │       ├── service.go   # 服务层依赖注入
+│       ├── settings.go  # 店铺设置服务
 │       ├── stock.go     # 库存服务
 │       ├── upload.go    # 文件上传服务（获取上传凭证）
 │       └── user.go      # 用户服务
@@ -125,6 +134,9 @@ app/cin/interface/
 | `CartUseCase` | 购物车管理（Redis 存储 + 商品信息聚合，按商品+SKU 维度） |
 | `CouponUseCase` | 优惠券领取、我的优惠券列表、领券中心（可领取券）、结算可用券筛选 |
 | `BladesUseCase` | AI 聊天助手 |
+| `BannerUseCase` | 轮播图查询 |
+| `CategoryUseCase` | 商品分类查询 |
+| `SettingsUseCase` | 店铺设置查询 |
 
 ### 服务接口
 
@@ -166,6 +178,9 @@ app/cin/interface/
 | | `ListMyCoupons` | gRPC/HTTP | 我的优惠券列表（GET /api/v1/coupons/my，按状态筛选） |
 | | `ListAvailableCoupons` | gRPC/HTTP | 领券中心可领取列表（GET /api/v1/coupons/available） |
 | | `ListUsableCoupons` | gRPC/HTTP | 结算可用券（GET /api/v1/coupons/usable，按订单金额筛选） |
+| **Banner** | `ListBanners` | gRPC/HTTP | 轮播图列表（启用中的） |
+| **Category** | `ListCategoryTree` | gRPC/HTTP | 分类树（启用中的） |
+| **Settings** | `GetSettings` | gRPC/HTTP | 获取店铺设置（名称、logo、公告等） |
 | **Stock** | `UpdateStock` | gRPC/HTTP | 更新库存 |
 | **Upload** | `GetUploadToken` | gRPC/HTTP | 获取上传凭证（OSS 预签名直传，用于头像等） |
 | **Blades** | `AiChat` | gRPC/HTTP | AI 聊天（非流式） |

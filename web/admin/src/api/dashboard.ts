@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - 仪表盘 API
+ * cyi商城管理后台 - 仪表盘 API
  */
 import request from './index'
 import type {

@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - 通用 OSS 直传工具
+ * cyi商城管理后台 - 通用 OSS 直传工具
  */
 import { getUploadToken } from '../api/upload'
 

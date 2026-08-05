@@ -24,14 +24,23 @@ app/service/product/
 ├── internal/
 │   ├── biz/
 │   │   ├── biz.go       # 业务层依赖注入
-│   │   ├── product.go   # 商品业务逻辑
-│   │   ├── product_handle.go # 商品处理
+│   │   ├── errors.go    # 业务错误定义
+│   │   ├── product.go   # 商品业务实体
+│   │   ├── product_handle.go # 商品处理（ProductUseCase）
+│   │   ├── product_handle_test.go # 商品处理测试
 │   │   ├── product_value.go  # 商品值对象
+│   │   ├── product_value_test.go # 商品值对象测试
+│   │   ├── sku.go       # SKU 业务逻辑
+│   │   ├── sku_test.go  # SKU 测试
+│   │   ├── spec_group.go # 规格组业务逻辑
+│   │   ├── spec_group_test.go # 规格组测试
 │   │   ├── stock.go     # 库存业务逻辑
 │   │   ├── stock_handle.go   # 库存处理
+│   │   ├── stock_handle_test.go # 库存处理测试
 │   │   ├── stock_value.go    # 库存值对象
 │   │   ├── category.go       # 分类业务实体
-│   │   └── category_handle.go # 分类业务逻辑
+│   │   ├── category_handle.go # 分类业务逻辑
+│   │   └── category_handle_test.go # 分类业务测试
 │   ├── conf/
 │   │   ├── conf.pb.go   # 配置结构体
 │   │   └── conf.proto   # 配置定义
@@ -39,24 +48,38 @@ app/service/product/
 │   │   ├── curd/
 │   │   │   ├── gen.go   # 代码生成工具
 │   │   │   ├── product.gen.go # 商品 CURD
+│   │   │   ├── sku.gen.go     # SKU CURD
+│   │   │   ├── spec_group.gen.go # 规格组 CURD
+│   │   │   ├── spec_value.gen.go # 规格值 CURD
 │   │   │   ├── stock.gen.go   # 库存 CURD
 │   │   │   └── category.gen.go # 分类 CURD
 │   │   ├── data.go      # 数据层初始化
 │   │   ├── models/
 │   │   │   ├── product.go # 商品模型
+│   │   │   ├── sku.go     # SKU 模型
+│   │   │   ├── spec_group.go # 规格组模型
+│   │   │   ├── spec_value.go # 规格值模型
 │   │   │   ├── stock.go   # 库存模型
 │   │   │   └── category.go # 分类模型
+│   │   ├── category.go  # 分类数据访问
+│   │   ├── category_test.go # 分类数据访问测试
 │   │   ├── product.go   # 商品数据访问
+│   │   ├── product_test.go # 商品数据访问测试
+│   │   ├── sku.go       # SKU 数据访问
+│   │   ├── spec_group.go # 规格组数据访问
+│   │   ├── spec_group_test.go # 规格组数据访问测试
 │   │   ├── stock.go     # 库存数据访问
-│   │   └── category.go  # 分类数据访问
+│   │   └── test_helper_test.go # 测试辅助
+│   ├── nats/
+│   │   └── stock_handler.go # NATS 库存事件处理器（库存变更广播消费）
 │   ├── server/
 │   │   ├── grpc.go      # gRPC 服务注册
 │   │   └── server.go    # 服务器配置
 │   └── service/
+│       ├── category.go  # 分类服务
 │       ├── product.go   # 商品服务
 │       ├── service.go   # 服务层依赖注入
-│       ├── stock.go     # 库存服务
-│       └── category.go  # 分类服务
+│       └── stock.go     # 库存服务
 ├── Makefile             # 构建脚本
 └── openapi.yaml         # OpenAPI 文档
 ```
@@ -93,6 +116,8 @@ app/service/product/
 | `ProductUseCase` | 商品管理（创建、查询、更新、删除） |
 | `StockUseCase` | 库存管理（查询、扣减、增加） |
 | `CategoryUseCase` | 商品分类管理（分类树、创建、更新、删除、排序、状态管理） |
+| `SkuUseCase` | SKU 管理（列表、创建、更新、删除） |
+| `SpecGroupUseCase` | 规格组管理（列表、创建、更新、删除，含规格值） |
 
 ### 商品值对象
 

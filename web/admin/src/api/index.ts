@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - API 请求封装
+ * cyi商城管理后台 - API 请求封装
  */
 import axios from 'axios'
 import { ElMessage } from 'element-plus'

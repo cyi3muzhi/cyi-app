@@ -36,7 +36,7 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   console.log('[route]', to.fullPath, 'requiresAuth:', !!to.meta.requiresAuth, 'token:', !!localStorage.getItem('token'))
 
-  document.title = to.meta.title ? `${to.meta.title} - 悦选商城` : '悦选商城'
+  document.title = to.meta.title ? `${to.meta.title} - cyi商城` : 'cyi商城'
 
   if (to.meta.requiresAuth) {
     const token = localStorage.getItem('token')

@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - 员工管理 API
+ * cyi商城管理后台 - 员工管理 API
  */
 import request from './index'
 

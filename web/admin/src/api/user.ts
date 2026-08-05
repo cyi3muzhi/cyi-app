@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - 用户管理 API
+ * cyi商城管理后台 - 用户管理 API
  * 对接 user service（用户端用户表，非管理员表）
  */
 import request from './index'

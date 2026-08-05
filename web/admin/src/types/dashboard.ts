@@ -1,4 +1,4 @@
-/** 悦选商城管理后台 - 仪表盘类型定义 */
+/** cyi商城管理后台 - 仪表盘类型定义 */
 
 /** 仪表盘统计数据响应 */
 export interface DashboardStatsResponse {

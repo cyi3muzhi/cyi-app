@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - 订单管理 API
+ * cyi商城管理后台 - 订单管理 API
  */
 import request from './index'
 import type { OrderListParams, OrderListResponse, OrderDetailResponse, ShipOrderData, ExportOrderParams, ExportOrderResponse, ExportTaskStatusResponse, OrderStatsResponse } from '../types/order'

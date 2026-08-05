@@ -31,8 +31,12 @@ app/service/user/
 │   │   ├── address.go   # 收货地址业务逻辑
 │   │   ├── admin_user.go # 管理员业务逻辑
 │   │   ├── auth.go      # 认证业务逻辑（注册/登录）
+│   │   ├── banner.go    # Banner 业务逻辑
 │   │   ├── biz.go       # 业务层依赖注入
+│   │   ├── errors.go    # 业务错误定义
+│   │   ├── operation_log.go # 操作日志业务逻辑（写入、查询、统计、操作人列表）
 │   │   ├── role.go      # 角色管理业务逻辑
+│   │   ├── settings.go  # 店铺设置业务逻辑
 │   │   └── user.go      # 用户业务逻辑
 │   ├── conf/
 │   │   ├── conf.pb.go   # 配置结构体
@@ -52,11 +56,22 @@ app/service/user/
 │   │   ├── data.go      # 数据层初始化
 │   │   ├── models/
 │   │   │   ├── admin_user.go # 管理员模型
+│   │   │   ├── banner.go # Banner 模型
 │   │   │   ├── casbin_rule.go # Casbin 策略规则模型
+│   │   │   ├── operation_log.go # 操作日志模型
 │   │   │   ├── role_meta.go # 角色元数据模型
+│   │   │   ├── settings.go # 店铺设置模型
 │   │   │   └── user.go  # 用户模型
+│   │   ├── address.go   # 收货地址数据访问
+│   │   ├── admin_user.go # 管理员数据访问
+│   │   ├── admin_user_test.go # 管理员数据访问测试
+│   │   ├── banner.go    # Banner 数据访问
+│   │   ├── casbin.go    # Casbin 适配器（GORM 存储）
+│   │   ├── operation_log.go # 操作日志数据访问（GORM 读写 + 头像关联查询）
+│   │   ├── operation_log_nats.go # 操作日志 NATS 消费者（订阅落库）
 │   │   ├── role.go      # 角色数据访问
 │   │   ├── role_test.go # 角色数据访问测试
+│   │   ├── settings.go  # 店铺设置数据访问
 │   │   └── user.go      # 用户数据访问
 │   ├── pkg/
 │   │   └── encryption/
@@ -67,8 +82,11 @@ app/service/user/
 │   │   └── server.go    # 服务器配置
 │   └── service/
 │       ├── admin_user.go # 管理员服务（gRPC）
+│       ├── banner.go    # Banner 服务（gRPC）
+│       ├── operation_log.go # 操作日志服务（gRPC，供 admin 查询）
 │       ├── role_admin.go # 角色管理服务（gRPC）
 │       ├── service.go   # 服务层依赖注入
+│       ├── settings.go  # 店铺设置服务（gRPC）
 │       └── user.go      # 用户服务
 ├── Makefile             # 构建脚本
 └── openapi.yaml         # OpenAPI 文档
@@ -94,6 +112,8 @@ app/service/user/
 | `data.oss.endpoint` | OSS 地址 | - |
 | `data.oss.access_key` | OSS 访问密钥 | - |
 | `data.oss.secret_key` | OSS 秘密密钥 | - |
+| **NATS** | | |
+| `NATS_URL`（环境变量） | NATS 地址，操作日志订阅用（Docker 环境配 `nats://nats:4222`） | `nats://localhost:4222` |
 | **Auth** | | |
 | `auth.api_key` | API 密钥（用于 JWT 签名） | - |
 | **Registry** | | |
@@ -121,6 +141,9 @@ app/service/user/
 | `AddressUseCase` | 收货地址管理（增删改查、设置默认地址） |
 | `AdminUserUseCase` | 管理员管理（登录验证、CRUD、头像管理、单点登录） |
 | `RoleUseCase` | 角色管理（角色 CRUD、权限分配、权限校验） |
+| `BannerUseCase` | Banner 管理（列表、创建、更新、删除、上下架） |
+| `SettingsUseCase` | 店铺设置（获取、更新） |
+| `OperationLogUseCase` | 操作日志（NATS 消费写入、分页查询、统计、操作人列表） |
 
 ### 认证流程
 
@@ -146,6 +169,22 @@ admin BFF 请求 → 调用 Login gRPC 验证账号密码 → 返回管理员信
 ### 加密工具
 
 提供密码加密和验证功能，位于 `pkg/encryption/encryption.go`
+
+### 操作日志消费
+
+admin 服务将管理端写操作发布到 NATS `admin.operation` 主题，user 服务订阅并落库：
+
+```
+admin 操作日志中间件 → NATS 发布（admin.operation 主题）
+      ↓
+user 服务 OperationLogConsumer.Start() 订阅
+      ↓ 反序列化事件 → OperationLogUseCase.Create
+写入 admin_operation_log 表
+```
+
+- 查询接口通过 gRPC 暴露给 admin 服务（`ListOperationLog` / `CountOperationLog` / `ListOperationLogOperators`）
+- 查询时按 `admin_user_id` 批量关联管理员头像
+- NATS 连接失败时降级跳过订阅（`NewNATSConn` 不 panic，最多重试 5 次），不影响服务启动
 
 ### 服务接口
 
@@ -196,6 +235,31 @@ admin BFF 请求 → 调用 Login gRPC 验证账号密码 → 返回管理员信
 | `ListAllPermissions` | gRPC | 获取所有权限模块定义 |
 | `CheckPermission` | gRPC | 校验角色权限 |
 | `HasPolicyForOperation` | gRPC | 检查是否有策略引用指定操作 |
+
+#### Banner 服务（Banner）
+
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `ListBanners` | gRPC | Banner 列表 |
+| `CreateBanner` | gRPC | 创建 Banner |
+| `UpdateBanner` | gRPC | 更新 Banner |
+| `DeleteBanner` | gRPC | 删除 Banner |
+| `ToggleBannerStatus` | gRPC | 上下架 Banner |
+
+#### 店铺设置服务（Settings）
+
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `GetSettings` | gRPC | 获取店铺设置 |
+| `UpdateSettings` | gRPC | 更新店铺设置 |
+
+#### 操作日志服务（OperationLog）
+
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `ListOperationLog` | gRPC | 操作日志分页查询（日期/操作人/模块/关键词筛选） |
+| `CountOperationLog` | gRPC | 操作日志统计（今日/本周/本月/累计） |
+| `ListOperationLogOperators` | gRPC | 操作人列表（按姓名去重） |
 
 ## 运行方式
 

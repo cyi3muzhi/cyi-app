@@ -27,7 +27,7 @@
         <!-- 标题 -->
         <div class="card-header">
           <h1 class="card-title">欢迎回来</h1>
-          <p class="card-subtitle">登录您的悦选账户</p>
+          <p class="card-subtitle">登录您的cyi账户</p>
         </div>
 
         <!-- 社交登录 -->

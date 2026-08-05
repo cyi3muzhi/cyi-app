@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - 知识库 API 封装
+ * cyi商城管理后台 - 知识库 API 封装
  * 接口由 admin BFF (cin/admin) 提供，路径前缀 /admin/v1/agent/knowledge
  */
 import request from './index'

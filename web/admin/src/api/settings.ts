@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - 系统设置 API
+ * cyi商城管理后台 - 系统设置 API
  */
 import request from './index'
 

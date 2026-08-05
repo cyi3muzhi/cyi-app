@@ -64,9 +64,9 @@
 > **说明**：
 > - **CIN Interface**：用户端统一入口，聚合调用各业务服务
 > - **CIN Admin**：管理后台 BFF，独立生成 JWT、独立权限管控（Casbin RBAC）
-> - **Task Service**：消费 Asynq 的 `default`（一般异步任务）和 `export`（订单导出）队列
-> - **Job Service**：作为 Asynq Scheduler 调度 cron 任务，并消费 `critical` 队列（与 task 服务隔离，避免争抢）
+> - **Task Service**：消费 Asynq 的 `default`（一般异步任务）、`export`（订单导出）、`critical`（cron 定时任务）队列；原独立 Job Service 已合并进 task 服务统一管理
 > - **Admin → Task**：管理后台导出订单时，通过 Asynq（Redis）投递任务，task 服务消费完成后写回 Redis，admin 轮询状态
+> - **操作日志链路**：admin 服务 HTTP 中间件将管理员写操作发布 NATS（`admin.operation` 主题），user 服务订阅落库，admin 查询接口读库返回
 > - 所有服务通过 **Consul** 做服务发现与配置管理
 
 ## 技术栈
@@ -100,6 +100,7 @@
 | Order Service | `app/service/order` | 订单管理（状态机） | [README](app/service/order/README.md) |
 | Product Service | `app/service/product` | 商品 & 库存管理 | [README](app/service/product/README.md) |
 | User Service | `app/service/user` | 用户认证 & 管理 | [README](app/service/user/README.md) |
+| Marketing Service | `app/service/marketing` | 优惠券营销管理 | `app/service/marketing` |
 | Blades Service | `app/blades` | AI 智能助手 | [README](app/blades/README.md) |
 
 ### 任务 & 消息服务
@@ -135,34 +136,37 @@ cyi-app/
 ├── api/                    # Protobuf API 定义
 │   ├── blades/v1/          # AI 助手 API
 │   ├── cin/
-│   │   ├── admin/v1/       # 管理后台 API
+│   │   ├── admin/v1/       # 管理后台 API（含操作日志 logs）
 │   │   └── interface/v1/   # 接口网关 API
-│   ├── service/order/v1/   # 订单 API
-│   ├── service/product/v1/ # 商品 & 库存 API
-│   ├── service/user/v1/    # 用户 API
-│   ├── job/v1/             # 任务 API
+│   ├── common/             # 公共错误码
+│   ├── service/
+│   │   ├── marketing/v1/   # 营销（优惠券）API
+│   │   ├── order/v1/       # 订单 API
+│   │   ├── product/v1/     # 商品 & 库存 API
+│   │   └── user/v1/        # 用户 API（含操作日志 operation_log）
 │   └── task/v1/            # 任务 API
 ├── app/                    # 服务实现
 │   ├── blades/             # AI 助手服务
 │   ├── cin/
 │   │   ├── admin/           # 管理后台 BFF
 │   │   └── interface/      # 接口网关
-│   ├── job/                # 定时任务服务
 │   ├── nats/               # NATS 消费者
 │   ├── rabbit/             # RabbitMQ 消费者
 │   ├── service/
+│   │   ├── marketing/      # 优惠券营销服务
 │   │   ├── order/          # 订单服务
 │   │   ├── product/        # 商品服务
 │   │   └── user/           # 用户服务
-│   └── task/               # 异步任务服务
+│   └── task/               # 异步任务服务（含定时任务，原 job 服务已合并）
 ├── pkg/                    # 公共包
 │   ├── blades/             # AI 助手封装（Agent、Session、SSE）
 │   ├── exporttask/         # 订单导出异步任务共享类型（admin 投递端 / task 消费端共用）
 │   ├── kratos/             # Kratos 扩展
 │   │   ├── client/         # gRPC 客户端 & 服务名常量
 │   │   ├── config/         # Consul 配置加载
+│   │   ├── event/          # NATS 事件定义（操作日志主题与结构）
 │   │   ├── log/            # Zerolog 日志适配器
-│   │   ├── server/         # 中间件 & 传输器
+│   │   ├── server/         # 中间件 & 传输器（含操作日志中间件）
 │   │   ├── service/        # 上下文 & 元数据
 │   │   └── tracing/        # Jaeger 追踪
 │   ├── rmq/                # RabbitMQ 封装
@@ -271,12 +275,17 @@ make errors
 | Admin BFF | User Service | gRPC |
 | Admin BFF | Product Service | gRPC |
 | Admin BFF | Order Service | gRPC |
+| Admin BFF | Marketing Service | gRPC（优惠券管理） |
 | Admin BFF | Redis | Asynq（投递导出任务到 export 队列，由 task 服务消费） |
+| Admin BFF | NATS | 发布操作日志事件（admin.operation 主题） |
+| User Service | NATS | 订阅操作日志事件并落库 |
+| CIN Interface | Marketing Service | gRPC（优惠券领取/查询） |
 | NATS Consumer | NATS Server | NATS Protocol |
 | RabbitMQ Consumer | RabbitMQ Server | AMQP |
-| Job Service | Redis | Asynq（cron 调度 + 消费 critical 队列） |
-| Task Service | Redis | Asynq（消费 default/export 队列） |
-| Task Service | Order Service | gRPC（导出时拉取订单） |
+| Task Service | Redis | Asynq（cron 定时 + 消费 default/export/critical 队列，原 job 服务职责已合并） |
+| Task Service | Order Service | gRPC（导出拉单、超时订单取消） |
+| Task Service | User Service | gRPC（用户统计） |
+| Task Service | Marketing Service | gRPC（优惠券批量过期） |
 
 ## 配置管理
 

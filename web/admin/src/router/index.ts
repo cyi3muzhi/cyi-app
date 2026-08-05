@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - 路由配置
+ * cyi商城管理后台 - 路由配置
  */
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
@@ -137,7 +137,7 @@ const router = createRouter({
 // 路由守卫 - 未登录跳转登录页
 router.beforeEach((to, _from, next) => {
   const store = useAppStore()
-  const brand = store.shopName || '悦选商城'
+  const brand = store.shopName || 'cyi商城'
   document.title = to.meta.title ? `${to.meta.title} - ${brand}管理后台` : `${brand}管理后台`
 
   if (to.name !== 'Login' && !store.isLoggedIn) {

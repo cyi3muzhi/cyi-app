@@ -1,5 +1,5 @@
 /**
- * 悦选商城管理后台 - 角色权限 API
+ * cyi商城管理后台 - 角色权限 API
  */
 import request from './index'
 import type { RoleItem, PermModule } from '../types/api'

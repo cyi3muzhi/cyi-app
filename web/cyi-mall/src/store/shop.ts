@@ -7,7 +7,7 @@ import { getPublicSettings } from '@/api/settings'
 
 export const useShopStore = defineStore('shop', () => {
   /** 店铺名称 */
-  const shopName = ref('悦选商城')
+  const shopName = ref('cyi商城')
   /** 店铺描述 */
   const shopDescription = ref('')
   /** 联系电话 */
@@ -25,7 +25,7 @@ export const useShopStore = defineStore('shop', () => {
       const data: any = await getPublicSettings()
       console.log('[settings] response:', data)
       // 兼容 camelCase 和 snake_case 两种命名
-      shopName.value = data.shopName || data.shop_name || '悦选商城'
+      shopName.value = data.shopName || data.shop_name || 'cyi商城'
       if (data.shopDescription || data.shop_description) shopDescription.value = data.shopDescription || data.shop_description
       if (data.contactPhone || data.contact_phone) contactPhone.value = data.contactPhone || data.contact_phone
       if (data.contactEmail || data.contact_email) contactEmail.value = data.contactEmail || data.contact_email

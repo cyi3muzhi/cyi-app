@@ -25,6 +25,7 @@ web/admin/
 │   │   ├── auth.ts        # 认证 API
 │   │   ├── category.ts    # 商品分类 API
 │   │   ├── index.ts       # 全局请求拦截器
+│   │   ├── logs.ts        # 操作日志 API
 │   │   ├── mock.js        # Mock 数据
 │   │   ├── role.ts        # 角色权限 API
 │   │   └── staff.ts       # 员工管理 API
@@ -106,6 +107,7 @@ web/admin/
 | `/admin/v1/staff/*` | Admin BFF | 员工管理接口 |
 | `/admin/v1/permissions/*` | Admin BFF | 权限模块接口 |
 | `/admin/v1/settings/*` | Admin BFF | 系统设置接口 |
+| `/admin/v1/logs` | Admin BFF | 操作日志接口（列表、统计、操作人） |
 
 ### 认证接口
 
@@ -232,7 +234,7 @@ store.hasPerm(module, action)
 
 - 未登录访问受保护页面 → 跳转 `/login`
 - 已登录访问 `/login` → 跳转 `/dashboard`
-- 自动设置页面标题（`{title} - 悦选商城管理后台`）
+- 自动设置页面标题（`{title} - cyi商城管理后台`）
 
 ## 响应式设计
 

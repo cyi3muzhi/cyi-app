@@ -36,7 +36,6 @@ app/rabbit/
 │   │   ├── data.go      # 数据层初始化
 │   │   └── order.go     # 订单数据访问
 │   ├── server/
-│   │   ├── grpc.go      # gRPC 服务注册（已废弃，代码已注释）
 │   │   └── server.go    # 服务器配置
 │   └── service/
 │       ├── order.go     # 订单服务
