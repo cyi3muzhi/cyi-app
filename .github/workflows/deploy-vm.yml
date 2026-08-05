@@ -32,7 +32,6 @@ on:
           - product
           - marketing
           - nats
-          - job
           - task
           - frontend
 
@@ -53,7 +52,6 @@ jobs:
       product: ${{ steps.detect.outputs.product }}
       marketing: ${{ steps.detect.outputs.marketing }}
       nats_consumer: ${{ steps.detect.outputs.nats_consumer }}
-      job: ${{ steps.detect.outputs.job }}
       task: ${{ steps.detect.outputs.task }}
       frontend_admin: ${{ steps.detect.outputs.frontend_admin }}
       frontend_mall: ${{ steps.detect.outputs.frontend_mall }}
@@ -83,7 +81,7 @@ jobs:
             echo "手动部署: $SVC"
             if [ "$SVC" == "all" ]; then
               echo "force_all=true" >> $GITHUB_OUTPUT
-              for svc in blades admin interface user order product marketing nats_consumer job task frontend_admin frontend_mall; do
+              for svc in blades admin interface user order product marketing nats_consumer task frontend_admin frontend_mall; do
                 echo "$svc=true" >> $GITHUB_OUTPUT
               done
               echo "has_changes=true" >> $GITHUB_OUTPUT
@@ -98,7 +96,6 @@ jobs:
               product) echo "product=true" >> $GITHUB_OUTPUT ;;
               marketing) echo "marketing=true" >> $GITHUB_OUTPUT ;;
               nats) echo "nats_consumer=true" >> $GITHUB_OUTPUT ;;
-              job) echo "job=true" >> $GITHUB_OUTPUT ;;
               task) echo "task=true" >> $GITHUB_OUTPUT ;;
               frontend)
                 echo "frontend_admin=true" >> $GITHUB_OUTPUT
@@ -114,7 +111,7 @@ jobs:
           if [ -z "$CHANGED_FILES" ]; then
             echo "无法获取变更文件，强制全量部署"
             echo "force_all=true" >> $GITHUB_OUTPUT
-            for svc in blades admin interface user order product marketing nats_consumer job task frontend_admin frontend_mall; do
+            for svc in blades admin interface user order product marketing nats_consumer task frontend_admin frontend_mall; do
               echo "$svc=true" >> $GITHUB_OUTPUT
             done
             echo "has_changes=true" >> $GITHUB_OUTPUT
@@ -465,7 +462,6 @@ jobs:
             docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps service-nats
             RESTARTED="$RESTARTED service-nats"
           }
-          [ "${{ needs.detect-changes.outputs.job }}" == "true" ]           && restart_svc job
           [ "${{ needs.detect-changes.outputs.task }}" == "true" ]          && restart_svc task
 
           # 前端或任何后端服务变更 → 确保 nginx 运行

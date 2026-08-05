@@ -223,7 +223,7 @@ services:
       - ../logs/user-service:/logs/user-service:ro
       - ../logs/interface-service:/logs/interface-service:ro
       - ../logs/task-service:/logs/task-service:ro
-      - ../logs/job-service:/logs/job-service:ro
+      - ../logs/nats:/logs/nats:ro
       - filebeat_data:/usr/share/filebeat/data
     environment:
       - ENVIRONMENT=development  # 设置环境变量

@@ -42,17 +42,17 @@ filebeat.inputs:
       environment: ${ENVIRONMENT:development}
     fields_under_root: true
 
-  # 作业服务日志
+  # NATS 消费者服务日志
   - type: log
     enabled: true
     paths:
-      - /logs/job-service/*.log
+      - /logs/nats/*.log
     encoding: utf-8
     multiline.pattern: '^\d{4}-\d{2}-\d{2}'
     multiline.negate: true
     multiline.match: after
     fields:
-      service: job-service
+      service: nats-service
       environment: ${ENVIRONMENT:development}
     fields_under_root: true
 

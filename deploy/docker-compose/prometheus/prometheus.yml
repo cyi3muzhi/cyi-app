@@ -70,9 +70,9 @@ scrape_configs:
     metrics_path: '/metrics'
 
   # 监控 NATS 消费者服务
-  - job_name: 'nats-consumer'
+  - job_name: 'nats-service'
     static_configs:
-      - targets: ['service-nats-consumer:8000']
+      - targets: ['service-nats:8000']
     metrics_path: '/metrics'
 
   # 监控 NATS（通过 NATS Exporter）
