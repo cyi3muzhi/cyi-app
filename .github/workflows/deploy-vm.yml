@@ -306,6 +306,19 @@ jobs:
             echo "✅ docker-compose 配置已加入 artifact"
             found=1
           fi
+          # 收集各服务的 Consul 配置源文件（app/<服务>/configs/config.yaml）
+          # 部署时自动上传到 Consul KV，避免"服务已部署但配置缺失"导致启动崩溃
+          if [ -d "app" ]; then
+            mkdir -p /tmp/deploy-artifacts/consul-config
+            for cf in $(find app -path '*/configs/config.yaml' 2>/dev/null); do
+              rel="${cf#app/}"
+              svc="${rel%/configs/config.yaml}"
+              mkdir -p "/tmp/deploy-artifacts/consul-config/$svc"
+              cp "$cf" "/tmp/deploy-artifacts/consul-config/$svc/config.yaml"
+              echo "  ✅ Consul 配置源: $svc/config.yaml"
+              found=1
+            done
+          fi
           # 如果没有任何文件（极端情况），放一个占位文件
           if [ "$found" -eq 0 ]; then
             echo "⚠️  没有检测到需要构建的服务，只修改了配置文件"
@@ -400,17 +413,32 @@ jobs:
           done
           echo "✅ 镜像加载完成"
 
-      # ---------- 部署前端 ----------
+      # ---------- 部署前端（原子更新，避免 bind mount inode 断连） ----------
+      # 先解压到临时目录并验证，再整体 mv 替换
+      # 这样部署中途失败也不会留下"半解压"的中间状态目录
       - name: Deploy frontend admin
         if: needs.detect-changes.outputs.frontend_admin == 'true'
         run: |
           SRC="/tmp/deploy-artifacts/frontend-admin.tar.gz"
           DEST="$HOME/cyi-app/web/admin/dist"
+          TMP="$DEST.tmp"
           if [ -f "$SRC" ] && [ -s "$SRC" ] && gzip -t "$SRC" 2>/dev/null; then
-            rm -rf "$DEST"
-            mkdir -p "$DEST"
-            tar -xzf "$SRC" -C "$DEST"
-            echo "✅ admin 前端已部署到 $DEST"
+            # 1. 解压到临时目录
+            rm -rf "$TMP"
+            mkdir -p "$TMP"
+            tar -xzf "$SRC" -C "$TMP"
+            # 2. 验证解压结果非空
+            if [ -z "$(ls -A "$TMP" 2>/dev/null)" ]; then
+              echo "❌ admin 解压结果为空，部署中止"
+              rm -rf "$TMP"
+              exit 1
+            fi
+            # 3. 原子替换（旧目录先移走再替换，mv 为同文件系统 rename，瞬时完成）
+            rm -rf "$DEST.old" 2>/dev/null || true
+            mv "$DEST" "$DEST.old" 2>/dev/null || true
+            mv "$TMP" "$DEST"
+            rm -rf "$DEST.old" 2>/dev/null || true
+            echo "✅ admin 前端已原子更新到 $DEST"
             ls -la "$DEST" | head -10
           else
             echo "⚠️ frontend-admin.tar.gz 无效或不存在，跳过"
@@ -421,11 +449,24 @@ jobs:
         run: |
           SRC="/tmp/deploy-artifacts/frontend-mall.tar.gz"
           DEST="$HOME/cyi-app/web/cyi-mall/dist"
+          TMP="$DEST.tmp"
           if [ -f "$SRC" ] && [ -s "$SRC" ] && gzip -t "$SRC" 2>/dev/null; then
-            rm -rf "$DEST"
-            mkdir -p "$DEST"
-            tar -xzf "$SRC" -C "$DEST"
-            echo "✅ mall 前端已部署到 $DEST"
+            # 1. 解压到临时目录
+            rm -rf "$TMP"
+            mkdir -p "$TMP"
+            tar -xzf "$SRC" -C "$TMP"
+            # 2. 验证解压结果非空
+            if [ -z "$(ls -A "$TMP" 2>/dev/null)" ]; then
+              echo "❌ mall 解压结果为空，部署中止"
+              rm -rf "$TMP"
+              exit 1
+            fi
+            # 3. 原子替换
+            rm -rf "$DEST.old" 2>/dev/null || true
+            mv "$DEST" "$DEST.old" 2>/dev/null || true
+            mv "$TMP" "$DEST"
+            rm -rf "$DEST.old" 2>/dev/null || true
+            echo "✅ mall 前端已原子更新到 $DEST"
             ls -la "$DEST" | head -10
           else
             echo "⚠️ frontend-mall.tar.gz 无效或不存在，跳过"
@@ -438,11 +479,56 @@ jobs:
           docker compose -f docker-compose.infra.yml --env-file .env up -d
           echo "✅ 基础设施已就绪"
 
+      # ---------- 同步 Consul 配置 ----------
+      # 把代码仓库中各服务的 configs/config.yaml 自动上传到 Consul KV
+      # 避免"服务已部署但 Consul 配置缺失"导致服务启动崩溃（如 service-nats 曾发生）
+      - name: Sync Consul configs
+        run: |
+          CONFIG_DIR="/tmp/deploy-artifacts/consul-config"
+          if [ ! -d "$CONFIG_DIR" ]; then
+            echo "⚠️ artifact 中没有 consul-config 目录，跳过配置同步"
+            exit 0
+          fi
+          # 等待 Consul 就绪（最多 60 秒）
+          echo "🔄 等待 Consul 就绪..."
+          for i in $(seq 1 30); do
+            if curl -sf "http://localhost:8500/v1/status/leader" > /dev/null 2>&1; then
+              echo "  ✅ Consul 已就绪"
+              break
+            fi
+            if [ "$i" -eq 30 ]; then
+              echo "❌ Consul 未就绪，跳过配置同步"
+              exit 0
+            fi
+            sleep 2
+          done
+          # 遍历各服务配置并上传
+          echo "🔄 上传服务配置到 Consul..."
+          for svc_dir in "$CONFIG_DIR"/*/; do
+            [ -d "$svc_dir" ] || continue
+            svc="$(basename "$svc_dir")"
+            cfg="$svc_dir/config.yaml"
+            [ -f "$cfg" ] || continue
+            key="develop/cyi-app/$svc/config.yaml"
+            if curl -sf -X PUT --data-binary @"$cfg" "http://localhost:8500/v1/kv/$key"; then
+              echo "  ✅ 已上传: $key"
+            else
+              echo "  ⚠️ 上传失败: $key"
+            fi
+          done
+          echo "✅ 配置同步完成"
+
       # ---------- 重启变更服务 ----------
       - name: Restart changed services
         run: |
           cd "$HOME/cyi-app/deploy/docker-compose"
           RESTARTED=""
+
+          # 清理 compose 中已删除服务的残留容器（如已移除的 service-job）
+          # 合并加载 infra + app 两个 compose 文件，up -d 幂等，仅移除不在任何文件中的 orphan 容器
+          echo "🔄 清理残留容器（orphan）..."
+          docker compose -f docker-compose.infra.yml -f docker-compose.app.yml --env-file .env up -d --remove-orphans 2>/dev/null || true
+          echo "  ✅ orphan 清理完成"
 
           restart_svc() {
             local name="$1"
@@ -468,7 +554,15 @@ jobs:
           if [ -n "$RESTARTED" ] || \
              [ "${{ needs.detect-changes.outputs.frontend_admin }}" == "true" ] || \
              [ "${{ needs.detect-changes.outputs.frontend_mall }}" == "true" ]; then
-            docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps nginx
+            if [ "${{ needs.detect-changes.outputs.frontend_admin }}" == "true" ] || \
+               [ "${{ needs.detect-changes.outputs.frontend_mall }}" == "true" ]; then
+              # 前端变更：强制重建 nginx 容器，重新绑定前端目录
+              # （bind mount 不会跟随 rm -rf + mkdir 重建的新目录 inode，必须重建容器才能生效）
+              echo "🔄 前端已更新，强制重建 nginx 容器..."
+              docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps --force-recreate nginx
+            else
+              docker compose -f docker-compose.app.yml --env-file .env up -d --no-deps nginx
+            fi
             RESTARTED="$RESTARTED nginx"
           fi
 

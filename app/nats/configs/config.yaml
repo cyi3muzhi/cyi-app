@@ -1,0 +1,20 @@
+# NATS 消费者服务配置
+# 该文件是 Consul KV 配置（develop/cyi-app/nats/config.yaml）的源文件
+# CI/CD 部署时会自动上传到 Consul，请确保修改后同步更新 Consul 或直接触发部署
+server:
+  http:
+    addr: 0.0.0.0:38000
+    timeout: 30s
+  grpc:
+    addr: 0.0.0.0:39000
+    timeout: 30s
+nats:
+  url: nats://nats:4222
+
+log:
+  level: info
+  enable_console: true
+  enable_file: true
+  log_dir: logs
+  time_format: "2006-01-02 15:04:05"
+  enable_color: true
