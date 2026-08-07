@@ -17,7 +17,6 @@ func (uc *UserUseCase) Register(ctx context.Context, u *User) error {
 	// 业务逻辑
 	// 查看用户是否存在
 	user, err := uc.repo.FindByUsername(ctx, u.Username)
-	fmt.Println("user:", user)
 	if err == nil && user != nil && user.ID != 0 {
 		uc.log.Infof("User already exists: %v", user)
 		// 用户已存在
@@ -26,7 +25,6 @@ func (uc *UserUseCase) Register(ctx context.Context, u *User) error {
 
 	// 检查是否是其他错误（非用户不存在错误）
 	if err != nil && !errors.Is(err, ErrUserNotFound) {
-		fmt.Printf("Register err: %v\n", err)
 		// 记录错误日志
 		uc.log.Errorf("Failed to check user existence: %v", err)
 		return fmt.Errorf("%w: check user existence failed", ErrUserRegisterFailed)

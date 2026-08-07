@@ -75,7 +75,8 @@ func (s *AdminService) GetUser(ctx context.Context, req *adminv1.GetUserRequest)
 
 // CreateUser 创建用户
 func (s *AdminService) CreateUser(ctx context.Context, req *adminv1.CreateUserRequest) (*adminv1.CreateUserReply, error) {
-	s.log.Infof("创建用户: username=%s, phone=%s", req.Username, req.Phone)
+	// 避免记录手机号等敏感信息到日志
+	s.log.Infof("创建用户: username=%s", req.Username)
 
 	id, err := s.userUC.CreateUser(ctx, &biz.CreateUserRequest{
 		Username:       req.Username,

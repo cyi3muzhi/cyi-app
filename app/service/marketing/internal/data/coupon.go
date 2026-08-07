@@ -31,6 +31,21 @@ func parseInt32(s string) (int32, error) {
 	return int32(v), nil
 }
 
+// normalizePage 规范化分页参数：page 最小为 1，pageSize 默认 10、最大 100，
+// 防止非法入参导致 SQL offset 溢出或单页数据量过大
+func normalizePage(page, pageSize int32) (int32, int32) {
+	if page < 1 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+	return page, pageSize
+}
+
 func (r *couponRepo) CreateCoupon(ctx context.Context, in *biz.Coupon) error {
 	coupon := &mod.Coupon{
 		Name:         in.Name,
@@ -100,6 +115,8 @@ func (r *couponRepo) GetCoupon(ctx context.Context, id int64) (*biz.Coupon, erro
 }
 
 func (r *couponRepo) ListCoupon(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string) ([]*biz.Coupon, int32, error) {
+	// 规范化分页参数，防止非法入参（page<1 / pageSize 超限）导致 SQL 异常
+	page, pageSize = normalizePage(page, pageSize)
 	do := curd.Q.Coupon.WithContext(ctx)
 
 	if status != "" {
@@ -350,6 +367,8 @@ func (r *couponRepo) ClaimCoupon(ctx context.Context, couponID, userID int64, so
 
 // ListUserCoupons 查询用户优惠券列表（含优惠券基本信息）
 func (r *couponRepo) ListUserCoupons(ctx context.Context, userID int64, status int32, page, pageSize int32) ([]*biz.UserCouponItem, int32, error) {
+	// 规范化分页参数，防止非法入参（page<1 / pageSize 超限）导致 SQL 异常
+	page, pageSize = normalizePage(page, pageSize)
 	do := curd.Q.CouponDistRecord.WithContext(ctx).Where(curd.CouponDistRecord.UserID.Eq(userID))
 
 	// 状态筛选：外部语义 1=未使用 2=已使用 3=已过期，与发放记录状态（0=未使用 1=已使用 2=已过期）差 1
@@ -391,6 +410,8 @@ func (r *couponRepo) ListUserCoupons(ctx context.Context, userID int64, status i
 // ListAvailableCoupons 查询可领取优惠券列表（上架中且启用）
 // 是否已领/剩余量由 biz 层结合用户已领数计算，这里只返回券基础信息
 func (r *couponRepo) ListAvailableCoupons(ctx context.Context, userID int64, page, pageSize int32) ([]*biz.Coupon, int32, error) {
+	// 规范化分页参数，防止非法入参（page<1 / pageSize 超限）导致 SQL 异常
+	page, pageSize = normalizePage(page, pageSize)
 	do := curd.Q.Coupon.WithContext(ctx).
 		Where(curd.Coupon.Status.Eq(biz.CouponStatusActive)). // 上架中
 		Where(curd.Coupon.Enabled.Is(true))                    // 启用
@@ -540,6 +561,8 @@ func (r *couponRepo) BatchExpireCoupons(ctx context.Context, batchSize int64) (i
 
 // ListDistRecords 按优惠券ID查询发放记录列表
 func (r *couponRepo) ListDistRecords(ctx context.Context, couponID int64, page, pageSize int32) ([]*biz.DistRecord, int32, error) {
+	// 规范化分页参数，防止非法入参（page<1 / pageSize 超限）导致 SQL 异常
+	page, pageSize = normalizePage(page, pageSize)
 	do := curd.Q.CouponDistRecord.WithContext(ctx).Where(curd.CouponDistRecord.CouponID.Eq(couponID))
 
 	total, err := do.Count()

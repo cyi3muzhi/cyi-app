@@ -101,6 +101,8 @@ func (uc *OrderUseCase) Create(ctx context.Context, in *Order) error {
 			uc.log.Errorf("product not found: %v", err)
 			return v1.ErrorProductNotAvailable("product not found")
 		}
+		// 校验商品已上架：product 服务商品状态 1=上架（0=下架）
+		// 注：product v1 proto 未定义商品状态常量，此处保留数值并依赖 product 服务约定
 		if product.Product.Status != 1 {
 			return v1.ErrorProductNotAvailable("product is off shelf")
 		}
@@ -246,6 +248,16 @@ func (uc *OrderUseCase) Update(ctx context.Context, in *Order) error {
 
 // List 获取订单列表
 func (uc *OrderUseCase) List(ctx context.Context, page, pageSize int32, status string, keyword string, dateFrom, dateTo string, userID int64) ([]*Order, int32, error) {
+	// 分页参数归一化：page 最小为 1，pageSize 默认 10、上限 100，防止越界与 int32 溢出
+	if page < 1 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
 	return uc.repo.ListOrder(ctx, page, pageSize, status, keyword, dateFrom, dateTo, userID)
 }
 
@@ -329,7 +341,7 @@ func (uc *OrderUseCase) Pay(ctx context.Context, orderID int64, userID int64) er
 		OrderID:   orderID,
 		PayType:   "mock", // 当前为模拟支付，后续接入微信/支付宝时替换
 		Amount:    order.PayAmount.Amount,
-		PayStatus: 2, // 已支付
+		PayStatus: 2, // 已支付（0-未支付 1-支付中 2-已支付 3-已退款 4-支付失败；order v1 proto 未定义支付状态常量，保留数值）
 		PayMsg:    "支付成功",
 	}); err != nil {
 		uc.log.Errorf("create payment log failed, orderID: %d: %v", orderID, err)

@@ -170,6 +170,7 @@ cyi-app/
 │   │   ├── service/        # 上下文 & 元数据
 │   │   └── tracing/        # Jaeger 追踪
 │   ├── rmq/                # RabbitMQ 封装
+│   ├── upload/             # 文件上传安全校验（扩展名白名单、目录参数校验）
 │   └── util/               # 工具包
 │       ├── convert/        # 类型转换
 │       ├── gorm/           # GORM 模型基类

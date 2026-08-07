@@ -113,9 +113,9 @@ func (r *refundRepo) ListRefund(ctx context.Context, page, pageSize int32, statu
 		return nil, 0, err
 	}
 
-	// 分页查询，按ID降序
-	offset := int((page - 1) * pageSize)
-	items, err := do.Offset(offset).Limit(int(pageSize)).Order(curd.OrderRefund.ID.Desc()).Find()
+	// 分页查询，按ID降序（page/pageSize 经 normalizePagination 归一化，防止溢出）
+	offset, limit := normalizePagination(page, pageSize)
+	items, err := do.Offset(offset).Limit(limit).Order(curd.OrderRefund.ID.Desc()).Find()
 	if err != nil {
 		return nil, 0, err
 	}

@@ -109,8 +109,8 @@ func registerAgentSSEServer(s *kratosHttp.Server, adminService *service.AdminSer
 			flusher.Flush()
 		})
 		if err != nil {
-			// 向客户端暴露原始错误以便排查
-			fmt.Fprintf(w, "event: error\ndata: {\"message\":\"%s\"}\n\n", err.Error())
+			// 不向客户端回显内部错误细节，避免泄露内部信息
+			fmt.Fprintf(w, "event: error\ndata: {\"message\":\"ai service unavailable\"}\n\n")
 			flusher.Flush()
 		}
 
@@ -212,11 +212,12 @@ func registerKnowledgeUploadServer(s *kratosHttp.Server, adminService *service.A
 		// 调用 service 层上传
 		docID, chunkCount, err := adminService.UploadKnowledgeFile(r.Context(), header.Filename, source, title, contentType, content, tags)
 		if err != nil {
+			// 不向客户端回显内部错误细节，避免泄露内部信息
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(nethttp.StatusInternalServerError)
 			json.NewEncoder(w).Encode(map[string]interface{}{
 				"code":    500,
-				"message": err.Error(),
+				"message": "文件上传失败，请稍后重试",
 			})
 			return
 		}

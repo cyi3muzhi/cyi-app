@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"cyi-app/app/task/internal/conf"
 
@@ -83,6 +85,24 @@ func newApp(logger log.Logger, hp *http.Server, reg registry.Registrar, server *
 			hp,
 		),
 		kratos.Registrar(reg),
+		// 优雅停机：先停止 Scheduler（不再投递新的定时任务），再 Shutdown asynq Server
+		//（等待正在处理的任务完成，超时后任务自动推回 Redis 队列），避免任务丢失。
+		// 外层加 30s 超时保护，防止停机被无限阻塞。
+		kratos.BeforeStop(func(ctx context.Context) error {
+			stopDone := make(chan struct{})
+			go func() {
+				scheduler.Shutdown()
+				server.Shutdown()
+				close(stopDone)
+			}()
+			select {
+			case <-stopDone:
+				return nil
+			case <-time.After(30 * time.Second):
+				log.NewHelper(logger).Warnf("asynq 优雅停机超时（30s），强制退出")
+				return nil
+			}
+		}),
 	)
 }
 

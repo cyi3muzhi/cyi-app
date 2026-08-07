@@ -90,6 +90,8 @@ func (uc *ExportUseCase) ProcessExport(ctx context.Context, payload *exporttask.
 	}
 
 	// 2. 分页拉取所有订单
+	// 单次导出任务的最大订单条数上限，防止全量数据载入内存导致 OOM
+	const maxExportOrders = 50000
 	const pageSize int32 = 500
 	var allOrders []*ExportOrder
 	totalCount := int32(0)
@@ -109,7 +111,13 @@ func (uc *ExportUseCase) ProcessExport(ctx context.Context, payload *exporttask.
 		// 更新已处理进度
 		_ = uc.repo.UpdateTaskProgress(ctx, taskID, int32(len(allOrders)), totalCount)
 
+		// 循环终止条件：已拉满全部订单，或本页返回空（防止依赖 total 时死循环）
 		if int32(len(allOrders)) >= totalCount || len(orders) == 0 {
+			break
+		}
+		// 达到单次导出上限时中断并告警，避免全量数据载入内存导致 OOM
+		if len(allOrders) >= maxExportOrders {
+			uc.log.Warnf("export task %s: 订单总数 %d 超过单次导出上限 %d，仅导出前 %d 条", taskID, totalCount, maxExportOrders, maxExportOrders)
 			break
 		}
 		page++

@@ -73,14 +73,17 @@ func (r *operationLogRepo) List(ctx context.Context, page, pageSize int32, start
 		return nil, 0, nil
 	}
 
-	// 分页查询，按 ID 降序
-	offset := int((page - 1) * pageSize)
-	if offset < 0 {
-		offset = 0
+	// 分页参数归一化：page 最小 1，pageSize 默认 10、上限 100，防止 int32 溢出
+	if page < 1 {
+		page = 1
 	}
 	if pageSize <= 0 {
 		pageSize = 10
 	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+	offset := int(page-1) * int(pageSize)
 	var logs []*mod.AdminOperationLog
 	if err := db.Order("id DESC").Offset(offset).Limit(int(pageSize)).Find(&logs).Error; err != nil {
 		return nil, 0, err

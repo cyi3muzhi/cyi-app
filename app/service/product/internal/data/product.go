@@ -73,15 +73,115 @@ func (r *productRepo) CreateProduct(ctx context.Context, in *biz.Product) error 
 
 // UpdateProduct 更新商品
 func (r *productRepo) UpdateProduct(ctx context.Context, in *biz.Product) error {
+	return updateProductByTx(ctx, curd.Q, in)
+}
+
+// updateProductByTx 在指定事务（或默认连接）内更新商品表
+// 显式指定更新字段，确保 Status 等零值字段参与更新
+func updateProductByTx(ctx context.Context, q *curd.Query, in *biz.Product) error {
 	product := bizToModelProduct(in)
 	product.ID = in.ID
-	// 显式指定更新字段，确保 Status 等零值字段参与更新
-	if err := curd.Product.WithContext(ctx).UnderlyingDB().Model(&mod.Product{}).Select(
+	if err := q.Product.WithContext(ctx).UnderlyingDB().Model(&mod.Product{}).Select(
 		"name", "description", "price", "status", "category_id", "image", "images",
 	).Where("id = ?", in.ID).Updates(product).Error; err != nil {
 		return fmt.Errorf("update product failed: %w", err)
 	}
 	return nil
+}
+
+// UpdateProductTx 在单个 gorm 事务内更新商品及其关联数据（规格组、SKU、库存）
+// 任一写操作失败则整体回滚，保证多表数据一致；由 biz 层 UpdateProduct 通过类型断言调用
+func (r *productRepo) UpdateProductTx(ctx context.Context, in *biz.Product) error {
+	return curd.Q.Transaction(func(tx *curd.Query) error {
+		// 1. 更新商品主体
+		if err := updateProductByTx(ctx, tx, in); err != nil {
+			return err
+		}
+		// 2. 替换规格组（先删后插），始终执行以支持清空规格
+		if err := replaceSpecGroupsTx(ctx, tx, in.ID, in.SpecGroups); err != nil {
+			return err
+		}
+		// 3. 事务内加载旧 SKU 与库存，建立 spec → SKU 映射（读与写在同一事务，保证一致性）
+		oldSkus, err := getSkusByProductIDTx(ctx, tx, in.ID)
+		if err != nil {
+			return err
+		}
+		oldSkuBySpec := make(map[string]*biz.Sku, len(oldSkus))
+		oldSkuIDs := make([]int64, 0, len(oldSkus))
+		for _, s := range oldSkus {
+			key := productSpecKey(s.Spec)
+			oldSkuBySpec[key] = s
+			oldSkuIDs = append(oldSkuIDs, s.ID)
+		}
+		oldStockBySkuID := make(map[int64]*biz.Stock)
+		if len(oldSkuIDs) > 0 {
+			stocks, err := getStocksBySkuIDsTx(ctx, tx, oldSkuIDs)
+			if err != nil {
+				return err
+			}
+			oldStockBySkuID = stocks
+		}
+		// 4. 为新 SKU 匹配旧 ID：spec 相同则复用旧 ID（ReplaceSkus 会带 ID 插入，保留主键与库存记录）
+		newSkuSpecSet := make(map[string]bool, len(in.Skus))
+		for _, sku := range in.Skus {
+			sku.ProductID = in.ID
+			key := productSpecKey(sku.Spec)
+			newSkuSpecSet[key] = true
+			if old, ok := oldSkuBySpec[key]; ok {
+				sku.ID = old.ID // 复用旧 ID，库存记录不丢失
+			}
+		}
+		// 5. 替换 SKU（先删后插，已匹配的 SKU 用旧 ID 插入，库存链接保留）
+		if err := replaceSkusTx(ctx, tx, in.ID, in.Skus); err != nil {
+			return err
+		}
+		// 6. 处理库存：匹配的更新总数，新增的创建
+		skus := in.Skus
+		if len(skus) == 0 {
+			// 无 SKU 时创建一条 product 级库存占位
+			skus = []*biz.Sku{{Stock: 0}}
+		}
+		for _, sku := range skus {
+			if stock, ok := oldStockBySkuID[sku.ID]; ok {
+				// 更新现有库存（只改 total/available，保留 reserved/version）
+				stock.Total = sku.Stock
+				stock.Available = sku.Stock
+				if err := updateStockTx(ctx, tx, stock); err != nil {
+					return fmt.Errorf("update stock for sku %d failed: %w", sku.ID, err)
+				}
+			} else {
+				// 新 SKU，创建库存
+				if err := createStockTx(ctx, tx, &biz.Stock{
+					ProductID: in.ID,
+					SkuID:     sku.ID,
+					Total:     sku.Stock,
+					Available: sku.Stock,
+				}); err != nil {
+					return fmt.Errorf("create stock for sku %d failed: %w", sku.ID, err)
+				}
+			}
+		}
+		// 7. 删除被移除 SKU 的库存记录（失败即回滚，避免遗留孤儿库存）
+		for _, old := range oldSkus {
+			key := productSpecKey(old.Spec)
+			if !newSkuSpecSet[key] {
+				if err := deleteStockBySkuIDTx(ctx, tx, old.ID); err != nil {
+					return fmt.Errorf("delete stock for sku %d failed: %w", old.ID, err)
+				}
+			}
+		}
+		return nil
+	})
+}
+
+// productSpecKey 将规格 map 序列化为可比较的字符串键（与 biz.specKey 保持一致的确定性 JSON 序列化）
+// 用于事务内按规格匹配旧 SKU ID
+func productSpecKey(spec map[string]string) string {
+	if len(spec) == 0 {
+		return "{}"
+	}
+	data, _ := json.Marshal(spec)
+	return string(data)
 }
 
 // DeleteProduct 删除商品
@@ -133,12 +233,13 @@ func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, key
 	}
 
 	// 状态筛选（支持 "上架"/"1"=上架, "下架"/"0"=下架）
+	// product v1 proto 未定义商品状态常量，此处使用 biz.ProductStatusOffSale/OnSale 常量替代魔法数字
 	if status != "" {
 		switch status {
 		case "上架", "1":
-			db = db.Where("status = ?", 1)
+			db = db.Where("status = ?", int32(biz.ProductStatusOnSale))
 		case "下架", "0":
-			db = db.Where("status = ?", 0)
+			db = db.Where("status = ?", int32(biz.ProductStatusOffSale))
 		}
 	}
 
@@ -164,9 +265,19 @@ func (r *productRepo) ListProduct(ctx context.Context, page, pageSize int32, key
 		return nil, 0, nil
 	}
 
-	// 分页查询，按 ID 降序
+	// 分页参数归一化：page 最小为 1，pageSize 默认 10、上限 100
+	// 先做边界校验再转 int，防止 int32 溢出或负数导致 offset 异常
+	if page < 1 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
 	var products []*mod.Product
-	offset := int((page - 1) * pageSize)
+	offset := int(page-1) * int(pageSize)
 	limit := int(pageSize)
 	if err := db.Order("id DESC").Offset(offset).Limit(limit).Find(&products).Error; err != nil {
 		return nil, 0, err
@@ -192,7 +303,7 @@ func marshalImages(images []string) string {
 
 // SuggestProduct 搜索联想：仅返回商品名称列表（去重），限制 limit 条
 // 使用 name 字段的 FULLTEXT 索引（ngram 分词器）+ BOOLEAN MODE 查询
-// 仅返回上架商品（status=1）
+// 仅返回上架商品（status=上架，即 biz.ProductStatusOnSale）
 func (r *productRepo) SuggestProduct(ctx context.Context, keyword string, limit int32) ([]string, error) {
 	kw := escapeFulltextKeyword(keyword)
 	if kw == "" {
@@ -204,7 +315,7 @@ func (r *productRepo) SuggestProduct(ctx context.Context, keyword string, limit 
 		Table("product").
 		Select("DISTINCT name").
 		Where("MATCH(name) AGAINST(? IN BOOLEAN MODE)", query).
-		Where("status = ?", 1).
+		Where("status = ?", int32(biz.ProductStatusOnSale)). // 仅上架商品（product v1 proto 无状态常量，使用 biz 常量）
 		Where("deleted_at IS NULL").
 		Limit(int(limit)).
 		Pluck("name", &names).Error

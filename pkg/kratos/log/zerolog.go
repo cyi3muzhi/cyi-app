@@ -139,7 +139,6 @@ func setupFileOutputWithConfig(config *LogConfig) (io.Writer, error) {
 		serviceName = "service"
 	}
 	logFile := fmt.Sprintf("%s/%s-%s.log", logDir, serviceName, time.Now().Format("2006-01-02"))
-	fmt.Printf("logFile: %s\n", logFile)
 	file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
@@ -159,66 +158,83 @@ func setupFileOutputWithConfig(config *LogConfig) (io.Writer, error) {
 }
 
 // Log 实现 log.Logger 接口
+// Kratos 的 log.Helper 会把格式化后的消息放在 keyvals 的 "msg" 字段中，
+// 这里将其提取为 zerolog 的消息体（Msg），其余键值对输出为结构化字段，
+// 避免 ELK/控制台出现 message 为空而内容全堆在字段里的问题。
 func (z *ZerologAdapter) Log(level log.Level, keyvals ...interface{}) error {
 	// 创建带键值对的 logger
 	logger := z.logger
+	msg := ""
 
-	// 处理键值对，确保所有字段都有值
-	keyvalsMap := make(map[string]interface{})
+	// 处理键值对：提取 msg 字段为消息体，其余作为结构化字段
 	for i := 0; i < len(keyvals); i += 2 {
 		if i+1 >= len(keyvals) {
 			break
 		}
-		key, val := keyvals[i], keyvals[i+1]
-		keyStr := fmt.Sprintf("%v", key)
-		keyvalsMap[keyStr] = val
+		key := fmt.Sprintf("%v", keyvals[i])
+		val := keyvals[i+1]
+		if key == "msg" {
+			if s, ok := val.(string); ok {
+				msg = s
+			}
+			continue
+		}
+		logger = logger.With().Interface(key, val).Logger()
 	}
 
 	// 确保必要字段存在
-	if _, ok := keyvalsMap["service.id"]; !ok {
-		keyvalsMap["service.id"] = "-"
+	if _, ok := keyvalsMap("service.id", keyvals); !ok {
+		logger = logger.With().Interface("service.id", "-").Logger()
 	}
-	if _, ok := keyvalsMap["trace.id"]; !ok {
-		keyvalsMap["trace.id"] = "-"
+	if _, ok := keyvalsMap("trace.id", keyvals); !ok {
+		logger = logger.With().Interface("trace.id", "-").Logger()
 	}
-	if _, ok := keyvalsMap["span.id"]; !ok {
-		keyvalsMap["span.id"] = "-"
-	}
-
-	// 构建 logger
-	for key, val := range keyvalsMap {
-		logger = logger.With().Interface(key, val).Logger()
+	if _, ok := keyvalsMap("span.id", keyvals); !ok {
+		logger = logger.With().Interface("span.id", "-").Logger()
 	}
 
 	// 根据级别输出日志
 	switch level {
 	case log.LevelDebug:
 		if z.level <= zerolog.DebugLevel {
-			logger.Debug().Msg("")
+			logger.Debug().Msg(msg)
 		}
 	case log.LevelInfo:
 		if z.level <= zerolog.InfoLevel {
-			logger.Info().Msg("")
+			logger.Info().Msg(msg)
 		}
 	case log.LevelWarn:
 		if z.level <= zerolog.WarnLevel {
-			logger.Warn().Msg("")
+			logger.Warn().Msg(msg)
 		}
 	case log.LevelError:
 		if z.level <= zerolog.ErrorLevel {
-			logger.Error().Msg("")
+			logger.Error().Msg(msg)
 		}
 	case log.LevelFatal:
 		if z.level <= zerolog.FatalLevel {
-			logger.Fatal().Msg("")
+			logger.Fatal().Msg(msg)
 		}
 	default:
 		if z.level <= zerolog.InfoLevel {
-			logger.Info().Msg("")
+			logger.Info().Msg(msg)
 		}
 	}
 
 	return nil
+}
+
+// keyvalsMap 在 keyvals 键值对中查找指定 key 是否存在
+func keyvalsMap(key string, keyvals []interface{}) (interface{}, bool) {
+	for i := 0; i < len(keyvals); i += 2 {
+		if i+1 >= len(keyvals) {
+			break
+		}
+		if fmt.Sprintf("%v", keyvals[i]) == key {
+			return keyvals[i+1], true
+		}
+	}
+	return nil, false
 }
 
 // With 实现 log.Logger 接口

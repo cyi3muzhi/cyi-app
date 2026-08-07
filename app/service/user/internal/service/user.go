@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	pb "cyi-app/api/service/user/v1"
 	"cyi-app/app/service/user/internal/biz"
@@ -127,7 +126,6 @@ func (s *UserService) UpdateUserAvatar(ctx context.Context, req *pb.UpdateUserAv
 
 // CheckUserExist 校验用户是否存在
 func (s *UserService) CheckUserExist(ctx context.Context, req *pb.CheckUserExistRequest) (*pb.CheckUserExistReply, error) {
-	fmt.Println("phone:", req.Phone)
 	// 查询用户是否存在
 	user, err := s.uc.GetUser(ctx, &biz.User{Phone: req.Phone})
 	if err != nil {

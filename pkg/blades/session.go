@@ -123,13 +123,17 @@ func (s *SessionStore) loadRaw(ctx context.Context, sessionID string) ([]Session
 }
 
 // loadFromMemory 从内存加载消息
+// 返回的是深拷贝副本，避免调用方与存储共享底层数组，防止并发读写竞态
 func (s *SessionStore) loadFromMemory(key string) []SessionMessage {
 	if val, ok := s.localStor.Load(key); ok {
 		msgs := val.([]SessionMessage)
 		if len(msgs) > s.maxRounds*2 {
 			msgs = msgs[len(msgs)-s.maxRounds*2:]
 		}
-		return msgs
+		// 拷贝到新切片后再返回，保证读方不持有存储的底层数组
+		copied := make([]SessionMessage, len(msgs))
+		copy(copied, msgs)
+		return copied
 	}
 	return nil
 }
@@ -162,12 +166,16 @@ func (s *SessionStore) SaveHistory(ctx context.Context, sessionID string, userMs
 	// 读取已有的历史
 	var msgs []SessionMessage
 	if s.rdb != nil {
-		data, err := s.rdb.Get(context.Background(), key).Bytes()
+		// Redis 读写统一使用传入的 ctx，并加 3 秒超时，避免单次操作长时间阻塞
+		ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+		defer cancel()
+		data, err := s.rdb.Get(ctx, key).Bytes()
 		if err == nil {
 			json.Unmarshal(data, &msgs)
 		}
 	} else if val, ok := s.localStor.Load(key); ok {
-		msgs = val.([]SessionMessage)
+		// 先从存储中深拷贝历史，避免 append 时与存储共享底层数组，防止并发读写竞态
+		msgs = append([]SessionMessage(nil), val.([]SessionMessage)...)
 	}
 
 	// 追加新消息
@@ -184,9 +192,10 @@ func (s *SessionStore) SaveHistory(ctx context.Context, sessionID string, userMs
 
 	// 存到 Redis（优先）或内存
 	if s.rdb != nil {
-		return s.rdb.Set(context.Background(), key, payload, s.ttl).Err()
+		return s.rdb.Set(ctx, key, payload, s.ttl).Err()
 	}
-	s.localStor.Store(key, msgs)
+	// 写入内存时同样深拷贝后再 Store，保证读方与写方不共享底层数组
+	s.localStor.Store(key, append([]SessionMessage(nil), msgs...))
 	return nil
 }
 
@@ -240,11 +249,16 @@ func LoadHistory(ctx context.Context, rdb redis.UniversalClient, sessionID strin
 }
 
 // SaveHistory 保存用户消息和 AI 回复到会话历史（向后兼容的包级函数）
+// 与 SessionStore.SaveHistory 保持一致的 3 秒 Redis 操作超时
 func SaveHistory(ctx context.Context, rdb redis.UniversalClient, sessionID string, userMsg, assistantMsg string) error {
 	if sessionID == "" {
 		return nil
 	}
 	key := defaultSessionPrefix + sessionID
+
+	// Redis 读写统一加 3 秒超时，避免单次操作长时间阻塞
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
 
 	var msgs []SessionMessage
 	data, err := rdb.Get(ctx, key).Bytes()

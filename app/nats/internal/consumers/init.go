@@ -1,4 +1,4 @@
-﻿package consumers
+package consumers
 
 import (
 	"cyi-app/app/nats/internal/service"
@@ -27,6 +27,11 @@ func NewConsumer(natsConsumer *NatsConsumer, orderSrv *service.OrderService) *Co
 func (c *Consumer) Start() error {
 	c.SetConsumers()
 	return c.natsConsumer.Start()
+}
+
+// Stop 停止所有NATS消费者（取消订阅），供 kratos 应用优雅停机时调用
+func (c *Consumer) Stop() {
+	c.natsConsumer.Stop()
 }
 
 // SetConsumers 注册消费者处理器

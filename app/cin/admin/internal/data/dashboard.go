@@ -234,7 +234,8 @@ func (r *dashboardRepo) listCompletedOrderIDs(ctx context.Context, dateFrom stri
 		reply, err := r.data.oc.ListOrder(ctx, &orderRpc.ListOrderRequest{
 			Page:     page,
 			PageSize: pageSize,
-			Status:   "6",
+			// 已完成状态（status=6），使用 proto 常量避免魔法数字
+			Status:   strconv.Itoa(int(orderRpc.OrderStatus_Complete)),
 			DateFrom: dateFrom,
 		})
 		if err != nil {

@@ -3,9 +3,8 @@ package data
 import (
 	"context"
 	"fmt"
-	"path/filepath"
-	"strings"
 
+	"cyi-app/pkg/upload"
 	"cyi-app/pkg/util/rustfs"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -31,12 +30,15 @@ func NewUploadRepo(data *Data, logger log.Logger) *UploadRepo {
 // 生成预签名 PUT URL（前端直传用）和预签名 GET URL（公开访问用）
 // 返回 uploadURL（PUT地址）, objectKey（对象路径）, publicURL（公开访问地址）
 func (r *UploadRepo) GetUploadToken(ctx context.Context, filename, directory string) (uploadURL, objectKey, publicURL string, err error) {
-	// 从 filename 提取扩展名
-	ext := filepath.Ext(filename)
-	if ext == "" {
-		return "", "", "", fmt.Errorf("文件名缺少扩展名: %s", filename)
+	// 校验文件扩展名白名单（防上传 HTML/SVG 等活性文件）
+	ext, err := upload.ValidateFilename(filename)
+	if err != nil {
+		return "", "", "", err
 	}
-	ext = strings.TrimPrefix(ext, ".")
+	// 校验目录参数，防止路径穿越与注入
+	if err := upload.ValidateDirectory(directory); err != nil {
+		return "", "", "", err
+	}
 
 	// 生成 objectKey: admin/{directory}/{uuid}.{ext}
 	objectKey = fmt.Sprintf("admin/%s/%s.%s", directory, uuid.New().String(), ext)

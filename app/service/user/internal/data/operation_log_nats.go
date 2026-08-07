@@ -18,6 +18,7 @@ type OperationLogConsumer struct {
 	conn *nats.Conn
 	uc   *biz.OperationLogUseCase
 	log  *log.Helper
+	sub  *nats.Subscription // 订阅句柄，用于优雅停机时取消订阅
 }
 
 // NewOperationLogConsumer 创建操作日志消费者
@@ -36,14 +37,27 @@ func (c *OperationLogConsumer) Start() {
 		c.log.Warnf("NATS 连接不可用，跳过操作日志订阅")
 		return
 	}
-	_, err := c.conn.Subscribe(event.SubjectAdminOperation, func(msg *nats.Msg) {
+	sub, err := c.conn.Subscribe(event.SubjectAdminOperation, func(msg *nats.Msg) {
 		c.handle(msg.Data)
 	})
 	if err != nil {
 		c.log.Errorf("订阅操作日志主题失败: %v", err)
 		return
 	}
+	c.sub = sub
 	c.log.Infof("已订阅操作日志主题: %s", event.SubjectAdminOperation)
+}
+
+// Stop 停止订阅（优雅停机时调用，取消订阅并等待在途消息处理完成）
+func (c *OperationLogConsumer) Stop() {
+	if c == nil || c.conn == nil || c.sub == nil {
+		return
+	}
+	if err := c.sub.Unsubscribe(); err != nil {
+		c.log.Warnf("取消操作日志订阅失败: %v", err)
+		return
+	}
+	c.log.Infof("已取消操作日志主题订阅")
 }
 
 // handle 处理一条操作日志事件

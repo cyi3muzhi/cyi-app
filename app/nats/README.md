@@ -60,6 +60,7 @@ app/nats/
 NATS 消费者实现：
 
 - `Start()`: 启动消费者协程
+- `Stop()`: 停止消费者（取消所有订阅），应用优雅停机时由 kratos 停止钩子调用
 - `Subscribe(subject, handler)`: 订阅主题并注册处理函数
 
 ### UseCase 列表

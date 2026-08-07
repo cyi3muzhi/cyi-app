@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -35,6 +36,11 @@ func newApp(logger log.Logger, reg registry.Registrar, consumer *consumers.Consu
 		kratos.Metadata(map[string]string{}),
 		kratos.Logger(logger),
 		kratos.Registrar(reg),
+		// 优雅停机：取消所有 NATS 订阅，避免停机期间继续消费消息
+		kratos.BeforeStop(func(ctx context.Context) error {
+			consumer.Stop()
+			return nil
+		}),
 	)
 }
 

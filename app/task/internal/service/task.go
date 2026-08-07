@@ -42,8 +42,8 @@ func NewTaskService(uc *biz.TaskUseCase, userUc *biz.UserUseCase, couponUc biz.C
 func (s *TaskService) EmailTask(ctx context.Context, payload *asynq.Task) error {
 	// 解压处理
 	payloadBytes := payload.Payload()
-	fmt.Println(string(payloadBytes))
-	s.log.Infof("CreateTask: %s", string(payloadBytes))
+	// 仅记录 payload 摘要（任务类型与长度），避免打印完整内容（可能包含订单/用户等敏感信息）
+	s.log.Infof("EmailTask: task type=%s, payload size=%d", payload.Type(), len(payloadBytes))
 	return nil
 }
 
@@ -51,8 +51,8 @@ func (s *TaskService) EmailTask(ctx context.Context, payload *asynq.Task) error 
 func (s *TaskService) CreateUserTask(ctx context.Context, payload *asynq.Task) error {
 	// 解压处理
 	payloadBytes := payload.Payload()
-	fmt.Println(string(payloadBytes))
-	s.log.Infof("CreateUserTask: %s", string(payloadBytes))
+	// 仅记录 payload 摘要（任务类型与长度），避免打印完整内容（可能包含订单/用户等敏感信息）
+	s.log.Infof("CreateUserTask: task type=%s, payload size=%d", payload.Type(), len(payloadBytes))
 	// 处理信息
 	var req *v1.CreateUserTask
 	if err := sonic.Unmarshal(payloadBytes, &req); err != nil {

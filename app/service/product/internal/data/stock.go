@@ -24,9 +24,15 @@ func NewStockRepo(data *Data, logger log.Logger) biz.StockRepo {
 
 // CreateStock 创建库存记录
 func (r *stockRepo) CreateStock(ctx context.Context, in *biz.Stock) error {
+	return createStockTx(ctx, curd.Q, in)
+}
+
+// createStockTx 在指定事务（或默认连接）内创建库存记录
+// 供 CreateStock 及商品编辑事务（UpdateProductTx）复用
+func createStockTx(ctx context.Context, q *curd.Query, in *biz.Stock) error {
 	stock := &mod.Stock{}
 	convert.Convert(in, stock)
-	if err := curd.Stock.WithContext(ctx).Create(stock); err != nil {
+	if err := q.Stock.WithContext(ctx).Create(stock); err != nil {
 		return err
 	}
 	in.ID = stock.ID
@@ -38,17 +44,23 @@ func (r *stockRepo) CreateStock(ctx context.Context, in *biz.Stock) error {
 // 2. in.ID == 0 && in.ProductID > 0：按商品ID设置总库存（管理端补货/调库存），均分到该商品所有库存记录
 func (r *stockRepo) UpdateStock(ctx context.Context, in *biz.Stock) error {
 	if in.ID > 0 {
-		stock := &mod.Stock{}
-		convert.Convert(in, stock)
-		_, err := curd.Stock.WithContext(ctx).
-			Where(curd.Stock.ID.Eq(in.ID)).
-			UpdateSimple(
-				curd.Stock.Total.Value(in.Total),
-				curd.Stock.Available.Value(in.Available),
-			)
-		return err
+		return updateStockTx(ctx, curd.Q, in)
 	}
 	return r.updateStockByProduct(ctx, in.ProductID, in.Total)
+}
+
+// updateStockTx 在指定事务（或默认连接）内按主键ID更新库存 total/available
+// 仅用于已存在的库存记录，保留 reserved/version；供 UpdateStock 及商品编辑事务（UpdateProductTx）复用
+func updateStockTx(ctx context.Context, q *curd.Query, in *biz.Stock) error {
+	stock := &mod.Stock{}
+	convert.Convert(in, stock)
+	_, err := q.Stock.WithContext(ctx).
+		Where(q.Stock.ID.Eq(in.ID)).
+		UpdateSimple(
+			q.Stock.Total.Value(in.Total),
+			q.Stock.Available.Value(in.Available),
+		)
+	return err
 }
 
 // updateStockByProduct 按商品ID设置总库存（管理端补货/调库存）
@@ -249,10 +261,16 @@ func (r *stockRepo) GetStock(ctx context.Context, skuID int64) (*biz.Stock, erro
 
 // GetStocksBySkuIDs 批量获取多个SKU的库存，返回 map[skuID]*Stock
 func (r *stockRepo) GetStocksBySkuIDs(ctx context.Context, skuIDs []int64) (map[int64]*biz.Stock, error) {
+	return getStocksBySkuIDsTx(ctx, curd.Q, skuIDs)
+}
+
+// getStocksBySkuIDsTx 在指定事务（或默认连接）内批量获取多个SKU的库存，返回 map[skuID]*Stock
+// 供 GetStocksBySkuIDs 及商品编辑事务（UpdateProductTx）复用
+func getStocksBySkuIDsTx(ctx context.Context, q *curd.Query, skuIDs []int64) (map[int64]*biz.Stock, error) {
 	if len(skuIDs) == 0 {
 		return nil, nil
 	}
-	stocks, err := curd.Stock.WithContext(ctx).Where(curd.Stock.SkuID.In(skuIDs...)).Find()
+	stocks, err := q.Stock.WithContext(ctx).Where(q.Stock.SkuID.In(skuIDs...)).Find()
 	if err != nil {
 		return nil, err
 	}
@@ -279,6 +297,12 @@ func (r *stockRepo) DeleteStockByProductID(ctx context.Context, productID int64)
 
 // DeleteStockBySkuID 按 SKU ID 删除库存记录
 func (r *stockRepo) DeleteStockBySkuID(ctx context.Context, skuID int64) error {
-	_, err := curd.Stock.WithContext(ctx).Where(curd.Stock.SkuID.Eq(skuID)).Delete()
+	return deleteStockBySkuIDTx(ctx, curd.Q, skuID)
+}
+
+// deleteStockBySkuIDTx 在指定事务（或默认连接）内按 SKU ID 删除库存记录
+// 供 DeleteStockBySkuID 及商品编辑事务（UpdateProductTx）复用
+func deleteStockBySkuIDTx(ctx context.Context, q *curd.Query, skuID int64) error {
+	_, err := q.Stock.WithContext(ctx).Where(q.Stock.SkuID.Eq(skuID)).Delete()
 	return err
 }

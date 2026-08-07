@@ -214,10 +214,14 @@ func (s *AdminService) fillRecordUsers(ctx context.Context, items []*adminv1.Dis
 	userMap := make(map[int64]*biz.UserInfo, len(idSet))
 	var wg sync.WaitGroup
 	var mu sync.Mutex
+	// 限制并发查询数量，避免用户数过多时一次性开大量 goroutine
+	sem := make(chan struct{}, 10)
 	for uid := range idSet {
 		wg.Add(1)
+		sem <- struct{}{}
 		go func(id int64) {
 			defer wg.Done()
+			defer func() { <-sem }()
 			u, err := s.userUC.GetUser(ctx, id)
 			if err != nil {
 				return

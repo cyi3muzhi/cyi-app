@@ -27,6 +27,21 @@ func parseInt32(s string) (int32, error) {
 	return int32(v), nil
 }
 
+// normalizePagination 归一化分页参数：page 最小为 1，pageSize 默认 10、上限 100
+// 先做边界校验再转 int，防止 int32 溢出或负数导致 offset 异常
+func normalizePagination(page, pageSize int32) (offset, limit int) {
+	if page < 1 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+	return int(page-1) * int(pageSize), int(pageSize)
+}
+
 type orderRepo struct {
 	data *Data
 	log  *log.Helper
@@ -37,7 +52,10 @@ func NewOrderRepo(data *Data, logger log.Logger) biz.OrderRepo {
 }
 
 func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
-	return curd.Q.Transaction(func(tx *curd.Query) error {
+	// couponUsed 标记优惠券是否已在事务中核销成功；
+	// 事务回滚后订单不落库，但营销侧优惠券已标记已用，需在事务外补偿释放
+	couponUsed := false
+	err := curd.Q.Transaction(func(tx *curd.Query) error {
 		order := &mod.Order{
 			UserID:         in.UserID,
 			OrderNo:        in.OrderNo,
@@ -78,6 +96,7 @@ func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
 				r.log.Errorf("use coupon failed, recordID=%d, orderID=%d: %v", in.CouponRecordID, order.ID, err)
 				return errors.New("use coupon failed")
 			}
+			couponUsed = true
 			discountAmount := reply.DiscountAmount
 			// 更新数据库中的优惠金额和实付金额
 			order.PayAmount = order.TotalPrice + order.Freight - discountAmount
@@ -112,6 +131,20 @@ func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
 		}
 		return nil
 	})
+	if err != nil && couponUsed {
+		// 事务回滚（订单不落库）但营销侧优惠券已核销：调用 marketing 服务 ReleaseCoupon 补偿释放
+		// 补偿失败仅记录日志，可由取消订单流程/人工重试兜底
+		if _, rerr := r.data.mc.ReleaseCoupon(ctx, &marketingRpc.ReleaseCouponRequest{
+			RecordId: in.CouponRecordID,
+			UserId:   in.UserID,
+			OrderId:  in.ID,
+		}); rerr != nil {
+			r.log.Errorf("release coupon compensation failed, recordID=%d, orderID=%d: %v", in.CouponRecordID, in.ID, rerr)
+		} else {
+			r.log.Infof("release coupon compensation success, recordID=%d, orderID=%d", in.CouponRecordID, in.ID)
+		}
+	}
+	return err
 }
 
 func (r *orderRepo) UpdateOrder(ctx context.Context, in *biz.Order) error {
@@ -188,9 +221,8 @@ func (r *orderRepo) ListOrder(ctx context.Context, page, pageSize int32, status 
 		return nil, 0, err
 	}
 
-	// 分页查询，按ID降序
-	offset := int((page - 1) * pageSize)
-	limit := int(pageSize)
+	// 分页查询，按ID降序（page/pageSize 经 normalizePagination 归一化，防止溢出）
+	offset, limit := normalizePagination(page, pageSize)
 	orders, err := do.Offset(offset).Limit(limit).Order(curd.Order.ID.Desc()).Find()
 	if err != nil {
 		return nil, 0, err
@@ -233,7 +265,11 @@ func (r *orderRepo) OrderStats(ctx context.Context) (total, pending, today, refu
 
 	// 待处理数（待支付1 + 已支付2 + 待发货3）
 	pendingCount, err := curd.Order.WithContext(ctx).
-		Where(curd.Order.Status.In(1, 2, 3)).
+		Where(curd.Order.Status.In(
+			int32(v1.OrderStatus_WaitPay),
+			int32(v1.OrderStatus_Pay),
+			int32(v1.OrderStatus_WaitShip),
+		)).
 		Count()
 	if err != nil {
 		return 0, 0, 0, 0, err
@@ -256,7 +292,10 @@ func (r *orderRepo) OrderStats(ctx context.Context) (total, pending, today, refu
 
 	// 退款/售后数（退款中8 + 已退款9）
 	refundCount, err := curd.Order.WithContext(ctx).
-		Where(curd.Order.Status.In(8, 9)).
+		Where(curd.Order.Status.In(
+			int32(v1.OrderStatus_Refunding),
+			int32(v1.OrderStatus_Refunded),
+		)).
 		Count()
 	if err != nil {
 		return 0, 0, 0, 0, err
@@ -599,16 +638,17 @@ func (r *orderRepo) ReleaseCoupon(ctx context.Context, recordID, userID, orderID
 func (r *orderRepo) ListOverdueWaitPayOrders(ctx context.Context, page, pageSize int32, timeoutSeconds int64) ([]*biz.Order, int32, error) {
 	deadline := time.Now().Unix() - timeoutSeconds
 	do := curd.Order.WithContext(ctx).
-		Where(curd.Order.Status.Eq(1)).                     // 待付款
-		Where(curd.Order.CreateTime.Lt(deadline))            // 创建时间早于超时阈值
+		Where(curd.Order.Status.Eq(int32(v1.OrderStatus_WaitPay))). // 待付款（v1.OrderStatus_WaitPay=1）
+		Where(curd.Order.CreateTime.Lt(deadline))                   // 创建时间早于超时阈值
 
 	total, err := do.Count()
 	if err != nil {
 		return nil, 0, err
 	}
 
-	offset := int((page - 1) * pageSize)
-	orders, err := do.Offset(offset).Limit(int(pageSize)).Order(curd.Order.ID.Desc()).Find()
+	// 分页查询（page/pageSize 经 normalizePagination 归一化，防止溢出）
+	offset, limit := normalizePagination(page, pageSize)
+	orders, err := do.Offset(offset).Limit(limit).Order(curd.Order.ID.Desc()).Find()
 	if err != nil {
 		return nil, 0, err
 	}

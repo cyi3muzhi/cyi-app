@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -78,6 +79,14 @@ func newApp(logger log.Logger, gs *grpc.Server, reg registry.Registrar, consumer
 			gs,
 		),
 		kratos.Registrar(reg),
+		// 优雅停机钩子：先取消 NATS 订阅，等待在途消息处理完成，
+		// 底层连接由 data.NewData 的 cleanup（nc.Close()）在资源清理阶段统一关闭。
+		kratos.BeforeStop(func(ctx context.Context) error {
+			if consumer != nil {
+				consumer.Stop()
+			}
+			return nil
+		}),
 	)
 }
 

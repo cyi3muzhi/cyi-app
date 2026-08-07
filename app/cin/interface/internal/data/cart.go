@@ -25,6 +25,26 @@ type cartRepo struct {
 	log  *log.Helper
 }
 
+// addItemScript 原子化加购 Lua 脚本
+// 服务端一次性完成"读取旧值 -> 数量累加 -> 置为选中 -> 写回"，
+// 避免并发加购时读改写互相覆盖导致数量丢失
+var addItemScript = redis.NewScript(`
+local raw = redis.call('HGET', KEYS[1], ARGV[1])
+local qty = 0
+local selected = 1
+if raw then
+  local val = cjson.decode(raw)
+  qty = val['quantity']
+  if val['selected'] == false then
+    selected = 0
+  end
+end
+qty = qty + tonumber(ARGV[2])
+local newval = cjson.encode({quantity = qty, selected = (selected == 1)})
+redis.call('HSET', KEYS[1], ARGV[1], newval)
+return qty
+`)
+
 // NewCartRepo 创建购物车数据仓库
 func NewCartRepo(data *Data, logger log.Logger) biz.CartRepo {
 	return &cartRepo{
@@ -69,16 +89,12 @@ func (r *cartRepo) setItem(ctx context.Context, key, field string, val cartItemV
 }
 
 // AddItem 加入购物车：同商品同规格数量累加，并置为选中
+// 通过 Lua 脚本原子执行，防止并发加购时数量丢失
 func (r *cartRepo) AddItem(ctx context.Context, userID, productID, skuID int64, quantity int32) error {
 	key := cartKey(userID)
 	field := itemField(productID, skuID)
-	val, err := r.getItem(ctx, key, field)
-	if err != nil {
-		return err
-	}
-	val.Quantity += quantity
-	val.Selected = true
-	return r.setItem(ctx, key, field, val)
+	_, err := addItemScript.Run(ctx, r.data.rc, []string{key}, field, quantity).Result()
+	return err
 }
 
 // GetItems 获取购物车全部条目

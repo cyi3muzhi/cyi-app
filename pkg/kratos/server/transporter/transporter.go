@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	mid "cyi-app/pkg/kratos/server/middleware"
@@ -89,7 +90,7 @@ func NewHttpServerOpt(httpOpt *TransporterOpt, midOpt *MiddlewareOpt) []khttp.Se
 		khttp.Filter(handlers.CORS(
 			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
 			handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
-			handlers.AllowedOrigins([]string{"*"}),
+			handlers.AllowedOrigins(corsAllowedOrigins()),
 		)),
 	}
 	if httpOpt.Network != "" {
@@ -211,6 +212,25 @@ func defaultRequestDecoder(r *http.Request, v interface{}) error {
 		r.Header.Set("Content-Type", "application/json")
 	}
 	return khttp.DefaultRequestDecoder(r, v)
+}
+
+// corsAllowedOrigins 返回 CORS 允许的跨域来源
+// 优先从环境变量 CORS_ALLOWED_ORIGINS 读取（逗号分隔），便于部署时收紧；
+// 未配置时默认允许所有来源，保证开发环境联调不受影响。
+func corsAllowedOrigins() []string {
+	if raw := os.Getenv("CORS_ALLOWED_ORIGINS"); raw != "" {
+		parts := strings.Split(raw, ",")
+		origins := make([]string, 0, len(parts))
+		for _, p := range parts {
+			if p = strings.TrimSpace(p); p != "" {
+				origins = append(origins, p)
+			}
+		}
+		if len(origins) > 0 {
+			return origins
+		}
+	}
+	return []string{"*"}
 }
 
 func CronName(name string) string {

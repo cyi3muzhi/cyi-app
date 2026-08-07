@@ -40,11 +40,11 @@ func (s *CinInterface) ChatSSE(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	fmt.Printf("user id: %d\n", userID)
+	_ = userID // 已通过认证，具体 ID 不需要打印
 
 	var msg wsMessage
 	if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
-		writeSSE(w, "error", fmt.Sprintf(`{"error":"invalid request body: %s"}`, err.Error()))
+		writeSSE(w, "error", `{"error":"invalid request body"}`)
 		return
 	}
 	if msg.Message == "" {
@@ -67,7 +67,9 @@ func (s *CinInterface) ChatSSE(w http.ResponseWriter, r *http.Request) {
 		flusher.Flush()
 	})
 	if err != nil {
-		writeSSE(w, "error", fmt.Sprintf(`{"error":"%s"}`, err.Error()))
+		s.log.Errorf("chat stream failed: %v", err)
+		// 不向客户端回显内部错误细节，避免泄露内部信息
+		writeSSE(w, "error", `{"error":"ai service unavailable"}`)
 	}
 	writeSSE(w, "done", `{"done":true}`)
 	flusher.Flush()
@@ -130,7 +132,9 @@ func (s *CinInterface) ChatWS(w http.ResponseWriter, r *http.Request) {
 			conn.WriteJSON(wsChunk{Chunk: chunk})
 		})
 		if err != nil {
-			conn.WriteJSON(wsChunk{Error: err.Error()})
+			s.log.Errorf("chat stream failed: %v", err)
+			// 不向客户端回显内部错误细节，避免泄露内部信息
+			conn.WriteJSON(wsChunk{Error: "ai service unavailable"})
 		}
 		conn.WriteJSON(wsChunk{Done: true})
 	}

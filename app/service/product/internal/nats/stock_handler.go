@@ -3,6 +3,7 @@ package nats
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"cyi-app/app/service/product/internal/biz"
 	"cyi-app/pkg/kratos/event"
@@ -34,6 +35,9 @@ func (h *StockHandler) Register(conn *nats.Conn) error {
 	for _, subject := range subjects {
 		_, err := conn.Subscribe(subject, func(msg *nats.Msg) {
 			h.log.Infof("received stock event: %s", subject)
+			// 使用带超时的 context 调用仓储，避免数据库挂起时无限阻塞；超时后返回错误响应
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
 			var resp event.StockOpResponse
 			switch msg.Subject {
 			case event.SubjectStockReserve:
@@ -42,7 +46,7 @@ func (h *StockHandler) Register(conn *nats.Conn) error {
 					resp.Error = err.Error()
 					break
 				}
-				newVersion, err := h.uc.ReserveStock(context.Background(), req.SkuID, req.Count, req.Version)
+				newVersion, err := h.uc.ReserveStock(ctx, req.SkuID, req.Count, req.Version)
 				if err != nil {
 					resp.Error = err.Error()
 					break
@@ -55,7 +59,7 @@ func (h *StockHandler) Register(conn *nats.Conn) error {
 					resp.Error = err.Error()
 					break
 				}
-				newVersion, err := h.uc.DeductStock(context.Background(), req.SkuID, req.Count, req.Version)
+				newVersion, err := h.uc.DeductStock(ctx, req.SkuID, req.Count, req.Version)
 				if err != nil {
 					resp.Error = err.Error()
 					break
@@ -68,7 +72,7 @@ func (h *StockHandler) Register(conn *nats.Conn) error {
 					resp.Error = err.Error()
 					break
 				}
-				newVersion, err := h.uc.ReleaseStock(context.Background(), req.SkuID, req.Count, req.Version)
+				newVersion, err := h.uc.ReleaseStock(ctx, req.SkuID, req.Count, req.Version)
 				if err != nil {
 					resp.Error = err.Error()
 					break
@@ -81,7 +85,7 @@ func (h *StockHandler) Register(conn *nats.Conn) error {
 					resp.Error = err.Error()
 					break
 				}
-				newVersion, err := h.uc.AddStock(context.Background(), req.SkuID, req.Count, req.Version)
+				newVersion, err := h.uc.AddStock(ctx, req.SkuID, req.Count, req.Version)
 				if err != nil {
 					resp.Error = err.Error()
 					break
@@ -96,7 +100,7 @@ func (h *StockHandler) Register(conn *nats.Conn) error {
 					resp.Error = err.Error()
 					break
 				}
-				stock, err := h.uc.GetStock(context.Background(), req.SkuID)
+				stock, err := h.uc.GetStock(ctx, req.SkuID)
 				if err != nil {
 					resp.Error = err.Error()
 					break
@@ -107,8 +111,12 @@ func (h *StockHandler) Register(conn *nats.Conn) error {
 				resp.Reserved = stock.Reserved
 				resp.NewVersion = stock.Version
 			}
-			// 发送响应
-			data, _ := json.Marshal(resp)
+			// 发送响应（序列化失败时记录错误并返回空响应，避免 msg.Respond(nil) 异常）
+			data, err := json.Marshal(resp)
+			if err != nil {
+				h.log.Errorf("failed to marshal stock response: %v", err)
+				return
+			}
 			if err := msg.Respond(data); err != nil {
 				h.log.Errorf("failed to respond to stock event: %v", err)
 			}

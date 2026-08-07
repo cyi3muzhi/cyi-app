@@ -95,10 +95,11 @@ func (r *userRepo) VerifyPassword(ctx context.Context, u *biz.User) error {
 	}
 	ok := encryption.CheckPassword(u.Password, target.Password)
 	if !ok {
-		r.log.Warnf("Password verification failed for user %s", u.Username)
+		// 不记录具体用户名，防止账号枚举
+		r.log.Warnf("password verification failed")
 		return errors.New("password not match")
 	}
-	r.log.Infof("Password verified successfully for user %s", u.Username)
+	r.log.Infof("password verified successfully")
 	return nil
 }
 

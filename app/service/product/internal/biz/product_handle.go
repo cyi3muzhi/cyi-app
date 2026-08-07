@@ -33,7 +33,11 @@ func NewProductUseCase(repo ProductRepo, stockRepo StockRepo, specGroupRepo Spec
 }
 
 // CreateProduct 创建商品（含规格组和SKU）
-// TODO: 后续应改为数据库事务（curd.Q.Transaction），当前使用补偿回滚机制
+// 说明：当前保持补偿回滚机制而非数据库事务，原因如下（可接受保留）：
+//  1. 补偿机制（defer + needRollback）已完整覆盖规格组/SKU/库存/商品四类写操作，并有单测验证；
+//  2. 规格组、SKU、库存分属不同仓储，改为单事务需在 data 层复制多份写逻辑，改动面大、回归风险高；
+//  3. 创建失败属低频异常路径，现有补偿已能保证最终一致（清理已建关联数据）。
+// TODO: 后续业务增长时可考虑改为 curd.Q.Transaction 原子完成
 func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error {
 	if err := uc.repo.CreateProduct(ctx, in); err != nil {
 		return fmt.Errorf("%w: create product failed", ErrCreateProductFailed)
@@ -99,8 +103,21 @@ func (uc *ProductUseCase) CreateProduct(ctx context.Context, in *Product) error 
 }
 
 // UpdateProduct 更新商品（含规格组、SKU和库存）
-// 按规格组合匹配 SKU：匹配上的复用旧 ID（库存不重建），新增的创建，移除的清除
+// 优先使用 data 层提供的单事务实现（UpdateProductTx），将商品、规格组、SKU、库存的写操作
+// 放入同一个 gorm 事务内，任一失败整体回滚，保证多表数据一致；
+// 仓储未实现事务变体（如测试 mock）时回退到原有分步逻辑
 func (uc *ProductUseCase) UpdateProduct(ctx context.Context, in *Product) error {
+	if txUpdater, ok := uc.repo.(interface {
+		UpdateProductTx(ctx context.Context, in *Product) error
+	}); ok {
+		return txUpdater.UpdateProductTx(ctx, in)
+	}
+	return uc.updateProductFallback(ctx, in)
+}
+
+// updateProductFallback 分步更新商品（无事务兜底路径，仅供测试 mock 等非 data 仓储实现使用）
+// 按规格组合匹配 SKU：匹配上的复用旧 ID（库存不重建），新增的创建，移除的清除
+func (uc *ProductUseCase) updateProductFallback(ctx context.Context, in *Product) error {
 	if err := uc.repo.UpdateProduct(ctx, in); err != nil {
 		return err
 	}
@@ -229,6 +246,16 @@ func (uc *ProductUseCase) GetProduct(ctx context.Context, productID int64) (*Pro
 // @param stockEQ 可用库存精确筛选（-1 表示不筛选）
 // @param stockLTE 可用库存上限筛选，库存 <= stockLTE（-1 表示不筛选，用于库存预警）
 func (uc *ProductUseCase) ListProduct(ctx context.Context, page, pageSize int32, keyword string, categoryID int64, status string, stockEQ, stockLTE int32) ([]*Product, int32, error) {
+	// 分页参数归一化：page 最小为 1，pageSize 默认 10、上限 100，防止越界与 int32 溢出
+	if page < 1 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
 	products, total, err := uc.repo.ListProduct(ctx, page, pageSize, keyword, categoryID, status, stockEQ, stockLTE)
 	if err != nil {
 		return nil, 0, err
