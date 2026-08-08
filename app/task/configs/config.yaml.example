@@ -1,0 +1,51 @@
+server:
+  http:
+    addr: 0.0.0.0:8000
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9000
+    timeout: 1s
+data:
+  redis:
+    addr: redis:6379
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+    password: YOUR_REDIS_PASSWORD
+  # OSS（RustFS）配置：订单导出文件上传/下载使用，与 admin 服务共用同一实例
+  oss:
+    endpoint: rustfs:9000
+    public_endpoint: 127.0.0.1:9001
+    access_key: YOUR_RUSTFS_ACCESS_KEY
+    secret_key: YOUR_RUSTFS_SECRET_KEY
+
+trace:
+  endpoint: jaeger:4318
+
+# 定时任务配置（cron 调度，迁移自原 job 服务）
+tasks:
+  - cron: "*/1 * * * *"
+    name: "user_count"
+    options:
+      queue: "critical"
+      max_retry: 3
+      timeout: 5s
+  - cron: "*/5 * * * *"
+    name: "coupon_expire"
+    options:
+      queue: "critical"
+      max_retry: 3
+      timeout: 30s
+  - cron: "*/1 * * * *"
+    name: "order_timeout_check"
+    options:
+      queue: "critical"
+      max_retry: 3
+      timeout: 60s
+
+log:
+  level: info
+  enable_console: true
+  enable_file: true
+  log_dir: logs
+  time_format: "2006-01-02 15:04:05"
+  enable_color: true

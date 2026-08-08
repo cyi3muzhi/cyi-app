@@ -24,8 +24,8 @@ data:
     password: redis0411
   oss:
     endpoint: rustfs:9001
-    access_key: kZu5gGheApNDUWdEP0qX
-    secret_key: Wi69cUtLTem13xhYDQVPpCdIzXZ7BbOkwKfEun2v
+    access_key: YOUR_RUSTFS_ACCESS_KEY
+    secret_key: YOUR_RUSTFS_SECRET_KEY
 
 trace:
   endpoint: jaeger:4318

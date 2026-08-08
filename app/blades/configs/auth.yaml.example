@@ -1,0 +1,6 @@
+auth:
+  api_key: YOUR_API_KEY
+  service_key:
+    product.service: YOUR_SERVICE_KEY
+    user.service: YOUR_SERVICE_KEY
+    order.service: YOUR_SERVICE_KEY

@@ -1,0 +1,4 @@
+auth:
+  service_key:
+    user.service: YOUR_SERVICE_KEY
+    marketing.service: YOUR_SERVICE_KEY

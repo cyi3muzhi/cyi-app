@@ -100,7 +100,7 @@
 | Order Service | `app/service/order` | 订单管理（状态机） | [README](app/service/order/README.md) |
 | Product Service | `app/service/product` | 商品 & 库存管理 | [README](app/service/product/README.md) |
 | User Service | `app/service/user` | 用户认证 & 管理 | [README](app/service/user/README.md) |
-| Marketing Service | `app/service/marketing` | 优惠券营销管理 | `app/service/marketing` |
+| Marketing Service | `app/service/marketing` | 优惠券营销管理 | [README](app/service/marketing/README.md) |
 | Blades Service | `app/blades` | AI 智能助手 | [README](app/blades/README.md) |
 
 ### 任务 & 消息服务

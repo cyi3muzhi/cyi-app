@@ -1,0 +1,9 @@
+auth:
+  api_key: YOUR_API_KEY
+  service_key:
+    product.service: YOUR_SERVICE_KEY
+    blades.service: YOUR_SERVICE_KEY
+  white_list:
+    - /api.cin.admin.v1.Dashboard/GetDashboardStats
+    - /api.cin.admin.v1.AdminAuth/Login
+    - /api.cin.admin.v1.Settings/GetSettings

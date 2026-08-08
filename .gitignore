@@ -58,3 +58,14 @@ __debug_bin*
 study/
 shopping-mall.design/
 docs/
+
+# Node.js dependencies
+node_modules/
+
+# 本地敏感配置文件（含真实密钥，请复制 *.example 模板填写实际值）
+**/configs/config.yaml
+**/configs/auth.yaml
+deploy/docker-compose/.env
+deploy/k8s/config/secret.yaml
+pkg/util/rustfs/credentials.json
+pkg/util/rustfs/d-credentials.json

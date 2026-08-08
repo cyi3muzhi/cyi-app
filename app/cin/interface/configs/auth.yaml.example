@@ -1,0 +1,14 @@
+auth:
+  api_key: YOUR_API_KEY
+  service_key:
+    user.service: YOUR_SERVICE_KEY
+  white_list:
+    - /api.cin.interface.v1.Auth/Login
+    - /api.cin.interface.v1.Auth/Register
+    - /api.cin.interface.v1.Settings/GetPublicSettings
+    - /api.cin.interface.v1.Banner/ListBanners
+    - /api.cin.interface.v1.Category/ListCategoryTree
+    - /api.cin.interface.v1.Category/GetCategory
+    - /api.cin.interface.v1.Product/ListProduct
+    - /api.cin.interface.v1.Product/GetProduct
+    - /api.cin.interface.v1.Product/SuggestProduct
