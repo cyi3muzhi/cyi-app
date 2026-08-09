@@ -69,3 +69,6 @@ deploy/docker-compose/.env
 deploy/k8s/config/secret.yaml
 pkg/util/rustfs/credentials.json
 pkg/util/rustfs/d-credentials.json
+
+# 个人面试准备文档（不进仓库）
+面试准备-项目经历.md

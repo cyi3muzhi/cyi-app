@@ -33,38 +33,35 @@
    │ └───────────┘   │   └──────┬───────┘       │
    │                 │          │               │
    ▼                 ▼          ▼               │
-┌───────────┐  ┌──────────┐  ┌──────────┐      │
-│   Order   │  │   NATS   │  │ RabbitMQ │      │
-│  Service  │  │ Consumer │  │ Consumer │      │
-│  订单服务   │  └────┬─────┘  └────┬─────┘      │
-└─────┬─────┘       │              │            │
-      │             │              │            │
-      └─────────────┴──────────────┘            │
-                         │                       │
-       ┌─────────────────┴───┬───────────────────┘
-       ▼                     ▼
-┌─────────────┐      ┌─────────────┐
-│  Task       │      │   Job       │
-│  Service    │      │  Service    │
-│ 异步任务消费 │      │ 定时任务调度 │
-│ (default/   │      │  (critical) │
-│  export)    │      │             │
-└──────┬──────┘      └──────┬──────┘
-       │                    │
-       └─────────┬──────────┘
-                 ▼
-┌───────────────────────────────────────────────────────┐
-│                     基础设施层                           │
-│  Consul  │  Jaeger  │  Prometheus  │  Grafana  │ ELK  │
-│  MySQL   │  Redis   │  NATS        │  RabbitMQ │ RustFS│
-│          │ (Asynq)  │              │           │       │
-└───────────────────────────────────────────────────────┘
+┌───────────┐  ┌──────────┐
+│   Order   │  │   NATS   │
+│  Service  │  │ Consumer │
+│  订单服务   │  └────┬─────┘
+└─────┬─────┘       │
+      │             │
+      └─────────────┘
+            │
+            ▼
+┌──────────────────────┐
+│    Task  Service     │
+│   异步任务 + 定时任务   │
+│  (default/export/    │
+│   critical)          │
+└─────────┬────────────┘
+          │
+          ▼
+┌──────────────────────────────────────────────────────┐
+│                     基础设施层                          │
+│  Consul │ Jaeger │ Prometheus │ Grafana │ ELK │ RustFS│
+│  MySQL  │ Redis  │ NATS                               │
+│         │(Asynq) │                                    │
+└──────────────────────────────────────────────────────┘
 ```
 
 > **说明**：
 > - **CIN Interface**：用户端统一入口，聚合调用各业务服务
 > - **CIN Admin**：管理后台 BFF，独立生成 JWT、独立权限管控（Casbin RBAC）
-> - **Task Service**：消费 Asynq 的 `default`（一般异步任务）、`export`（订单导出）、`critical`（cron 定时任务）队列；原独立 Job Service 已合并进 task 服务统一管理
+> - **Task Service**：消费 Asynq 的 `default`（一般异步任务）、`export`（订单导出）、`critical`（cron 定时任务）队列
 > - **Admin → Task**：管理后台导出订单时，通过 Asynq（Redis）投递任务，task 服务消费完成后写回 Redis，admin 轮询状态
 > - **操作日志链路**：admin 服务 HTTP 中间件将管理员写操作发布 NATS（`admin.operation` 主题），user 服务订阅落库，admin 查询接口读库返回
 > - 所有服务通过 **Consul** 做服务发现与配置管理
@@ -79,7 +76,7 @@
 | 数据库 | MySQL 8.0 |
 | 缓存 | Redis 7.0 |
 | 对象存储 | RustFS |
-| 消息队列 | NATS、RabbitMQ |
+| 消息队列 | NATS |
 | 任务队列 | Asynq（基于 Redis） |
 | 服务发现 | Consul |
 | 分布式追踪 | Jaeger |
@@ -109,7 +106,6 @@
 |------|------|------|------|
 | Task Service | `app/task` | 异步任务 + 定时任务（Asynq Server + Scheduler，消费 default/export/critical 队列，含订单导出与 cron 定时任务） | [README](app/task/README.md) |
 | NATS Consumer | `app/nats` | NATS 消息消费者 | [README](app/nats/README.md) |
-| RabbitMQ Consumer | `app/rabbit` | RabbitMQ 消息消费者 | [README](app/rabbit/README.md) |
 
 ## 基础设施
 
@@ -121,7 +117,6 @@
 | MySQL | 3306 | 主数据库 |
 | Redis | 6379 | 缓存 & 任务队列 |
 | NATS | 4222 / 8222 | 消息队列 / 监控 |
-| RabbitMQ | 5672 / 15672 | 消息队列 / 管理界面 |
 | Jaeger | 16686 | 分布式追踪 UI |
 | Prometheus | 9090 | 监控数据采集 |
 | Grafana | 3000 | 监控可视化 |
@@ -151,13 +146,12 @@ cyi-app/
 │   │   ├── admin/           # 管理后台 BFF
 │   │   └── interface/      # 接口网关
 │   ├── nats/               # NATS 消费者
-│   ├── rabbit/             # RabbitMQ 消费者
 │   ├── service/
 │   │   ├── marketing/      # 优惠券营销服务
 │   │   ├── order/          # 订单服务
 │   │   ├── product/        # 商品服务
 │   │   └── user/           # 用户服务
-│   └── task/               # 异步任务服务（含定时任务，原 job 服务已合并）
+│   └── task/               # 异步任务服务（含定时任务）
 ├── pkg/                    # 公共包
 │   ├── blades/             # AI 助手封装（Agent、Session、SSE）
 │   ├── exporttask/         # 订单导出异步任务共享类型（admin 投递端 / task 消费端共用）
@@ -169,7 +163,6 @@ cyi-app/
 │   │   ├── server/         # 中间件 & 传输器（含操作日志中间件）
 │   │   ├── service/        # 上下文 & 元数据
 │   │   └── tracing/        # Jaeger 追踪
-│   ├── rmq/                # RabbitMQ 封装
 │   ├── upload/             # 文件上传安全校验（扩展名白名单、目录参数校验）
 │   └── util/               # 工具包
 │       ├── convert/        # 类型转换
@@ -282,8 +275,7 @@ make errors
 | User Service | NATS | 订阅操作日志事件并落库 |
 | CIN Interface | Marketing Service | gRPC（优惠券领取/查询） |
 | NATS Consumer | NATS Server | NATS Protocol |
-| RabbitMQ Consumer | RabbitMQ Server | AMQP |
-| Task Service | Redis | Asynq（cron 定时 + 消费 default/export/critical 队列，原 job 服务职责已合并） |
+| Task Service | Redis | Asynq（cron 定时 + 消费 default/export/critical 队列） |
 | Task Service | Order Service | gRPC（导出拉单、超时订单取消） |
 | Task Service | User Service | gRPC（用户统计） |
 | Task Service | Marketing Service | gRPC（优惠券批量过期） |
