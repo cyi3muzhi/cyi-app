@@ -29,7 +29,11 @@ func NewDtmOrderStore(mc marketingRpc.CouponServiceClient, logger log.Logger) bi
 // CreateInTx 在 DTM 屏障事务内创建订单（复用 createOrderTx 的建单逻辑）
 // 建单失败且已核销优惠券时，尝试对营销侧做补偿释放（与 CreateOrder 语义一致）
 func (s *DtmOrderStore) CreateInTx(ctx context.Context, tx *sql.Tx, in *biz.Order) error {
-	couponUsed, err := createOrderTx(ctx, curd.Use(pkgdtm.GormFromTx(tx)), in, s.mc, s.log)
+	gdb, err := pkgdtm.GormFromTx(tx)
+	if err != nil {
+		return err // 事务包装失败：返回错误让 DTM 分支回调映射为 500 重试，避免 panic 崩溃
+	}
+	couponUsed, err := createOrderTx(ctx, curd.Use(gdb), in, s.mc, s.log)
 	if err != nil && couponUsed && in.CouponRecordID > 0 {
 		if _, rerr := s.mc.ReleaseCoupon(ctx, &marketingRpc.ReleaseCouponRequest{
 			RecordId: in.CouponRecordID,
@@ -47,7 +51,11 @@ func (s *DtmOrderStore) CreateInTx(ctx context.Context, tx *sql.Tx, in *biz.Orde
 // CancelInTx 在 DTM 屏障事务内取消订单（TCC 补偿）：
 // 仅待支付订单可取消；已支付/已取消等状态视为已处理（幂等），订单不存在同样视为已处理
 func (s *DtmOrderStore) CancelInTx(ctx context.Context, tx *sql.Tx, orderNo string) error {
-	q := curd.Use(pkgdtm.GormFromTx(tx))
+	gdb, err := pkgdtm.GormFromTx(tx)
+	if err != nil {
+		return err // 事务包装失败：返回错误让 DTM 分支回调映射为 500 重试，避免 panic 崩溃
+	}
+	q := curd.Use(gdb)
 	order, err := q.Order.WithContext(ctx).Where(q.Order.OrderNo.Eq(orderNo)).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
