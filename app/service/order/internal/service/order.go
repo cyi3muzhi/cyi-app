@@ -58,7 +58,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *v1.CreateOrderReque
 		})
 	}
 	in.GenerateOrderNo()
-	if err := s.uc.Create(ctx, in); err != nil {
+	if err := s.uc.CreateTCC(ctx, in); err != nil {
 		return nil, err
 	}
 	return &v1.CreateOrderReply{OrderId: in.ID}, nil

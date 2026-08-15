@@ -2,6 +2,8 @@ package data
 
 import (
 	"cyi-app/app/service/order/internal/conf"
+	pkgdtm "cyi-app/pkg/dtm"
+	"database/sql"
 	"os"
 
 	"gorm.io/driver/mysql"
@@ -34,6 +36,11 @@ var ProviderSet = wire.NewSet(
 	NewNATSConn,
 	NewAsynqClient,
 	NewOrderTimeoutTaskRepo,
+	NewDtmOrderStore,
+	NewBarrierDB,
+	NewDtmServer,
+	NewOrderBusiURL,
+	NewOrderLocalURL,
 )
 
 type Data struct {
@@ -76,6 +83,35 @@ func NewNATSConn() *nats.Conn {
 		panic(err)
 	}
 	return nc
+}
+
+// NewBarrierDB 返回 DTM 屏障表所在的数据库连接（*sql.DB，供 dtmcli.BranchBarrier 使用）
+func NewBarrierDB(db *gorm.DB) *sql.DB {
+	return pkgdtm.BarrierDB(db)
+}
+
+// NewDtmServer 返回 DTM 服务地址（Consul 配置 dtm.server）
+func NewDtmServer(c *conf.Dtm) pkgdtm.ServerAddr {
+	if c == nil || c.Server == "" {
+		panic("dtm.server not configured in consul")
+	}
+	return pkgdtm.ServerAddr(c.Server)
+}
+
+// NewOrderBusiURL 返回 DTM 回调本服务分支的地址（Consul 配置 dtm.busi_url）
+func NewOrderBusiURL(c *conf.Dtm) pkgdtm.BusiURL {
+	if c == nil || c.BusiUrl == "" {
+		panic("dtm.busi_url not configured in consul")
+	}
+	return pkgdtm.BusiURL(c.BusiUrl)
+}
+
+// NewOrderLocalURL 返回本服务进程访问自己分支的地址（Consul 配置 dtm.local_url，Try 分支用）
+func NewOrderLocalURL(c *conf.Dtm) pkgdtm.LocalURL {
+	if c == nil || c.LocalUrl == "" {
+		panic("dtm.local_url not configured in consul")
+	}
+	return pkgdtm.LocalURL(c.LocalUrl)
 }
 
 func NewDB(c *conf.Data) *gorm.DB {

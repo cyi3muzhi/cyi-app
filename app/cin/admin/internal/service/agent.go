@@ -332,16 +332,17 @@ func (s *AdminService) chat(ctx context.Context, req *ChatRequest) (*ChatReply, 
 	return &ChatReply{Response: response}, nil
 }
 
-// ChatSSEHandler 处理 SSE 流式聊天请求，直接由 server/http.go 的 HandleFunc 注册
+// ChatSSE 处理 SSE 流式聊天请求（实现 httproute.ChatStreamService，由 httproute.RegisterChatStream 注册的路由调用）
 // message: 用户输入的消息
-// adminID: 管理员 ID（已从 JWT 解析）
-// flushFunc: 向客户端写入 SSE 数据并 flush
-func (s *AdminService) ChatSSEHandler(ctx context.Context, message string, adminID int64, flushFunc func([]byte)) (string, error) {
+// userID: 用户 ID（已从 JWT 解析）
+// emit: 向客户端写入一条 SSE chunk 数据并 flush
+func (s *AdminService) ChatSSE(ctx context.Context, message string, userID int64, emit func([]byte)) error {
 	role, _ := mid.GetRoleFromClaims(ctx)
-	return s.agentUC.ChatStream(ctx, adminID, role, message, func(chunk string) {
+	_, err := s.agentUC.ChatStream(ctx, userID, role, message, func(chunk string) {
 		data, _ := json.Marshal(map[string]string{"chunk": chunk})
-		flushFunc(data)
+		emit(data)
 	})
+	return err
 }
 
 // clearChatHistory 清除聊天历史（内部方法，proto 接口通过 agent_proto.go 接入）

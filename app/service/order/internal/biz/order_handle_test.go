@@ -79,6 +79,11 @@ func (m *mockOrderRepoForOrder) CreateOrder(ctx context.Context, in *Order) erro
 	return nil
 }
 
+// GetOrderByOrderNo 按订单号查询订单（DTM TCC 回查用，默认返回 nil）
+func (m *mockOrderRepoForOrder) GetOrderByOrderNo(_ context.Context, _ string) (*Order, error) {
+	return nil, nil
+}
+
 func (m *mockOrderRepoForOrder) UpdateOrder(ctx context.Context, in *Order) error {
 	if m.updateOrderFn != nil {
 		return m.updateOrderFn(ctx, in)
@@ -166,7 +171,8 @@ func newTestOrderUseCase(
 	stockRe *mockStockRepoForOrder,
 ) *OrderUseCase {
 	logger := log.NewStdLogger(io.Discard)
-	return NewOrderUseCase(repo, productRe, stockRe, &mockOrderTimeoutTaskRepoForOrder{}, logger)
+	// DTM 相关参数传空（单测仅覆盖手写补偿流程 Create）
+	return NewOrderUseCase(repo, productRe, stockRe, &mockOrderTimeoutTaskRepoForOrder{}, nil, nil, "", "", "", logger)
 }
 
 // ---------------------------------------------------------------------------

@@ -73,7 +73,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	couponRepo := data.NewCouponRepo(dataData, logger)
 	couponUseCase := biz.NewCouponUseCase(couponRepo, logger)
 	uploadRepo := data.NewUploadRepo(dataData, logger)
-	agentUseCase := biz.NewAgentUseCase(bladesClient, enforcerProvider, logger)
+	agentUseCase := biz.NewAgentUseCase(bladesClient, logger)
 	adminSettingsClient := data.NewAdminSettingsClient(discovery, confServer, auth, traceTracerProvider, meter)
 	universalClient := data.ProvideUniversalClient(client)
 	settingsRepo := data.NewSettingsRepo(adminSettingsClient, universalClient, logger)

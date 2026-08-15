@@ -12,6 +12,7 @@ message Bootstrap {
   Auth auth = 3;
   Trace trace = 4;
   Log log = 5;
+  Dtm dtm = 6;
 }
 
 message Server {
@@ -48,13 +49,13 @@ message Data {
 
 message Registry {
     message Consul {
-        string address = 1;        // 服务器地址，支持多个地址逗号分隔
-        string scheme = 2;         // http 或 https
-        string token = 3;          // ACL 令牌
-        string username = 4;       // 基本认证用户名
-        string password = 5;       // 基本认证密码
+        string address = 1; // 服务器地址，支持多个地址逗号分隔
+        string scheme = 2; // http 或 https
+        string token = 3; // ACL 令牌
+        string username = 4; // 基本认证用户名
+        string password = 5; // 基本认证密码
         bool enable_health_check = 8; // 是否启用健康检查
-        int32 check_interval = 9;  // 健康检查间隔(秒)
+        int32 check_interval = 9; // 健康检查间隔(秒)
     }
     Consul consul = 1;
 }
@@ -67,6 +68,17 @@ message Auth {
 
 message Trace {
     string endpoint = 1;
+}
+
+// DTM 分布式事务管理器配置
+message Dtm {
+    // DTM 服务地址（全局共享，如 http://dtm:36789/api/dtmsvr）
+    string server = 1;
+    // DTM 回调本服务分支的地址（Confirm/Cancel 由 DTM 服务回调，需 DTM 可达；
+    // 本地开发 + DTM 容器时用 host.docker.internal:端口；全容器部署用 http://service-order:8003）
+    string busi_url = 2;
+    // 本服务进程访问自己分支的地址（Try 由本服务进程内发起，如 http://localhost:8003）
+    string local_url = 3;
 }
 
 // 日志配置

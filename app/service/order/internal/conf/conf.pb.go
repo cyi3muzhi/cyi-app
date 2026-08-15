@@ -29,6 +29,7 @@ type Bootstrap struct {
 	Auth          *Auth                  `protobuf:"bytes,3,opt,name=auth,proto3" json:"auth,omitempty"`
 	Trace         *Trace                 `protobuf:"bytes,4,opt,name=trace,proto3" json:"trace,omitempty"`
 	Log           *Log                   `protobuf:"bytes,5,opt,name=log,proto3" json:"log,omitempty"`
+	Dtm           *Dtm                   `protobuf:"bytes,6,opt,name=dtm,proto3" json:"dtm,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -98,6 +99,13 @@ func (x *Bootstrap) GetLog() *Log {
 	return nil
 }
 
+func (x *Bootstrap) GetDtm() *Dtm {
+	if x != nil {
+		return x.Dtm
+	}
+	return nil
+}
+
 type Server struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Http          *Server_HTTP           `protobuf:"bytes,1,opt,name=http,proto3" json:"http,omitempty"`
@@ -151,9 +159,10 @@ func (x *Server) GetGrpc() *Server_GRPC {
 }
 
 type Data struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Database      *Data_Database         `protobuf:"bytes,1,opt,name=database,proto3" json:"database,omitempty"`
-	Redis         *Data_Redis            `protobuf:"bytes,2,opt,name=redis,proto3" json:"redis,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Database *Data_Database         `protobuf:"bytes,1,opt,name=database,proto3" json:"database,omitempty"`
+	// Redis 配置（task 子进程 asynq 队列使用）
+	Redis         *Data_Redis `protobuf:"bytes,2,opt,name=redis,proto3" json:"redis,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -343,6 +352,71 @@ func (x *Trace) GetEndpoint() string {
 	return ""
 }
 
+// DTM 分布式事务管理器配置
+type Dtm struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// DTM 服务地址（全局共享，如 http://dtm:36789/api/dtmsvr）
+	Server string `protobuf:"bytes,1,opt,name=server,proto3" json:"server,omitempty"`
+	// DTM 回调本服务分支的地址（Confirm/Cancel 由 DTM 服务回调，需 DTM 可达；
+	// 本地开发 + DTM 容器时用 host.docker.internal:端口；全容器部署用 http://service-order:8003）
+	BusiUrl string `protobuf:"bytes,2,opt,name=busi_url,json=busiUrl,proto3" json:"busi_url,omitempty"`
+	// 本服务进程访问自己分支的地址（Try 由本服务进程内发起，如 http://localhost:8003）
+	LocalUrl      string `protobuf:"bytes,3,opt,name=local_url,json=localUrl,proto3" json:"local_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Dtm) Reset() {
+	*x = Dtm{}
+	mi := &file_conf_conf_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Dtm) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Dtm) ProtoMessage() {}
+
+func (x *Dtm) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_conf_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Dtm.ProtoReflect.Descriptor instead.
+func (*Dtm) Descriptor() ([]byte, []int) {
+	return file_conf_conf_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *Dtm) GetServer() string {
+	if x != nil {
+		return x.Server
+	}
+	return ""
+}
+
+func (x *Dtm) GetBusiUrl() string {
+	if x != nil {
+		return x.BusiUrl
+	}
+	return ""
+}
+
+func (x *Dtm) GetLocalUrl() string {
+	if x != nil {
+		return x.LocalUrl
+	}
+	return ""
+}
+
 // 日志配置
 type Log struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -358,7 +432,7 @@ type Log struct {
 
 func (x *Log) Reset() {
 	*x = Log{}
-	mi := &file_conf_conf_proto_msgTypes[6]
+	mi := &file_conf_conf_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -370,7 +444,7 @@ func (x *Log) String() string {
 func (*Log) ProtoMessage() {}
 
 func (x *Log) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[6]
+	mi := &file_conf_conf_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -383,7 +457,7 @@ func (x *Log) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Log.ProtoReflect.Descriptor instead.
 func (*Log) Descriptor() ([]byte, []int) {
-	return file_conf_conf_proto_rawDescGZIP(), []int{6}
+	return file_conf_conf_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Log) GetLevel() string {
@@ -439,7 +513,7 @@ type Server_HTTP struct {
 
 func (x *Server_HTTP) Reset() {
 	*x = Server_HTTP{}
-	mi := &file_conf_conf_proto_msgTypes[7]
+	mi := &file_conf_conf_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -451,7 +525,7 @@ func (x *Server_HTTP) String() string {
 func (*Server_HTTP) ProtoMessage() {}
 
 func (x *Server_HTTP) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[7]
+	mi := &file_conf_conf_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -499,7 +573,7 @@ type Server_GRPC struct {
 
 func (x *Server_GRPC) Reset() {
 	*x = Server_GRPC{}
-	mi := &file_conf_conf_proto_msgTypes[8]
+	mi := &file_conf_conf_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -511,7 +585,7 @@ func (x *Server_GRPC) String() string {
 func (*Server_GRPC) ProtoMessage() {}
 
 func (x *Server_GRPC) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[8]
+	mi := &file_conf_conf_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -558,7 +632,7 @@ type Data_Database struct {
 
 func (x *Data_Database) Reset() {
 	*x = Data_Database{}
-	mi := &file_conf_conf_proto_msgTypes[9]
+	mi := &file_conf_conf_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -570,7 +644,7 @@ func (x *Data_Database) String() string {
 func (*Data_Database) ProtoMessage() {}
 
 func (x *Data_Database) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[9]
+	mi := &file_conf_conf_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -613,7 +687,7 @@ type Data_Redis struct {
 
 func (x *Data_Redis) Reset() {
 	*x = Data_Redis{}
-	mi := &file_conf_conf_proto_msgTypes[10]
+	mi := &file_conf_conf_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -625,7 +699,7 @@ func (x *Data_Redis) String() string {
 func (*Data_Redis) ProtoMessage() {}
 
 func (x *Data_Redis) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[10]
+	mi := &file_conf_conf_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -691,7 +765,7 @@ type Registry_Consul struct {
 
 func (x *Registry_Consul) Reset() {
 	*x = Registry_Consul{}
-	mi := &file_conf_conf_proto_msgTypes[11]
+	mi := &file_conf_conf_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -703,7 +777,7 @@ func (x *Registry_Consul) String() string {
 func (*Registry_Consul) ProtoMessage() {}
 
 func (x *Registry_Consul) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_conf_proto_msgTypes[11]
+	mi := &file_conf_conf_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -772,13 +846,14 @@ var File_conf_conf_proto protoreflect.FileDescriptor
 
 const file_conf_conf_proto_rawDesc = "" +
 	"\n" +
-	"\x0fconf/conf.proto\x12\x1acyi.app.service.order.conf\x1a\x1egoogle/protobuf/duration.proto\"\x9f\x02\n" +
+	"\x0fconf/conf.proto\x12\x1acyi.app.service.order.conf\x1a\x1egoogle/protobuf/duration.proto\"\xd2\x02\n" +
 	"\tBootstrap\x12:\n" +
 	"\x06server\x18\x01 \x01(\v2\".cyi.app.service.order.conf.ServerR\x06server\x124\n" +
 	"\x04data\x18\x02 \x01(\v2 .cyi.app.service.order.conf.DataR\x04data\x124\n" +
 	"\x04auth\x18\x03 \x01(\v2 .cyi.app.service.order.conf.AuthR\x04auth\x127\n" +
 	"\x05trace\x18\x04 \x01(\v2!.cyi.app.service.order.conf.TraceR\x05trace\x121\n" +
-	"\x03log\x18\x05 \x01(\v2\x1f.cyi.app.service.order.conf.LogR\x03log\"\xd8\x02\n" +
+	"\x03log\x18\x05 \x01(\v2\x1f.cyi.app.service.order.conf.LogR\x03log\x121\n" +
+	"\x03dtm\x18\x06 \x01(\v2\x1f.cyi.app.service.order.conf.DtmR\x03dtm\"\xd8\x02\n" +
 	"\x06Server\x12;\n" +
 	"\x04http\x18\x01 \x01(\v2'.cyi.app.service.order.conf.Server.HTTPR\x04http\x12;\n" +
 	"\x04grpc\x18\x02 \x01(\v2'.cyi.app.service.order.conf.Server.GRPCR\x04grpc\x1ai\n" +
@@ -820,7 +895,11 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"#\n" +
 	"\x05Trace\x12\x1a\n" +
-	"\bendpoint\x18\x01 \x01(\tR\bendpoint\"\xc0\x01\n" +
+	"\bendpoint\x18\x01 \x01(\tR\bendpoint\"U\n" +
+	"\x03Dtm\x12\x16\n" +
+	"\x06server\x18\x01 \x01(\tR\x06server\x12\x19\n" +
+	"\bbusi_url\x18\x02 \x01(\tR\abusiUrl\x12\x1b\n" +
+	"\tlocal_url\x18\x03 \x01(\tR\blocalUrl\"\xc0\x01\n" +
 	"\x03Log\x12\x14\n" +
 	"\x05level\x18\x01 \x01(\tR\x05level\x12%\n" +
 	"\x0eenable_console\x18\x02 \x01(\bR\renableConsole\x12\x1f\n" +
@@ -843,7 +922,7 @@ func file_conf_conf_proto_rawDescGZIP() []byte {
 	return file_conf_conf_proto_rawDescData
 }
 
-var file_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_conf_conf_proto_goTypes = []any{
 	(*Bootstrap)(nil),           // 0: cyi.app.service.order.conf.Bootstrap
 	(*Server)(nil),              // 1: cyi.app.service.order.conf.Server
@@ -851,36 +930,38 @@ var file_conf_conf_proto_goTypes = []any{
 	(*Registry)(nil),            // 3: cyi.app.service.order.conf.Registry
 	(*Auth)(nil),                // 4: cyi.app.service.order.conf.Auth
 	(*Trace)(nil),               // 5: cyi.app.service.order.conf.Trace
-	(*Log)(nil),                 // 6: cyi.app.service.order.conf.Log
-	(*Server_HTTP)(nil),         // 7: cyi.app.service.order.conf.Server.HTTP
-	(*Server_GRPC)(nil),         // 8: cyi.app.service.order.conf.Server.GRPC
-	(*Data_Database)(nil),       // 9: cyi.app.service.order.conf.Data.Database
-	(*Data_Redis)(nil),          // 10: cyi.app.service.order.conf.Data.Redis
-	(*Registry_Consul)(nil),     // 11: cyi.app.service.order.conf.Registry.Consul
-	nil,                         // 12: cyi.app.service.order.conf.Auth.ServiceKeyEntry
-	(*durationpb.Duration)(nil), // 13: google.protobuf.Duration
+	(*Dtm)(nil),                 // 6: cyi.app.service.order.conf.Dtm
+	(*Log)(nil),                 // 7: cyi.app.service.order.conf.Log
+	(*Server_HTTP)(nil),         // 8: cyi.app.service.order.conf.Server.HTTP
+	(*Server_GRPC)(nil),         // 9: cyi.app.service.order.conf.Server.GRPC
+	(*Data_Database)(nil),       // 10: cyi.app.service.order.conf.Data.Database
+	(*Data_Redis)(nil),          // 11: cyi.app.service.order.conf.Data.Redis
+	(*Registry_Consul)(nil),     // 12: cyi.app.service.order.conf.Registry.Consul
+	nil,                         // 13: cyi.app.service.order.conf.Auth.ServiceKeyEntry
+	(*durationpb.Duration)(nil), // 14: google.protobuf.Duration
 }
 var file_conf_conf_proto_depIdxs = []int32{
 	1,  // 0: cyi.app.service.order.conf.Bootstrap.server:type_name -> cyi.app.service.order.conf.Server
 	2,  // 1: cyi.app.service.order.conf.Bootstrap.data:type_name -> cyi.app.service.order.conf.Data
 	4,  // 2: cyi.app.service.order.conf.Bootstrap.auth:type_name -> cyi.app.service.order.conf.Auth
 	5,  // 3: cyi.app.service.order.conf.Bootstrap.trace:type_name -> cyi.app.service.order.conf.Trace
-	6,  // 4: cyi.app.service.order.conf.Bootstrap.log:type_name -> cyi.app.service.order.conf.Log
-	7,  // 5: cyi.app.service.order.conf.Server.http:type_name -> cyi.app.service.order.conf.Server.HTTP
-	8,  // 6: cyi.app.service.order.conf.Server.grpc:type_name -> cyi.app.service.order.conf.Server.GRPC
-	9,  // 7: cyi.app.service.order.conf.Data.database:type_name -> cyi.app.service.order.conf.Data.Database
-	10, // 8: cyi.app.service.order.conf.Data.redis:type_name -> cyi.app.service.order.conf.Data.Redis
-	11, // 9: cyi.app.service.order.conf.Registry.consul:type_name -> cyi.app.service.order.conf.Registry.Consul
-	12, // 10: cyi.app.service.order.conf.Auth.service_key:type_name -> cyi.app.service.order.conf.Auth.ServiceKeyEntry
-	13, // 11: cyi.app.service.order.conf.Server.HTTP.timeout:type_name -> google.protobuf.Duration
-	13, // 12: cyi.app.service.order.conf.Server.GRPC.timeout:type_name -> google.protobuf.Duration
-	13, // 13: cyi.app.service.order.conf.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
-	13, // 14: cyi.app.service.order.conf.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
-	15, // [15:15] is the sub-list for method output_type
-	15, // [15:15] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	7,  // 4: cyi.app.service.order.conf.Bootstrap.log:type_name -> cyi.app.service.order.conf.Log
+	6,  // 5: cyi.app.service.order.conf.Bootstrap.dtm:type_name -> cyi.app.service.order.conf.Dtm
+	8,  // 6: cyi.app.service.order.conf.Server.http:type_name -> cyi.app.service.order.conf.Server.HTTP
+	9,  // 7: cyi.app.service.order.conf.Server.grpc:type_name -> cyi.app.service.order.conf.Server.GRPC
+	10, // 8: cyi.app.service.order.conf.Data.database:type_name -> cyi.app.service.order.conf.Data.Database
+	11, // 9: cyi.app.service.order.conf.Data.redis:type_name -> cyi.app.service.order.conf.Data.Redis
+	12, // 10: cyi.app.service.order.conf.Registry.consul:type_name -> cyi.app.service.order.conf.Registry.Consul
+	13, // 11: cyi.app.service.order.conf.Auth.service_key:type_name -> cyi.app.service.order.conf.Auth.ServiceKeyEntry
+	14, // 12: cyi.app.service.order.conf.Server.HTTP.timeout:type_name -> google.protobuf.Duration
+	14, // 13: cyi.app.service.order.conf.Server.GRPC.timeout:type_name -> google.protobuf.Duration
+	14, // 14: cyi.app.service.order.conf.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
+	14, // 15: cyi.app.service.order.conf.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
+	16, // [16:16] is the sub-list for method output_type
+	16, // [16:16] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_conf_conf_proto_init() }
@@ -894,7 +975,7 @@ func file_conf_conf_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_conf_conf_proto_rawDesc), len(file_conf_conf_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -22,6 +22,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
@@ -60,7 +61,7 @@ func init() {
 	}
 }
 
-func newApp(logger log.Logger, gs *grpc.Server, reg registry.Registrar) *kratos.App {
+func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, reg registry.Registrar) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -69,6 +70,7 @@ func newApp(logger log.Logger, gs *grpc.Server, reg registry.Registrar) *kratos.
 		kratos.Logger(logger),
 		kratos.Server(
 			gs,
+			hs,
 		),
 		kratos.Registrar(reg),
 	)
@@ -119,7 +121,7 @@ func main() {
 	// 创建TracerProvider
 	tp := tr.NewTracerProvider(Name, bc.Trace.Endpoint)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, &cb, logger, tp, meteric)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, bc.Dtm, &cb, logger, tp, meteric)
 	if err != nil {
 		panic(err)
 	}

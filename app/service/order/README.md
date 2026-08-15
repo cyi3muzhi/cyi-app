@@ -1,6 +1,6 @@
 # Order 服务
 
-订单管理服务，提供订单创建、查询、支付功能，采用**状态模式**实现完整的订单状态机管理，支持正向流程和退款流程。
+订单管理服务，提供订单创建、查询、支付功能，采用**状态模式**实现完整的订单状态机管理，支持正向流程和退款流程。下单链路通过 **DTM（分布式事务管理器）TCC** 编排「预留库存 + 创建订单」，替代手写补偿。
 
 ## 技术栈
 
@@ -9,6 +9,7 @@
 | 框架 | Kratos v2 |
 | 语言 | Go 1.25 |
 | 数据库 | MySQL（GORM + GORM Gen）、Redis |
+| 分布式事务 | DTM（TCC 模式，屏障保证幂等/空补偿/悬挂） |
 | 服务发现 | Consul |
 | 分布式追踪 | Jaeger (OpenTelemetry) |
 | 监控 | Prometheus + Grafana |
@@ -19,7 +20,7 @@
 app/service/order/
 ├── cmd/
 │   └── order/
-│       ├── main.go              # gRPC 服务入口
+│       ├── main.go              # gRPC + DTM 分支回调 HTTP 服务入口
 │       ├── wire.go              # 依赖注入配置
 │       └── wire_gen.go          # Wire 生成文件
 ├── internal/
@@ -27,6 +28,7 @@ app/service/order/
 │   │   ├── biz.go                       # 业务层依赖注入
 │   │   ├── order.go                     # 订单聚合根
 │   │   ├── order_handle.go              # OrderUseCase 业务逻辑（含下单后投递超时取消任务）
+│   │   ├── order_tcc.go                 # DTM TCC 下单编排 + 分支处理（库存预留/建单/补偿）
 │   │   ├── order_handle_test.go         # OrderUseCase 单元测试
 │   │   ├── order_async.go               # OrderTimeoutTaskRepo 接口（投递超时取消延迟任务）
 │   │   ├── order_item.go                # 订单行项目实体
@@ -47,9 +49,10 @@ app/service/order/
 │   │   ├── conf.proto       # 配置定义
 │   │   └── conf.pb.go       # 配置结构体
 │   ├── data/
-│   │   ├── data.go          # 数据层初始化（MySQL、Redis、NATS、GORM Gen）
+│   │   ├── data.go          # 数据层初始化（MySQL、Redis、NATS、GORM Gen、DTM 配置）
 │   │   ├── asynq.go         # asynq 客户端 + 订单超时任务投递（延迟队列）
 │   │   ├── client_conn.go   # 商品/库存服务 gRPC 客户端连接
+│   │   ├── dtm_order.go     # DTM TCC 订单分支仓储（屏障事务内建单/取消）
 │   │   ├── order.go         # 订单数据访问
 │   │   ├── refund.go        # 退款单数据访问
 │   │   ├── product.go       # 商品仓储实现（远程调用商品服务）
@@ -68,8 +71,9 @@ app/service/order/
 │   │       ├── payment_log.go   # 支付日志模型
 │   │       └── order_refund.go  # 退款单模型
 │   ├── server/
-│   │   ├── server.go       # 服务器配置（Consul 注册/发现、gRPC/HTTP 服务器）
-│   │   └── grpc.go         # gRPC 服务注册
+│   │   ├── server.go       # 服务器配置（Consul 注册/发现、gRPC/DTM HTTP 服务器创建）
+│   │   ├── grpc.go         # gRPC 服务注册
+│   │   └── http.go         # DTM TCC 分支回调路由注册
 │   └── service/
 │       ├── service.go      # 服务层依赖注入
 │       └── order.go        # Order 服务（gRPC）
@@ -83,10 +87,14 @@ app/service/order/
 | 配置项 | 说明 | 默认值 |
 |--------|------|--------|
 | **Server** | | |
-| `server.http.addr` | HTTP 监听地址 | - |
-| `server.http.timeout` | HTTP 超时 | - |
+| `server.http.addr` | DTM 分支回调 HTTP 监听地址（**必须配置**，否则服务启动失败） | - |
+| `server.http.timeout` | DTM 分支回调 HTTP 超时 | - |
 | `server.grpc.addr` | gRPC 监听地址 | - |
 | `server.grpc.timeout` | gRPC 超时 | - |
+| **DTM（Consul）** | | |
+| `dtm.server` | DTM 服务地址（全局共享，如 `http://dtm:36789/api/dtmsvr`，**必须配置**） | - |
+| `dtm.busi_url` | DTM 回调本服务分支的地址（Confirm/Cancel 由 DTM 回调；本地+Docker 用 `http://host.docker.internal:18001`，全容器用 `http://service-order:8003`，**必须配置**） | - |
+| `dtm.local_url` | 本服务进程访问自己分支的地址（Try 由本服务发起，本地用 `http://localhost:18001`，**必须配置**） | - |
 | **Data** | | |
 | `data.database.driver` | 数据库驱动 | mysql |
 | `data.database.source` | MySQL 连接字符串 | - |
@@ -122,9 +130,27 @@ app/service/order/
 
 | UseCase | 职责 |
 |---------|------|
-| `OrderUseCase` | 订单管理（创建、查询、更新、支付、发货、物流轨迹查询），含商品校验、库存校验、预留库存、扣减库存、物流信息写入；下单成功后投递 30 分钟超时自动取消延迟任务（Asynq）；支付幂等 + 失败补偿库存 + 写支付流水；取消自动返还优惠券 |
+| `OrderUseCase` | 订单管理（创建、查询、更新、支付、发货、物流轨迹查询），含商品校验、库存校验、预留库存、扣减库存、物流信息写入；下单走 **DTM TCC 编排**（预留库存+创建订单，失败自动补偿）；下单成功后投递 30 分钟超时自动取消延迟任务（Asynq）；支付幂等 + 失败补偿库存 + 写支付流水；取消自动返还优惠券 |
 | `RefundUseCase` | 退款售后（仅退款）：用户申请退款（仅已支付/待发货订单）→ 订单进入退款中并生成退款单；管理端审核通过 → 退款完成并恢复库存；审核拒绝 → 订单恢复申请前状态；退款单列表查询（管理端全量/用户端按用户过滤） |
 | `OrderTimeoutTaskRepo` | 订单超时任务投递仓库（data 层基于 asynq 延迟队列实现：`ProcessIn(30min)` + 固定 TaskID 去重） |
+
+### DTM 分布式事务（下单 TCC）
+
+下单链路由 **DTM TCC** 编排，替代原先手写 Saga 补偿：
+
+```
+主流程（OrderUseCase.CreateTCC）
+ ├─ prepareOrder：校验商品上架、填充价格/名称快照、计算金额（只读）
+ └─ DTM TCC 编排（WaitResult=true，同步等待结果）
+     ├─ 分支1（库存）Try=预留库存（NATS）│ Confirm=空操作 │ Cancel=释放库存
+     └─ 分支2（订单）Try=创建订单（待支付）│ Confirm=空操作 │ Cancel=取消订单
+```
+
+- **补偿自动执行**：任一分支 Try 失败 → DTM 按序执行已成功分支的 Cancel（如建单失败自动释放已预留库存），事务状态持久化在 `dtm` 库，失败自动重试。
+- **屏障幂等**：分支回调走 DTM 屏障（`dtm_barrier.barrier` 表），保证重复请求、空补偿、悬挂等异常场景安全。
+- **分支回调**：DTM 通过 HTTP 调用本服务 `:8003` 上的 `/api/dtm/{stock,order}/{try,confirm,cancel}` 路由；业务失败返回 409（不重试），系统错误返回 500（自动重试）。
+- **通用封装**：分支注册/屏障事务/配置读取封装在公共包 [`pkg/dtm`](../../pkg/dtm/)（`RegisterTCCBranches`、`BranchHandler`、`GormFromTx`、`GetServerAddr` 等），其他服务接入 DTM 可直接复用。
+- 原有 `OrderUseCase.Create`（手写补偿）保留作为回退与单元测试对象。
 
 > 待付款订单超时自动取消链路：**订单服务**下单成功 → 投递 `delay:order_timeout_cancel` 延迟任务（30 分钟，固定 TaskID `order_timeout:{orderId}`）→ **task 服务**消费时通过 `GetOrder` 校验状态，仍为待付款才调 `CancelOrder`（userID=0 系统操作）自动取消，已支付/已取消等状态幂等跳过。共享类型定义于 `pkg/ordertask`。
 
@@ -134,7 +160,7 @@ app/service/order/
 
 | 接口 | 方法 | 说明 |
 |------|------|------|
-| `CreateOrder` | gRPC | 创建订单（支持立即购买和购物车结算两种模式；结算可携带收货地址快照写入物流表、运费） |
+| `CreateOrder` | gRPC | 创建订单（支持立即购买和购物车结算两种模式；结算可携带收货地址快照写入物流表、运费；内部走 DTM TCC 编排「预留库存+创建订单」，失败自动补偿） |
 | `UpdateOrder` | gRPC | 更新订单 |
 | `DeleteOrder` | gRPC | 删除订单 |
 | `GetOrder` | gRPC | 查询订单详情（含商品明细、物流信息） |
@@ -253,12 +279,29 @@ Pay/WaitShip → Refunding → Refunded        （审核通过：恢复库存，
 
 ## 运行方式
 
-### 本地开发
+### 本地开发（DTM 容器 + order 本地，推荐）
 
 ```bash
+# 1. 启动基础设施（含 DTM）：docker compose -f deploy/docker-compose/docker-compose.infra.yml up -d
+# 2. Consul 中 order 服务（CONSUL_PATHS=/develop/common,/develop/cyi-app/service/order）配置：
+server:
+  http:
+    addr: 0.0.0.0:18001
+    timeout: 30s
+dtm:
+  server: http://localhost:36789/api/dtmsvr        # 宿主机访问 docker 映射的 DTM
+  busi_url: http://host.docker.internal:18001      # DTM 容器回调宿主机上的 order
+  local_url: http://localhost:18001                # order 进程访问自己（Try 分支）
+
+# 3. 启动 order
 cd app/service/order
 go run cmd/order/main.go
 ```
+
+> **地址拆分原理**：TCC 的 Try 由 order 进程**自己调自己**（用 `local_url`，必须本机可达）；Confirm/Cancel 由 **DTM 服务回调**（用 `busi_url`，必须 DTM 可达）。两者网络视角不同，故拆成两个配置，本地联调时分别为 `localhost` 与 `host.docker.internal`。
+> **全容器部署**：`dtm.server: http://dtm:36789/api/dtmsvr`、`dtm.busi_url: http://service-order:8003`、`dtm.local_url: http://service-order:8003`（三者都在同一 docker 网络内互访）。
+
+> 下单依赖 DTM 服务可用；DTM 管理控制台地址 `http://localhost:36789/admin`（可查看事务执行/卡点状态）。
 
 ### 构建部署
 

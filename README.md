@@ -114,9 +114,10 @@
 | 基础设施 | 端口 | 说明 |
 |----------|------|------|
 | Consul | 8500 | 服务发现 & 配置管理 |
-| MySQL | 3306 | 主数据库 |
+| MySQL | 3306 | 主数据库（含 DTM 事务库 `dtm`、屏障库 `dtm_barrier`） |
 | Redis | 6379 | 缓存 & 任务队列 |
 | NATS | 4222 / 8222 | 消息队列 / 监控 |
+| DTM | 36789 | 分布式事务管理器（TCC/SAGA/二阶段消息），管理台 `/admin` |
 | Jaeger | 16686 | 分布式追踪 UI |
 | Prometheus | 9090 | 监控数据采集 |
 | Grafana | 3000 | 监控可视化 |
@@ -154,6 +155,8 @@ cyi-app/
 │   └── task/               # 异步任务服务（含定时任务）
 ├── pkg/                    # 公共包
 │   ├── blades/             # AI 助手封装（Agent、Session、SSE）
+│   │   └── client/          # blades 服务 gRPC 客户端封装（admin/BFF 复用）
+│   ├── dtm/                # DTM 分布式事务封装（TCC 分支回调注册、屏障事务、配置）
 │   ├── exporttask/         # 订单导出异步任务共享类型（admin 投递端 / task 消费端共用）
 │   ├── kratos/             # Kratos 扩展
 │   │   ├── client/         # gRPC 客户端 & 服务名常量
@@ -161,6 +164,7 @@ cyi-app/
 │   │   ├── event/          # NATS 事件定义（操作日志主题与结构）
 │   │   ├── log/            # Zerolog 日志适配器
 │   │   ├── server/         # 中间件 & 传输器（含操作日志中间件）
+│   │   │   └── httproute/  # 手动路由注册工具（SSE 流式聊天、multipart 上传、JWT 中间件）
 │   │   ├── service/        # 上下文 & 元数据
 │   │   └── tracing/        # Jaeger 追踪
 │   ├── upload/             # 文件上传安全校验（扩展名白名单、目录参数校验）

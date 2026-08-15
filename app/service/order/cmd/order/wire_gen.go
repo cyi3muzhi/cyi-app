@@ -26,7 +26,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, meter *middleware.Meter) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, dtm *conf.Dtm, registry *conf.Registry, logger log.Logger, tracerProvider *trace.TracerProvider, meter *middleware.Meter) (*kratos.App, func(), error) {
 	traceTracerProvider := provideTracerProvider(tracerProvider)
 	grpcServer := server.NewGRPCServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	db := data.NewDB(confData)
@@ -43,13 +43,20 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 	productRepo := data.NewProductRepo(dataData, logger)
 	stockRepo := data.NewStockRepo(dataData, logger)
 	orderTimeoutTaskRepo := data.NewOrderTimeoutTaskRepo(client, logger)
-	orderUseCase := biz.NewOrderUseCase(orderRepo, productRepo, stockRepo, orderTimeoutTaskRepo, logger)
+	dtmTCCRepo := data.NewDtmOrderStore(couponServiceClient, logger)
+	sqlDB := data.NewBarrierDB(db)
+	serverAddr := data.NewDtmServer(dtm)
+	busiURL := data.NewOrderBusiURL(dtm)
+	localURL := data.NewOrderLocalURL(dtm)
+	orderUseCase := biz.NewOrderUseCase(orderRepo, productRepo, stockRepo, orderTimeoutTaskRepo, dtmTCCRepo, sqlDB, serverAddr, busiURL, localURL, logger)
 	refundRepo := data.NewRefundRepo(dataData, logger)
 	refundUseCase := biz.NewRefundUseCase(refundRepo, orderUseCase, logger)
 	orderService := service.NewOrderService(orderUseCase, refundUseCase, logger)
 	server2 := server.NewServer(grpcServer, orderService)
+	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter)
+	server3 := server.NewHTTPServer(httpServer, orderUseCase)
 	registrar := server.NewRegistrar(registry)
-	app := newApp(logger, server2, registrar)
+	app := newApp(logger, server2, server3, registrar)
 	return app, func() {
 		cleanup()
 	}, nil

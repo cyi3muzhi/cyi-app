@@ -18,6 +18,9 @@ type mockOrderRepo struct {
 }
 
 func (m *mockOrderRepo) CreateOrder(_ context.Context, _ *Order) error { return nil }
+func (m *mockOrderRepo) GetOrderByOrderNo(_ context.Context, _ string) (*Order, error) {
+	return nil, nil
+}
 func (m *mockOrderRepo) UpdateOrder(ctx context.Context, in *Order) error {
 	if m.updateOrderFn != nil {
 		return m.updateOrderFn(ctx, in)

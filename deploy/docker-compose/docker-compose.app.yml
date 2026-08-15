@@ -96,6 +96,7 @@ services:
     restart: always
     ports:
       - "${ORDER_GRPC_PORT:-9101}:9000"
+      - "${ORDER_HTTP_PORT:-9104}:8003"  # DTM 分支回调 HTTP 端口
     volumes:
       - ../logs/order-service:/app/logs
     environment:

@@ -6,8 +6,10 @@ import (
 
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/go-kratos/kratos/v2/transport/http"
 
 	"github.com/google/wire"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	ts "cyi-app/pkg/kratos/server/transporter"
 
@@ -18,7 +20,26 @@ import (
 )
 
 // ProviderSet is server providers.
-var ProviderSet = wire.NewSet(NewServer, NewRegistrar, NewDiscovery, NewGRPCServerConf)
+var ProviderSet = wire.NewSet(NewServer, NewRegistrar, NewDiscovery, NewGRPCServerConf, NewHTTPServerConf, NewHTTPServer)
+
+// NewHTTPServerConf 创建 DTM 分支回调 HTTP 服务器
+// 仅用于 DTM TCC 分支回调，不对外暴露业务接口；不配置 ApiKey 鉴权（内网隔离）
+// 监听地址/超时取自 Consul 配置 server.http.*（需在 Consul 中为服务配置该段）
+func NewHTTPServerConf(c *conf.Server, tp trace.TracerProvider, logger log.Logger, metric *mid.Meter) *ts.HttpServer {
+	httpOpt := &ts.TransporterOpt{
+		Network: c.Http.Network,
+		Addr:    c.Http.Addr,
+		Timeout: c.Http.Timeout,
+	}
+	midOpt := &ts.MiddlewareOpt{
+		TracerProvider: tp,
+		Logger:         logger,
+		Meter:          metric,
+	}
+	srv := http.NewServer(ts.NewHttpServerOpt(httpOpt, midOpt)...)
+	srv.Handle("/metrics", promhttp.Handler())
+	return &ts.HttpServer{HttpServer: srv}
+}
 
 func NewGRPCServerConf(
 	c *conf.Server,

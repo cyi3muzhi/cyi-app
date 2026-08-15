@@ -52,84 +52,11 @@ func NewOrderRepo(data *Data, logger log.Logger) biz.OrderRepo {
 }
 
 func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
-	// couponUsed 标记优惠券是否已在事务中核销成功；
-	// 事务回滚后订单不落库，但营销侧优惠券已标记已用，需在事务外补偿释放
-	couponUsed := false
+	var couponUsed bool
 	err := curd.Q.Transaction(func(tx *curd.Query) error {
-		order := &mod.Order{
-			UserID:         in.UserID,
-			OrderNo:        in.OrderNo,
-			TotalPrice:     in.TotalPrice.Amount,
-			PayAmount:      in.PayAmount.Amount,
-			Freight:        in.Freight.Amount,
-			DiscountAmount: in.Discount.Amount,
-			Status:         int32(in.Status),
-			CouponRecordID: in.CouponRecordID,
-		}
-		if err := tx.Order.WithContext(ctx).Create(order); err != nil {
-			return errors.New("create order failed")
-		}
-		in.ID = order.ID
-
-		// 收货地址快照写入物流表（结算下单时携带地址才写入）
-		if in.Receiver != "" || in.Phone != "" || in.Address != "" {
-			if err := tx.OrderLogistics.WithContext(ctx).Create(&mod.OrderLogistics{
-				OrderID:  order.ID,
-				Receiver: in.Receiver,
-				Phone:    in.Phone,
-				Address:  in.Address,
-			}); err != nil {
-				r.log.Errorf("create order logistics failed, orderID=%d: %v", order.ID, err)
-				return errors.New("create order logistics failed")
-			}
-		}
-
-		// 如果有优惠券，调用 marketing 服务的 UseCoupon 核销并更新优惠金额
-		if in.CouponRecordID > 0 {
-			reply, err := r.data.mc.UseCoupon(ctx, &marketingRpc.UseCouponRequest{
-				RecordId:    in.CouponRecordID,
-				UserId:      in.UserID,
-				OrderId:     order.ID,
-				OrderAmount: order.TotalPrice,
-			})
-			if err != nil {
-				r.log.Errorf("use coupon failed, recordID=%d, orderID=%d: %v", in.CouponRecordID, order.ID, err)
-				return errors.New("use coupon failed")
-			}
-			couponUsed = true
-			discountAmount := reply.DiscountAmount
-			// 更新数据库中的优惠金额和实付金额
-			order.PayAmount = order.TotalPrice + order.Freight - discountAmount
-			order.DiscountAmount = discountAmount
-			if _, err := tx.Order.WithContext(ctx).Where(tx.Order.ID.Eq(order.ID)).
-				UpdateColumn(tx.Order.PayAmount, order.PayAmount); err != nil {
-				return errors.New("update order pay_amount failed")
-			}
-			if _, err := tx.Order.WithContext(ctx).Where(tx.Order.ID.Eq(order.ID)).
-				UpdateColumn(tx.Order.DiscountAmount, order.DiscountAmount); err != nil {
-				return errors.New("update order discount_amount failed")
-			}
-			// 回写到 biz.Order，让调用方感知实际优惠和实付金额
-			in.Discount.Amount = discountAmount
-			in.PayAmount.Amount = order.PayAmount
-		}
-
-		for _, item := range in.Items {
-			oi := &mod.OrderItem{
-				OrderID:     order.ID,
-				ProductID:   item.ProductID,
-				SkuID:       item.SkuID,
-				SpecDesc:    item.SpecDesc,
-				ProductName: item.ProductName,
-				Image:       item.Image,
-				Price:       item.Price,
-				Quantity:    item.Quantity,
-			}
-			if err := tx.OrderItem.WithContext(ctx).Create(oi); err != nil {
-				return errors.New("create order item failed")
-			}
-		}
-		return nil
+		var txErr error
+		couponUsed, txErr = createOrderTx(ctx, tx, in, r.data.mc, r.log)
+		return txErr
 	})
 	if err != nil && couponUsed {
 		// 事务回滚（订单不落库）但营销侧优惠券已核销：调用 marketing 服务 ReleaseCoupon 补偿释放
@@ -145,6 +72,102 @@ func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
 		}
 	}
 	return err
+}
+
+// createOrderTx 在指定事务内创建订单（订单主表 + 收货地址快照 + 优惠券核销 + 商品明细）
+// 返回是否已核销优惠券，供调用方在事务回滚后对营销侧做补偿；供 CreateOrder 与 DTM TCC 订单分支复用
+func createOrderTx(ctx context.Context, q *curd.Query, in *biz.Order, mc marketingRpc.CouponServiceClient, log *log.Helper) (couponUsed bool, err error) {
+	order := &mod.Order{
+		UserID:         in.UserID,
+		OrderNo:        in.OrderNo,
+		TotalPrice:     in.TotalPrice.Amount,
+		PayAmount:      in.PayAmount.Amount,
+		Freight:        in.Freight.Amount,
+		DiscountAmount: in.Discount.Amount,
+		Status:         int32(in.Status),
+		CouponRecordID: in.CouponRecordID,
+	}
+	if err := q.Order.WithContext(ctx).Create(order); err != nil {
+		return false, errors.New("create order failed")
+	}
+	in.ID = order.ID
+
+	// 收货地址快照写入物流表（结算下单时携带地址才写入）
+	if in.Receiver != "" || in.Phone != "" || in.Address != "" {
+		if err := q.OrderLogistics.WithContext(ctx).Create(&mod.OrderLogistics{
+			OrderID:  order.ID,
+			Receiver: in.Receiver,
+			Phone:    in.Phone,
+			Address:  in.Address,
+		}); err != nil {
+			log.Errorf("create order logistics failed, orderID=%d: %v", order.ID, err)
+			return false, errors.New("create order logistics failed")
+		}
+	}
+
+	// 如果有优惠券，调用 marketing 服务的 UseCoupon 核销并更新优惠金额
+	if in.CouponRecordID > 0 {
+		reply, err := mc.UseCoupon(ctx, &marketingRpc.UseCouponRequest{
+			RecordId:    in.CouponRecordID,
+			UserId:      in.UserID,
+			OrderId:     order.ID,
+			OrderAmount: order.TotalPrice,
+		})
+		if err != nil {
+			log.Errorf("use coupon failed, recordID=%d, orderID=%d: %v", in.CouponRecordID, order.ID, err)
+			return false, errors.New("use coupon failed")
+		}
+		couponUsed = true
+		discountAmount := reply.DiscountAmount
+		// 更新数据库中的优惠金额和实付金额
+		order.PayAmount = order.TotalPrice + order.Freight - discountAmount
+		order.DiscountAmount = discountAmount
+		if _, err := q.Order.WithContext(ctx).Where(q.Order.ID.Eq(order.ID)).
+			UpdateColumn(q.Order.PayAmount, order.PayAmount); err != nil {
+			return false, errors.New("update order pay_amount failed")
+		}
+		if _, err := q.Order.WithContext(ctx).Where(q.Order.ID.Eq(order.ID)).
+			UpdateColumn(q.Order.DiscountAmount, order.DiscountAmount); err != nil {
+			return false, errors.New("update order discount_amount failed")
+		}
+		// 回写到 biz.Order，让调用方感知实际优惠和实付金额
+		in.Discount.Amount = discountAmount
+		in.PayAmount.Amount = order.PayAmount
+	}
+
+	for _, item := range in.Items {
+		oi := &mod.OrderItem{
+			OrderID:     order.ID,
+			ProductID:   item.ProductID,
+			SkuID:       item.SkuID,
+			SpecDesc:    item.SpecDesc,
+			ProductName: item.ProductName,
+			Image:       item.Image,
+			Price:       item.Price,
+			Quantity:    item.Quantity,
+		}
+		if err := q.OrderItem.WithContext(ctx).Create(oi); err != nil {
+			return false, errors.New("create order item failed")
+		}
+	}
+	return couponUsed, nil
+}
+
+// GetOrderByOrderNo 按订单号查询订单（order_no 唯一索引），DTM TCC 下单成功后回查订单 ID
+func (r *orderRepo) GetOrderByOrderNo(ctx context.Context, orderNo string) (*biz.Order, error) {
+	order, err := curd.Order.WithContext(ctx).Where(curd.Order.OrderNo.Eq(orderNo)).First()
+	if err != nil {
+		return nil, err
+	}
+	if order == nil || order.ID == 0 {
+		return nil, errors.New("order not found")
+	}
+	return &biz.Order{
+		ID:      order.ID,
+		UserID:  order.UserID,
+		OrderNo: order.OrderNo,
+		Status:  v1.OrderStatus(order.Status),
+	}, nil
 }
 
 func (r *orderRepo) UpdateOrder(ctx context.Context, in *biz.Order) error {

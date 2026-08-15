@@ -2,11 +2,13 @@ package biz
 
 import (
 	"context"
+	"database/sql"
 	"sort"
 	"strings"
 	"time"
 
 	v1 "cyi-app/api/service/order/v1"
+	pkgdtm "cyi-app/pkg/dtm"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -40,6 +42,8 @@ type TrendItem struct {
 
 type OrderRepo interface {
 	CreateOrder(ctx context.Context, in *Order) error
+	// GetOrderByOrderNo 按订单号查询订单（order_no 唯一索引），DTM TCC 下单成功后回查订单 ID 使用
+	GetOrderByOrderNo(ctx context.Context, orderNo string) (*Order, error)
 	UpdateOrder(ctx context.Context, in *Order) error
 	GetOrder(ctx context.Context, id int64) (*Order, error)
 	// BatchGetOrder 批量获取订单详情（含商品明细），1 次查询替代 N 次 GetOrder
@@ -74,28 +78,24 @@ type OrderUseCase struct {
 	productRe ProductRepo
 	stockRe   StockRepo
 	taskRe    OrderTimeoutTaskRepo
+	dtmRepo   DtmTCCRepo // DTM TCC 订单分支仓储（屏障事务内操作）
+	barrierDB *sql.DB    // DTM 屏障表所在数据库连接（order 服务 MySQL）
+	dtmServer string     // DTM 服务地址（如 http://dtm:36789/api/dtmsvr）
+	busiURL   string     // DTM 回调本服务分支地址（如 http://host.docker.internal:18001）
+	localURL  string     // 本服务进程访问自己分支地址（如 http://localhost:18001）
 	log       *log.Helper
 	logger    log.Logger
 }
 
-func NewOrderUseCase(repo OrderRepo, productRe ProductRepo, stockRe StockRepo, taskRe OrderTimeoutTaskRepo, logger log.Logger) *OrderUseCase {
-	return &OrderUseCase{repo: repo, productRe: productRe, stockRe: stockRe, taskRe: taskRe, log: log.NewHelper(logger), logger: logger}
+func NewOrderUseCase(repo OrderRepo, productRe ProductRepo, stockRe StockRepo, taskRe OrderTimeoutTaskRepo, dtmRepo DtmTCCRepo, barrierDB *sql.DB, dtmServer pkgdtm.ServerAddr, busiURL pkgdtm.BusiURL, localURL pkgdtm.LocalURL, logger log.Logger) *OrderUseCase {
+	return &OrderUseCase{repo: repo, productRe: productRe, stockRe: stockRe, taskRe: taskRe, dtmRepo: dtmRepo, barrierDB: barrierDB, dtmServer: string(dtmServer), busiURL: string(busiURL), localURL: string(localURL), log: log.NewHelper(logger), logger: logger}
 }
 
-// Create 创建订单（两阶段：先校验全部商品，再统一预留库存）
-func (uc *OrderUseCase) Create(ctx context.Context, in *Order) error {
-	if len(in.Items) == 0 {
-		return v1.ErrorOrderProductEmpty("order item is empty")
-	}
-
-	// 阶段一：校验全部商品（查商品上架、查库存充足），先不扣库存
-	type stockInfo struct {
-		SkuID int64
-	}
-	stockInfos := make([]stockInfo, 0, len(in.Items))
-
+// prepareOrder 下单前置准备（只读）：校验商品存在且上架、填充价格/名称/图片快照、计算订单总金额和实付金额
+// 供 Create（手写补偿流程）与 CreateTCC（DTM 编排流程）共用
+func (uc *OrderUseCase) prepareOrder(ctx context.Context, in *Order) error {
 	for _, item := range in.Items {
-		// 1. 查找商品是否存在且上架
+		// 查找商品是否存在且上架
 		product, err := uc.productRe.GetProduct(ctx, item.ProductID)
 		if err != nil {
 			uc.log.Errorf("product not found: %v", err)
@@ -127,8 +127,38 @@ func (uc *OrderUseCase) Create(ctx context.Context, in *Order) error {
 				}
 			}
 		}
+	}
 
-		// 2. 检查库存是否充足（按SKU维度）
+	// 重新计算订单总金额
+	in.TotalPrice = Money{Amount: 0, Currency: "CNY"}
+	for _, item := range in.Items {
+		in.TotalPrice = in.TotalPrice.Add(item.SubTotal())
+	}
+
+	// 计算实付金额
+	in.PayAmount = in.TotalPrice.Add(in.Freight).Subtract(in.Discount)
+	return nil
+}
+
+// Create 创建订单（两阶段：先校验全部商品，再统一预留库存；预留失败或建单失败时手写 Saga 补偿释放库存）
+// 注意：生产链路已由 DTM TCC 编排（CreateTCC）替代，本方法保留作为回退与单元测试对象
+func (uc *OrderUseCase) Create(ctx context.Context, in *Order) error {
+	if len(in.Items) == 0 {
+		return v1.ErrorOrderProductEmpty("order item is empty")
+	}
+
+	// 阶段一：校验全部商品并计算金额（只读），再检查库存充足（先不扣库存）
+	if err := uc.prepareOrder(ctx, in); err != nil {
+		return err
+	}
+
+	type stockInfo struct {
+		SkuID int64
+	}
+	stockInfos := make([]stockInfo, 0, len(in.Items))
+
+	for _, item := range in.Items {
+		// 检查库存是否充足（按SKU维度）
 		skuID := item.SkuID
 		stock, err := uc.stockRe.GetStock(ctx, skuID)
 		if err != nil {
@@ -196,16 +226,7 @@ rollback:
 
 done:
 
-	// 3. 重新计算订单总金额
-	in.TotalPrice = Money{Amount: 0, Currency: "CNY"}
-	for _, item := range in.Items {
-		in.TotalPrice = in.TotalPrice.Add(item.SubTotal())
-	}
-
-	// 4. 计算实付金额
-	in.PayAmount = in.TotalPrice.Add(in.Freight).Subtract(in.Discount)
-
-	// 5. 设置状态并创建订单
+	// 设置状态并创建订单（金额已在 prepareOrder 计算）
 	in.SetStatus(v1.OrderStatus_WaitPay, uc.repo, uc.stockRe, uc.logger)
 	if err := uc.repo.CreateOrder(ctx, in); err != nil {
 		// Saga 补偿：订单创建失败，释放已预留库存
@@ -230,7 +251,7 @@ done:
 		return err
 	}
 
-	// 6. 投递订单超时取消延迟任务（30 分钟未支付自动取消）
+	// 投递订单超时取消延迟任务（30 分钟未支付自动取消）
 	// 投递失败不影响下单主流程：记录日志即可，消费端会先校验订单状态保证幂等
 	if err := uc.taskRe.EnqueueTimeoutCancel(ctx, in.ID); err != nil {
 		uc.log.Errorf("投递订单超时任务失败, orderID: %d: %v", in.ID, err)
