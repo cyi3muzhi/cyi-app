@@ -31,7 +31,7 @@ func RegisterOrderTools(r *ToolRegistry, client orderRpc.OrderClient) {
 			}
 			reply, err := client.ListOrder(ctx, req)
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			if reply.Total == 0 {
 				return "没有找到匹配的订单", nil
@@ -55,7 +55,7 @@ func RegisterOrderTools(r *ToolRegistry, client orderRpc.OrderClient) {
 		}) (string, error) {
 			reply, err := client.GetOrder(ctx, &orderRpc.GetOrderRequest{OrderId: input.OrderId})
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			var sb strings.Builder
 			sb.WriteString(fmt.Sprintf("订单 #%d 详情：\n\n", reply.OrderId))

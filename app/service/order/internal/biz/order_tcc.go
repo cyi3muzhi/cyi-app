@@ -81,7 +81,8 @@ func (uc *OrderUseCase) CreateTCC(ctx context.Context, in *Order) error {
 		})
 	if err != nil {
 		uc.log.Errorf("dtm tcc create order failed, gid=%s: %v", gid, err)
-		return err
+		// 将 DTM/resty 原始错误映射为 kratos error，避免 gRPC 透传（形如 rpc error: ...）给前端
+		return mapTCCError(err)
 	}
 
 	// 通过订单号回查订单 ID（订单号由主流程预生成，订单分支落库）
@@ -203,4 +204,24 @@ func (uc *OrderUseCase) DtmOrderCancel(ctx context.Context, barrier *dtmcli.Bran
 	return barrier.CallWithDB(uc.barrierDB, func(tx *sql.Tx) error {
 		return uc.dtmRepo.CancelInTx(ctx, tx, in.OrderNo)
 	})
+}
+
+// mapTCCError 将 DTM TCC 编排的失败错误映射为用户可感知的 kratos error：
+// TCC 分支 Try/Cancel 失败时，dtmcli 返回的是 resty/HTTP 原始错误（含分支回调响应的中文提示），
+// 直接返回会给 gRPC 透传成 "rpc error: ..." 前缀展示在前端，因此按失败原因归类为业务错误码
+func mapTCCError(err error) error {
+	if err == nil {
+		return nil
+	}
+	msg := err.Error()
+	switch {
+	case strings.Contains(msg, "库存不足"):
+		return v1.ErrorInsufficientStock("商品库存不足")
+	case strings.Contains(msg, "预留库存失败"):
+		return v1.ErrorStockOperationFailed("库存预留失败，请稍后重试")
+	case strings.Contains(msg, "释放库存失败"):
+		return v1.ErrorStockOperationFailed("库存释放失败，请稍后重试")
+	default:
+		return v1.ErrorStockOperationFailed("下单失败，请稍后重试")
+	}
 }

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 
+	kerrors "github.com/go-kratos/kratos/v2/errors"
 	"github.com/gorilla/websocket"
 )
 
@@ -16,7 +17,8 @@ func (s *CinInterface) AiChat(ctx context.Context, req *v1.AiChatRequest) (*v1.A
 	message, err := s.bc.Chat(ctx, req.Message, req.SessionId)
 	if err != nil {
 		s.log.Errorf("ai chat failed: %v", err)
-		return nil, err
+		// 不向客户端回显内部错误细节，统一返回友好错误，避免透传 gRPC 原始错误（形如 rpc error: ...）
+		return nil, kerrors.New(http.StatusServiceUnavailable, "AI_SERVICE_UNAVAILABLE", "AI 服务暂时不可用，请稍后重试")
 	}
 	return &v1.AiChatReply{
 		Message: message,

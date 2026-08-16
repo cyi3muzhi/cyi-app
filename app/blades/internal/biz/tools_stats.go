@@ -20,7 +20,7 @@ func RegisterStatsTools(r *ToolRegistry, oc orderRpc.OrderClient, uc userRpc.Use
 		func(ctx context.Context, _ struct{}) (string, error) {
 			reply, err := oc.OrderStats(ctx, &orderRpc.OrderStatsRequest{})
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			var sb strings.Builder
 			sb.WriteString("订单统计：\n\n")
@@ -46,7 +46,7 @@ func RegisterStatsTools(r *ToolRegistry, oc orderRpc.OrderClient, uc userRpc.Use
 			}
 			reply, err := oc.GetOrderTrend(ctx, &orderRpc.GetOrderTrendRequest{Days: days})
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			if len(reply.Items) == 0 {
 				return "暂无订单趋势数据", nil
@@ -67,15 +67,15 @@ func RegisterStatsTools(r *ToolRegistry, oc orderRpc.OrderClient, uc userRpc.Use
 		func(ctx context.Context, _ struct{}) (string, error) {
 			orderReply, err := oc.OrderStats(ctx, &orderRpc.OrderStatsRequest{})
 			if err != nil {
-				return "", fmt.Errorf("查询订单统计失败: %v", err)
+				return fmt.Sprintf("查询订单统计失败：%s", errText(err)), nil
 			}
 			userReply, err := uc.GetUserStats(ctx, &emptypb.Empty{})
 			if err != nil {
-				return "", fmt.Errorf("查询用户统计失败: %v", err)
+				return fmt.Sprintf("查询用户统计失败：%s", errText(err)), nil
 			}
 			productReply, err := pc.ListProduct(ctx, &productRpc.ListProductRequest{Page: 1, PageSize: 1})
 			if err != nil {
-				return "", fmt.Errorf("查询商品统计失败: %v", err)
+				return fmt.Sprintf("查询商品统计失败：%s", errText(err)), nil
 			}
 			var sb strings.Builder
 			sb.WriteString("今日运营概览：\n\n")
@@ -94,7 +94,7 @@ func RegisterStatsTools(r *ToolRegistry, oc orderRpc.OrderClient, uc userRpc.Use
 		func(ctx context.Context, _ struct{}) (string, error) {
 			reply, err := uc.GetUserStats(ctx, &emptypb.Empty{})
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			var sb strings.Builder
 			sb.WriteString("用户统计：\n\n")
@@ -118,7 +118,7 @@ func RegisterStatsTools(r *ToolRegistry, oc orderRpc.OrderClient, uc userRpc.Use
 			}
 			reply, err := uc.GetUser(ctx, &userRpc.GetUserRequest{Id: input.UserId})
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			u := reply.User
 			if u == nil {

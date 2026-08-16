@@ -16,7 +16,7 @@ func RegisterUserTools(r *ToolRegistry, client userRpc.UserClient) {
 		func(ctx context.Context, input struct{}) (string, error) {
 			reply, err := client.UserCount(ctx, &emptypb.Empty{})
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			return fmt.Sprintf("平台总用户数：%d", reply.Count), nil
 		})

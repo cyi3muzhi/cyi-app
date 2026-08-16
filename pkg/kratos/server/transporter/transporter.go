@@ -10,6 +10,7 @@ import (
 	mid "cyi-app/pkg/kratos/server/middleware"
 
 	"github.com/bytedance/sonic"
+	kerrors "github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
@@ -86,6 +87,7 @@ func NewHttpServerOpt(httpOpt *TransporterOpt, midOpt *MiddlewareOpt) []khttp.Se
 	opts := []khttp.ServerOption{
 		khttp.Middleware(middlewares...),
 		khttp.ResponseEncoder(khttp.DefaultResponseEncoder),
+		khttp.ErrorEncoder(friendlyErrorEncoder),
 		khttp.RequestDecoder(defaultRequestDecoder),
 		khttp.Filter(handlers.CORS(
 			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
@@ -212,6 +214,44 @@ func defaultRequestDecoder(r *http.Request, v interface{}) error {
 		r.Header.Set("Content-Type", "application/json")
 	}
 	return khttp.DefaultRequestDecoder(r, v)
+}
+
+// friendlyErrorEncoder Kratos HTTP 统一错误编码器：
+//   - 业务错误（kratos error，含业务服务经 gRPC 编码传来的）：原样输出结构化 JSON
+//     {code, reason, message}，前端可展示 message 中的友好文案
+//   - 未知错误（网络、内部异常等，reason=Unknown）：替换为通用文案，避免把
+//     "rpc error: ..." 等内部细节透传给前端
+func friendlyErrorEncoder(w http.ResponseWriter, r *http.Request, err error) {
+	se := kerrors.FromError(err)
+	if se == nil {
+		se = kerrors.New(http.StatusInternalServerError, "INTERNAL_ERROR", "系统繁忙，请稍后重试")
+	}
+	// 非业务错误：不暴露内部错误细节
+	if se.Reason == kerrors.UnknownReason {
+		se.Reason = "INTERNAL_ERROR"
+		se.Message = "系统繁忙，请稍后重试"
+	}
+	codec, _ := khttp.CodecForRequest(r, "Accept")
+	body, merr := codec.Marshal(se)
+	if merr != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", contentType(codec.Name()))
+	if se.Code > 0 {
+		w.WriteHeader(int(se.Code))
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+	_, _ = w.Write(body)
+}
+
+// contentType 将 codec 名称规范化为 HTTP Content-Type（application/json 等）
+func contentType(name string) string {
+	if strings.HasPrefix(name, "application/") {
+		return name
+	}
+	return "application/" + name
 }
 
 // corsAllowedOrigins 返回 CORS 允许的跨域来源

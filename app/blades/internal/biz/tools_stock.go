@@ -40,8 +40,8 @@ func RegisterStockTools(r *ToolRegistry, sc productRpc.StockClient, pc productRp
 					input.SkuID, skuStock), nil
 			}
 
-			// 其他错误（网络、超时等）返回错误
-			return "", err
+			// 其他错误（网络、超时等）返回友好提示，避免向用户展示 gRPC 原始错误
+			return errText(err), nil
 		})
 	r.Add(t1)
 }

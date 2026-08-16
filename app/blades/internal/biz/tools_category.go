@@ -17,7 +17,7 @@ func RegisterCategoryTools(r *ToolRegistry, client productRpc.CategoryClient) {
 		func(ctx context.Context, _ struct{}) (string, error) {
 			reply, err := client.ListCategoryTree(ctx, &productRpc.ListCategoryTreeRequest{})
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			if len(reply.Items) == 0 {
 				return "暂无商品分类", nil

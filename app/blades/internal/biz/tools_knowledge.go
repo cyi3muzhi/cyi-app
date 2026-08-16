@@ -14,7 +14,7 @@ func RegisterKnowledgeTools(r *ToolRegistry, rag *RAGEngine) {
 		}) (string, error) {
 			results, err := rag.Retrieve(ctx, "", input.Query, 3)
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			if len(results) == 0 {
 				return "知识库中没有找到相关信息", nil

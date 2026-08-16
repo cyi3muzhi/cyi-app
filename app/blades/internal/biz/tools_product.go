@@ -26,7 +26,7 @@ func RegisterProductTools(r *ToolRegistry, client productRpc.ProductClient) {
 				PageSize:   input.PageSize,
 			})
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			if reply.Total == 0 {
 				return "没有找到匹配的商品", nil
@@ -53,7 +53,7 @@ func RegisterProductTools(r *ToolRegistry, client productRpc.ProductClient) {
 		}) (string, error) {
 			reply, err := client.GetProduct(ctx, &productRpc.GetProductRequest{ProductId: input.ProductID})
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			p := reply.Product
 			var sb strings.Builder

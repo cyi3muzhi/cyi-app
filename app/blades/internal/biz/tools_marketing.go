@@ -36,7 +36,7 @@ func RegisterMarketingTools(r *ToolRegistry, client marketingRpc.CouponServiceCl
 				Keyword:  input.Keyword,
 			})
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			if reply.Total == 0 {
 				return "没有找到匹配的优惠券", nil
@@ -62,7 +62,7 @@ func RegisterMarketingTools(r *ToolRegistry, client marketingRpc.CouponServiceCl
 		func(ctx context.Context, _ struct{}) (string, error) {
 			reply, err := client.CouponStats(ctx, &marketingRpc.CouponStatsRequest{})
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			return fmt.Sprintf("优惠券统计：\n\n| 指标 | 数量 |\n|---|---|\n| 优惠券总数 | %d |\n| 进行中 | %d |\n| 已发放 | %d 张 |\n| 已过期 | %d |\n",
 				reply.TotalCount, reply.ActiveCount, reply.IssuedCount, reply.ExpiredCount), nil
@@ -93,7 +93,7 @@ func RegisterMarketingTools(r *ToolRegistry, client marketingRpc.CouponServiceCl
 				PageSize: pageSize,
 			})
 			if err != nil {
-				return "", err
+				return errText(err), nil
 			}
 			if reply.Total == 0 {
 				return "该优惠券暂无发放记录", nil
