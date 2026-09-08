@@ -44,6 +44,8 @@ type OrderRepo interface {
 	CreateOrder(ctx context.Context, in *Order) error
 	// GetOrderByOrderNo 按订单号查询订单（order_no 唯一索引），DTM TCC 下单成功后回查订单 ID 使用
 	GetOrderByOrderNo(ctx context.Context, orderNo string) (*Order, error)
+	// GetOrderByIdempotencyKey 按客户端幂等键查询订单（下单去重）；未命中返回 (nil, nil)
+	GetOrderByIdempotencyKey(ctx context.Context, userID int64, key string) (*Order, error)
 	UpdateOrder(ctx context.Context, in *Order) error
 	GetOrder(ctx context.Context, id int64) (*Order, error)
 	// BatchGetOrder 批量获取订单详情（含商品明细），1 次查询替代 N 次 GetOrder
@@ -129,11 +131,14 @@ func (uc *OrderUseCase) prepareOrder(ctx context.Context, in *Order) error {
 		}
 	}
 
-	// 重新计算订单总金额
+	// 重新计算订单总金额（服务端以商品服务实时价格重算，忽略客户端传入的价格/小计）
 	in.TotalPrice = Money{Amount: 0, Currency: "CNY"}
 	for _, item := range in.Items {
 		in.TotalPrice = in.TotalPrice.Add(item.SubTotal())
 	}
+
+	// 运费由服务端按统一规则重算（满 199 元免运费，否则 10 元），不信任客户端传入的运费
+	in.Freight = Money{Amount: CalcFreight(in.TotalPrice.Amount), Currency: "CNY"}
 
 	// 计算实付金额
 	in.PayAmount = in.TotalPrice.Add(in.Freight).Subtract(in.Discount)
@@ -145,6 +150,20 @@ func (uc *OrderUseCase) prepareOrder(ctx context.Context, in *Order) error {
 func (uc *OrderUseCase) Create(ctx context.Context, in *Order) error {
 	if len(in.Items) == 0 {
 		return v1.ErrorOrderProductEmpty("order item is empty")
+	}
+
+	// 客户端幂等键去重（与 CreateTCC 语义一致）：重复提交直接返回首次创建的订单
+	if in.IdempotencyKey != "" {
+		exist, err := uc.repo.GetOrderByIdempotencyKey(ctx, in.UserID, in.IdempotencyKey)
+		if err != nil {
+			return err
+		}
+		if exist != nil {
+			uc.log.Infof("幂等命中已存在订单，重复下单直接返回, userID: %d, key: %s, orderID: %d", in.UserID, in.IdempotencyKey, exist.ID)
+			in.ID = exist.ID
+			in.OrderNo = exist.OrderNo
+			return nil
+		}
 	}
 
 	// 阶段一：校验全部商品并计算金额（只读），再检查库存充足（先不扣库存）
@@ -176,7 +195,12 @@ func (uc *OrderUseCase) Create(ctx context.Context, in *Order) error {
 	}
 
 	// 阶段二：全部校验通过，统一预留库存
-	// 预留时重新读取最新版本号，避免阶段一记录的版本过期
+	// 预留使用确定性屏障键 gid=tcc-{orderNo}（与 DTM TCC 流程同一规则）：
+	// product 侧屏障事务保证重复请求/重试不重复预留；补偿释放用 op=cancel，未成功预留的 SKU 为空补偿自动跳过
+	if in.OrderNo == "" {
+		in.GenerateOrderNo()
+	}
+	// 预留时重新读取最新库存，避免阶段一记录的库存过期
 	// 预留失败或库存不足时，释放已预留并返回对应错误
 	var reserveErr error
 	reserved := make([]int, 0, len(stockInfos))
@@ -193,7 +217,8 @@ func (uc *OrderUseCase) Create(ctx context.Context, in *Order) error {
 			reserveErr = v1.ErrorInsufficientStock("insufficient stock")
 			goto rollback
 		}
-		if _, err = uc.stockRe.ReserveStock(ctx, si.SkuID, in.Items[i].Quantity, latestStock.Version); err != nil {
+		key := tccStockKey(in.OrderNo, si.SkuID, "try")
+		if err = uc.stockRe.ReserveStock(ctx, key, si.SkuID, in.Items[i].Quantity); err != nil {
 			uc.log.Errorf("reserve stock failed for skuID %d: %v", si.SkuID, err)
 			reserveErr = v1.ErrorStockOperationFailed("reserve stock failed, please retry")
 			goto rollback
@@ -204,17 +229,13 @@ func (uc *OrderUseCase) Create(ctx context.Context, in *Order) error {
 	goto done
 
 rollback:
-	// 释放已成功预留的库存，失败时最多重试3次
+	// 释放已成功预留的库存（cancel 屏障键；失败重试由屏障保证幂等）
 	for _, ri := range reserved {
 		skuID := stockInfos[ri].SkuID
 		qty := in.Items[ri].Quantity
+		key := tccStockKey(in.OrderNo, skuID, "cancel")
 		for retry := 0; retry < 3; retry++ {
-			s, e := uc.stockRe.GetStock(ctx, skuID)
-			if e != nil {
-				uc.log.Errorf("rollback get stock failed for skuID %d: %v", skuID, e)
-				continue
-			}
-			if _, e = uc.stockRe.ReleaseStock(ctx, skuID, qty, s.Version); e != nil {
+			if e := uc.stockRe.ReleaseStock(ctx, key, skuID, qty); e != nil {
 				uc.log.Errorf("rollback release stock failed for skuID %d (retry %d): %v", skuID, retry, e)
 				continue
 			}
@@ -229,18 +250,14 @@ done:
 	// 设置状态并创建订单（金额已在 prepareOrder 计算）
 	in.SetStatus(v1.OrderStatus_WaitPay, uc.repo, uc.stockRe, uc.logger)
 	if err := uc.repo.CreateOrder(ctx, in); err != nil {
-		// Saga 补偿：订单创建失败，释放已预留库存
+		// Saga 补偿：订单创建失败，释放已预留库存（cancel 屏障键幂等）
 		uc.log.Errorf("order creation failed after stock reserved, executing saga compensation: %v", err)
 		for _, ri := range reserved {
 			skuID := stockInfos[ri].SkuID
 			qty := in.Items[ri].Quantity
+			key := tccStockKey(in.OrderNo, skuID, "cancel")
 			for retry := 0; retry < 3; retry++ {
-				s, e := uc.stockRe.GetStock(ctx, skuID)
-				if e != nil {
-					uc.log.Errorf("saga compensate get stock failed for skuID %d: %v", skuID, e)
-					continue
-				}
-				if _, e = uc.stockRe.ReleaseStock(ctx, skuID, qty, s.Version); e != nil {
+				if e := uc.stockRe.ReleaseStock(ctx, key, skuID, qty); e != nil {
 					uc.log.Errorf("saga compensate release stock failed for skuID %d (retry %d): %v", skuID, retry, e)
 					continue
 				}
@@ -317,8 +334,14 @@ func (uc *OrderUseCase) BatchGet(ctx context.Context, ids []int64) ([]*Order, er
 	return uc.repo.BatchGetOrder(ctx, ids)
 }
 
-// Pay 支付订单（先扣库存，后改状态，避免已支付未扣库存的数据不一致）
-// 幂等：已支付（status=2/3）订单重复支付直接返回成功，避免重复扣库存
+// Pay 支付订单：扣减库存（屏障幂等）-> 状态机 CAS 流转 -> 支付流水
+// 幂等与并发一致性说明：
+//   - 已支付/待发货等终态重复支付直接返回成功
+//   - 库存扣减使用确定性屏障键 gid=pay-{orderNo}、branch=stock-{skuID}、op=try，经 NATS 在 product 侧
+//     屏障事务执行：同一订单重试支付时，已扣成功的 SKU 由屏障自动跳过，不会重复扣减
+//   - 扣减中途失败不做局部回滚（屏障键与「终态对账」取代手工补偿）：调用方可直接重试支付继续完成扣减；
+//     若用户取消/超时取消先到，取消终态对账会用 pay gid 的 cancel 屏障幂等退还已扣部分
+//   - 状态 CAS 失败（并发取消获胜）：库存已扣但订单为取消终态，执行终态对账把库存退还到一致状态
 func (uc *OrderUseCase) Pay(ctx context.Context, orderID int64, userID int64) error {
 	order, err := uc.Get(ctx, orderID)
 	if err != nil {
@@ -334,26 +357,22 @@ func (uc *OrderUseCase) Pay(ctx context.Context, orderID int64, userID int64) er
 		return nil
 	}
 
-	// 1. 先扣减库存（Total-、Reserved-、乐观锁，按SKU维度）
-	// 库存扣减失败时订单状态不变，调用方可安全重试
+	// 1. 逐 SKU 扣减预留库存（Total-、Reserved-，product 侧条件更新保证 reserved 充足）
+	// 失败直接返回：订单状态未变，重试支付时屏障键去重；取消对账负责已扣部分的退还
 	for _, item := range order.Items {
-		skuID := item.SkuID
-		stock, err := uc.stockRe.GetStock(ctx, skuID)
-		if err != nil {
-			uc.log.Errorf("stock not found for skuID %d: %v", skuID, err)
-			return v1.ErrorProductNotAvailable("stock not found")
-		}
-		_, err = uc.stockRe.DeductStock(ctx, skuID, item.Quantity, stock.Version)
-		if err != nil {
-			uc.log.Errorf("deduct stock failed for skuID %d: %v", skuID, err)
+		key := payStockKey(order.OrderNo, item.SkuID, "try")
+		if err := callStockOpWithRetry(ctx, uc.log, "支付扣减", key, item.SkuID, item.Quantity, uc.stockRe.DeductStock); err != nil {
+			uc.log.WithContext(ctx).Errorf("支付扣减库存失败, orderNo: %s, skuID: %d: %v（可重试支付，已扣 SKU 由屏障幂等跳过）", order.OrderNo, item.SkuID, err)
 			return v1.ErrorStockOperationFailed("deduct stock failed")
 		}
 	}
 
-	// 2. 再更新订单状态（条件更新保证原子性；失败说明状态已被并发变更，如超时取消，需补偿库存）
+	// 2. 状态机 CAS 流转已支付；失败（并发取消/退款终态）按终态对账退还库存
 	if err := order.Pay(ctx); err != nil {
-		uc.log.Errorf("order pay failed after stock deducted, compensating stock, orderID: %d: %v", orderID, err)
-		uc.compensateDeductedStock(ctx, order)
+		uc.log.Errorf("order pay failed after stock deducted, reconciling stock to cancel terminal, orderID: %d: %v", orderID, err)
+		if recErr := reconcileCancelStock(ctx, uc.stockRe, uc.log, order); recErr != nil {
+			uc.log.Errorf("pay failure terminal reconcile failed, orderID: %d: %v（库存已扣但对账失败，需补偿任务/人工重试）", orderID, recErr)
+		}
 		return err
 	}
 
@@ -368,26 +387,6 @@ func (uc *OrderUseCase) Pay(ctx context.Context, orderID int64, userID int64) er
 		uc.log.Errorf("create payment log failed, orderID: %d: %v", orderID, err)
 	}
 	return nil
-}
-
-// compensateDeductedStock 支付状态更新失败时，补偿已扣减的库存（AddStock 为 DeductStock 的逆操作）
-func (uc *OrderUseCase) compensateDeductedStock(ctx context.Context, order *Order) {
-	for _, item := range order.Items {
-		skuID := item.SkuID
-		for retry := 0; retry < 3; retry++ {
-			s, e := uc.stockRe.GetStock(ctx, skuID)
-			if e != nil {
-				uc.log.Errorf("compensate get stock failed for skuID %d: %v", skuID, e)
-				continue
-			}
-			if _, e = uc.stockRe.AddStock(ctx, skuID, item.Quantity, s.Version); e != nil {
-				uc.log.Errorf("compensate add stock failed for skuID %d (retry %d): %v", skuID, retry, e)
-				continue
-			}
-			uc.log.Infof("compensate add stock success for skuID %d, qty %d", skuID, item.Quantity)
-			break
-		}
-	}
 }
 
 // Ship 发货（管理端调用）：状态流转（待发货 -> 已发货）+ 写入物流信息和发货时间

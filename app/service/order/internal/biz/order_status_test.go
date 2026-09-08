@@ -5,20 +5,25 @@ import (
 	"io"
 	"testing"
 
-	productRpc "cyi-app/api/service/product/v1"
 	v1 "cyi-app/api/service/order/v1"
+	productRpc "cyi-app/api/service/product/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
 
 // mockOrderRepo 用于状态机测试的内存 mock 仓储
 type mockOrderRepo struct {
-	updateOrderFn     func(ctx context.Context, in *Order) error
-	updateStatusIfFn  func(ctx context.Context, id int64, expectStatus, newStatus int32) error
+	updateOrderFn    func(ctx context.Context, in *Order) error
+	updateStatusIfFn func(ctx context.Context, id int64, expectStatus, newStatus int32) error
 }
 
 func (m *mockOrderRepo) CreateOrder(_ context.Context, _ *Order) error { return nil }
 func (m *mockOrderRepo) GetOrderByOrderNo(_ context.Context, _ string) (*Order, error) {
+	return nil, nil
+}
+
+// GetOrderByIdempotencyKey 幂等键查询（状态机测试不涉及下单去重，默认未命中）
+func (m *mockOrderRepo) GetOrderByIdempotencyKey(_ context.Context, _ int64, _ string) (*Order, error) {
 	return nil, nil
 }
 func (m *mockOrderRepo) UpdateOrder(ctx context.Context, in *Order) error {
@@ -90,20 +95,19 @@ func (m *mockStockRepo) GetStock(_ context.Context, _ int64) (*productRpc.GetSto
 		Total:     100,
 		Available: 50,
 		Reserved:  50,
-		Version:   1,
 	}, nil
 }
-func (m *mockStockRepo) ReserveStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
-	return 2, nil
+func (m *mockStockRepo) ReserveStock(_ context.Context, _ StockOpKey, _ int64, _ int32) error {
+	return nil
 }
-func (m *mockStockRepo) DeductStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
-	return 2, nil
+func (m *mockStockRepo) DeductStock(_ context.Context, _ StockOpKey, _ int64, _ int32) error {
+	return nil
 }
-func (m *mockStockRepo) ReleaseStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
-	return 2, nil
+func (m *mockStockRepo) ReleaseStock(_ context.Context, _ StockOpKey, _ int64, _ int32) error {
+	return nil
 }
-func (m *mockStockRepo) AddStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
-	return 2, nil
+func (m *mockStockRepo) AddStock(_ context.Context, _ StockOpKey, _ int64, _ int32) error {
+	return nil
 }
 
 // createTestOrder 创建指定状态的订单并初始化状态处理器

@@ -16,8 +16,6 @@ type Stock struct {
 	Available int32 `json:"available" gorm:"not null;default:0;comment:可用库存数量"`
 	// 预留库存（待支付订单锁定）
 	Reserved int32 `json:"reserved" gorm:"not null;default:0;comment:预留库存数量"`
-	// 版本号（乐观锁，防超卖）
-	Version int32 `json:"version" gorm:"not null;default:0;comment:乐观锁版本号"`
 }
 
 type IStock interface {

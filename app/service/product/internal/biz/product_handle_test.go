@@ -45,10 +45,10 @@ type mockStockRepo struct {
 	updateStockBySkuID     func(ctx context.Context, productID, skuID int64, total int32) error
 	deleteStockByProductID func(ctx context.Context, productID int64) error
 	deleteStockBySkuID     func(ctx context.Context, skuID int64) error
-	reserveStock           func(ctx context.Context, skuID int64, count, version int32) (int32, error)
-	deductStock            func(ctx context.Context, skuID int64, count, version int32) (int32, error)
-	releaseStock           func(ctx context.Context, skuID int64, count, version int32) (int32, error)
-	addStock               func(ctx context.Context, skuID int64, count, version int32) (int32, error)
+	reserveStock           func(ctx context.Context, key StockOpKey, skuID int64, count int32) error
+	deductStock            func(ctx context.Context, key StockOpKey, skuID int64, count int32) error
+	releaseStock           func(ctx context.Context, key StockOpKey, skuID int64, count int32) error
+	addStock               func(ctx context.Context, key StockOpKey, skuID int64, count int32) error
 	getStock               func(ctx context.Context, skuID int64) (*Stock, error)
 	getStocksBySkuIDs      func(ctx context.Context, skuIDs []int64) (map[int64]*Stock, error)
 }
@@ -68,17 +68,17 @@ func (m *mockStockRepo) DeleteStockByProductID(ctx context.Context, productID in
 func (m *mockStockRepo) DeleteStockBySkuID(ctx context.Context, skuID int64) error {
 	return m.deleteStockBySkuID(ctx, skuID)
 }
-func (m *mockStockRepo) ReserveStock(ctx context.Context, skuID int64, count, version int32) (int32, error) {
-	return m.reserveStock(ctx, skuID, count, version)
+func (m *mockStockRepo) ReserveStock(ctx context.Context, key StockOpKey, skuID int64, count int32) error {
+	return m.reserveStock(ctx, key, skuID, count)
 }
-func (m *mockStockRepo) DeductStock(ctx context.Context, skuID int64, count, version int32) (int32, error) {
-	return m.deductStock(ctx, skuID, count, version)
+func (m *mockStockRepo) DeductStock(ctx context.Context, key StockOpKey, skuID int64, count int32) error {
+	return m.deductStock(ctx, key, skuID, count)
 }
-func (m *mockStockRepo) ReleaseStock(ctx context.Context, skuID int64, count, version int32) (int32, error) {
-	return m.releaseStock(ctx, skuID, count, version)
+func (m *mockStockRepo) ReleaseStock(ctx context.Context, key StockOpKey, skuID int64, count int32) error {
+	return m.releaseStock(ctx, key, skuID, count)
 }
-func (m *mockStockRepo) AddStock(ctx context.Context, skuID int64, count, version int32) (int32, error) {
-	return m.addStock(ctx, skuID, count, version)
+func (m *mockStockRepo) AddStock(ctx context.Context, key StockOpKey, skuID int64, count int32) error {
+	return m.addStock(ctx, key, skuID, count)
 }
 func (m *mockStockRepo) GetStock(ctx context.Context, skuID int64) (*Stock, error) {
 	return m.getStock(ctx, skuID)

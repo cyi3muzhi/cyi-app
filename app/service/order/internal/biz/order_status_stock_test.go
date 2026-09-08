@@ -6,8 +6,8 @@ import (
 	"io"
 	"testing"
 
-	productRpc "cyi-app/api/service/product/v1"
 	v1 "cyi-app/api/service/order/v1"
+	productRpc "cyi-app/api/service/product/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/stretchr/testify/assert"
@@ -19,9 +19,9 @@ import (
 
 // mockStockRepoWithErrors 用于测试库存操作错误的 mock
 type mockStockRepoWithErrors struct {
-	getStockErr    error
+	getStockErr     error
 	releaseStockErr error
-	addStockErr    error
+	addStockErr     error
 }
 
 func (m *mockStockRepoWithErrors) GetStock(_ context.Context, _ int64) (*productRpc.GetStockReply, error) {
@@ -32,33 +32,33 @@ func (m *mockStockRepoWithErrors) GetStock(_ context.Context, _ int64) (*product
 		Total:     100,
 		Available: 50,
 		Reserved:  50,
-		Version:   1,
 	}, nil
 }
 
-func (m *mockStockRepoWithErrors) ReserveStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
-	return 2, nil
+func (m *mockStockRepoWithErrors) ReserveStock(_ context.Context, _ StockOpKey, _ int64, _ int32) error {
+	return nil
 }
 
-func (m *mockStockRepoWithErrors) DeductStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
-	return 2, nil
+func (m *mockStockRepoWithErrors) DeductStock(_ context.Context, _ StockOpKey, _ int64, _ int32) error {
+	return nil
 }
 
-func (m *mockStockRepoWithErrors) ReleaseStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
+func (m *mockStockRepoWithErrors) ReleaseStock(_ context.Context, _ StockOpKey, _ int64, _ int32) error {
 	if m.releaseStockErr != nil {
-		return 0, m.releaseStockErr
+		return m.releaseStockErr
 	}
-	return 2, nil
+	return nil
 }
 
-func (m *mockStockRepoWithErrors) AddStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
+func (m *mockStockRepoWithErrors) AddStock(_ context.Context, _ StockOpKey, _ int64, _ int32) error {
 	if m.addStockErr != nil {
-		return 0, m.addStockErr
+		return m.addStockErr
 	}
-	return 2, nil
+	return nil
 }
 
-// TestWaitPay_Cancel_StockReleaseFailure 测试取消订单时库存释放失败
+// TestWaitPay_Cancel_StockReleaseFailure 状态机先行：库存释放失败时订单仍进入取消终态
+// 新语义：CAS 先抢占取消终态，库存对账失败仅告警（屏障幂等键支持补偿任务/人工安全重跑），不阻断取消
 func TestWaitPay_Cancel_StockReleaseFailure(t *testing.T) {
 	repo := &mockOrderRepo{}
 	stockRepo := &mockStockRepoWithErrors{
@@ -75,14 +75,13 @@ func TestWaitPay_Cancel_StockReleaseFailure(t *testing.T) {
 	}
 	order.SetStatus(order.Status, repo, stockRepo, log.NewStdLogger(io.Discard))
 
-	// 取消订单应该失败，因为库存释放失败
+	// 取消成功（状态机先行）；库存对账失败仅记录日志，不返回错误
 	err := order.Cancel(context.Background())
-	assert.Error(t, err, "库存释放失败时应返回错误")
-	assert.Contains(t, err.Error(), "库存服务不可用", "错误消息应包含原始错误")
-	assertStatus(t, order.Status, v1.OrderStatus_WaitPay)
+	assert.NoError(t, err, "库存对账失败不应阻断取消终态")
+	assertStatus(t, order.Status, v1.OrderStatus_Cancel)
 }
 
-// TestPay_Cancel_StockReleaseFailure 测试已支付订单取消时库存释放失败
+// TestPay_Cancel_StockReleaseFailure 已支付取消：库存对账失败时订单仍进入取消终态
 func TestPay_Cancel_StockReleaseFailure(t *testing.T) {
 	repo := &mockOrderRepo{}
 	stockRepo := &mockStockRepoWithErrors{
@@ -99,13 +98,13 @@ func TestPay_Cancel_StockReleaseFailure(t *testing.T) {
 	}
 	order.SetStatus(order.Status, repo, stockRepo, log.NewStdLogger(io.Discard))
 
-	// 取消订单应该失败，因为库存释放失败
+	// 取消成功（状态机先行）；库存对账失败仅告警
 	err := order.Cancel(context.Background())
-	assert.Error(t, err, "库存释放失败时应返回错误")
-	assertStatus(t, order.Status, v1.OrderStatus_Pay)
+	assert.NoError(t, err, "库存对账失败不应阻断取消终态")
+	assertStatus(t, order.Status, v1.OrderStatus_Cancel)
 }
 
-// TestPay_Cancel_AddStockFailure 测试已支付订单取消时增加库存失败
+// TestPay_Cancel_AddStockFailure 已支付取消：逆扣减退还失败时订单仍进入取消终态（可后续补偿重跑）
 func TestPay_Cancel_AddStockFailure(t *testing.T) {
 	repo := &mockOrderRepo{}
 	stockRepo := &mockStockRepoWithErrors{
@@ -122,15 +121,15 @@ func TestPay_Cancel_AddStockFailure(t *testing.T) {
 	}
 	order.SetStatus(order.Status, repo, stockRepo, log.NewStdLogger(io.Discard))
 
-	// 取消订单应该失败，因为增加库存失败
+	// 取消成功（状态机先行）；逆扣减失败仅告警，屏障幂等保证后续重跑不会重复退还
 	err := order.Cancel(context.Background())
-	assert.Error(t, err, "增加库存失败时应返回错误")
-	assert.Contains(t, err.Error(), "增加库存失败", "错误消息应包含原始错误")
-	assertStatus(t, order.Status, v1.OrderStatus_Pay)
+	assert.NoError(t, err, "库存对账失败不应阻断取消终态")
+	assertStatus(t, order.Status, v1.OrderStatus_Cancel)
 }
 
-// TestWaitPay_Cancel_GetStockFailure 测试获取库存信息失败的情况
-func TestWaitPay_Cancel_GetStockFailure(t *testing.T) {
+// TestWaitPay_Cancel_IgnoresGetStockFailure 验证取消订单不依赖库存查询
+// 说明: 重构后取消采用原子条件更新，直接释放预留库存，不再先 GetStock 校验，故查询失败不影响取消
+func TestWaitPay_Cancel_IgnoresGetStockFailure(t *testing.T) {
 	repo := &mockOrderRepo{}
 	stockRepo := &mockStockRepoWithErrors{
 		getStockErr: errors.New("库存查询失败"),
@@ -146,10 +145,10 @@ func TestWaitPay_Cancel_GetStockFailure(t *testing.T) {
 	}
 	order.SetStatus(order.Status, repo, stockRepo, log.NewStdLogger(io.Discard))
 
-	// 取消订单应该失败，因为无法获取库存信息
+	// 库存查询失败不应影响取消操作，取消应成功
 	err := order.Cancel(context.Background())
-	assert.Error(t, err, "获取库存失败时应返回错误")
-	assert.Contains(t, err.Error(), "库存查询失败", "错误消息应包含原始错误")
+	assert.NoError(t, err, "库存查询失败不应影响取消操作")
+	assertStatus(t, order.Status, v1.OrderStatus_Cancel)
 }
 
 // TestOrder_Cancel_MultipleItems 测试多商品订单的取消操作

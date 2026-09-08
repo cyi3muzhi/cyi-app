@@ -82,14 +82,12 @@ message GetStockReply {
 	int32 total = 2;        // 总库存
 	int32 available = 3;    // 可用库存
 	int32 reserved = 4;     // 预留库存
-	int32 version = 5;      // 乐观锁版本号
 }
 
 // ReserveStockRequest 预留库存请求
 message ReserveStockRequest {
 	int64 product_id = 1 [deprecated = true];   // 已废弃，改用 sku_id
 	int32 count = 2;                            // 预留数量
-	int32 version = 3;                          // 乐观锁版本号
 	int64 sku_id = 4;                           // SKU ID
 }
 
@@ -97,14 +95,12 @@ message ReserveStockRequest {
 message ReserveStockReply {
 	// 是否成功
 	bool success = 1;
-	int32 new_version = 2;  // 新版本号
 }
 
 // 确认扣减库存（支付后实际扣减总数和预留）
 message DeductStockRequest {
 	int64 product_id = 1 [deprecated = true];   // 已废弃，改用 sku_id
 	int32 count = 2;                            // 扣减数量
-	int32 version = 3;                          // 乐观锁版本号
 	int64 sku_id = 4;                           // SKU ID
 }
 
@@ -112,16 +108,14 @@ message DeductStockRequest {
 message DeductStockReply {
 	// 是否成功
 	bool success = 1;
-	int32 new_version = 2;  // 新版本号
 }
 
 // 释放预留库存（取消未支付订单时）
-// reserved- , available+ , version++
-// 条件: version 匹配 且 reserved >= count
+// reserved- , available+
+// 条件: reserved >= count
 message ReleaseStockRequest {
 	int64 product_id = 1 [deprecated = true];   // 已废弃，改用 sku_id
 	int32 count = 2;                            // 释放数量
-	int32 version = 3;                          // 乐观锁版本号
 	int64 sku_id = 4;                           // SKU ID
 }
 
@@ -129,16 +123,13 @@ message ReleaseStockRequest {
 message ReleaseStockReply {
 	// 是否成功
 	bool success = 1;
-	int32 new_version = 2;  // 新版本号
 }
 
 // 增加库存（退款或取消已支付订单时）
-// total+ , available+ , version++
-// 条件: version 匹配
+// total+ , available+
 message AddStockRequest {
 	int64 product_id = 1 [deprecated = true];   // 已废弃，改用 sku_id
 	int32 count = 2;                            // 增加数量
-	int32 version = 3;                          // 乐观锁版本号
 	int64 sku_id = 4;                           // SKU ID
 }
 
@@ -146,7 +137,6 @@ message AddStockRequest {
 message AddStockReply {
 	// 是否成功
 	bool success = 1;
-	int32 new_version = 2;  // 新版本号
 }
 
 // ListStockRequest 库存列表请求

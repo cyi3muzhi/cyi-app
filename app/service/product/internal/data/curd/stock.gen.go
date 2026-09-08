@@ -33,7 +33,6 @@ func newStock(db *gorm.DB) stock {
 	_stock.Total = field.NewInt32(tableName, "total")
 	_stock.Available = field.NewInt32(tableName, "available")
 	_stock.Reserved = field.NewInt32(tableName, "reserved")
-	_stock.Version = field.NewInt32(tableName, "version")
 
 	_stock.fillFieldMap()
 
@@ -53,7 +52,6 @@ type stock struct {
 	Total      field.Int32
 	Available  field.Int32
 	Reserved   field.Int32
-	Version    field.Int32
 
 	fieldMap map[string]field.Expr
 }
@@ -79,7 +77,6 @@ func (s *stock) updateTableName(table string) *stock {
 	s.Total = field.NewInt32(table, "total")
 	s.Available = field.NewInt32(table, "available")
 	s.Reserved = field.NewInt32(table, "reserved")
-	s.Version = field.NewInt32(table, "version")
 
 	s.fillFieldMap()
 
@@ -96,7 +93,7 @@ func (s *stock) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *stock) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 10)
+	s.fieldMap = make(map[string]field.Expr, 9)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["create_time"] = s.CreateTime
 	s.fieldMap["update_time"] = s.UpdateTime
@@ -106,7 +103,6 @@ func (s *stock) fillFieldMap() {
 	s.fieldMap["total"] = s.Total
 	s.fieldMap["available"] = s.Available
 	s.fieldMap["reserved"] = s.Reserved
-	s.fieldMap["version"] = s.Version
 }
 
 func (s stock) clone(db *gorm.DB) stock {

@@ -5511,6 +5511,8 @@ components:
                     type: string
                 couponId:
                     type: string
+                idempotencyKey:
+                    type: string
             description: CartCheckoutRequest 购物车结算请求
         api.cin.interface.v1.CartItem:
             type: object
@@ -6184,6 +6186,8 @@ components:
                     description: 购买数量
                     format: int32
                 skuId:
+                    type: string
+                idempotencyKey:
                     type: string
             description: PlaceOrderRequest 下单请求
         api.cin.interface.v1.ProductItem:

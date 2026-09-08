@@ -54,47 +54,43 @@ func (s *StockService) UpdateSkuStocks(ctx context.Context, req *v1.UpdateSkuSto
 	}, nil
 }
 
+// ReserveStock gRPC 直调入口（管理端/内部调用）：无 DTM 事务上下文，传空幂等键按普通条件更新执行
 func (s *StockService) ReserveStock(ctx context.Context, req *v1.ReserveStockRequest) (*v1.ReserveStockReply, error) {
-	newVersion, err := s.uc.ReserveStock(ctx, req.GetSkuId(), req.Count, req.Version)
-	if err != nil {
+	if err := s.uc.ReserveStock(ctx, biz.StockOpKey{}, req.GetSkuId(), req.Count); err != nil {
 		return nil, err
 	}
 	return &v1.ReserveStockReply{
-		Success:    true,
-		NewVersion: newVersion,
+		Success: true,
 	}, nil
 }
 
+// DeductStock gRPC 直调入口：无 DTM 事务上下文，传空幂等键按普通条件更新执行
 func (s *StockService) DeductStock(ctx context.Context, req *v1.DeductStockRequest) (*v1.DeductStockReply, error) {
-	newVersion, err := s.uc.DeductStock(ctx, req.GetSkuId(), req.Count, req.Version)
-	if err != nil {
+	if err := s.uc.DeductStock(ctx, biz.StockOpKey{}, req.GetSkuId(), req.Count); err != nil {
 		return nil, err
 	}
 	return &v1.DeductStockReply{
-		Success:    true,
-		NewVersion: newVersion,
+		Success: true,
 	}, nil
 }
 
+// ReleaseStock gRPC 直调入口：无 DTM 事务上下文，传空幂等键按普通条件更新执行
 func (s *StockService) ReleaseStock(ctx context.Context, req *v1.ReleaseStockRequest) (*v1.ReleaseStockReply, error) {
-	newVersion, err := s.uc.ReleaseStock(ctx, req.GetSkuId(), req.Count, req.Version)
-	if err != nil {
+	if err := s.uc.ReleaseStock(ctx, biz.StockOpKey{}, req.GetSkuId(), req.Count); err != nil {
 		return nil, err
 	}
 	return &v1.ReleaseStockReply{
-		Success:    true,
-		NewVersion: newVersion,
+		Success: true,
 	}, nil
 }
 
+// AddStock gRPC 直调入口：无 DTM 事务上下文，传空幂等键按普通条件更新执行
 func (s *StockService) AddStock(ctx context.Context, req *v1.AddStockRequest) (*v1.AddStockReply, error) {
-	newVersion, err := s.uc.AddStock(ctx, req.GetSkuId(), req.Count, req.Version)
-	if err != nil {
+	if err := s.uc.AddStock(ctx, biz.StockOpKey{}, req.GetSkuId(), req.Count); err != nil {
 		return nil, err
 	}
 	return &v1.AddStockReply{
-		Success:    true,
-		NewVersion: newVersion,
+		Success: true,
 	}, nil
 }
 
@@ -112,7 +108,6 @@ func (s *StockService) GetStock(ctx context.Context, req *v1.GetStockRequest) (*
 		Total:     stock.Total,
 		Available: stock.Available,
 		Reserved:  stock.Reserved,
-		Version:   stock.Version,
 	}, nil
 }
 

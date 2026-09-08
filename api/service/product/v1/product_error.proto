@@ -16,10 +16,12 @@ enum ProductErrorReason {
 	STOCK_NOT_FOUND = 1 [(errors.code) = 422];
 	// 库存不足
 	INSUFFICIENT_STOCK = 2 [(errors.code) = 422];
-	// 库存版本冲突（并发）
-	STOCK_VERSION_CONFLICT = 3 [(errors.code) = 422];
+	// 已废弃：库存版本冲突（乐观锁已移除，并发控制改为原子条件更新）
+	reserved 3;
 	// 创建商品失败
 	CREATE_PRODUCT_FAILED = 4 [(errors.code) = 422];
 	// 创建库存失败
 	CREATE_STOCK_FAILED = 5 [(errors.code) = 422];
+	// 库存操作失败（异常/并发等通用错误）
+	STOCK_OPERATION_FAILED = 6 [(errors.code) = 422];
 }

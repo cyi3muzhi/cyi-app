@@ -13,6 +13,9 @@ import (
 
 	"cyi-app/app/service/product/internal/data/curd"
 	mod "cyi-app/app/service/product/internal/data/models"
+	pkgdtm "cyi-app/pkg/dtm"
+
+	"database/sql"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -27,6 +30,7 @@ var ProviderSet = wire.NewSet(
 	NewSkuRepo,
 	NewData,
 	NewDB,
+	NewBarrierDB,
 )
 
 type Data struct{}
@@ -38,6 +42,12 @@ func NewData(c *conf.Data, db *gorm.DB, logger log.Logger) (*Data, func(), error
 	}
 	curd.SetDefault(db)
 	return &Data{}, cleanup, nil
+}
+
+// NewBarrierDB 返回 DTM 屏障表所在的数据库连接（*sql.DB，供库存操作 dtmcli.BranchBarrier 使用）
+// 屏障表 dtm_barrier.barrier 与 product 业务库同一 MySQL 实例，连接使用业务库 DSN，屏障 SQL 跨库访问
+func NewBarrierDB(db *gorm.DB) *sql.DB {
+	return pkgdtm.BarrierDB(db)
 }
 
 func NewDB(c *conf.Data) *gorm.DB {

@@ -77,6 +77,11 @@ func (r *orderRepo) CreateOrder(ctx context.Context, in *biz.Order) error {
 // createOrderTx 在指定事务内创建订单（订单主表 + 收货地址快照 + 优惠券核销 + 商品明细）
 // 返回是否已核销优惠券，供调用方在事务回滚后对营销侧做补偿；供 CreateOrder 与 DTM TCC 订单分支复用
 func createOrderTx(ctx context.Context, q *curd.Query, in *biz.Order, mc marketingRpc.CouponServiceClient, log *log.Helper) (couponUsed bool, err error) {
+	// 幂等键：客户端未传时填充 auto-{orderNo}，保证 (user_id, idempotency_key) 唯一索引永不冲突
+	idempotencyKey := in.IdempotencyKey
+	if idempotencyKey == "" {
+		idempotencyKey = "auto-" + in.OrderNo
+	}
 	order := &mod.Order{
 		UserID:         in.UserID,
 		OrderNo:        in.OrderNo,
@@ -86,6 +91,7 @@ func createOrderTx(ctx context.Context, q *curd.Query, in *biz.Order, mc marketi
 		DiscountAmount: in.Discount.Amount,
 		Status:         int32(in.Status),
 		CouponRecordID: in.CouponRecordID,
+		IdempotencyKey: idempotencyKey,
 	}
 	if err := q.Order.WithContext(ctx).Create(order); err != nil {
 		return false, errors.New("create order failed")
@@ -167,6 +173,30 @@ func (r *orderRepo) GetOrderByOrderNo(ctx context.Context, orderNo string) (*biz
 		UserID:  order.UserID,
 		OrderNo: order.OrderNo,
 		Status:  v1.OrderStatus(order.Status),
+	}, nil
+}
+
+// GetOrderByIdempotencyKey 按客户端幂等键查询订单（(user_id, idempotency_key) 联合唯一索引）
+// 用于下单去重：同一用户用相同幂等键重复提交时直接返回已创建的订单。
+// 未命中返回 (nil, nil)；使用原生 GORM 查询（curd 生成代码不含新增的 idempotency_key 列）
+func (r *orderRepo) GetOrderByIdempotencyKey(ctx context.Context, userID int64, key string) (*biz.Order, error) {
+	var order mod.Order
+	err := r.data.db.WithContext(ctx).
+		Where("user_id = ? AND idempotency_key = ?", userID, key).
+		First(&order).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // 未命中：首次下单，正常继续
+		}
+		r.log.Errorf("get order by idempotency key failed, userID=%d, key=%s: %v", userID, key, err)
+		return nil, err
+	}
+	return &biz.Order{
+		ID:             order.ID,
+		UserID:         order.UserID,
+		OrderNo:        order.OrderNo,
+		IdempotencyKey: order.IdempotencyKey,
+		Status:         v1.OrderStatus(order.Status),
 	}, nil
 }
 

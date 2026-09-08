@@ -160,7 +160,8 @@ type CreateOrderRequest struct {
 	Receiver       string            `protobuf:"bytes,9,opt,name=receiver,proto3" json:"receiver,omitempty"`                                      // 收货人（地址快照）
 	Phone          string            `protobuf:"bytes,10,opt,name=phone,proto3" json:"phone,omitempty"`                                           // 手机号（地址快照）
 	Address        string            `protobuf:"bytes,11,opt,name=address,proto3" json:"address,omitempty"`                                       // 完整收货地址（地址快照）
-	Freight        int64             `protobuf:"varint,12,opt,name=freight,proto3" json:"freight,omitempty"`                                      // 运费（单位：分）
+	Freight        int64             `protobuf:"varint,12,opt,name=freight,proto3" json:"freight,omitempty"`                                      // 运费（单位：分，服务端按规则重算，客户端传值忽略）
+	IdempotencyKey string            `protobuf:"bytes,13,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`   // 客户端幂等键（同一用户重复提交返回同一订单，防重复下单）
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -277,6 +278,13 @@ func (x *CreateOrderRequest) GetFreight() int64 {
 		return x.Freight
 	}
 	return 0
+}
+
+func (x *CreateOrderRequest) GetIdempotencyKey() string {
+	if x != nil {
+		return x.IdempotencyKey
+	}
+	return ""
 }
 
 // CreateOrderReply 创建订单响应
@@ -2714,7 +2722,7 @@ var File_api_service_order_v1_order_proto protoreflect.FileDescriptor
 
 const file_api_service_order_v1_order_proto_rawDesc = "" +
 	"\n" +
-	" api/service/order/v1/order.proto\x12\x14api.service.order.v1\"\xfa\x02\n" +
+	" api/service/order/v1/order.proto\x12\x14api.service.order.v1\"\xa3\x03\n" +
 	"\x12CreateOrderRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1d\n" +
 	"\n" +
@@ -2730,7 +2738,8 @@ const file_api_service_order_v1_order_proto_rawDesc = "" +
 	"\x05phone\x18\n" +
 	" \x01(\tR\x05phone\x12\x18\n" +
 	"\aaddress\x18\v \x01(\tR\aaddress\x12\x18\n" +
-	"\afreight\x18\f \x01(\x03R\afreight\"-\n" +
+	"\afreight\x18\f \x01(\x03R\afreight\x12'\n" +
+	"\x0fidempotency_key\x18\r \x01(\tR\x0eidempotencyKey\"-\n" +
 	"\x10CreateOrderReply\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\x03R\aorderId\"\x14\n" +
 	"\x12UpdateOrderRequest\"\x12\n" +

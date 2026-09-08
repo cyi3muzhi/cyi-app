@@ -445,11 +445,6 @@ func (m *GetStockReply) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
-	if m.Version != 0 {
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Version))
-		i--
-		dAtA[i] = 0x28
-	}
 	if m.Reserved != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Reserved))
 		i--
@@ -508,11 +503,6 @@ func (m *ReserveStockRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x20
 	}
-	if m.Version != 0 {
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Version))
-		i--
-		dAtA[i] = 0x18
-	}
 	if m.Count != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Count))
 		i--
@@ -555,11 +545,6 @@ func (m *ReserveStockReply) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
-	}
-	if m.NewVersion != 0 {
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NewVersion))
-		i--
-		dAtA[i] = 0x10
 	}
 	if m.Success {
 		i--
@@ -609,11 +594,6 @@ func (m *DeductStockRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x20
 	}
-	if m.Version != 0 {
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Version))
-		i--
-		dAtA[i] = 0x18
-	}
 	if m.Count != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Count))
 		i--
@@ -656,11 +636,6 @@ func (m *DeductStockReply) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
-	}
-	if m.NewVersion != 0 {
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NewVersion))
-		i--
-		dAtA[i] = 0x10
 	}
 	if m.Success {
 		i--
@@ -710,11 +685,6 @@ func (m *ReleaseStockRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x20
 	}
-	if m.Version != 0 {
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Version))
-		i--
-		dAtA[i] = 0x18
-	}
 	if m.Count != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Count))
 		i--
@@ -757,11 +727,6 @@ func (m *ReleaseStockReply) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
-	}
-	if m.NewVersion != 0 {
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NewVersion))
-		i--
-		dAtA[i] = 0x10
 	}
 	if m.Success {
 		i--
@@ -811,11 +776,6 @@ func (m *AddStockRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x20
 	}
-	if m.Version != 0 {
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Version))
-		i--
-		dAtA[i] = 0x18
-	}
 	if m.Count != 0 {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Count))
 		i--
@@ -858,11 +818,6 @@ func (m *AddStockReply) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
-	}
-	if m.NewVersion != 0 {
-		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NewVersion))
-		i--
-		dAtA[i] = 0x10
 	}
 	if m.Success {
 		i--
@@ -1094,9 +1049,6 @@ func (m *GetStockReply) SizeVT() (n int) {
 	if m.Reserved != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.Reserved))
 	}
-	if m.Version != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(m.Version))
-	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -1112,9 +1064,6 @@ func (m *ReserveStockRequest) SizeVT() (n int) {
 	}
 	if m.Count != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.Count))
-	}
-	if m.Version != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(m.Version))
 	}
 	if m.SkuId != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.SkuId))
@@ -1132,9 +1081,6 @@ func (m *ReserveStockReply) SizeVT() (n int) {
 	if m.Success {
 		n += 2
 	}
-	if m.NewVersion != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(m.NewVersion))
-	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -1150,9 +1096,6 @@ func (m *DeductStockRequest) SizeVT() (n int) {
 	}
 	if m.Count != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.Count))
-	}
-	if m.Version != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(m.Version))
 	}
 	if m.SkuId != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.SkuId))
@@ -1170,9 +1113,6 @@ func (m *DeductStockReply) SizeVT() (n int) {
 	if m.Success {
 		n += 2
 	}
-	if m.NewVersion != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(m.NewVersion))
-	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -1188,9 +1128,6 @@ func (m *ReleaseStockRequest) SizeVT() (n int) {
 	}
 	if m.Count != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.Count))
-	}
-	if m.Version != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(m.Version))
 	}
 	if m.SkuId != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.SkuId))
@@ -1208,9 +1145,6 @@ func (m *ReleaseStockReply) SizeVT() (n int) {
 	if m.Success {
 		n += 2
 	}
-	if m.NewVersion != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(m.NewVersion))
-	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -1227,9 +1161,6 @@ func (m *AddStockRequest) SizeVT() (n int) {
 	if m.Count != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.Count))
 	}
-	if m.Version != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(m.Version))
-	}
 	if m.SkuId != 0 {
 		n += 1 + protohelpers.SizeOfVarint(uint64(m.SkuId))
 	}
@@ -1245,9 +1176,6 @@ func (m *AddStockReply) SizeVT() (n int) {
 	_ = l
 	if m.Success {
 		n += 2
-	}
-	if m.NewVersion != 0 {
-		n += 1 + protohelpers.SizeOfVarint(uint64(m.NewVersion))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -2095,25 +2023,6 @@ func (m *GetStockReply) UnmarshalVT(dAtA []byte) error {
 					break
 				}
 			}
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Version", wireType)
-			}
-			m.Version = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protohelpers.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Version |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -2199,25 +2108,6 @@ func (m *ReserveStockRequest) UnmarshalVT(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.Count |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Version", wireType)
-			}
-			m.Version = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protohelpers.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Version |= int32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -2312,25 +2202,6 @@ func (m *ReserveStockReply) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.Success = bool(v != 0)
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NewVersion", wireType)
-			}
-			m.NewVersion = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protohelpers.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.NewVersion |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -2416,25 +2287,6 @@ func (m *DeductStockRequest) UnmarshalVT(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.Count |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Version", wireType)
-			}
-			m.Version = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protohelpers.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Version |= int32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -2529,25 +2381,6 @@ func (m *DeductStockReply) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.Success = bool(v != 0)
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NewVersion", wireType)
-			}
-			m.NewVersion = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protohelpers.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.NewVersion |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -2633,25 +2466,6 @@ func (m *ReleaseStockRequest) UnmarshalVT(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.Count |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Version", wireType)
-			}
-			m.Version = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protohelpers.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Version |= int32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -2746,25 +2560,6 @@ func (m *ReleaseStockReply) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.Success = bool(v != 0)
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NewVersion", wireType)
-			}
-			m.NewVersion = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protohelpers.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.NewVersion |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
@@ -2850,25 +2645,6 @@ func (m *AddStockRequest) UnmarshalVT(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.Count |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Version", wireType)
-			}
-			m.Version = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protohelpers.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Version |= int32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -2963,25 +2739,6 @@ func (m *AddStockReply) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.Success = bool(v != 0)
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NewVersion", wireType)
-			}
-			m.NewVersion = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protohelpers.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.NewVersion |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])

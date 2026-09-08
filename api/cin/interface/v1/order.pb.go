@@ -29,10 +29,11 @@ type PlaceOrderRequest struct {
 	// 商品 ID
 	ProductId int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
 	// 购买数量
-	Count         int32 `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
-	SkuId         int64 `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"` // SKU ID（多SKU商品必传）
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Count          int32  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+	SkuId          int64  `protobuf:"varint,3,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`                           // SKU ID（多SKU商品必传）
+	IdempotencyKey string `protobuf:"bytes,4,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"` // 客户端幂等键（前端每次提交生成唯一键，重复提交返回同一订单）
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *PlaceOrderRequest) Reset() {
@@ -84,6 +85,13 @@ func (x *PlaceOrderRequest) GetSkuId() int64 {
 		return x.SkuId
 	}
 	return 0
+}
+
+func (x *PlaceOrderRequest) GetIdempotencyKey() string {
+	if x != nil {
+		return x.IdempotencyKey
+	}
+	return ""
 }
 
 // PlaceOrderReply 下单响应
@@ -418,16 +426,17 @@ func (x *CancelOrderReply) GetSuccess() bool {
 
 // CartCheckoutRequest 购物车结算请求
 type CartCheckoutRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*CartItem            `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	AddressId     int64                  `protobuf:"varint,2,opt,name=address_id,json=addressId,proto3" json:"address_id,omitempty"` // 收货地址ID
-	Receiver      string                 `protobuf:"bytes,3,opt,name=receiver,proto3" json:"receiver,omitempty"`                     // 收货人（地址快照）
-	Phone         string                 `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`                           // 手机号（地址快照）
-	Address       string                 `protobuf:"bytes,5,opt,name=address,proto3" json:"address,omitempty"`                       // 完整收货地址（地址快照）
-	Freight       int64                  `protobuf:"varint,6,opt,name=freight,proto3" json:"freight,omitempty"`                      // 运费（单位：分，前端计算）
-	CouponId      int64                  `protobuf:"varint,7,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`    // 优惠券发放记录ID（0=不使用优惠券）
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Items          []*CartItem            `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	AddressId      int64                  `protobuf:"varint,2,opt,name=address_id,json=addressId,proto3" json:"address_id,omitempty"`               // 收货地址ID
+	Receiver       string                 `protobuf:"bytes,3,opt,name=receiver,proto3" json:"receiver,omitempty"`                                   // 收货人（地址快照）
+	Phone          string                 `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`                                         // 手机号（地址快照）
+	Address        string                 `protobuf:"bytes,5,opt,name=address,proto3" json:"address,omitempty"`                                     // 完整收货地址（地址快照）
+	Freight        int64                  `protobuf:"varint,6,opt,name=freight,proto3" json:"freight,omitempty"`                                    // 运费（单位：分，服务端按规则重算，前端传值忽略）
+	CouponId       int64                  `protobuf:"varint,7,opt,name=coupon_id,json=couponId,proto3" json:"coupon_id,omitempty"`                  // 优惠券发放记录ID（0=不使用优惠券）
+	IdempotencyKey string                 `protobuf:"bytes,8,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"` // 客户端幂等键（前端每次结算生成唯一键，重复提交返回同一订单）
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *CartCheckoutRequest) Reset() {
@@ -507,6 +516,13 @@ func (x *CartCheckoutRequest) GetCouponId() int64 {
 		return x.CouponId
 	}
 	return 0
+}
+
+func (x *CartCheckoutRequest) GetIdempotencyKey() string {
+	if x != nil {
+		return x.IdempotencyKey
+	}
+	return ""
 }
 
 // CartCheckoutReply 购物车结算响应
@@ -1633,12 +1649,13 @@ var File_api_cin_interface_v1_order_proto protoreflect.FileDescriptor
 
 const file_api_cin_interface_v1_order_proto_rawDesc = "" +
 	"\n" +
-	" api/cin/interface/v1/order.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"q\n" +
+	" api/cin/interface/v1/order.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\x9a\x01\n" +
 	"\x11PlaceOrderRequest\x12&\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\tproductId\x12\x1d\n" +
 	"\x05count\x18\x02 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x05count\x12\x15\n" +
-	"\x06sku_id\x18\x03 \x01(\x03R\x05skuId\"5\n" +
+	"\x06sku_id\x18\x03 \x01(\x03R\x05skuId\x12'\n" +
+	"\x0fidempotency_key\x18\x04 \x01(\tR\x0eidempotencyKey\"5\n" +
 	"\x0fPlaceOrderReply\x12\"\n" +
 	"\border_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aorderId\"5\n" +
 	"\x0fPayOrderRequest\x12\"\n" +
@@ -1653,7 +1670,7 @@ const file_api_cin_interface_v1_order_proto_rawDesc = "" +
 	"\border_id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aorderId\x12\x16\n" +
 	"\x06reason\x18\x02 \x01(\tR\x06reason\",\n" +
 	"\x10CancelOrderReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xf7\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xa0\x02\n" +
 	"\x13CartCheckoutRequest\x12>\n" +
 	"\x05items\x18\x01 \x03(\v2\x1e.api.cin.interface.v1.CartItemB\b\xfaB\x05\x92\x01\x02\b\x01R\x05items\x12\x1d\n" +
 	"\n" +
@@ -1662,7 +1679,8 @@ const file_api_cin_interface_v1_order_proto_rawDesc = "" +
 	"\x05phone\x18\x04 \x01(\tR\x05phone\x12\x18\n" +
 	"\aaddress\x18\x05 \x01(\tR\aaddress\x12\x18\n" +
 	"\afreight\x18\x06 \x01(\x03R\afreight\x12\x1b\n" +
-	"\tcoupon_id\x18\a \x01(\x03R\bcouponId\".\n" +
+	"\tcoupon_id\x18\a \x01(\x03R\bcouponId\x12'\n" +
+	"\x0fidempotency_key\x18\b \x01(\tR\x0eidempotencyKey\".\n" +
 	"\x11CartCheckoutReply\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\x03R\aorderId\"n\n" +
 	"\bCartItem\x12&\n" +

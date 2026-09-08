@@ -29,7 +29,8 @@ export function toggleCouponStatus(id: number, action: number): Promise<{ succes
 }
 
 export function getCouponStats(): Promise<CouponStatsResponse> {
-  return request.get('/admin/v1/coupons/stats')
+  // silent：统计卡片为辅助数据，失败时静默降级，避免与列表接口同时失败弹多条重复提示
+  return request.get('/admin/v1/coupons/stats', { silent: true })
 }
 
 export function listCouponRecords(couponId: number, params?: { page?: number; page_size?: number }): Promise<{ items: import('../types/coupon').DistRecord[]; total: number }> {

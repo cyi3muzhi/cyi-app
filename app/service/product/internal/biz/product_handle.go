@@ -167,7 +167,7 @@ func (uc *ProductUseCase) updateProductFallback(ctx context.Context, in *Product
 	}
 	for _, sku := range skus {
 		if stock, ok := oldStockBySkuID[sku.ID]; ok {
-			// 更新现有库存（只改 total/available，保留 reserved/version）
+			// 更新现有库存（只改 total/available，保留 reserved）
 			stock.Total = sku.Stock
 			stock.Available = sku.Stock
 			if err := uc.stockRepo.UpdateStock(ctx, stock); err != nil {

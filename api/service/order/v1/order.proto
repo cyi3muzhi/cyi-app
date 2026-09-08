@@ -60,7 +60,8 @@ message CreateOrderRequest {
 	string receiver = 9; // 收货人（地址快照）
 	string phone = 10; // 手机号（地址快照）
 	string address = 11; // 完整收货地址（地址快照）
-	int64 freight = 12; // 运费（单位：分）
+	int64 freight = 12; // 运费（单位：分，服务端按规则重算，客户端传值忽略）
+	string idempotency_key = 13; // 客户端幂等键（同一用户重复提交返回同一订单，防重复下单）
 }
 
 // CreateOrderReply 创建订单响应

@@ -46,52 +46,45 @@ func (h *StockHandler) Register(conn *nats.Conn) error {
 					resp.Error = err.Error()
 					break
 				}
-				newVersion, err := h.uc.ReserveStock(ctx, req.SkuID, req.Count, req.Version)
-				if err != nil {
+				// 透传 DTM 屏障键：库存预留与屏障记录同事务，DTM 重试不重复预留
+				if err := h.uc.ReserveStock(ctx, stockOpKey(req), req.SkuID, req.Count); err != nil {
 					resp.Error = err.Error()
 					break
 				}
 				resp.Success = true
-				resp.NewVersion = newVersion
 			case event.SubjectStockDeduct:
 				var req event.StockReserveRequest
 				if err := json.Unmarshal(msg.Data, &req); err != nil {
 					resp.Error = err.Error()
 					break
 				}
-				newVersion, err := h.uc.DeductStock(ctx, req.SkuID, req.Count, req.Version)
-				if err != nil {
+				if err := h.uc.DeductStock(ctx, stockOpKey(req), req.SkuID, req.Count); err != nil {
 					resp.Error = err.Error()
 					break
 				}
 				resp.Success = true
-				resp.NewVersion = newVersion
 			case event.SubjectStockRelease:
 				var req event.StockReserveRequest
 				if err := json.Unmarshal(msg.Data, &req); err != nil {
 					resp.Error = err.Error()
 					break
 				}
-				newVersion, err := h.uc.ReleaseStock(ctx, req.SkuID, req.Count, req.Version)
-				if err != nil {
+				if err := h.uc.ReleaseStock(ctx, stockOpKey(req), req.SkuID, req.Count); err != nil {
 					resp.Error = err.Error()
 					break
 				}
 				resp.Success = true
-				resp.NewVersion = newVersion
 			case event.SubjectStockAdd:
 				var req event.StockReserveRequest
 				if err := json.Unmarshal(msg.Data, &req); err != nil {
 					resp.Error = err.Error()
 					break
 				}
-				newVersion, err := h.uc.AddStock(ctx, req.SkuID, req.Count, req.Version)
-				if err != nil {
+				if err := h.uc.AddStock(ctx, stockOpKey(req), req.SkuID, req.Count); err != nil {
 					resp.Error = err.Error()
 					break
 				}
 				resp.Success = true
-				resp.NewVersion = newVersion
 			case event.SubjectStockGet:
 				var req struct {
 					SkuID int64 `json:"sku_id"`
@@ -109,7 +102,6 @@ func (h *StockHandler) Register(conn *nats.Conn) error {
 				resp.Available = stock.Available
 				resp.Total = stock.Total
 				resp.Reserved = stock.Reserved
-				resp.NewVersion = stock.Version
 			}
 			// 发送响应（序列化失败时记录错误并返回空响应，避免 msg.Respond(nil) 异常）
 			data, err := json.Marshal(resp)
@@ -126,4 +118,13 @@ func (h *StockHandler) Register(conn *nats.Conn) error {
 		}
 	}
 	return nil
+}
+
+// stockOpKey 从 NATS 请求提取 DTM 屏障幂等键（Gid 为空时返回零值，仓储侧按普通更新执行）
+func stockOpKey(req event.StockReserveRequest) biz.StockOpKey {
+	return biz.StockOpKey{
+		Gid:      req.Gid,
+		BranchID: req.BranchID,
+		Op:       req.Op,
+	}
 }

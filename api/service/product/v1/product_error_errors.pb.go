@@ -53,20 +53,6 @@ func ErrorInsufficientStock(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, ProductErrorReason_INSUFFICIENT_STOCK.String(), fmt.Sprintf(format, args...))
 }
 
-// 库存版本冲突（并发）
-func IsStockVersionConflict(err error) bool {
-	if err == nil {
-		return false
-	}
-	e := errors.FromError(err)
-	return e.Reason == ProductErrorReason_STOCK_VERSION_CONFLICT.String() && e.Code == 422
-}
-
-// 库存版本冲突（并发）
-func ErrorStockVersionConflict(format string, args ...interface{}) *errors.Error {
-	return errors.New(422, ProductErrorReason_STOCK_VERSION_CONFLICT.String(), fmt.Sprintf(format, args...))
-}
-
 // 创建商品失败
 func IsCreateProductFailed(err error) bool {
 	if err == nil {
@@ -93,4 +79,18 @@ func IsCreateStockFailed(err error) bool {
 // 创建库存失败
 func ErrorCreateStockFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, ProductErrorReason_CREATE_STOCK_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+// 库存操作失败（异常/并发等通用错误）
+func IsStockOperationFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ProductErrorReason_STOCK_OPERATION_FAILED.String() && e.Code == 422
+}
+
+// 库存操作失败（异常/并发等通用错误）
+func ErrorStockOperationFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, ProductErrorReason_STOCK_OPERATION_FAILED.String(), fmt.Sprintf(format, args...))
 }

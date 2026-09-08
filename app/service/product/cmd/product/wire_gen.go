@@ -35,7 +35,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, regi
 		return nil, nil, err
 	}
 	productRepo := data.NewProductRepo(dataData, logger)
-	stockRepo := data.NewStockRepo(dataData, logger)
+	barrierDB := data.NewBarrierDB(db)
+	stockRepo := data.NewStockRepo(dataData, logger, barrierDB)
 	specGroupRepo := data.NewSpecGroupRepo(dataData, logger)
 	skuRepo := data.NewSkuRepo(dataData, logger)
 	productUseCase := biz.NewProductUseCase(productRepo, stockRepo, specGroupRepo, skuRepo, logger)

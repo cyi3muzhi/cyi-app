@@ -68,10 +68,10 @@ app/service/product/
 │   │   ├── sku.go       # SKU 数据访问
 │   │   ├── spec_group.go # 规格组数据访问
 │   │   ├── spec_group_test.go # 规格组数据访问测试
-│   │   ├── stock.go     # 库存数据访问
+│   │   ├── stock.go     # 库存数据访问（四个写操作走 DTM 屏障事务 runWithBarrier，原生条件更新 SQL）
 │   │   └── test_helper_test.go # 测试辅助
 │   ├── nats/
-│   │   └── stock_handler.go # NATS 库存事件处理器（库存变更广播消费）
+│   │   └── stock_handler.go # NATS 库存请求处理器（订阅 reserve/deduct/release/add/get，透传屏障键给 biz 层）
 │   ├── server/
 │   │   ├── grpc.go      # gRPC 服务注册
 │   │   └── server.go    # 服务器配置
@@ -114,7 +114,7 @@ app/service/product/
 | UseCase | 职责 |
 |---------|------|
 | `ProductUseCase` | 商品管理（创建、查询、更新、删除、搜索联想 SuggestProduct） |
-| `StockUseCase` | 库存管理（查询、预留、扣减、释放、增加、按商品设置总库存） |
+| `StockUseCase` | 库存管理（查询、预留、扣减、释放、增加、按商品设置总库存）；预留/扣减/释放/增加四个写操作支持 DTM 屏障幂等：NATS 请求携带 `gid/branch_id/op` 三元组时在 `dtm_barrier.barrier` 屏障事务内执行，重试/补偿/重复请求只生效一次（空补偿自动跳过、防悬挂）；无幂等键（管理端 gRPC 直调）退化为普通事务 |
 | `CategoryUseCase` | 商品分类管理（分类树、创建、更新、删除、排序、状态管理） |
 | `SkuUseCase` | SKU 管理（列表、创建、更新、删除） |
 | `SpecGroupUseCase` | 规格组管理（列表、创建、更新、删除，含规格值） |
@@ -124,6 +124,25 @@ app/service/product/
 - `Product`：商品聚合根
 - `Stock`：库存值对象
 - `Category`：商品分类（树形结构，支持无限层级父子关系）
+
+### 库存操作与 DTM 屏障幂等
+
+订单服务经 NATS（subject：`stock.reserve`/`stock.deduct`/`stock.release`/`stock.add`/`stock.get`）调用库存操作，写操作请求体携带 DTM 屏障三元组：
+
+- `gid`：全局事务ID（下单预留/释放为 `tcc-{orderNo}`，支付扣减/退还为 `pay-{orderNo}`）
+- `branch_id`：分支ID（按 SKU 维度 `stock-{skuID}`）
+- `op`：`try` / `cancel`
+
+product 侧（`internal/data/stock.go` 的 `runWithBarrier`）以 `dtmcli.BranchBarrier{TransType:"tcc",...}.CallWithDB` 在屏障事务内执行原生条件更新 SQL，屏障记录与库存变更同事务提交：
+
+| 操作 | SQL 语义 | 条件不命中 |
+|------|----------|-----------|
+| 预留 reserve | available-、reserved+（`WHERE available>=?`） | 返回库存不足错误（业务失败 409，触发 TCC 回滚） |
+| 扣减 deduct | total-、reserved-（`WHERE reserved>=?`），成功后累加销量 | 返回操作失败错误 |
+| 释放 release | reserved-、available+（`WHERE reserved>=?`） | **幂等空操作返回 nil**（预留已扣减/已释放不报错，由屏障裁决） |
+| 增加 add | total+、available+，成功后回退销量 | 返回操作失败错误 |
+
+屏障表 `dtm_barrier.barrier` 与业务库同 MySQL 实例跨库访问；屏障连接由 `pkg/dtm.BarrierDB` 提供。空补偿（cancel 先于/无 try）由屏障自动跳过，悬挂（try 晚于 cancel）被屏障拦截。
 
 ### 服务接口
 

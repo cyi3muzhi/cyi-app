@@ -36,8 +36,9 @@ func (r *orderRepo) CreateOrder(ctx context.Context, order *biz.Order) error {
 		Receiver:       order.Receiver,
 		Phone:          order.Phone,
 		Address:        order.Address,
-		Freight:        order.Freight,
+		Freight:        order.Freight, // 运费由订单服务端重算，此处传值仅占位
 		CouponRecordId: order.CouponRecordID, // 优惠券发放记录ID（0=不使用优惠券）
+		IdempotencyKey: order.IdempotencyKey, // 客户端幂等键（防重复下单）
 	}
 	// 购物车结算：多商品走 items
 	if len(order.Items) > 0 {

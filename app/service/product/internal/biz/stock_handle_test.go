@@ -43,73 +43,68 @@ func TestStockUseCase_UpdateStock(t *testing.T) {
 func TestStockUseCase_ReserveStock(t *testing.T) {
 	var called bool
 	repo := &mockStockRepo{
-		reserveStock: func(ctx context.Context, skuID int64, count, version int32) (int32, error) {
+		reserveStock: func(ctx context.Context, key StockOpKey, skuID int64, count int32) error {
 			called = true
 			assert.Equal(t, int64(100), skuID)
 			assert.Equal(t, int32(5), count)
-			assert.Equal(t, int32(1), version)
-			return 10, nil
+			return nil
 		},
 	}
 	uc := NewStockUseCase(repo)
 
-	result, err := uc.ReserveStock(context.Background(), 100, 5, 1)
+	err := uc.ReserveStock(context.Background(), StockOpKey{}, 100, 5)
 	assert.NoError(t, err)
-	assert.Equal(t, int32(10), result)
 	assert.True(t, called)
 }
 
 func TestStockUseCase_DeductStock(t *testing.T) {
 	var called bool
 	repo := &mockStockRepo{
-		deductStock: func(ctx context.Context, skuID int64, count, version int32) (int32, error) {
+		deductStock: func(ctx context.Context, key StockOpKey, skuID int64, count int32) error {
 			called = true
 			assert.Equal(t, int64(100), skuID)
 			assert.Equal(t, int32(5), count)
-			return 20, nil
+			return nil
 		},
 	}
 	uc := NewStockUseCase(repo)
 
-	result, err := uc.DeductStock(context.Background(), 100, 5, 1)
+	err := uc.DeductStock(context.Background(), StockOpKey{}, 100, 5)
 	assert.NoError(t, err)
-	assert.Equal(t, int32(20), result)
 	assert.True(t, called)
 }
 
 func TestStockUseCase_ReleaseStock(t *testing.T) {
 	var called bool
 	repo := &mockStockRepo{
-		releaseStock: func(ctx context.Context, skuID int64, count, version int32) (int32, error) {
+		releaseStock: func(ctx context.Context, key StockOpKey, skuID int64, count int32) error {
 			called = true
 			assert.Equal(t, int64(100), skuID)
 			assert.Equal(t, int32(5), count)
-			return 15, nil
+			return nil
 		},
 	}
 	uc := NewStockUseCase(repo)
 
-	result, err := uc.ReleaseStock(context.Background(), 100, 5, 1)
+	err := uc.ReleaseStock(context.Background(), StockOpKey{}, 100, 5)
 	assert.NoError(t, err)
-	assert.Equal(t, int32(15), result)
 	assert.True(t, called)
 }
 
 func TestStockUseCase_AddStock(t *testing.T) {
 	var called bool
 	repo := &mockStockRepo{
-		addStock: func(ctx context.Context, skuID int64, count, version int32) (int32, error) {
+		addStock: func(ctx context.Context, key StockOpKey, skuID int64, count int32) error {
 			called = true
 			assert.Equal(t, int64(100), skuID)
 			assert.Equal(t, int32(10), count)
-			return 30, nil
+			return nil
 		},
 	}
 	uc := NewStockUseCase(repo)
 
-	result, err := uc.AddStock(context.Background(), 100, 10, 1)
+	err := uc.AddStock(context.Background(), StockOpKey{}, 100, 10)
 	assert.NoError(t, err)
-	assert.Equal(t, int32(30), result)
 	assert.True(t, called)
 }
 

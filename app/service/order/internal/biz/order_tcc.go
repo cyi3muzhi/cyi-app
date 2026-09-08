@@ -12,7 +12,6 @@ import (
 
 	"github.com/dtm-labs/dtm/client/dtmcli"
 	"github.com/go-resty/resty/v2"
-	"github.com/google/uuid"
 )
 
 // DtmTCCRepo DTM TCC 订单分支所需的仓储（在 DTM 屏障事务内执行，保证幂等）
@@ -41,6 +40,21 @@ func (uc *OrderUseCase) CreateTCC(ctx context.Context, in *Order) error {
 		return v1.ErrorOrderProductEmpty("order item is empty")
 	}
 
+	// 阶段零：客户端幂等键去重——同一用户相同幂等键重复提交，直接返回首次创建的订单
+	// 覆盖网络重试/双击重复下单；(user_id, idempotency_key) 唯一索引为最终兜底
+	if in.IdempotencyKey != "" {
+		exist, err := uc.repo.GetOrderByIdempotencyKey(ctx, in.UserID, in.IdempotencyKey)
+		if err != nil {
+			return err
+		}
+		if exist != nil {
+			uc.log.Infof("幂等命中已存在订单，重复下单直接返回, userID: %d, key: %s, orderID: %d", in.UserID, in.IdempotencyKey, exist.ID)
+			in.ID = exist.ID
+			in.OrderNo = exist.OrderNo
+			return nil
+		}
+	}
+
 	// 阶段一：校验商品并计算金额（只读，不落库）
 	if err := uc.prepareOrder(ctx, in); err != nil {
 		return err
@@ -53,7 +67,9 @@ func (uc *OrderUseCase) CreateTCC(ctx context.Context, in *Order) error {
 	in.SetStatus(v1.OrderStatus_WaitPay, uc.repo, uc.stockRe, uc.logger)
 
 	// DTM TCC 编排：Try 由本服务进程内发起（用 localURL），Confirm/Cancel 由 DTM 服务回调（用 busiURL）
-	gid := strings.ReplaceAll(uuid.NewString(), "-", "")
+	// gid 使用确定性值 tcc-{orderNo}：DTM 对同一 gid 的重复提交（超时重试等）路由到同一全局事务，
+	// 与库存侧屏障键（gid=tcc-{orderNo}）共同构成端到端幂等
+	gid := "tcc-" + in.OrderNo
 	local := strings.TrimRight(uc.localURL, "/")
 	busi := strings.TrimRight(uc.busiURL, "/")
 	err := dtmcli.TccGlobalTransaction2(uc.dtmServer, gid,
@@ -101,42 +117,10 @@ func (uc *OrderUseCase) CreateTCC(ctx context.Context, in *Order) error {
 }
 
 // DtmStockTry 库存分支 Try：逐 SKU 预留库存（校验可用量后预留）
-// 任一 SKU 预留失败时，先内部补偿释放已预留的 SKU，避免 DTM 重试导致重复预留
+// 库存预留经 NATS 携带确定性屏障键（gid=tcc-{orderNo}）在 product 侧屏障事务内执行：
+// DTM 重试同一分支时 product 侧屏障自动去重，不会重复预留；
+// 任一 SKU 预留失败直接返回业务失败，由 DTM 驱动 Cancel 补偿（屏障保证只释放真实预留成功的 SKU，空补偿自动跳过）
 func (uc *OrderUseCase) DtmStockTry(ctx context.Context, barrier *dtmcli.BranchBarrier, raw []byte) error {
-	var in Order
-	if err := json.Unmarshal(raw, &in); err != nil {
-		return err
-	}
-	return barrier.CallWithDB(uc.barrierDB, func(tx *sql.Tx) error {
-		reserved := make([]int, 0, len(in.Items)) // 已成功预留的 item 下标
-		for i, item := range in.Items {
-			stock, err := uc.stockRe.GetStock(ctx, item.SkuID)
-			if err != nil {
-				uc.releaseReservedStock(ctx, in, reserved)
-				return err
-			}
-			if stock.Available < item.Quantity {
-				uc.releaseReservedStock(ctx, in, reserved)
-				return fmt.Errorf("%w: 商品 SKU %d 库存不足", dtmcli.ErrFailure, item.SkuID)
-			}
-			if _, err := uc.stockRe.ReserveStock(ctx, item.SkuID, item.Quantity, stock.Version); err != nil {
-				uc.releaseReservedStock(ctx, in, reserved)
-				// 预留失败（库存不足/版本冲突）属于业务失败，直接终止事务，不做无意义重试
-				return fmt.Errorf("%w: 预留库存失败 sku=%d: %v", dtmcli.ErrFailure, item.SkuID, err)
-			}
-			reserved = append(reserved, i)
-		}
-		return nil
-	})
-}
-
-// DtmStockConfirm 库存分支 Confirm：空操作（下单完成保持预留，支付时才真正扣减）
-func (uc *OrderUseCase) DtmStockConfirm(ctx context.Context, barrier *dtmcli.BranchBarrier, raw []byte) error {
-	return nil
-}
-
-// DtmStockCancel 库存分支 Cancel：释放已预留库存（TCC 补偿，幂等：已释放的 SKU 跳过）
-func (uc *OrderUseCase) DtmStockCancel(ctx context.Context, barrier *dtmcli.BranchBarrier, raw []byte) error {
 	var in Order
 	if err := json.Unmarshal(raw, &in); err != nil {
 		return err
@@ -147,36 +131,44 @@ func (uc *OrderUseCase) DtmStockCancel(ctx context.Context, barrier *dtmcli.Bran
 			if err != nil {
 				return err
 			}
-			// 已无预留（从未预留或已释放）视为已处理，保证幂等
-			if stock.Reserved < item.Quantity {
-				continue
+			if stock.Available < item.Quantity {
+				return fmt.Errorf("%w: 商品 SKU %d 库存不足", dtmcli.ErrFailure, item.SkuID)
 			}
-			if _, err := uc.stockRe.ReleaseStock(ctx, item.SkuID, item.Quantity, stock.Version); err != nil {
-				return fmt.Errorf("%w: 释放库存失败 sku=%d: %v", dtmcli.ErrFailure, item.SkuID, err)
+			key := tccStockKey(in.OrderNo, item.SkuID, pkgdtm.OpTry)
+			if err := uc.stockRe.ReserveStock(ctx, key, item.SkuID, item.Quantity); err != nil {
+				// 预留失败（库存不足）属于业务失败，直接终止事务，不做无意义重试
+				return fmt.Errorf("%w: 预留库存失败 sku=%d: %v", dtmcli.ErrFailure, item.SkuID, err)
 			}
 		}
 		return nil
 	})
 }
 
-// releaseReservedStock 释放已成功预留的库存（Try 分支失败时的内部补偿，尽力而为）
-func (uc *OrderUseCase) releaseReservedStock(ctx context.Context, in Order, reserved []int) {
-	for _, i := range reserved {
-		item := in.Items[i]
-		for retry := 0; retry < 3; retry++ {
-			s, e := uc.stockRe.GetStock(ctx, item.SkuID)
-			if e != nil {
-				uc.log.Errorf("tcc try rollback get stock failed for skuID %d: %v", item.SkuID, e)
-				continue
-			}
-			if _, e = uc.stockRe.ReleaseStock(ctx, item.SkuID, item.Quantity, s.Version); e != nil {
-				uc.log.Errorf("tcc try rollback release stock failed for skuID %d (retry %d): %v", item.SkuID, retry, e)
-				continue
-			}
-			uc.log.Infof("tcc try rollback release stock success for skuID %d, qty %d", item.SkuID, item.Quantity)
-			break
-		}
+// DtmStockConfirm 库存分支 Confirm：空操作（下单完成保持预留，支付时才真正扣减）
+func (uc *OrderUseCase) DtmStockConfirm(ctx context.Context, barrier *dtmcli.BranchBarrier, raw []byte) error {
+	return nil
+}
+
+// DtmStockCancel 库存分支 Cancel：释放已预留库存（TCC 补偿）
+// 释放键与 Try 同一 gid=tcc-{orderNo}，product 侧屏障保证：
+//   - 从未成功预留的 SKU（Try 失败/悬挂）：空补偿自动跳过
+//   - 已释放过的 SKU（DTM 重试 Cancel）：幂等跳过
+//
+// 无需再读库存判断预留量，屏障与 SQL 条件共同裁决
+func (uc *OrderUseCase) DtmStockCancel(ctx context.Context, barrier *dtmcli.BranchBarrier, raw []byte) error {
+	var in Order
+	if err := json.Unmarshal(raw, &in); err != nil {
+		return err
 	}
+	return barrier.CallWithDB(uc.barrierDB, func(tx *sql.Tx) error {
+		for _, item := range in.Items {
+			key := tccStockKey(in.OrderNo, item.SkuID, pkgdtm.OpCancel)
+			if err := uc.stockRe.ReleaseStock(ctx, key, item.SkuID, item.Quantity); err != nil {
+				return fmt.Errorf("%w: 释放库存失败 sku=%d: %v", dtmcli.ErrFailure, item.SkuID, err)
+			}
+		}
+		return nil
+	})
 }
 
 // DtmOrderTry 订单分支 Try：在 DTM 屏障事务内创建订单（待支付）

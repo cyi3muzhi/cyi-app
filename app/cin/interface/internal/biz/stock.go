@@ -11,13 +11,12 @@ type Stock struct {
 	Total     int32
 	Available int32
 	Reserved  int32
-	Version   int32
 }
 
 type StockRepo interface {
 	UpdateStock(ctx context.Context, stock *Stock) error
-	ReserveStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
-	DeductStock(ctx context.Context, productID int64, count int32, version int32) (int32, error)
+	ReserveStock(ctx context.Context, productID int64, count int32) error
+	DeductStock(ctx context.Context, productID int64, count int32) error
 	GetStock(ctx context.Context, productID int64) (*Stock, error)
 }
 
@@ -37,12 +36,12 @@ func (u *StockUseCase) UpdateStock(ctx context.Context, stock *Stock) error {
 	return u.repo.UpdateStock(ctx, stock)
 }
 
-func (u *StockUseCase) ReserveStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
-	return u.repo.ReserveStock(ctx, productID, count, version)
+func (u *StockUseCase) ReserveStock(ctx context.Context, productID int64, count int32) error {
+	return u.repo.ReserveStock(ctx, productID, count)
 }
 
-func (u *StockUseCase) DeductStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
-	return u.repo.DeductStock(ctx, productID, count, version)
+func (u *StockUseCase) DeductStock(ctx context.Context, productID int64, count int32) error {
+	return u.repo.DeductStock(ctx, productID, count)
 }
 
 func (u *StockUseCase) GetStock(ctx context.Context, productID int64) (*Stock, error) {

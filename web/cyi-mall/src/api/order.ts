@@ -25,11 +25,28 @@ export interface OrderItemDTO {
 /** 待付款订单支付超时时长（秒）：下单后 30 分钟内未支付由 task 服务自动取消 */
 export const PAY_TIMEOUT_SECONDS = 30 * 60
 
+/**
+ * 生成客户端幂等键（32 位无横线 UUID）
+ * 每次下单/结算动作生成一次，重复提交（双击/网络重试）时复用同一键，后端据此返回同一订单，防止重复下单
+ */
+export function generateIdempotencyKey(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID().replace(/-/g, '')
+  }
+  // 兼容不支持 crypto.randomUUID 的环境：时间戳 + 两段随机数
+  return (
+    Date.now().toString(16) +
+    Math.random().toString(16).slice(2, 10) +
+    Math.random().toString(16).slice(2, 10)
+  )
+}
+
 /** 创建订单 */
 export function createOrder(data: {
   productId: number
   count: number
   skuId?: number
+  idempotencyKey?: string // 客户端幂等键（防重复下单）
 }) {
   return request.post<any, { orderId: number }>('/order/v1/create', data)
 }
@@ -66,8 +83,9 @@ export function cartCheckout(data: {
   receiver: string
   phone: string
   address: string
-  freight: number // 单位：分
+  freight: number // 单位：分（服务端会按规则重算，前端传值忽略）
   coupon_id?: number // 优惠券发放记录 ID（0=不使用优惠券）
+  idempotency_key?: string // 客户端幂等键（防重复下单）
 }) {
   return request.post<any, { orderId: number }>('/order/v1/cart_checkout', data)
 }

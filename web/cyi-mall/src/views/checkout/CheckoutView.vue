@@ -235,7 +235,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/store/cart'
 import { listAddress } from '@/api/user'
-import { cartCheckout, payOrder, getOrderDetail } from '@/api/order'
+import { cartCheckout, payOrder, getOrderDetail, generateIdempotencyKey } from '@/api/order'
 import { listUsableCoupons } from '@/api/coupon'
 import { deleteCartItem } from '@/api/cart'
 import BackButton from '@/components/BackButton.vue'
@@ -372,6 +372,11 @@ function formatMoney(cents: number): string {
 
 // ---- 提交订单 ----
 const submitting = ref(false)
+/**
+ * 客户端幂等键：首次提交时生成，下单成功后重置；
+ * 提交失败（含网络抖动/响应丢失）后重试复用同一键，后端据此返回同一订单，防止重复下单
+ */
+const idempotencyKey = ref('')
 
 // ---- 付款弹窗 ----
 const payDialogVisible = ref(false)
@@ -391,6 +396,8 @@ async function onSubmit() {
   }
   if (submitting.value) return
   submitting.value = true
+  // 首次提交生成幂等键；失败重试复用，成功后重置（防止响应丢失导致的重复下单）
+  if (!idempotencyKey.value) idempotencyKey.value = generateIdempotencyKey()
   try {
     const addr = selectedAddress.value
     const res = await cartCheckout({
@@ -399,12 +406,14 @@ async function onSubmit() {
       receiver: addr.receiver,
       phone: addr.phone,
       address: `${addr.province || ''}${addr.city || ''}${addr.district || ''}${addr.detail || ''}`,
-      freight: Math.round(shipping.value * 100), // 元 → 分
-      coupon_id: selectedRecordId.value // 优惠券发放记录 ID（0=不使用）
+      freight: Math.round(shipping.value * 100), // 元 → 分（服务端会按规则重算，此处仅展示用）
+      coupon_id: selectedRecordId.value, // 优惠券发放记录 ID（0=不使用）
+      idempotency_key: idempotencyKey.value // 客户端幂等键（防重复下单）
     })
     // 下单成功：先清理购物车中已结算商品，再弹出付款
     await Promise.all(selectedItems.value.map(i => deleteCartItem(i.productId, i.skuId)))
     await cartStore.loadCart()
+    idempotencyKey.value = '' // 成功后重置，下次下单使用新键
     openPayDialog(res.orderId)
   } catch (e: any) {
     toast(e?.response?.data?.message || e?.message || '下单失败，请重试', 'error')

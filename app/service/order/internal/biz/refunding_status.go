@@ -22,15 +22,17 @@ func NewRefundingStatus(repo OrderRepo, stockRe StockRepo, logger log.Logger) *R
 	}
 }
 
-// Refunded 退款完成（增加库存 + 状态转换）
+// Refunded 退款审核通过：状态机先行 + 幂等库存对账
+//  1. 先 CAS 流转退款终态（Refunding->Refunded）
+//  2. 库存对账（幂等）：逆扣减方向退还已支付扣减的库存（total+，available+），逆预留方向为空操作；
+//     对账失败仅告警（屏障幂等保证可安全重跑），不回滚退款状态
 func (s *RefundingStatus) Refunded(ctx context.Context, order *Order) error {
-	// 1. 增加库存（恢复已扣减的库存 total+，available+）
-	if err := s.addStockForOrder(ctx, order); err != nil {
-		s.log.WithContext(ctx).Errorf("增加库存失败, orderID: %d, error: %v", order.ID, err)
+	if err := s.transitionTo(ctx, order, v1.OrderStatus_Refunded); err != nil {
 		return err
 	}
-
-	// 2. 转换状态
 	s.log.WithContext(ctx).Infof("订单退款成功, orderID: %d", order.ID)
-	return s.transitionTo(ctx, order, v1.OrderStatus_Refunded)
+	if err := reconcileCancelStock(ctx, s.stockRe, s.log, order); err != nil {
+		s.log.WithContext(ctx).Errorf("退款成功后库存对账失败（状态已退款，需补偿重试）, orderID: %d: %v", order.ID, err)
+	}
+	return nil
 }

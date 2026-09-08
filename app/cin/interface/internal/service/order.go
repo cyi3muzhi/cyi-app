@@ -43,8 +43,9 @@ func (s *CinInterface) CartCheckout(ctx context.Context, req *v1.CartCheckoutReq
 		Receiver:       req.Receiver,
 		Phone:          req.Phone,
 		Address:        req.Address,
-		Freight:        req.Freight,
+		Freight:        req.Freight, // 运费由订单服务端重算，前端传值忽略
 		CouponRecordID: req.CouponId, // 优惠券发放记录ID（0=不使用）
+		IdempotencyKey: req.IdempotencyKey, // 客户端幂等键（防重复下单）
 	}
 	for _, item := range req.Items {
 		in.Items = append(in.Items, &biz.CartItem{

@@ -6,8 +6,8 @@ import (
 
 type Order struct {
 	gorm.Model
-	// 用户ID
-	UserID int64 `json:"user_id" gorm:"index;not null;comment:用户ID"`
+	// 用户ID（与 IdempotencyKey 组成联合唯一索引，幂等键按用户维度去重）
+	UserID int64 `json:"user_id" gorm:"index;uniqueIndex:idx_user_idempotency;not null;comment:用户ID"`
 	// 订单总金额（单位：分）
 	TotalPrice int64 `json:"total_price" gorm:"not null;default:0;comment:订单总金额"`
 	// 支付金额（单位：分）
@@ -22,6 +22,8 @@ type Order struct {
 	OrderNo string `json:"order_no" gorm:"uniqueIndex;not null;default:'';comment:订单号"`
 	// 优惠券发放记录ID
 	CouponRecordID int64 `json:"coupon_record_id" gorm:"default:0;comment:优惠券发放记录ID"`
+	// 客户端幂等键（同一用户重复提交相同键返回同一订单；未传时服务端填充 auto-{orderNo} 保证唯一）
+	IdempotencyKey string `json:"idempotency_key" gorm:"uniqueIndex:idx_user_idempotency;size:64;not null;default:'';comment:客户端幂等键"`
 }
 
 type IOrder interface {

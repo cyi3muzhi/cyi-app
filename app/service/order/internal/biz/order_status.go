@@ -26,42 +26,45 @@ func (b *statusBase) transitionTo(ctx context.Context, order *Order, newStatus v
 	return nil
 }
 
-// releaseStockForOrder 释放订单中所有商品的预留库存
-// 适用场景：取消未支付订单（按SKU维度，reserved-，available+）
-func (b *statusBase) releaseStockForOrder(ctx context.Context, order *Order) error {
+// reconcileCancelStock 取消/退款终态库存对账（幂等，可安全重复/并发执行）
+// 对订单每个 SKU 执行两个方向的逆操作，由 product 侧屏障分别裁决是否真正生效：
+//  1. ReleaseStock(tcc-{orderNo}, cancel)：逆「下单预留」——未支付预留归还可售；
+//     预留已被支付扣减消耗时 SQL 条件（reserved>=N）不命中，为幂等空操作
+//  2. AddStock(pay-{orderNo}, cancel)：逆「支付扣减」——已支付扣减退还可售；
+//     扣减从未真实执行时屏障空补偿自动跳过，不会多加库存
+//
+// 因此调用方无需判断订单当前处于「预留」还是「已扣减」状态：
+// 未支付取消、已支付取消、退款完成、支付失败对账均可统一调用，重复调用结果一致
+func reconcileCancelStock(ctx context.Context, stockRe StockRepo, logger *log.Helper, order *Order) error {
 	for _, item := range order.Items {
-		skuID := item.SkuID
-		stock, err := b.stockRe.GetStock(ctx, skuID)
-		if err != nil {
-			b.log.WithContext(ctx).Errorf("获取库存失败, skuID: %d, error: %v", skuID, err)
+		releaseKey := tccStockKey(order.OrderNo, item.SkuID, "cancel")
+		if err := callStockOpWithRetry(ctx, logger, "逆预留", releaseKey, item.SkuID, item.Quantity, stockRe.ReleaseStock); err != nil {
+			logger.WithContext(ctx).Errorf("取消对账释放预留库存失败, orderNo: %s, skuID: %d, error: %v", order.OrderNo, item.SkuID, err)
 			return err
 		}
-
-		if _, err := b.stockRe.ReleaseStock(ctx, skuID, item.Quantity, stock.Version); err != nil {
-			b.log.WithContext(ctx).Errorf("释放预留库存失败, skuID: %d, error: %v", skuID, err)
+		addKey := payStockKey(order.OrderNo, item.SkuID, "cancel")
+		if err := callStockOpWithRetry(ctx, logger, "逆扣减", addKey, item.SkuID, item.Quantity, stockRe.AddStock); err != nil {
+			logger.WithContext(ctx).Errorf("取消对账退还扣减库存失败, orderNo: %s, skuID: %d, error: %v", order.OrderNo, item.SkuID, err)
 			return err
 		}
 	}
 	return nil
 }
 
-// addStockForOrder 增加订单中所有商品的库存总量
-// 适用场景：取消已支付订单或退款完成（按SKU维度，total+，available+）
-func (b *statusBase) addStockForOrder(ctx context.Context, order *Order) error {
-	for _, item := range order.Items {
-		skuID := item.SkuID
-		stock, err := b.stockRe.GetStock(ctx, skuID)
-		if err != nil {
-			b.log.WithContext(ctx).Errorf("获取库存失败, skuID: %d, error: %v", skuID, err)
-			return err
-		}
+// stockOpFunc 库存操作函数签名（与 StockRepo 的四个库存操作一致）
+type stockOpFunc func(ctx context.Context, key StockOpKey, skuID int64, count int32) error
 
-		if _, err := b.stockRe.AddStock(ctx, skuID, item.Quantity, stock.Version); err != nil {
-			b.log.WithContext(ctx).Errorf("增加库存失败, skuID: %d, error: %v", skuID, err)
-			return err
+// callStockOpWithRetry 带 3 次重试的库存操作调用
+// 屏障幂等保证重试安全：同一 (gid,branch,op) 重复请求不会产生重复库存变更
+func callStockOpWithRetry(ctx context.Context, logger *log.Helper, opName string, key StockOpKey, skuID int64, count int32, fn stockOpFunc) error {
+	var err error
+	for retry := 0; retry < 3; retry++ {
+		if err = fn(ctx, key, skuID, count); err == nil {
+			return nil
 		}
+		logger.WithContext(ctx).Errorf("%s库存操作失败, gid: %s, skuID: %d, 第 %d 次重试, error: %v", opName, key.Gid, skuID, retry+1, err)
 	}
-	return nil
+	return err
 }
 
 // 以下是 OrderStatus 接口的默认实现，具体状态处理器可重写允许的操作

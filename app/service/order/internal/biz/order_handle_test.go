@@ -31,37 +31,37 @@ func (m *mockProductRepoForOrder) GetProduct(ctx context.Context, productID int6
 // mockStockRepoForOrder 用于 OrderUseCase 测试的库存 mock
 type mockStockRepoForOrder struct {
 	getStockFn     func(ctx context.Context, productID int64) (*productRpc.GetStockReply, error)
-	reserveStockFn func(ctx context.Context, productID int64, quantity int32, version int32) (int32, error)
-	deductStockFn  func(ctx context.Context, productID int64, quantity int32, version int32) (int32, error)
+	reserveStockFn func(ctx context.Context, key StockOpKey, productID int64, quantity int32) error
+	deductStockFn  func(ctx context.Context, key StockOpKey, productID int64, quantity int32) error
 }
 
 func (m *mockStockRepoForOrder) GetStock(ctx context.Context, productID int64) (*productRpc.GetStockReply, error) {
 	if m.getStockFn != nil {
 		return m.getStockFn(ctx, productID)
 	}
-	return &productRpc.GetStockReply{Total: 100, Available: 50, Reserved: 50, Version: 1}, nil
+	return &productRpc.GetStockReply{Total: 100, Available: 50, Reserved: 50}, nil
 }
 
-func (m *mockStockRepoForOrder) ReserveStock(ctx context.Context, productID int64, quantity int32, version int32) (int32, error) {
+func (m *mockStockRepoForOrder) ReserveStock(ctx context.Context, key StockOpKey, productID int64, quantity int32) error {
 	if m.reserveStockFn != nil {
-		return m.reserveStockFn(ctx, productID, quantity, version)
+		return m.reserveStockFn(ctx, key, productID, quantity)
 	}
-	return 2, nil
+	return nil
 }
 
-func (m *mockStockRepoForOrder) DeductStock(ctx context.Context, productID int64, quantity int32, version int32) (int32, error) {
+func (m *mockStockRepoForOrder) DeductStock(ctx context.Context, key StockOpKey, productID int64, quantity int32) error {
 	if m.deductStockFn != nil {
-		return m.deductStockFn(ctx, productID, quantity, version)
+		return m.deductStockFn(ctx, key, productID, quantity)
 	}
-	return 2, nil
+	return nil
 }
 
-func (m *mockStockRepoForOrder) ReleaseStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
-	return 2, nil
+func (m *mockStockRepoForOrder) ReleaseStock(_ context.Context, _ StockOpKey, _ int64, _ int32) error {
+	return nil
 }
 
-func (m *mockStockRepoForOrder) AddStock(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
-	return 2, nil
+func (m *mockStockRepoForOrder) AddStock(_ context.Context, _ StockOpKey, _ int64, _ int32) error {
+	return nil
 }
 
 // mockOrderRepoForOrder 用于 OrderUseCase 测试的订单 mock
@@ -81,6 +81,11 @@ func (m *mockOrderRepoForOrder) CreateOrder(ctx context.Context, in *Order) erro
 
 // GetOrderByOrderNo 按订单号查询订单（DTM TCC 回查用，默认返回 nil）
 func (m *mockOrderRepoForOrder) GetOrderByOrderNo(_ context.Context, _ string) (*Order, error) {
+	return nil, nil
+}
+
+// GetOrderByIdempotencyKey 幂等键查询（默认未命中，下单去重测试可注入）
+func (m *mockOrderRepoForOrder) GetOrderByIdempotencyKey(_ context.Context, _ int64, _ string) (*Order, error) {
 	return nil, nil
 }
 
@@ -294,7 +299,7 @@ func TestOrderUseCase_Create_InsufficientStock(t *testing.T) {
 	}
 	stockRe := &mockStockRepoForOrder{
 		getStockFn: func(_ context.Context, _ int64) (*productRpc.GetStockReply, error) {
-			return &productRpc.GetStockReply{Total: 100, Available: 3, Reserved: 97, Version: 1}, nil
+			return &productRpc.GetStockReply{Total: 100, Available: 3, Reserved: 97}, nil
 		},
 	}
 	uc := newTestOrderUseCase(&mockOrderRepoForOrder{}, productRe, stockRe)
@@ -317,8 +322,8 @@ func TestOrderUseCase_Create_ReserveStockFailed(t *testing.T) {
 		},
 	}
 	stockRe := &mockStockRepoForOrder{
-		reserveStockFn: func(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
-			return 0, v1.ErrorStockOperationFailed("concurrent conflict")
+		reserveStockFn: func(_ context.Context, _ StockOpKey, _ int64, _ int32) error {
+			return v1.ErrorStockOperationFailed("concurrent conflict")
 		},
 	}
 	uc := newTestOrderUseCase(&mockOrderRepoForOrder{}, productRe, stockRe)
@@ -368,9 +373,9 @@ func TestOrderUseCase_Create_MultipleItems(t *testing.T) {
 	}
 	reserveCalls := make([]int32, 0)
 	stockRe := &mockStockRepoForOrder{
-		reserveStockFn: func(_ context.Context, _ int64, quantity int32, _ int32) (int32, error) {
+		reserveStockFn: func(_ context.Context, _ StockOpKey, _ int64, quantity int32) error {
 			reserveCalls = append(reserveCalls, quantity)
-			return 2, nil
+			return nil
 		},
 	}
 	uc := newTestOrderUseCase(&mockOrderRepoForOrder{}, productRe, stockRe)
@@ -472,8 +477,8 @@ func TestOrderUseCase_Pay_StockDeductFailed(t *testing.T) {
 		},
 	}
 	stockRe := &mockStockRepoForOrder{
-		deductStockFn: func(_ context.Context, _ int64, _ int32, _ int32) (int32, error) {
-			return 0, v1.ErrorStockOperationFailed("deduct conflict")
+		deductStockFn: func(_ context.Context, _ StockOpKey, _ int64, _ int32) error {
+			return v1.ErrorStockOperationFailed("deduct conflict")
 		},
 	}
 	uc := newTestOrderUseCase(repo, &mockProductRepoForOrder{}, stockRe)

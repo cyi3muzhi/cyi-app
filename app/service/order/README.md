@@ -41,7 +41,8 @@ app/service/order/
 │   │   ├── complete_status.go           # 已完成状态处理器
 │   │   ├── terminal_status.go           # 终端状态处理器（已取消/已退款）
 │   │   ├── refunding_status.go          # 退款中状态处理器
-│   │   ├── service.go                   # ProductRepo、StockRepo 接口定义
+│   │   ├── service.go                   # ProductRepo、StockRepo 接口定义、StockOpKey 屏障幂等键、tcc/pay gid 构造
+│   │   ├── order.go                     # 订单聚合根（含客户端幂等键字段、运费规则 CalcFreight：满199免运费否则10元）
 │   │   ├── order_test.go                # 订单单元测试
 │   │   ├── order_status_test.go         # 状态机测试
 │   │   └── order_status_stock_test.go   # 状态机库存测试
@@ -56,7 +57,7 @@ app/service/order/
 │   │   ├── order.go         # 订单数据访问
 │   │   ├── refund.go        # 退款单数据访问
 │   │   ├── product.go       # 商品仓储实现（远程调用商品服务）
-│   │   ├── stock_nats.go    # 库存仓储实现（远程调用商品服务，NATS 事件广播库存变更）
+│   │   ├── stock_nats.go    # 库存仓储实现（NATS 请求 product 服务，携带 DTM 屏障键，5s 超时兜底）
 │   │   ├── curd/
 │   │   │   ├── gen.go           # GORM Gen 代码生成工具
 │   │   │   ├── order.gen.go     # 订单 CURD
@@ -65,7 +66,7 @@ app/service/order/
 │   │   │   ├── payment_log.gen.go    # 支付日志 CURD
 │   │   │   └── order_refund.gen.go   # 退款单 CURD
 │   │   └── models/
-│   │       ├── order.go         # 订单模型
+│   │       ├── order.go         # 订单模型（含 (user_id, idempotency_key) 幂等唯一索引）
 │   │       ├── order_item.go    # 订单项模型
 │   │       ├── logistics.go     # 物流模型
 │   │       ├── payment_log.go   # 支付日志模型
@@ -77,6 +78,8 @@ app/service/order/
 │   └── service/
 │       ├── service.go      # 服务层依赖注入
 │       └── order.go        # Order 服务（gRPC）
+├── integration/
+│   └── tcc_test.go         # DTM TCC 下单链路集成测试（//go:build integration 门控，需 mysql/nats/dtm 基础设施）
 └── Makefile                # 构建脚本
 ```
 
@@ -130,7 +133,7 @@ app/service/order/
 
 | UseCase | 职责 |
 |---------|------|
-| `OrderUseCase` | 订单管理（创建、查询、更新、支付、发货、物流轨迹查询），含商品校验、库存校验、预留库存、扣减库存、物流信息写入；下单走 **DTM TCC 编排**（预留库存+创建订单，失败自动补偿）；下单成功后投递 30 分钟超时自动取消延迟任务（Asynq）；支付幂等 + 失败补偿库存 + 写支付流水；取消自动返还优惠券 |
+| `OrderUseCase` | 订单管理（创建、查询、更新、支付、发货、物流轨迹查询），含商品校验、库存校验、预留库存、扣减库存、物流信息写入；下单走 **DTM TCC 编排**（预留库存+创建订单，失败自动补偿）；**客户端幂等键去重**（`idempotency_key`，重复提交返回首单）；**运费服务端重算**（满 199 元免运费，否则 10 元，不信任客户端传值）；下单成功后投递 30 分钟超时自动取消延迟任务（Asynq）；支付幂等 + 失败终态对账补偿库存 + 写支付流水；取消自动返还优惠券 |
 | `RefundUseCase` | 退款售后（仅退款）：用户申请退款（仅已支付/待发货订单）→ 订单进入退款中并生成退款单；管理端审核通过 → 退款完成并恢复库存；审核拒绝 → 订单恢复申请前状态；退款单列表查询（管理端全量/用户端按用户过滤） |
 | `OrderTimeoutTaskRepo` | 订单超时任务投递仓库（data 层基于 asynq 延迟队列实现：`ProcessIn(30min)` + 固定 TaskID 去重） |
 
@@ -148,19 +151,22 @@ app/service/order/
 
 - **补偿自动执行**：任一分支 Try 失败 → DTM 按序执行已成功分支的 Cancel（如建单失败自动释放已预留库存），事务状态持久化在 `dtm` 库，失败自动重试。
 - **屏障幂等**：分支回调走 DTM 屏障（`dtm_barrier.barrier` 表），保证重复请求、空补偿、悬挂等异常场景安全。
+- **端到端屏障键**：库存 NATS 请求携带确定性屏障三元组——下单预留/释放 `gid=tcc-{orderNo}`、支付扣减/退还 `gid=pay-{orderNo}`，`branch_id=stock-{skuID}`，`op=try/cancel`；product 侧在屏障事务内执行库存 SQL，跨服务重试、支付/取消并发、终态对账都只生效一次。全局事务 gid 使用确定性值 `tcc-{orderNo}`，DTM 对同一 gid 的重复提交路由到同一全局事务。
+- **终态对账**：支付扣减/取消订单采用「状态机 CAS 先行 + 终态库存对账」（`reconcileCancelStock`）：先 CAS 抢占终态，再逐 SKU 幂等释放预留/退还扣减，对账失败仅告警不回滚状态，可安全重试，替代手工局部补偿。
+- **NATS 超时兜底**：库存 NATS 请求统一 5s 超时（`stockNATSTimeout`），product 服务异常时下单链路不会无限阻塞。
 - **分支回调**：DTM 通过 HTTP 调用本服务 `:8003` 上的 `/api/dtm/{stock,order}/{try,confirm,cancel}` 路由；业务失败返回 409（不重试），系统错误返回 500（自动重试）。
 - **通用封装**：分支注册/屏障事务/配置读取封装在公共包 [`pkg/dtm`](../../pkg/dtm/)（`RegisterTCCBranches`、`BranchHandler`、`GormFromTx`、`GetServerAddr` 等），其他服务接入 DTM 可直接复用。
 - 原有 `OrderUseCase.Create`（手写补偿）保留作为回退与单元测试对象。
 
 > 待付款订单超时自动取消链路：**订单服务**下单成功 → 投递 `delay:order_timeout_cancel` 延迟任务（30 分钟，固定 TaskID `order_timeout:{orderId}`）→ **task 服务**消费时通过 `GetOrder` 校验状态，仍为待付款才调 `CancelOrder`（userID=0 系统操作）自动取消，已支付/已取消等状态幂等跳过。共享类型定义于 `pkg/ordertask`。
 
-> **并发安全**：状态转换（支付/取消/收货）通过 `UpdateStatusIf` 条件更新落库（`UPDATE ... WHERE id=? AND status=?`），行数=0 表示状态已被并发变更（如支付时被超时取消），支付侧自动补偿已扣库存，避免库存泄漏。支付成功后写入 `payment_log` 支付流水；取消订单时若核销过优惠券则自动调用 marketing `ReleaseCoupon` 返还。
+> **并发安全**：状态转换（支付/取消/收货）通过 `UpdateStatusIf` 条件更新落库（`UPDATE ... WHERE id=? AND status=?`），行数=0 表示状态已被并发变更（如支付时被超时取消）。取消/退款/支付失败均采用「终态先行、库存对账」：状态 CAS 成功后由 `reconcileCancelStock` 幂等退还库存，支付侧不再手工局部回滚，避免 Pay/Cancel 并发错放库存。支付成功后写入 `payment_log` 支付流水；取消订单时若核销过优惠券则自动调用 marketing `ReleaseCoupon` 返还。
 
 ### 服务接口
 
 | 接口 | 方法 | 说明 |
 |------|------|------|
-| `CreateOrder` | gRPC | 创建订单（支持立即购买和购物车结算两种模式；结算可携带收货地址快照写入物流表、运费；内部走 DTM TCC 编排「预留库存+创建订单」，失败自动补偿） |
+| `CreateOrder` | gRPC | 创建订单（支持立即购买和购物车结算两种模式；结算可携带收货地址快照写入物流表；请求携带 `idempotency_key` 客户端幂等键防重复下单；**运费由服务端按规则重算**，忽略客户端传入；内部走 DTM TCC 编排「预留库存+创建订单」，失败自动补偿） |
 | `UpdateOrder` | gRPC | 更新订单 |
 | `DeleteOrder` | gRPC | 删除订单 |
 | `GetOrder` | gRPC | 查询订单详情（含商品明细、物流信息） |
@@ -302,6 +308,19 @@ go run cmd/order/main.go
 > **全容器部署**：`dtm.server: http://dtm:36789/api/dtmsvr`、`dtm.busi_url: http://service-order:8003`、`dtm.local_url: http://service-order:8003`（三者都在同一 docker 网络内互访）。
 
 > 下单依赖 DTM 服务可用；DTM 管理控制台地址 `http://localhost:36789/admin`（可查看事务执行/卡点状态）。
+
+### 集成测试（TCC 下单链路）
+
+集成测试位于 `integration/tcc_test.go`，使用 `//go:build integration` 构建标签门控，普通 `go test` 不会运行。测试内使用真实 MySQL/NATS/DTM，product 服务库存逻辑由测试内 NATS 替身（DTM 屏障 + 同语义 SQL）模拟，覆盖：TCC 下单成功预留、客户端幂等重复下单、支付扣减幂等、库存不足全局回滚（空补偿）、待支付取消释放库存。
+
+```powershell
+# 1. 仅启动基础设施（不要启动 product/order 业务服务，避免 NATS 订阅者竞争）
+docker compose -f deploy/docker-compose/docker-compose.infra.yml up -d mysql nats dtm
+# 2. 运行（PowerShell）
+$env:CYC_TCC_INTEGRATION="1"; go test -tags=integration -v ./app/service/order/integration/...
+```
+
+可用环境变量覆盖默认地址：`MYSQL_DSN`、`NATS_URL`、`DTM_SERVER`、`DTM_BUSI_HOST`（默认 `host.docker.internal`）。
 
 ### 构建部署
 

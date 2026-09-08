@@ -88,6 +88,7 @@ message PlaceOrderRequest {
   // 购买数量
   int32 count = 2 [(validate.rules).int32 = {gt: 0}];
   int64 sku_id = 3; // SKU ID（多SKU商品必传）
+  string idempotency_key = 4; // 客户端幂等键（前端每次提交生成唯一键，重复提交返回同一订单）
 }
 
 // PlaceOrderReply 下单响应
@@ -140,8 +141,9 @@ message CartCheckoutRequest {
   string receiver = 3; // 收货人（地址快照）
   string phone = 4; // 手机号（地址快照）
   string address = 5; // 完整收货地址（地址快照）
-  int64 freight = 6; // 运费（单位：分，前端计算）
+  int64 freight = 6; // 运费（单位：分，服务端按规则重算，前端传值忽略）
   int64 coupon_id = 7; // 优惠券发放记录ID（0=不使用优惠券）
+  string idempotency_key = 8; // 客户端幂等键（前端每次结算生成唯一键，重复提交返回同一订单）
 }
 
 // CartCheckoutReply 购物车结算响应

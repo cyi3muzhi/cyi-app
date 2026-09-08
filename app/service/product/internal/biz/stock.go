@@ -9,5 +9,4 @@ type Stock struct {
 	Total     int32
 	Available int32
 	Reserved  int32
-	Version   int32
 }

@@ -29,28 +29,20 @@ func (r *stockRepo) UpdateStock(ctx context.Context, in *biz.Stock) error {
 	return err
 }
 
-func (r *stockRepo) ReserveStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
-	resp, err := r.data.sc.ReserveStock(ctx, &productV1.ReserveStockRequest{
-		SkuId:   productID,
-		Count:   count,
-		Version: version,
+func (r *stockRepo) ReserveStock(ctx context.Context, productID int64, count int32) error {
+	_, err := r.data.sc.ReserveStock(ctx, &productV1.ReserveStockRequest{
+		SkuId: productID,
+		Count: count,
 	})
-	if err != nil {
-		return 0, err
-	}
-	return resp.NewVersion, nil
+	return err
 }
 
-func (r *stockRepo) DeductStock(ctx context.Context, productID int64, count int32, version int32) (int32, error) {
-	resp, err := r.data.sc.DeductStock(ctx, &productV1.DeductStockRequest{
-		SkuId:   productID,
-		Count:   count,
-		Version: version,
+func (r *stockRepo) DeductStock(ctx context.Context, productID int64, count int32) error {
+	_, err := r.data.sc.DeductStock(ctx, &productV1.DeductStockRequest{
+		SkuId: productID,
+		Count: count,
 	})
-	if err != nil {
-		return 0, err
-	}
-	return resp.NewVersion, nil
+	return err
 }
 
 func (r *stockRepo) GetStock(ctx context.Context, productID int64) (*biz.Stock, error) {
@@ -65,6 +57,5 @@ func (r *stockRepo) GetStock(ctx context.Context, productID int64) (*biz.Stock, 
 		Total:     resp.Total,
 		Available: resp.Available,
 		Reserved:  resp.Reserved,
-		Version:   resp.Version,
 	}, nil
 }

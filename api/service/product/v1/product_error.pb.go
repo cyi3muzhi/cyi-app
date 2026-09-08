@@ -22,6 +22,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ProductErrorReason 商品服务错误码
 type ProductErrorReason int32
 
 const (
@@ -31,12 +32,12 @@ const (
 	ProductErrorReason_STOCK_NOT_FOUND ProductErrorReason = 1
 	// 库存不足
 	ProductErrorReason_INSUFFICIENT_STOCK ProductErrorReason = 2
-	// 库存版本冲突（并发）
-	ProductErrorReason_STOCK_VERSION_CONFLICT ProductErrorReason = 3
 	// 创建商品失败
 	ProductErrorReason_CREATE_PRODUCT_FAILED ProductErrorReason = 4
 	// 创建库存失败
 	ProductErrorReason_CREATE_STOCK_FAILED ProductErrorReason = 5
+	// 库存操作失败（异常/并发等通用错误）
+	ProductErrorReason_STOCK_OPERATION_FAILED ProductErrorReason = 6
 )
 
 // Enum value maps for ProductErrorReason.
@@ -45,17 +46,17 @@ var (
 		0: "PRODUCT_NOT_FOUND",
 		1: "STOCK_NOT_FOUND",
 		2: "INSUFFICIENT_STOCK",
-		3: "STOCK_VERSION_CONFLICT",
 		4: "CREATE_PRODUCT_FAILED",
 		5: "CREATE_STOCK_FAILED",
+		6: "STOCK_OPERATION_FAILED",
 	}
 	ProductErrorReason_value = map[string]int32{
 		"PRODUCT_NOT_FOUND":      0,
 		"STOCK_NOT_FOUND":        1,
 		"INSUFFICIENT_STOCK":     2,
-		"STOCK_VERSION_CONFLICT": 3,
 		"CREATE_PRODUCT_FAILED":  4,
 		"CREATE_STOCK_FAILED":    5,
+		"STOCK_OPERATION_FAILED": 6,
 	}
 )
 
@@ -90,14 +91,14 @@ var File_service_product_v1_product_error_proto protoreflect.FileDescriptor
 
 const file_service_product_v1_product_error_proto_rawDesc = "" +
 	"\n" +
-	"&service/product/v1/product_error.proto\x12\x16api.service.product.v1\x1a\x13errors/errors.proto*\xd2\x01\n" +
+	"&service/product/v1/product_error.proto\x12\x16api.service.product.v1\x1a\x13errors/errors.proto*\xd8\x01\n" +
 	"\x12ProductErrorReason\x12\x1b\n" +
 	"\x11PRODUCT_NOT_FOUND\x10\x00\x1a\x04\xa8E\xa6\x03\x12\x19\n" +
 	"\x0fSTOCK_NOT_FOUND\x10\x01\x1a\x04\xa8E\xa6\x03\x12\x1c\n" +
-	"\x12INSUFFICIENT_STOCK\x10\x02\x1a\x04\xa8E\xa6\x03\x12 \n" +
-	"\x16STOCK_VERSION_CONFLICT\x10\x03\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
+	"\x12INSUFFICIENT_STOCK\x10\x02\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
 	"\x15CREATE_PRODUCT_FAILED\x10\x04\x1a\x04\xa8E\xa6\x03\x12\x1d\n" +
-	"\x13CREATE_STOCK_FAILED\x10\x05\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B#Z!cyi-app/api/service/product/v1;v1b\x06proto3"
+	"\x13CREATE_STOCK_FAILED\x10\x05\x1a\x04\xa8E\xa6\x03\x12 \n" +
+	"\x16STOCK_OPERATION_FAILED\x10\x06\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03\"\x04\b\x03\x10\x03B#Z!cyi-app/api/service/product/v1;v1b\x06proto3"
 
 var (
 	file_service_product_v1_product_error_proto_rawDescOnce sync.Once

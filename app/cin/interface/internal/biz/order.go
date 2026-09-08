@@ -53,6 +53,9 @@ type Order struct {
 	// 优惠券发放记录ID（结算下单时使用，0=不使用优惠券）
 	CouponRecordID int64 `json:"coupon_record_id"`
 
+	// IdempotencyKey 客户端幂等键（前端每次下单/结算生成唯一键，透传给订单服务防重复下单）
+	IdempotencyKey string `json:"idempotency_key"`
+
 	// ---- 物流信息（发货后） ----
 	LogisticsCompany string `json:"logistics_company"` // 物流公司
 	LogisticsNo      string `json:"logistics_no"`      // 快递单号

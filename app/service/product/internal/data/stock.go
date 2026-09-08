@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"database/sql"
 
 	v1 "cyi-app/api/service/product/v1"
 	"cyi-app/app/service/product/internal/biz"
@@ -9,17 +10,41 @@ import (
 	mod "cyi-app/app/service/product/internal/data/models"
 	"cyi-app/pkg/util/convert"
 
+	"github.com/dtm-labs/dtm/client/dtmcli"
 	"github.com/go-kratos/kratos/v2/log"
-	"gorm.io/gorm"
 )
 
 type stockRepo struct {
 	data *Data
 	log  *log.Helper
+	// barrierDB 业务库连接（product 服务 MySQL；DTM 屏障表 dtm_barrier.barrier 与其同一实例，跨库访问）
+	barrierDB *sql.DB
 }
 
-func NewStockRepo(data *Data, logger log.Logger) biz.StockRepo {
-	return &stockRepo{data: data, log: log.NewHelper(logger)}
+func NewStockRepo(data *Data, logger log.Logger, barrierDB *sql.DB) biz.StockRepo {
+	return &stockRepo{data: data, log: log.NewHelper(logger), barrierDB: barrierDB}
+}
+
+// runWithBarrier 在数据库事务内执行库存变更：
+// 携带 DTM 屏障幂等键时，屏障记录与库存 SQL 在同一事务提交，保证同一 (gid,branch,op)
+// 在 DTM 重试/补偿/重复请求下只生效一次（幂等、空补偿、防悬挂）；
+// 无幂等键时（管理端 gRPC 直调）退化为普通事务执行，语义与历史行为一致。
+func (r *stockRepo) runWithBarrier(ctx context.Context, key biz.StockOpKey, fn func(ctx context.Context, tx *sql.Tx) error) error {
+	if key.Gid == "" {
+		tx, err := r.barrierDB.BeginTx(ctx, nil)
+		if err != nil {
+			return err
+		}
+		if err := fn(ctx, tx); err != nil {
+			_ = tx.Rollback()
+			return err
+		}
+		return tx.Commit()
+	}
+	barrier := &dtmcli.BranchBarrier{TransType: "tcc", Gid: key.Gid, BranchID: key.BranchID, Op: key.Op}
+	return barrier.CallWithDB(r.barrierDB, func(tx *sql.Tx) error {
+		return fn(ctx, tx)
+	})
 }
 
 // CreateStock 创建库存记录
@@ -50,7 +75,7 @@ func (r *stockRepo) UpdateStock(ctx context.Context, in *biz.Stock) error {
 }
 
 // updateStockTx 在指定事务（或默认连接）内按主键ID更新库存 total/available
-// 仅用于已存在的库存记录，保留 reserved/version；供 UpdateStock 及商品编辑事务（UpdateProductTx）复用
+// 仅用于已存在的库存记录，保留 reserved；供 UpdateStock 及商品编辑事务（UpdateProductTx）复用
 func updateStockTx(ctx context.Context, q *curd.Query, in *biz.Stock) error {
 	stock := &mod.Stock{}
 	convert.Convert(in, stock)
@@ -110,141 +135,142 @@ func (r *stockRepo) UpdateStockBySkuID(ctx context.Context, productID, skuID int
 	return err
 }
 
-// ReserveStock 预留库存（下单时）
-// available- , reserved+ , version++
-// 条件: version 匹配 且 available >= count
-func (r *stockRepo) ReserveStock(ctx context.Context, skuID int64, count int32, version int32) (int32, error) {
-	result, err := curd.Stock.WithContext(ctx).
-		Where(curd.Stock.SkuID.Eq(skuID)).
-		Where(curd.Stock.Version.Eq(version)).
-		Where(curd.Stock.Available.Gte(count)).
-		UpdateSimple(
-			curd.Stock.Available.Add(0-count),
-			curd.Stock.Reserved.Add(count),
-			curd.Stock.Version.Add(1),
-		)
-	if err != nil {
-		return 0, err
-	}
-	if result.RowsAffected == 0 {
-		return 0, v1.ErrorInsufficientStock("insufficient stock or version conflict")
-	}
-	return version + 1, nil
+// ReserveStock 预留库存（下单时），原子条件更新避免超卖：available-，reserved+
+// 条件: available >= count；携带幂等键时由 DTM 屏障保证重复请求不重复预留
+func (r *stockRepo) ReserveStock(ctx context.Context, key biz.StockOpKey, skuID int64, count int32) error {
+	return r.runWithBarrier(ctx, key, func(ctx context.Context, tx *sql.Tx) error {
+		return stockReserveTx(ctx, tx, skuID, count)
+	})
 }
 
-// DeductStock 确认扣减库存（支付后）
-// total- , reserved- , version++，同时累加 SKU 与商品销量
-// 条件: version 匹配
-func (r *stockRepo) DeductStock(ctx context.Context, skuID int64, count int32, version int32) (int32, error) {
-	result, err := curd.Stock.WithContext(ctx).
-		Where(curd.Stock.SkuID.Eq(skuID)).
-		Where(curd.Stock.Version.Eq(version)).
-		UpdateSimple(
-			curd.Stock.Total.Add(0-count),
-			curd.Stock.Reserved.Add(0-count),
-			curd.Stock.Version.Add(1),
-		)
-	if err != nil {
-		return 0, err
-	}
-	if result.RowsAffected == 0 {
-		return 0, v1.ErrorStockVersionConflict("deduct stock version conflict")
-	}
-	// 支付成功：SKU 与商品销量各累加 count
-	if err := r.increaseSales(ctx, skuID, count); err != nil {
-		return 0, err
-	}
-	return version + 1, nil
+// DeductStock 确认扣减库存（支付后）：total-，reserved-，同时累加 SKU 与商品销量
+// 条件: reserved >= count；携带幂等键时由 DTM 屏障保证重试不重复扣减
+func (r *stockRepo) DeductStock(ctx context.Context, key biz.StockOpKey, skuID int64, count int32) error {
+	return r.runWithBarrier(ctx, key, func(ctx context.Context, tx *sql.Tx) error {
+		return stockDeductTx(ctx, tx, skuID, count)
+	})
 }
 
-// ReleaseStock 释放预留库存（取消未支付订单时）
-// reserved- , available+ , version++
-// 条件: version 匹配 且 reserved >= count
-func (r *stockRepo) ReleaseStock(ctx context.Context, skuID int64, count int32, version int32) (int32, error) {
-	result, err := curd.Stock.WithContext(ctx).
-		Where(curd.Stock.SkuID.Eq(skuID)).
-		Where(curd.Stock.Version.Eq(version)).
-		Where(curd.Stock.Reserved.Gte(count)).
-		UpdateSimple(
-			curd.Stock.Reserved.Add(0-count),
-			curd.Stock.Available.Add(count),
-			curd.Stock.Version.Add(1),
-		)
-	if err != nil {
-		return 0, err
-	}
-	if result.RowsAffected == 0 {
-		return 0, v1.ErrorInsufficientStock("release stock failed: version conflict or insufficient reserved stock")
-	}
-	return version + 1, nil
+// ReleaseStock 释放预留库存（取消未支付订单时）：reserved-，available+
+// 条件: reserved >= count；预留不足（库存已扣减/已释放）时 SQL 不命中，视为幂等空操作返回 nil，
+// 避免补偿链路因状态已达目标而永久失败；是否真正执行由 DTM 屏障统一裁决
+func (r *stockRepo) ReleaseStock(ctx context.Context, key biz.StockOpKey, skuID int64, count int32) error {
+	return r.runWithBarrier(ctx, key, func(ctx context.Context, tx *sql.Tx) error {
+		return stockReleaseTx(ctx, tx, skuID, count)
+	})
 }
 
-// AddStock 增加库存（退款或取消已支付订单时）
-// total+ , available+ , version++，同时扣减 SKU 与商品销量
-// 条件: version 匹配
-func (r *stockRepo) AddStock(ctx context.Context, skuID int64, count int32, version int32) (int32, error) {
-	result, err := curd.Stock.WithContext(ctx).
-		Where(curd.Stock.SkuID.Eq(skuID)).
-		Where(curd.Stock.Version.Eq(version)).
-		UpdateSimple(
-			curd.Stock.Total.Add(count),
-			curd.Stock.Available.Add(count),
-			curd.Stock.Version.Add(1),
-		)
-	if err != nil {
-		return 0, err
-	}
-	if result.RowsAffected == 0 {
-		return 0, v1.ErrorStockVersionConflict("add stock version conflict")
-	}
-	// 退款/取消已支付订单：销量回退（下限为 0）
-	if err := r.decreaseSales(ctx, skuID, count); err != nil {
-		return 0, err
-	}
-	return version + 1, nil
+// AddStock 增加库存（退款或取消已支付订单时逆扣减）：total+，available+，同时回退 SKU 与商品销量（下限 0）
+// 携带幂等键（op=cancel）时由 DTM 屏障保证：仅对应扣减（try）真实执行过才会生效
+func (r *stockRepo) AddStock(ctx context.Context, key biz.StockOpKey, skuID int64, count int32) error {
+	return r.runWithBarrier(ctx, key, func(ctx context.Context, tx *sql.Tx) error {
+		return stockAddTx(ctx, tx, skuID, count)
+	})
 }
 
-// increaseSales 累加 SKU 与商品销量（支付成功后调用）
-// 注意：SKU 与商品必须分别使用各自 gen query 的 UnderlyingDB，
-// 因为 UnderlyingDB 返回的 *gorm.DB 已绑定表名（Table() 优先于 Model()），
-// 复用 sku 的 db 去 Model(&Product{}) 时 UPDATE 仍会指向 sku 表。
-func (r *stockRepo) increaseSales(ctx context.Context, skuID int64, count int32) error {
-	// 查询 SKU 归属商品
-	var sku mod.Sku
-	if err := curd.Sku.WithContext(ctx).UnderlyingDB().First(&sku, skuID).Error; err != nil {
+// stockReserveTx 事务内预留库存（available-，reserved+），条件不命中返回库存不足错误
+func stockReserveTx(ctx context.Context, tx *sql.Tx, skuID int64, count int32) error {
+	result, err := tx.ExecContext(ctx,
+		"UPDATE stock SET available = available - ?, reserved = reserved + ? WHERE sku_id = ? AND available >= ? AND deleted_at IS NULL",
+		count, count, skuID, count)
+	if err != nil {
 		return err
 	}
-	// 更新 SKU 销量
-	if err := curd.Sku.WithContext(ctx).UnderlyingDB().Model(&mod.Sku{}).Where("id = ?", skuID).
-		UpdateColumn("sales", gorm.Expr("sales + ?", count)).Error; err != nil {
+	if rowsAffected(result) == 0 {
+		return v1.ErrorInsufficientStock("商品 SKU %d 库存不足", skuID)
+	}
+	return nil
+}
+
+// stockDeductTx 事务内扣减库存（total-，reserved-），条件不命中返回操作失败错误；成功后累加销量
+func stockDeductTx(ctx context.Context, tx *sql.Tx, skuID int64, count int32) error {
+	result, err := tx.ExecContext(ctx,
+		"UPDATE stock SET total = total - ?, reserved = reserved - ? WHERE sku_id = ? AND reserved >= ? AND deleted_at IS NULL",
+		count, count, skuID, count)
+	if err != nil {
 		return err
 	}
-	// 更新商品销量（使用 product 的底层 db，避免复用 sku 的表绑定）
-	if err := curd.Product.WithContext(ctx).UnderlyingDB().Model(&mod.Product{}).Where("id = ?", sku.ProductID).
-		UpdateColumn("sales", gorm.Expr("sales + ?", count)).Error; err != nil {
+	if rowsAffected(result) == 0 {
+		return v1.ErrorStockOperationFailed("扣减库存失败 sku=%d: 预留库存不足", skuID)
+	}
+	return increaseSalesTx(ctx, tx, skuID, count)
+}
+
+// stockReleaseTx 事务内释放预留（reserved-，available+）；预留不足时不命中即为幂等空操作
+func stockReleaseTx(ctx context.Context, tx *sql.Tx, skuID int64, count int32) error {
+	_, err := tx.ExecContext(ctx,
+		"UPDATE stock SET reserved = reserved - ?, available = available + ? WHERE sku_id = ? AND reserved >= ? AND deleted_at IS NULL",
+		count, count, skuID, count)
+	return err
+}
+
+// stockAddTx 事务内增加库存（total+，available+），库存记录不存在时返回错误；成功后回退销量
+func stockAddTx(ctx context.Context, tx *sql.Tx, skuID int64, count int32) error {
+	result, err := tx.ExecContext(ctx,
+		"UPDATE stock SET total = total + ?, available = available + ? WHERE sku_id = ? AND deleted_at IS NULL",
+		count, count, skuID)
+	if err != nil {
+		return err
+	}
+	if rowsAffected(result) == 0 {
+		return v1.ErrorStockOperationFailed("增加库存失败 sku=%d: 库存记录不存在", skuID)
+	}
+	return decreaseSalesTx(ctx, tx, skuID, count)
+}
+
+// rowsAffected 读取 SQL 执行影响行数（读取失败按 0 处理，由调用方按条件不命中兜底）
+func rowsAffected(result sql.Result) int64 {
+	n, err := result.RowsAffected()
+	if err != nil {
+		return 0
+	}
+	return n
+}
+
+// increaseSalesTx 事务内累加 SKU 与商品销量（支付扣减成功后调用，与库存变更同事务提交）
+func increaseSalesTx(ctx context.Context, tx *sql.Tx, skuID int64, count int32) error {
+	productID, err := querySkuProductID(ctx, tx, skuID)
+	if err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx,
+		"UPDATE sku SET sales = sales + ? WHERE id = ? AND deleted_at IS NULL", count, skuID); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx,
+		"UPDATE product SET sales = sales + ? WHERE id = ? AND deleted_at IS NULL", count, productID); err != nil {
 		return err
 	}
 	return nil
 }
 
-// decreaseSales 扣减 SKU 与商品销量（退款/取消已支付订单时调用），下限为 0
-func (r *stockRepo) decreaseSales(ctx context.Context, skuID int64, count int32) error {
-	// 查询 SKU 归属商品
-	var sku mod.Sku
-	if err := curd.Sku.WithContext(ctx).UnderlyingDB().First(&sku, skuID).Error; err != nil {
+// decreaseSalesTx 事务内回退 SKU 与商品销量（退款/取消已支付时调用，下限为 0；CASE WHEN 兼容 MySQL/SQLite）
+func decreaseSalesTx(ctx context.Context, tx *sql.Tx, skuID int64, count int32) error {
+	productID, err := querySkuProductID(ctx, tx, skuID)
+	if err != nil {
 		return err
 	}
-	// 更新 SKU 销量（CASE WHEN 兼容 MySQL/SQLite，语义等同 GREATEST(sales-count, 0)）
-	if err := curd.Sku.WithContext(ctx).UnderlyingDB().Model(&mod.Sku{}).Where("id = ?", skuID).
-		UpdateColumn("sales", gorm.Expr("CASE WHEN sales > ? THEN sales - ? ELSE 0 END", count, count)).Error; err != nil {
+	if _, err := tx.ExecContext(ctx,
+		"UPDATE sku SET sales = CASE WHEN sales > ? THEN sales - ? ELSE 0 END WHERE id = ? AND deleted_at IS NULL",
+		count, count, skuID); err != nil {
 		return err
 	}
-	// 更新商品销量（使用 product 的底层 db，避免复用 sku 的表绑定）
-	if err := curd.Product.WithContext(ctx).UnderlyingDB().Model(&mod.Product{}).Where("id = ?", sku.ProductID).
-		UpdateColumn("sales", gorm.Expr("CASE WHEN sales > ? THEN sales - ? ELSE 0 END", count, count)).Error; err != nil {
+	if _, err := tx.ExecContext(ctx,
+		"UPDATE product SET sales = CASE WHEN sales > ? THEN sales - ? ELSE 0 END WHERE id = ? AND deleted_at IS NULL",
+		count, count, productID); err != nil {
 		return err
 	}
 	return nil
+}
+
+// querySkuProductID 事务内查询 SKU 归属的商品ID
+func querySkuProductID(ctx context.Context, tx *sql.Tx, skuID int64) (int64, error) {
+	var productID int64
+	if err := tx.QueryRowContext(ctx,
+		"SELECT product_id FROM sku WHERE id = ? AND deleted_at IS NULL", skuID).Scan(&productID); err != nil {
+		return 0, err
+	}
+	return productID, nil
 }
 
 // GetStock 按 SKU ID 获取库存
@@ -283,7 +309,6 @@ func getStocksBySkuIDsTx(ctx context.Context, q *curd.Query, skuIDs []int64) (ma
 			Total:     s.Total,
 			Available: s.Available,
 			Reserved:  s.Reserved,
-			Version:   s.Version,
 		}
 	}
 	return result, nil

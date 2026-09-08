@@ -28,23 +28,19 @@ func (s *PayStatus) Ship(ctx context.Context, order *Order) error {
 	return s.transitionTo(ctx, order, v1.OrderStatus_Ship)
 }
 
-// Cancel 取消订单（释放预留库存 + 增加总库存 + 状态转换）
+// Cancel 取消已支付订单：状态机先行 + 幂等库存对账
+//  1. 先 CAS 抢占取消终态（Pay->Cancel）：与支付扣减/退款并发时只有一方成功
+//  2. 库存对账（幂等）：逆预留方向对已扣减库存是空操作，逆扣减方向退还已扣库存，
+//     两个方向由屏障裁决，支付流程中断的部分扣减也能正确对账
 func (s *PayStatus) Cancel(ctx context.Context, order *Order) error {
-	// 1. 释放预留库存（reserved-，available+）
-	if err := s.releaseStockForOrder(ctx, order); err != nil {
-		s.log.WithContext(ctx).Errorf("释放预留库存失败, orderID: %d, error: %v", order.ID, err)
+	if err := s.transitionTo(ctx, order, v1.OrderStatus_Cancel); err != nil {
 		return err
 	}
-
-	// 2. 增加总库存（total+，available+）
-	if err := s.addStockForOrder(ctx, order); err != nil {
-		s.log.WithContext(ctx).Errorf("增加库存失败, orderID: %d, error: %v", order.ID, err)
-		return err
+	s.log.WithContext(ctx).Warnf("已支付订单取消成功, orderID: %d", order.ID)
+	if err := reconcileCancelStock(ctx, s.stockRe, s.log, order); err != nil {
+		s.log.WithContext(ctx).Errorf("已支付订单取消后库存对账失败（状态已取消，需补偿重试）, orderID: %d: %v", order.ID, err)
 	}
-
-	// 3. 转换状态
-	s.log.WithContext(ctx).Warnf("订单取消成功, orderID: %d", order.ID)
-	return s.transitionTo(ctx, order, v1.OrderStatus_Cancel)
+	return nil
 }
 
 // Refunding 申请退款（允许的操作）

@@ -24,7 +24,9 @@ type Order struct {
 
 	Items         []*OrderItem // 聚合内的实体
 	CouponRecordID int64       // 优惠券发放记录ID（可选）
-	statusHandler OrderStatus  // 状态模式
+	// IdempotencyKey 客户端幂等键（前端每次下单生成唯一键；同一用户重复提交返回同一订单，防重复下单）
+	IdempotencyKey string
+	statusHandler  OrderStatus // 状态模式
 
 	// 收货地址快照（结算时写入订单物流表）
 	AddressID int64  // 收货地址ID
@@ -59,4 +61,19 @@ func (o *Order) GenerateOrderNo() {
 	b := make([]byte, 3)
 	rand.Read(b)
 	o.OrderNo = fmt.Sprintf("CIN%s%06x", now.Format("060102150405"), b)
+}
+
+// 运费规则（单位：分）：商品小计满 199 元免运费，否则固定收 10 元
+// 运费一律由服务端按订单小计重算，不信任客户端传入值，防止前端篡改运费
+const (
+	freightFreeThreshold = 19900 // 免运费门槛：199 元
+	freightStandardFee   = 1000  // 不满足门槛时的固定运费：10 元
+)
+
+// CalcFreight 按商品小计（单位：分）计算运费：满 199 元免运费，否则 10 元
+func CalcFreight(totalCents int64) int64 {
+	if totalCents >= freightFreeThreshold {
+		return 0
+	}
+	return freightStandardFee
 }

@@ -649,7 +649,7 @@ async function loadCoupons() {
     couponList.value = res.items
     total.value = res.total
   } catch (error) {
-    ElMessage.error('获取优惠券列表失败')
+    // 错误提示由全局请求拦截器统一弹出，此处不再重复弹窗
   } finally {
     loading.value = false
   }

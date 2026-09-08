@@ -28,11 +28,11 @@ func NewOrderService(uc *biz.OrderUseCase, ruc *biz.RefundUseCase, logger log.Lo
 
 func (s *OrderService) CreateOrder(ctx context.Context, req *v1.CreateOrderRequest) (*v1.CreateOrderReply, error) {
 	in := &biz.Order{}
-	convert.Convert(req, in)
+	convert.Convert(req, in) // 同名字段自动映射，含 IdempotencyKey（客户端幂等键）
 	in.UserID = req.UserId
-	in.CouponRecordID = req.CouponRecordId                       // 优惠券发放记录ID，0=未使用优惠券
-	in.Freight = biz.Money{Amount: req.Freight, Currency: "CNY"} // 运费（单位：分）
-	in.AddressID = req.AddressId                                 // 收货地址快照
+	in.CouponRecordID = req.CouponRecordId // 优惠券发放记录ID，0=未使用优惠券
+	// 运费不信任客户端传值：biz.prepareOrder 按订单小计服务端重算（满199免运费，否则10元）
+	in.AddressID = req.AddressId // 收货地址快照
 	in.Receiver = req.Receiver
 	in.Phone = req.Phone
 	in.Address = req.Address

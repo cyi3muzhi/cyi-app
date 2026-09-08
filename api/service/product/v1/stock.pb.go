@@ -482,7 +482,6 @@ type GetStockReply struct {
 	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`                          // 总库存
 	Available     int32                  `protobuf:"varint,3,opt,name=available,proto3" json:"available,omitempty"`                  // 可用库存
 	Reserved      int32                  `protobuf:"varint,4,opt,name=reserved,proto3" json:"reserved,omitempty"`                    // 预留库存
-	Version       int32                  `protobuf:"varint,5,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -545,20 +544,12 @@ func (x *GetStockReply) GetReserved() int32 {
 	return 0
 }
 
-func (x *GetStockReply) GetVersion() int32 {
-	if x != nil {
-		return x.Version
-	}
-	return 0
-}
-
 // ReserveStockRequest 预留库存请求
 type ReserveStockRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
 	ProductId     int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 已废弃，改用 sku_id
 	Count         int32 `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`                          // 预留数量
-	Version       int32 `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
 	SkuId         int64 `protobuf:"varint,4,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`             // SKU ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -609,13 +600,6 @@ func (x *ReserveStockRequest) GetCount() int32 {
 	return 0
 }
 
-func (x *ReserveStockRequest) GetVersion() int32 {
-	if x != nil {
-		return x.Version
-	}
-	return 0
-}
-
 func (x *ReserveStockRequest) GetSkuId() int64 {
 	if x != nil {
 		return x.SkuId
@@ -627,8 +611,7 @@ func (x *ReserveStockRequest) GetSkuId() int64 {
 type ReserveStockReply struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 是否成功
-	Success       bool  `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	NewVersion    int32 `protobuf:"varint,2,opt,name=new_version,json=newVersion,proto3" json:"new_version,omitempty"` // 新版本号
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -670,20 +653,12 @@ func (x *ReserveStockReply) GetSuccess() bool {
 	return false
 }
 
-func (x *ReserveStockReply) GetNewVersion() int32 {
-	if x != nil {
-		return x.NewVersion
-	}
-	return 0
-}
-
 // 确认扣减库存（支付后实际扣减总数和预留）
 type DeductStockRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
 	ProductId     int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 已废弃，改用 sku_id
 	Count         int32 `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`                          // 扣减数量
-	Version       int32 `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
 	SkuId         int64 `protobuf:"varint,4,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`             // SKU ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -734,13 +709,6 @@ func (x *DeductStockRequest) GetCount() int32 {
 	return 0
 }
 
-func (x *DeductStockRequest) GetVersion() int32 {
-	if x != nil {
-		return x.Version
-	}
-	return 0
-}
-
 func (x *DeductStockRequest) GetSkuId() int64 {
 	if x != nil {
 		return x.SkuId
@@ -752,8 +720,7 @@ func (x *DeductStockRequest) GetSkuId() int64 {
 type DeductStockReply struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 是否成功
-	Success       bool  `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	NewVersion    int32 `protobuf:"varint,2,opt,name=new_version,json=newVersion,proto3" json:"new_version,omitempty"` // 新版本号
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -795,22 +762,14 @@ func (x *DeductStockReply) GetSuccess() bool {
 	return false
 }
 
-func (x *DeductStockReply) GetNewVersion() int32 {
-	if x != nil {
-		return x.NewVersion
-	}
-	return 0
-}
-
 // 释放预留库存（取消未支付订单时）
-// reserved- , available+ , version++
-// 条件: version 匹配 且 reserved >= count
+// reserved- , available+
+// 条件: reserved >= count
 type ReleaseStockRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
 	ProductId     int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 已废弃，改用 sku_id
 	Count         int32 `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`                          // 释放数量
-	Version       int32 `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
 	SkuId         int64 `protobuf:"varint,4,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`             // SKU ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -861,13 +820,6 @@ func (x *ReleaseStockRequest) GetCount() int32 {
 	return 0
 }
 
-func (x *ReleaseStockRequest) GetVersion() int32 {
-	if x != nil {
-		return x.Version
-	}
-	return 0
-}
-
 func (x *ReleaseStockRequest) GetSkuId() int64 {
 	if x != nil {
 		return x.SkuId
@@ -879,8 +831,7 @@ func (x *ReleaseStockRequest) GetSkuId() int64 {
 type ReleaseStockReply struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 是否成功
-	Success       bool  `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	NewVersion    int32 `protobuf:"varint,2,opt,name=new_version,json=newVersion,proto3" json:"new_version,omitempty"` // 新版本号
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -922,22 +873,13 @@ func (x *ReleaseStockReply) GetSuccess() bool {
 	return false
 }
 
-func (x *ReleaseStockReply) GetNewVersion() int32 {
-	if x != nil {
-		return x.NewVersion
-	}
-	return 0
-}
-
 // 增加库存（退款或取消已支付订单时）
-// total+ , available+ , version++
-// 条件: version 匹配
+// total+ , available+
 type AddStockRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Deprecated: Marked as deprecated in api/service/product/v1/stock.proto.
 	ProductId     int64 `protobuf:"varint,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"` // 已废弃，改用 sku_id
 	Count         int32 `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`                          // 增加数量
-	Version       int32 `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`                      // 乐观锁版本号
 	SkuId         int64 `protobuf:"varint,4,opt,name=sku_id,json=skuId,proto3" json:"sku_id,omitempty"`             // SKU ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -988,13 +930,6 @@ func (x *AddStockRequest) GetCount() int32 {
 	return 0
 }
 
-func (x *AddStockRequest) GetVersion() int32 {
-	if x != nil {
-		return x.Version
-	}
-	return 0
-}
-
 func (x *AddStockRequest) GetSkuId() int64 {
 	if x != nil {
 		return x.SkuId
@@ -1006,8 +941,7 @@ func (x *AddStockRequest) GetSkuId() int64 {
 type AddStockReply struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 是否成功
-	Success       bool  `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	NewVersion    int32 `protobuf:"varint,2,opt,name=new_version,json=newVersion,proto3" json:"new_version,omitempty"` // 新版本号
+	Success       bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1047,13 +981,6 @@ func (x *AddStockReply) GetSuccess() bool {
 		return x.Success
 	}
 	return false
-}
-
-func (x *AddStockReply) GetNewVersion() int32 {
-	if x != nil {
-		return x.NewVersion
-	}
-	return 0
 }
 
 // ListStockRequest 库存列表请求
@@ -1157,54 +1084,41 @@ const file_api_service_product_v1_stock_proto_rawDesc = "" +
 	"\x0fGetStockRequest\x12!\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03B\x02\x18\x01R\tproductId\x12\x15\n" +
-	"\x06sku_id\x18\x02 \x01(\x03R\x05skuId\"\x98\x01\n" +
+	"\x06sku_id\x18\x02 \x01(\x03R\x05skuId\"~\n" +
 	"\rGetStockReply\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03R\tproductId\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x1c\n" +
 	"\tavailable\x18\x03 \x01(\x05R\tavailable\x12\x1a\n" +
-	"\breserved\x18\x04 \x01(\x05R\breserved\x12\x18\n" +
-	"\aversion\x18\x05 \x01(\x05R\aversion\"\x7f\n" +
+	"\breserved\x18\x04 \x01(\x05R\breserved\"e\n" +
 	"\x13ReserveStockRequest\x12!\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03B\x02\x18\x01R\tproductId\x12\x14\n" +
-	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\x05R\aversion\x12\x15\n" +
-	"\x06sku_id\x18\x04 \x01(\x03R\x05skuId\"N\n" +
+	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x15\n" +
+	"\x06sku_id\x18\x04 \x01(\x03R\x05skuId\"-\n" +
 	"\x11ReserveStockReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
-	"\vnew_version\x18\x02 \x01(\x05R\n" +
-	"newVersion\"~\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"d\n" +
 	"\x12DeductStockRequest\x12!\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03B\x02\x18\x01R\tproductId\x12\x14\n" +
-	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\x05R\aversion\x12\x15\n" +
-	"\x06sku_id\x18\x04 \x01(\x03R\x05skuId\"M\n" +
+	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x15\n" +
+	"\x06sku_id\x18\x04 \x01(\x03R\x05skuId\",\n" +
 	"\x10DeductStockReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
-	"\vnew_version\x18\x02 \x01(\x05R\n" +
-	"newVersion\"\x7f\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"e\n" +
 	"\x13ReleaseStockRequest\x12!\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03B\x02\x18\x01R\tproductId\x12\x14\n" +
-	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\x05R\aversion\x12\x15\n" +
-	"\x06sku_id\x18\x04 \x01(\x03R\x05skuId\"N\n" +
+	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x15\n" +
+	"\x06sku_id\x18\x04 \x01(\x03R\x05skuId\"-\n" +
 	"\x11ReleaseStockReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
-	"\vnew_version\x18\x02 \x01(\x05R\n" +
-	"newVersion\"{\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"a\n" +
 	"\x0fAddStockRequest\x12!\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\x03B\x02\x18\x01R\tproductId\x12\x14\n" +
-	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\x05R\aversion\x12\x15\n" +
-	"\x06sku_id\x18\x04 \x01(\x03R\x05skuId\"J\n" +
+	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x15\n" +
+	"\x06sku_id\x18\x04 \x01(\x03R\x05skuId\")\n" +
 	"\rAddStockReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
-	"\vnew_version\x18\x02 \x01(\x05R\n" +
-	"newVersion\"\x12\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x12\n" +
 	"\x10ListStockRequest\"\x10\n" +
 	"\x0eListStockReply2\xf3\a\n" +
 	"\x05Stock\x12c\n" +
