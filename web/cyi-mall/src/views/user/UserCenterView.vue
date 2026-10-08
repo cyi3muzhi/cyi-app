@@ -118,6 +118,22 @@
         </svg>
       </router-link>
 
+      <!-- 在线客服入口：打开悬浮客服小窗 -->
+      <div class="entry-card chat" @click="openChatPanel">
+        <div class="entry-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+        </div>
+        <div class="entry-info">
+          <p class="entry-title">在线客服</p>
+          <p class="entry-desc">售前咨询 · 售后处理</p>
+        </div>
+        <svg class="entry-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </div>
+
       <router-link to="/user/address" class="entry-card">
         <div class="entry-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -220,11 +236,18 @@ import { getUnreadCount } from '@/api/message'
 import { listAvailableCoupons } from '@/api/coupon'
 import { useUserStore } from '@/store/user'
 import { useCartStore } from '@/store/cart'
+import { useChatPanel } from '@/store/chatPanel'
 import type { User, UserCenter } from '@/types/user'
 
 const router = useRouter()
 const userStore = useUserStore()
 const cartStore = useCartStore()
+const chatPanel = useChatPanel()
+
+/** 打开悬浮客服小窗 */
+function openChatPanel() {
+  chatPanel.openChat()
+}
 
 /** 个人主页（暂无独立页面，提示开发中） */
 function onProfile() {
@@ -690,6 +713,7 @@ onMounted(() => {
   border: 1px solid var(--shop-border);
   border-radius: var(--shop-radius-xl);
   text-decoration: none;
+  cursor: pointer;
   transition: box-shadow 0.2s, border-color 0.2s;
 }
 

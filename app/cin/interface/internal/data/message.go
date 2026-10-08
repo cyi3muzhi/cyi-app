@@ -39,13 +39,14 @@ func (r *messageRepo) ListMyMessage(ctx context.Context, userID int64, page, pag
 	items := make([]*biz.Message, 0, len(reply.Items))
 	for _, m := range reply.Items {
 		items = append(items, &biz.Message{
-			ID:        m.Id,
-			Title:     m.Title,
-			Content:   m.Content,
-			MsgType:   m.MsgType,
-			IsRead:    m.IsRead,
-			CreatedAt: m.CreatedAt,
-			ReadAt:    m.ReadAt,
+			ID:             m.Id,
+			Title:          m.Title,
+			Content:        m.Content,
+			MsgType:        m.MsgType,
+			IsRead:         m.IsRead,
+			CreatedAt:      m.CreatedAt,
+			ReadAt:         m.ReadAt,
+			ConversationID: m.ConversationId,
 		})
 	}
 	return items, reply.Total, nil

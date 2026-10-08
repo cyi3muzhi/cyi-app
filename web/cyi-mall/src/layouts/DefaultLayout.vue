@@ -9,6 +9,7 @@
     </main>
     <AppFooter />
     <BackToTop />
+    <CustomerServiceFloat />
   </div>
 </template>
 
@@ -20,6 +21,7 @@ import { useUserStore } from '@/store/user'
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import BackToTop from '@/components/BackToTop.vue'
+import CustomerServiceFloat from '@/components/CustomerServiceFloat.vue'
 
 const route = useRoute()
 const shopStore = useShopStore()

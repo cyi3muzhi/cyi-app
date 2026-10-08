@@ -46,7 +46,11 @@ instance.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401 && !isPublicPath(error.config?.url)) {
       localStorage.removeItem('token')
-      router.push('/login')
+      // 仅当当前页面需要登录时才跳转登录页（访问受版权限页/token失效）；
+      // 游客浏览首页/商品等公开页时，接口 401 只静默清理 token，不强制跳登录，保证商城可正常逛
+      if (router.currentRoute.value.meta?.requiresAuth) {
+        router.push('/login')
+      }
     }
     return Promise.reject(error)
   }

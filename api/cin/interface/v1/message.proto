@@ -55,6 +55,8 @@ message MessageItem {
   int64 created_at = 6;
   // 已读时间（Unix 秒，未读为 0）
   int64 read_at = 7;
+  // 关联会话ID（IM 客服离线提醒，0=普通通知）
+  int64 conversation_id = 8;
 }
 
 // ListMyMessageRequest 我的消息列表请求

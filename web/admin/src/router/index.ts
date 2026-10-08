@@ -142,6 +142,12 @@ const routes: RouteRecordRaw[] = [
         name: 'Knowledge',
         component: () => import('../views/knowledge/KnowledgeView.vue'),
         meta: { title: '知识库管理' }
+      },
+      {
+        path: 'chat',
+        name: 'ChatWorkbench',
+        component: () => import('../views/chat/ChatWorkbenchView.vue'),
+        meta: { title: '客服工作台' }
       }
     ]
   }

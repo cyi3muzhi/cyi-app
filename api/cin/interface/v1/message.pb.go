@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.9
 // 	protoc        v5.27.2
-// source: api/cin/interface/v1/message.proto
+// source: cin/interface/v1/message.proto
 
 package v1
 
@@ -39,14 +39,16 @@ type MessageItem struct {
 	// 创建时间（Unix 秒）
 	CreatedAt int64 `protobuf:"varint,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	// 已读时间（Unix 秒，未读为 0）
-	ReadAt        int64 `protobuf:"varint,7,opt,name=read_at,json=readAt,proto3" json:"read_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	ReadAt int64 `protobuf:"varint,7,opt,name=read_at,json=readAt,proto3" json:"read_at,omitempty"`
+	// 关联会话ID（IM 客服离线提醒，0=普通通知）
+	ConversationId int64 `protobuf:"varint,8,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *MessageItem) Reset() {
 	*x = MessageItem{}
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[0]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -58,7 +60,7 @@ func (x *MessageItem) String() string {
 func (*MessageItem) ProtoMessage() {}
 
 func (x *MessageItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[0]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -71,7 +73,7 @@ func (x *MessageItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessageItem.ProtoReflect.Descriptor instead.
 func (*MessageItem) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_message_proto_rawDescGZIP(), []int{0}
+	return file_cin_interface_v1_message_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *MessageItem) GetId() int64 {
@@ -123,6 +125,13 @@ func (x *MessageItem) GetReadAt() int64 {
 	return 0
 }
 
+func (x *MessageItem) GetConversationId() int64 {
+	if x != nil {
+		return x.ConversationId
+	}
+	return 0
+}
+
 // ListMyMessageRequest 我的消息列表请求
 type ListMyMessageRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -138,7 +147,7 @@ type ListMyMessageRequest struct {
 
 func (x *ListMyMessageRequest) Reset() {
 	*x = ListMyMessageRequest{}
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[1]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -150,7 +159,7 @@ func (x *ListMyMessageRequest) String() string {
 func (*ListMyMessageRequest) ProtoMessage() {}
 
 func (x *ListMyMessageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[1]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -163,7 +172,7 @@ func (x *ListMyMessageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMyMessageRequest.ProtoReflect.Descriptor instead.
 func (*ListMyMessageRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_message_proto_rawDescGZIP(), []int{1}
+	return file_cin_interface_v1_message_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ListMyMessageRequest) GetPage() int32 {
@@ -202,7 +211,7 @@ type ListMyMessageReply struct {
 
 func (x *ListMyMessageReply) Reset() {
 	*x = ListMyMessageReply{}
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[2]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -214,7 +223,7 @@ func (x *ListMyMessageReply) String() string {
 func (*ListMyMessageReply) ProtoMessage() {}
 
 func (x *ListMyMessageReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[2]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -227,7 +236,7 @@ func (x *ListMyMessageReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMyMessageReply.ProtoReflect.Descriptor instead.
 func (*ListMyMessageReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_message_proto_rawDescGZIP(), []int{2}
+	return file_cin_interface_v1_message_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ListMyMessageReply) GetItems() []*MessageItem {
@@ -260,7 +269,7 @@ type UnreadMessageCountRequest struct {
 
 func (x *UnreadMessageCountRequest) Reset() {
 	*x = UnreadMessageCountRequest{}
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[3]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -272,7 +281,7 @@ func (x *UnreadMessageCountRequest) String() string {
 func (*UnreadMessageCountRequest) ProtoMessage() {}
 
 func (x *UnreadMessageCountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[3]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -285,7 +294,7 @@ func (x *UnreadMessageCountRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnreadMessageCountRequest.ProtoReflect.Descriptor instead.
 func (*UnreadMessageCountRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_message_proto_rawDescGZIP(), []int{3}
+	return file_cin_interface_v1_message_proto_rawDescGZIP(), []int{3}
 }
 
 // UnreadMessageCountReply 未读消息数响应
@@ -299,7 +308,7 @@ type UnreadMessageCountReply struct {
 
 func (x *UnreadMessageCountReply) Reset() {
 	*x = UnreadMessageCountReply{}
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[4]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -311,7 +320,7 @@ func (x *UnreadMessageCountReply) String() string {
 func (*UnreadMessageCountReply) ProtoMessage() {}
 
 func (x *UnreadMessageCountReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[4]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -324,7 +333,7 @@ func (x *UnreadMessageCountReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnreadMessageCountReply.ProtoReflect.Descriptor instead.
 func (*UnreadMessageCountReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_message_proto_rawDescGZIP(), []int{4}
+	return file_cin_interface_v1_message_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *UnreadMessageCountReply) GetCount() int64 {
@@ -345,7 +354,7 @@ type MarkMessageReadRequest struct {
 
 func (x *MarkMessageReadRequest) Reset() {
 	*x = MarkMessageReadRequest{}
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[5]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -357,7 +366,7 @@ func (x *MarkMessageReadRequest) String() string {
 func (*MarkMessageReadRequest) ProtoMessage() {}
 
 func (x *MarkMessageReadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[5]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -370,7 +379,7 @@ func (x *MarkMessageReadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarkMessageReadRequest.ProtoReflect.Descriptor instead.
 func (*MarkMessageReadRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_message_proto_rawDescGZIP(), []int{5}
+	return file_cin_interface_v1_message_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *MarkMessageReadRequest) GetId() int64 {
@@ -391,7 +400,7 @@ type MarkMessageReadReply struct {
 
 func (x *MarkMessageReadReply) Reset() {
 	*x = MarkMessageReadReply{}
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[6]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -403,7 +412,7 @@ func (x *MarkMessageReadReply) String() string {
 func (*MarkMessageReadReply) ProtoMessage() {}
 
 func (x *MarkMessageReadReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[6]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -416,7 +425,7 @@ func (x *MarkMessageReadReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarkMessageReadReply.ProtoReflect.Descriptor instead.
 func (*MarkMessageReadReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_message_proto_rawDescGZIP(), []int{6}
+	return file_cin_interface_v1_message_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *MarkMessageReadReply) GetSuccess() bool {
@@ -435,7 +444,7 @@ type MarkAllMessageReadRequest struct {
 
 func (x *MarkAllMessageReadRequest) Reset() {
 	*x = MarkAllMessageReadRequest{}
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[7]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -447,7 +456,7 @@ func (x *MarkAllMessageReadRequest) String() string {
 func (*MarkAllMessageReadRequest) ProtoMessage() {}
 
 func (x *MarkAllMessageReadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[7]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -460,7 +469,7 @@ func (x *MarkAllMessageReadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarkAllMessageReadRequest.ProtoReflect.Descriptor instead.
 func (*MarkAllMessageReadRequest) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_message_proto_rawDescGZIP(), []int{7}
+	return file_cin_interface_v1_message_proto_rawDescGZIP(), []int{7}
 }
 
 // MarkAllMessageReadReply 全部标记已读响应
@@ -474,7 +483,7 @@ type MarkAllMessageReadReply struct {
 
 func (x *MarkAllMessageReadReply) Reset() {
 	*x = MarkAllMessageReadReply{}
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[8]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -486,7 +495,7 @@ func (x *MarkAllMessageReadReply) String() string {
 func (*MarkAllMessageReadReply) ProtoMessage() {}
 
 func (x *MarkAllMessageReadReply) ProtoReflect() protoreflect.Message {
-	mi := &file_api_cin_interface_v1_message_proto_msgTypes[8]
+	mi := &file_cin_interface_v1_message_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -499,7 +508,7 @@ func (x *MarkAllMessageReadReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarkAllMessageReadReply.ProtoReflect.Descriptor instead.
 func (*MarkAllMessageReadReply) Descriptor() ([]byte, []int) {
-	return file_api_cin_interface_v1_message_proto_rawDescGZIP(), []int{8}
+	return file_cin_interface_v1_message_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *MarkAllMessageReadReply) GetSuccess() bool {
@@ -509,11 +518,11 @@ func (x *MarkAllMessageReadReply) GetSuccess() bool {
 	return false
 }
 
-var File_api_cin_interface_v1_message_proto protoreflect.FileDescriptor
+var File_cin_interface_v1_message_proto protoreflect.FileDescriptor
 
-const file_api_cin_interface_v1_message_proto_rawDesc = "" +
+const file_cin_interface_v1_message_proto_rawDesc = "" +
 	"\n" +
-	"\"api/cin/interface/v1/message.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\xb9\x01\n" +
+	"\x1ecin/interface/v1/message.proto\x12\x14api.cin.interface.v1\x1a\x17validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\"\xe2\x01\n" +
 	"\vMessageItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12\x18\n" +
@@ -522,7 +531,8 @@ const file_api_cin_interface_v1_message_proto_rawDesc = "" +
 	"\ais_read\x18\x05 \x01(\x05R\x06isRead\x12\x1d\n" +
 	"\n" +
 	"created_at\x18\x06 \x01(\x03R\tcreatedAt\x12\x17\n" +
-	"\aread_at\x18\a \x01(\x03R\x06readAt\"v\n" +
+	"\aread_at\x18\a \x01(\x03R\x06readAt\x12'\n" +
+	"\x0fconversation_id\x18\b \x01(\x03R\x0econversationId\"v\n" +
 	"\x14ListMyMessageRequest\x12\x1b\n" +
 	"\x04page\x18\x01 \x01(\x05B\a\xfaB\x04\x1a\x02(\x01R\x04page\x12&\n" +
 	"\tpage_size\x18\x02 \x01(\x05B\t\xfaB\x06\x1a\x04\x18d(\x01R\bpageSize\x12\x19\n" +
@@ -549,19 +559,19 @@ const file_api_cin_interface_v1_message_proto_rawDesc = "" +
 	"\x14api.cin.interface.v1P\x01Z\x1fcyi-app/api/cin/interface/v1;v1b\x06proto3"
 
 var (
-	file_api_cin_interface_v1_message_proto_rawDescOnce sync.Once
-	file_api_cin_interface_v1_message_proto_rawDescData []byte
+	file_cin_interface_v1_message_proto_rawDescOnce sync.Once
+	file_cin_interface_v1_message_proto_rawDescData []byte
 )
 
-func file_api_cin_interface_v1_message_proto_rawDescGZIP() []byte {
-	file_api_cin_interface_v1_message_proto_rawDescOnce.Do(func() {
-		file_api_cin_interface_v1_message_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_cin_interface_v1_message_proto_rawDesc), len(file_api_cin_interface_v1_message_proto_rawDesc)))
+func file_cin_interface_v1_message_proto_rawDescGZIP() []byte {
+	file_cin_interface_v1_message_proto_rawDescOnce.Do(func() {
+		file_cin_interface_v1_message_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_cin_interface_v1_message_proto_rawDesc), len(file_cin_interface_v1_message_proto_rawDesc)))
 	})
-	return file_api_cin_interface_v1_message_proto_rawDescData
+	return file_cin_interface_v1_message_proto_rawDescData
 }
 
-var file_api_cin_interface_v1_message_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
-var file_api_cin_interface_v1_message_proto_goTypes = []any{
+var file_cin_interface_v1_message_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_cin_interface_v1_message_proto_goTypes = []any{
 	(*MessageItem)(nil),               // 0: api.cin.interface.v1.MessageItem
 	(*ListMyMessageRequest)(nil),      // 1: api.cin.interface.v1.ListMyMessageRequest
 	(*ListMyMessageReply)(nil),        // 2: api.cin.interface.v1.ListMyMessageReply
@@ -572,7 +582,7 @@ var file_api_cin_interface_v1_message_proto_goTypes = []any{
 	(*MarkAllMessageReadRequest)(nil), // 7: api.cin.interface.v1.MarkAllMessageReadRequest
 	(*MarkAllMessageReadReply)(nil),   // 8: api.cin.interface.v1.MarkAllMessageReadReply
 }
-var file_api_cin_interface_v1_message_proto_depIdxs = []int32{
+var file_cin_interface_v1_message_proto_depIdxs = []int32{
 	0, // 0: api.cin.interface.v1.ListMyMessageReply.items:type_name -> api.cin.interface.v1.MessageItem
 	1, // 1: api.cin.interface.v1.Message.ListMyMessage:input_type -> api.cin.interface.v1.ListMyMessageRequest
 	3, // 2: api.cin.interface.v1.Message.UnreadMessageCount:input_type -> api.cin.interface.v1.UnreadMessageCountRequest
@@ -589,26 +599,26 @@ var file_api_cin_interface_v1_message_proto_depIdxs = []int32{
 	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_api_cin_interface_v1_message_proto_init() }
-func file_api_cin_interface_v1_message_proto_init() {
-	if File_api_cin_interface_v1_message_proto != nil {
+func init() { file_cin_interface_v1_message_proto_init() }
+func file_cin_interface_v1_message_proto_init() {
+	if File_cin_interface_v1_message_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_cin_interface_v1_message_proto_rawDesc), len(file_api_cin_interface_v1_message_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cin_interface_v1_message_proto_rawDesc), len(file_cin_interface_v1_message_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_api_cin_interface_v1_message_proto_goTypes,
-		DependencyIndexes: file_api_cin_interface_v1_message_proto_depIdxs,
-		MessageInfos:      file_api_cin_interface_v1_message_proto_msgTypes,
+		GoTypes:           file_cin_interface_v1_message_proto_goTypes,
+		DependencyIndexes: file_cin_interface_v1_message_proto_depIdxs,
+		MessageInfos:      file_cin_interface_v1_message_proto_msgTypes,
 	}.Build()
-	File_api_cin_interface_v1_message_proto = out.File
-	file_api_cin_interface_v1_message_proto_goTypes = nil
-	file_api_cin_interface_v1_message_proto_depIdxs = nil
+	File_cin_interface_v1_message_proto = out.File
+	file_cin_interface_v1_message_proto_goTypes = nil
+	file_cin_interface_v1_message_proto_depIdxs = nil
 }

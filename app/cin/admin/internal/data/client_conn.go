@@ -5,10 +5,11 @@ import (
 	"os"
 
 	bladesRpc "cyi-app/api/blades/v1"
+	chatRpc "cyi-app/api/service/chat/v1"
+	marketingRpc "cyi-app/api/service/marketing/v1"
 	orderRpc "cyi-app/api/service/order/v1"
 	productRpc "cyi-app/api/service/product/v1"
 	userRpc "cyi-app/api/service/user/v1"
-	marketingRpc "cyi-app/api/service/marketing/v1"
 	"cyi-app/app/cin/admin/internal/conf"
 	grpc "cyi-app/pkg/kratos/client"
 
@@ -278,4 +279,24 @@ func NewBladesClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, t
 		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.BLADES_SERVICE, err))
 	}
 	return bladesRpc.NewBladesClient(conn)
+}
+
+// NewChatServiceClient 创建 IM 客服服务 gRPC 客户端（客服端会话/消息操作）
+func NewChatServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) chatRpc.ChatClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.CHAT_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			ServiceKey:     auth.ServiceKey[grpc.CHAT_SERVICE],
+			Meter:          metric,
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.CHAT_SERVICE, err))
+	}
+	return chatRpc.NewChatClient(conn)
 }

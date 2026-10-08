@@ -122,4 +122,3 @@ func (uc *AdminUserUseCase) ToggleStatus(ctx context.Context, id int64) (int32, 
 func (uc *AdminUserUseCase) UpdateAvatar(ctx context.Context, adminID int64, avatarURL string) error {
 	return uc.repo.UpdateAvatar(ctx, adminID, avatarURL)
 }
-

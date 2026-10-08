@@ -82,12 +82,13 @@ func messageBizToProto(m *biz.Message) *v1.MessageItem {
 		return nil
 	}
 	return &v1.MessageItem{
-		Id:        m.ID,
-		Title:     m.Title,
-		Content:   m.Content,
-		MsgType:   m.MsgType,
-		IsRead:    m.IsRead,
-		CreatedAt: m.CreatedAt,
-		ReadAt:    m.ReadAt,
+		Id:             m.ID,
+		Title:          m.Title,
+		Content:        m.Content,
+		MsgType:        m.MsgType,
+		IsRead:         m.IsRead,
+		CreatedAt:      m.CreatedAt,
+		ReadAt:         m.ReadAt,
+		ConversationId: m.ConversationID,
 	}
 }

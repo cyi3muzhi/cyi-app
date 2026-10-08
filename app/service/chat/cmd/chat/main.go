@@ -1,0 +1,124 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+
+	"cyi-app/app/service/chat/internal/conf"
+
+	cgrpc "cyi-app/pkg/kratos/client"
+	consulConfig "cyi-app/pkg/kratos/config"
+
+	tr "cyi-app/pkg/kratos/tracing"
+
+	logutil "cyi-app/pkg/kratos/log"
+
+	mid "cyi-app/pkg/kratos/server/middleware"
+
+	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware/metrics"
+	"github.com/go-kratos/kratos/v2/middleware/tracing"
+	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/exporters/prometheus"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	_ "go.uber.org/automaxprocs"
+)
+
+var (
+	Name    string = fmt.Sprintf("%s.%s", os.Getenv("SERVICE_ENV"), cgrpc.CHAT_SERVICE)
+	Version string = cgrpc.CHAT_VERSION
+	id             = strings.ReplaceAll(strings.ToLower(uuid.NewString()), "-", "")
+	meteric *mid.Meter
+)
+
+func init() {
+	exporter, err := prometheus.New()
+	if err != nil {
+		panic(err)
+	}
+
+	provider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(exporter))
+	meter := provider.Meter(Name)
+
+	_metricRequests, err := metrics.DefaultRequestsCounter(meter, metrics.DefaultServerRequestsCounterName)
+	if err != nil {
+		panic(err)
+	}
+
+	_metricSeconds, err := metrics.DefaultSecondsHistogram(meter, metrics.DefaultServerSecondsHistogramName)
+	if err != nil {
+		panic(err)
+	}
+	meteric = &mid.Meter{
+		Requests: _metricRequests,
+		Seconds:  _metricSeconds,
+	}
+}
+
+func newApp(logger log.Logger, gs *grpc.Server, reg registry.Registrar) *kratos.App {
+	return kratos.New(
+		kratos.ID(id),
+		kratos.Name(Name),
+		kratos.Version(Version),
+		kratos.Metadata(map[string]string{}),
+		kratos.Logger(logger),
+		kratos.Server(
+			gs,
+		),
+		kratos.Registrar(reg),
+	)
+}
+
+func main() {
+	c, err := consulConfig.NewConsulConfig(&consulConfig.ConsulConfigOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	defer c.Close()
+
+	if err = c.Load(); err != nil {
+		panic(err)
+	}
+
+	var bc conf.Bootstrap
+	if err = c.Scan(&bc); err != nil {
+		panic(err)
+	}
+	var cb conf.Registry
+	if err = c.Scan(&cb); err != nil {
+		panic(err)
+	}
+	zerologAdapter := logutil.NewZerologAdapterWithConfig(&logutil.LogConfig{
+		Level:               bc.Log.Level,
+		EnableConsoleOutput: bc.Log.EnableConsole,
+		EnableFileOutput:    bc.Log.EnableFile,
+		LogDir:              bc.Log.LogDir,
+		TimeFormat:          bc.Log.TimeFormat,
+		EnableColor:         bc.Log.EnableColor,
+		ServiceName:         Name,
+	})
+
+	logger := log.With(zerologAdapter,
+		"service.id", id,
+		"service.name", Name,
+		"service.version", Version,
+		"trace.id", tracing.TraceID(),
+		"span.id", tracing.SpanID(),
+	)
+	tp := tr.NewTracerProvider(Name, bc.Trace.Endpoint)
+
+	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, &cb, logger, tp, meteric)
+	if err != nil {
+		panic(err)
+	}
+	defer cleanup()
+
+	if err := app.Run(); err != nil {
+		panic(err)
+	}
+}

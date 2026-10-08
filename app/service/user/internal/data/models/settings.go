@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 
 	"cyi-app/pkg/util/gorm"
-) 
- 
+)
+
 // SystemSettings 系统设置，以 JSON 存储在 system_settings 表
 type SystemSettings struct {
 	ShopName               string   `json:"shop_name"`

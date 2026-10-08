@@ -85,6 +85,12 @@ var permModules = []biz.PermModule{
 		{Key: "send", Label: "发送消息"},
 		{Key: "delete", Label: "下线消息"},
 	}},
+	{Key: "chat", Title: "客服工作台", Items: []biz.PermItem{
+		{Key: "view", Label: "查看客服工作台"},
+		{Key: "accept", Label: "接入会话"},
+		{Key: "transfer", Label: "转接会话"},
+		{Key: "close", Label: "结束会话"},
+	}},
 }
 
 // ListRoles 获取所有角色

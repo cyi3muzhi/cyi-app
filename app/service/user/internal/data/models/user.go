@@ -11,10 +11,10 @@ import (
 type User struct {
 	gorm.Model
 	// 登录与基础认证
-	Username       string `gorm:"column:username;type:varchar(32);uniqueIndex;not null;comment:登录账号"`
-	Phone          string `gorm:"column:phone;type:varchar(20);index;comment:手机号"`
-	Email          string `gorm:"column:email;type:varchar(128);index;comment:邮箱"`
-	Password       string `gorm:"column:password;type:varchar(128);not null;comment:加密后的密码"`
+	Username string `gorm:"column:username;type:varchar(32);uniqueIndex;not null;comment:登录账号"`
+	Phone    string `gorm:"column:phone;type:varchar(20);index;comment:手机号"`
+	Email    string `gorm:"column:email;type:varchar(128);index;comment:邮箱"`
+	Password string `gorm:"column:password;type:varchar(128);not null;comment:加密后的密码"`
 
 	// 个人资料
 	Nickname string `gorm:"column:nickname;type:varchar(64);comment:展示名"`

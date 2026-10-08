@@ -113,4 +113,3 @@ func TestUpdateRolePermissions_AppliesExactPolicies(t *testing.T) {
 	assert.NoError(t, err)
 	assert.False(t, allowed, "未授权的权限必须被拒绝")
 }
-

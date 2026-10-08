@@ -43,6 +43,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	operationLogClient := data.NewOperationLogClient(discovery, confServer, auth, traceTracerProvider, meter)
 	couponServiceClient := data.NewCouponServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	bladesClient := data.NewBladesClient(discovery, confServer, auth, traceTracerProvider, meter)
+	chatClient := data.NewChatServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	rustFSClient, err := data.NewOssClient(confData)
 	if err != nil {
 		return nil, nil, err
@@ -50,7 +51,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	client := data.NewRedisClient(confData)
 	conn := data.NewNATSConn()
 	asynqClient := data.NewAsynqClient(confData, logger)
-	dataData, cleanup, err := data.NewData(productClient, categoryClient, stockClient, adminUserClient, orderClient, userClient, messageClient, operationLogClient, couponServiceClient, bladesClient, rustFSClient, client, conn, asynqClient, logger)
+	dataData, cleanup, err := data.NewData(productClient, categoryClient, stockClient, adminUserClient, orderClient, userClient, messageClient, operationLogClient, couponServiceClient, bladesClient, chatClient, rustFSClient, client, conn, asynqClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -84,7 +85,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	userUseCase := biz.NewUserUseCase(userRepo, logger)
 	messageRepo := data.NewMessageRepo(dataData, logger)
 	messageUseCase := biz.NewMessageUseCase(messageRepo, logger)
-	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, staffUseCase, categoryUseCase, orderUseCase, exportUseCase, couponUseCase, uploadRepo, agentUseCase, settingsUseCase, bannerRepo, userUseCase, messageUseCase, logger)
+	chatUseCase := biz.NewChatUseCase(chatClient, conn, universalClient, logger)
+	adminService := service.NewAdminService(dashboardUseCase, productUseCase, authUseCase, roleUseCase, staffUseCase, categoryUseCase, orderUseCase, exportUseCase, couponUseCase, uploadRepo, agentUseCase, settingsUseCase, bannerRepo, userUseCase, messageUseCase, chatUseCase, auth, logger)
 	server2 := server.NewGRPCServer(grpcServer, adminService)
 	tokenValidator := data.NewTokenValidator(client)
 	operationLogPublisher := data.NewOperationLogPublisher(conn, logger)

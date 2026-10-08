@@ -64,6 +64,7 @@
 > - **Task Service**：消费 Asynq 的 `default`（一般异步任务）、`export`（订单导出）、`critical`（cron 定时任务）队列
 > - **Admin → Task**：管理后台导出订单时，通过 Asynq（Redis）投递任务，task 服务消费完成后写回 Redis，admin 轮询状态
 > - **操作日志链路**：admin 服务 HTTP 中间件将管理员写操作发布 NATS（`admin.operation` 主题），user 服务订阅落库，admin 查询接口读库返回
+> - **IM 客服链路**：Chat Service（`chat.service`）提供会话/消息/客服接待；消息落库后发布 NATS（`chat.message`），interface/admin 网关订阅并按接收方推送至 WebSocket 连接（用户端 `/ws/chat/v2`、客服端 `/admin/v1/chat/ws`）；会话状态经 `chat.conversation` 主题实时广播（客服工作台待接入刷新）；新会话默认 AI 兜底接待（调用 Blades），客服接入后切换人工；在线状态/未读数存 Redis，客服发消息时用户离线则通过消息中心发站内信提醒（可跳转会话）
 > - 所有服务通过 **Consul** 做服务发现与配置管理
 
 ## 技术栈
@@ -98,6 +99,7 @@
 | Product Service | `app/service/product` | 商品 & 库存管理 | [README](app/service/product/README.md) |
 | User Service | `app/service/user` | 用户认证 & 管理 | [README](app/service/user/README.md) |
 | Marketing Service | `app/service/marketing` | 优惠券营销管理 | [README](app/service/marketing/README.md) |
+| Chat Service | `app/service/chat` | IM 客服（会话/消息/AI 兜底/离线提醒，含用户端 H5 聊天页与客服工作台） | [README](app/service/chat/README.md) |
 | Blades Service | `app/blades` | AI 智能助手 | [README](app/blades/README.md) |
 
 ### 任务 & 消息服务
@@ -136,6 +138,7 @@ cyi-app/
 │   │   └── interface/v1/   # 接口网关 API（含消息中心 message）
 │   ├── common/             # 公共错误码
 │   ├── service/
+│   │   ├── chat/v1/        # IM 客服 API
 │   │   ├── marketing/v1/   # 营销（优惠券）API
 │   │   ├── order/v1/       # 订单 API
 │   │   ├── product/v1/     # 商品 & 库存 API
@@ -148,6 +151,7 @@ cyi-app/
 │   │   └── interface/      # 接口网关
 │   ├── nats/               # NATS 消费者
 │   ├── service/
+│   │   ├── chat/           # IM 客服服务（会话/消息）
 │   │   ├── marketing/      # 优惠券营销服务
 │   │   ├── order/          # 订单服务
 │   │   ├── product/        # 商品服务
@@ -270,6 +274,10 @@ make errors
 | CIN Interface | Order Service | gRPC |
 | CIN Interface | Product Service | gRPC |
 | CIN Interface | Blades Service | gRPC |
+| CIN Interface | Chat Service | gRPC（IM 客服会话/消息） |
+| CIN Interface | NATS | 订阅 chat.message，推送消息给在线用户连接 |
+| Admin BFF | Chat Service | gRPC（IM 客服客服端操作） |
+| Admin BFF | NATS | 订阅 chat.message，推送消息给在线客服连接 |
 | Admin BFF | User Service | gRPC |
 | Admin BFF | Product Service | gRPC |
 | Admin BFF | Order Service | gRPC |
@@ -278,6 +286,8 @@ make errors
 | Admin BFF | NATS | 发布操作日志事件（admin.operation 主题） |
 | User Service | NATS | 订阅操作日志事件并落库 |
 | CIN Interface | Marketing Service | gRPC（优惠券领取/查询） |
+| Chat Service | NATS | 发布聊天消息事件（chat.message 主题，消息落库后） |
+| Chat Service | User Service | gRPC（离线提醒调用消息中心 CreateMessage） |
 | NATS Consumer | NATS Server | NATS Protocol |
 | Task Service | Redis | Asynq（cron 定时 + 消费 default/export/critical 队列） |
 | Task Service | Order Service | gRPC（导出拉单、超时订单取消） |

@@ -1,0 +1,322 @@
+syntax = "proto3";
+
+package api.service.chat.v1;
+
+option go_package = "cyi-app/api/service/chat/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.service.chat.v1";
+
+import "validate/validate.proto";
+
+// Chat IM 客服服务（方案 A：用户 ↔ 客服）
+service Chat {
+  // ===== 用户端 =====
+  // 创建会话（用户发起咨询）
+  rpc CreateConversation (CreateConversationRequest) returns (CreateConversationReply);
+  // 我的会话列表（用户端，分页）
+  rpc ListMyConversation (ListMyConversationRequest) returns (ListMyConversationReply);
+  // 会话历史消息（游标分页）
+  rpc ListMessage (ListMessageRequest) returns (ListMessageReply);
+  // 会话历史消息（客服端，校验客服成员）
+  rpc ListAgentMessage (ListAgentMessageRequest) returns (ListMessageReply);
+  // 发送消息（用户端，HTTP 兜底；正常走 WS）
+  rpc SendMessage (SendMessageRequest) returns (SendMessageReply);
+  // 标记会话已读（用户端）
+  rpc MarkConversationRead (MarkConversationReadRequest) returns (MarkConversationReadReply);
+  // 结束会话（用户端主动关闭）
+  rpc CloseConversation (CloseConversationRequest) returns (CloseConversationReply);
+
+  // ===== 客服端 =====
+  // 待接入会话列表（客服工作台）
+  rpc ListPendingConversation (ListPendingConversationRequest) returns (ListPendingConversationReply);
+  // 客服接入会话
+  rpc AcceptConversation (AcceptConversationRequest) returns (AcceptConversationReply);
+  // 客服转接会话
+  rpc TransferConversation (TransferConversationRequest) returns (TransferConversationReply);
+  // 我的会话列表（客服端）
+  rpc ListAgentConversation (ListAgentConversationRequest) returns (ListAgentConversationReply);
+  // 发送消息（客服端，HTTP 兜底；正常走 WS）
+  rpc SendAgentMessage (SendAgentMessageRequest) returns (SendAgentMessageReply);
+  // 标记会话已读（客服端）
+  rpc MarkAgentRead (MarkAgentReadRequest) returns (MarkAgentReadReply);
+  // 结束会话（客服端）
+  rpc CloseAgentConversation (CloseAgentConversationRequest) returns (CloseAgentConversationReply);
+  // 客服接待统计（工作台头部）
+  rpc AgentStats (AgentStatsRequest) returns (AgentStatsReply);
+}
+
+// 会话状态 1=待接入 2=进行中 3=已结束
+message ConversationInfo {
+  // 会话ID
+  int64 id = 1;
+  // 用户ID
+  int64 user_id = 2;
+  // 客服ID（0=未分配）
+  int64 agent_id = 3;
+  // 会话状态 1=待接入 2=进行中 3=已结束
+  int32 status = 4;
+  // 接待类型 1=人工 2=AI接待中
+  int32 service_type = 5;
+  // 最后消息摘要
+  string last_message = 6;
+  // 最后消息类型 1=文本 2=图片 3=商品卡片 4=订单卡片 5=系统
+  int32 last_msg_type = 7;
+  // 最后消息时间（Unix 秒）
+  int64 last_message_at = 8;
+  // 未读数（按请求方视角）
+  int32 unread_count = 9;
+  // 用户昵称（联查）
+  string user_name = 10;
+  // 客服姓名（联查）
+  string agent_name = 11;
+  // 用户是否在线 0=否 1=是
+  int32 user_online = 12;
+  // 创建时间（Unix 秒）
+  int64 created_at = 13;
+}
+
+// 消息信息
+message ChatMessageInfo {
+  // 消息ID
+  int64 id = 1;
+  // 会话ID
+  int64 conversation_id = 2;
+  // 发送者类型 1=用户 2=客服 3=系统 4=AI
+  int32 sender_type = 3;
+  // 发送者ID
+  int64 sender_id = 4;
+  // 消息类型 1=文本 2=图片 3=商品卡片 4=订单卡片 5=系统
+  int32 msg_type = 5;
+  // 内容
+  string content = 6;
+  // 扩展（JSON 字符串，如图片URL/卡片）
+  string extra = 7;
+  // 是否已读 0=未读 1=已读
+  int32 is_read = 8;
+  // 发送时间（Unix 秒）
+  int64 created_at = 9;
+}
+
+// ========== CreateConversation ==========
+message CreateConversationRequest {
+  // 用户ID
+  int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+message CreateConversationReply {
+  // 会话信息
+  ConversationInfo conversation = 1;
+}
+
+// ========== ListMyConversation ==========
+message ListMyConversationRequest {
+  // 用户ID
+  int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 页码
+  int32 page = 2 [(validate.rules).int32 = {gte: 1}];
+  // 每页数量
+  int32 page_size = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
+  // 状态筛选（0=全部）
+  int32 status = 4;
+}
+message ListMyConversationReply {
+  // 会话列表
+  repeated ConversationInfo items = 1;
+  // 总数
+  int32 total = 2;
+}
+
+// ========== ListMessage ==========
+message ListMessageRequest {
+  // 用户ID
+  int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 会话ID
+  int64 conversation_id = 2 [(validate.rules).int64 = {gt: 0}];
+  // 游标消息ID（0=最新一页）
+  int64 cursor_id = 3;
+  // 每页数量
+  int32 limit = 4 [(validate.rules).int32 = {gte: 1, lte: 100}];
+  // 方向 0=向下（更新）1=向上（更早）
+  int32 direction = 5;
+}
+message ListMessageReply {
+  // 消息列表
+  repeated ChatMessageInfo items = 1;
+  // 是否还有更多
+  bool has_more = 2;
+}
+
+// ========== ListAgentMessage ==========
+message ListAgentMessageRequest {
+  // 客服ID
+  int64 agent_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 会话ID
+  int64 conversation_id = 2 [(validate.rules).int64 = {gt: 0}];
+  // 游标消息ID（0=最新一页）
+  int64 cursor_id = 3;
+  // 每页数量
+  int32 limit = 4 [(validate.rules).int32 = {gte: 1, lte: 100}];
+  // 方向 0=向下（更新）1=向上（更早）
+  int32 direction = 5;
+}
+
+// ========== SendMessage ==========
+message SendMessageRequest {
+  // 用户ID
+  int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 会话ID
+  int64 conversation_id = 2 [(validate.rules).int64 = {gt: 0}];
+  // 消息类型 1=文本 2=图片 3=商品卡片 4=订单卡片
+  int32 msg_type = 3 [(validate.rules).int32 = {in: [1, 2, 3, 4]}];
+  // 内容
+  string content = 4 [(validate.rules).string = {min_len: 1, max_len: 5000}];
+  // 扩展JSON（图片URL/卡片）
+  string extra = 5;
+}
+message SendMessageReply {
+  // 新消息ID
+  int64 message_id = 1;
+  // 发送时间（Unix 秒）
+  int64 created_at = 2;
+}
+
+// ========== MarkConversationRead ==========
+message MarkConversationReadRequest {
+  // 用户ID
+  int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 会话ID
+  int64 conversation_id = 2 [(validate.rules).int64 = {gt: 0}];
+}
+message MarkConversationReadReply {
+  // 是否成功
+  bool success = 1;
+}
+
+// ========== CloseConversation ==========
+message CloseConversationRequest {
+  // 用户ID
+  int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 会话ID
+  int64 conversation_id = 2 [(validate.rules).int64 = {gt: 0}];
+}
+message CloseConversationReply {
+  // 是否成功
+  bool success = 1;
+}
+
+// ========== ListPendingConversation ==========
+message ListPendingConversationRequest {
+  // 客服ID
+  int64 agent_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 页码
+  int32 page = 2 [(validate.rules).int32 = {gte: 1}];
+  // 每页数量
+  int32 page_size = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
+}
+message ListPendingConversationReply {
+  // 会话列表
+  repeated ConversationInfo items = 1;
+  // 总数
+  int32 total = 2;
+}
+
+// ========== AcceptConversation ==========
+message AcceptConversationRequest {
+  // 客服ID
+  int64 agent_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 会话ID
+  int64 conversation_id = 2 [(validate.rules).int64 = {gt: 0}];
+}
+message AcceptConversationReply {
+  // 是否成功
+  bool success = 1;
+}
+
+// ========== TransferConversation ==========
+message TransferConversationRequest {
+  // 当前客服ID
+  int64 agent_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 会话ID
+  int64 conversation_id = 2 [(validate.rules).int64 = {gt: 0}];
+  // 目标客服ID
+  int64 target_agent_id = 3 [(validate.rules).int64 = {gt: 0}];
+}
+message TransferConversationReply {
+  // 是否成功
+  bool success = 1;
+}
+
+// ========== ListAgentConversation ==========
+message ListAgentConversationRequest {
+  // 客服ID
+  int64 agent_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 页码
+  int32 page = 2 [(validate.rules).int32 = {gte: 1}];
+  // 每页数量
+  int32 page_size = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
+  // 状态筛选（0=全部）
+  int32 status = 4;
+}
+message ListAgentConversationReply {
+  // 会话列表
+  repeated ConversationInfo items = 1;
+  // 总数
+  int32 total = 2;
+}
+
+// ========== SendAgentMessage ==========
+message SendAgentMessageRequest {
+  // 客服ID
+  int64 agent_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 会话ID
+  int64 conversation_id = 2 [(validate.rules).int64 = {gt: 0}];
+  // 消息类型 1=文本 2=图片 3=商品卡片 4=订单卡片
+  int32 msg_type = 3 [(validate.rules).int32 = {in: [1, 2, 3, 4]}];
+  // 内容
+  string content = 4 [(validate.rules).string = {min_len: 1, max_len: 5000}];
+  // 扩展JSON（图片URL/卡片）
+  string extra = 5;
+}
+message SendAgentMessageReply {
+  // 新消息ID
+  int64 message_id = 1;
+  // 发送时间（Unix 秒）
+  int64 created_at = 2;
+}
+
+// ========== MarkAgentRead ==========
+message MarkAgentReadRequest {
+  // 客服ID
+  int64 agent_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 会话ID
+  int64 conversation_id = 2 [(validate.rules).int64 = {gt: 0}];
+}
+message MarkAgentReadReply {
+  // 是否成功
+  bool success = 1;
+}
+
+// ========== CloseAgentConversation ==========
+message CloseAgentConversationRequest {
+  // 客服ID
+  int64 agent_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 会话ID
+  int64 conversation_id = 2 [(validate.rules).int64 = {gt: 0}];
+}
+message CloseAgentConversationReply {
+  // 是否成功
+  bool success = 1;
+}
+
+// ========== AgentStats ==========
+message AgentStatsRequest {
+  // 客服ID
+  int64 agent_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+message AgentStatsReply {
+  // 今日接入会话数
+  int64 total_today = 1;
+  // 进行中会话数
+  int64 processing = 2;
+  // 今日已解决会话数
+  int64 resolved_today = 3;
+}

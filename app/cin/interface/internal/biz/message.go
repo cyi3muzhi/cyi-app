@@ -8,13 +8,14 @@ import (
 
 // Message 消息业务对象（用户端视角）
 type Message struct {
-	ID        int64
-	Title     string  // 标题
-	Content   string  // 内容（支持换行文本）
-	MsgType   int32   // 消息类型 1=订单 2=系统 3=营销
-	IsRead    int32   // 是否已读 0=未读 1=已读
-	CreatedAt int64   // 创建时间（Unix 秒）
-	ReadAt    int64   // 已读时间（Unix 秒，未读为 0）
+	ID             int64
+	Title          string // 标题
+	Content        string // 内容（支持换行文本）
+	MsgType        int32  // 消息类型 1=订单 2=系统 3=营销
+	IsRead         int32  // 是否已读 0=未读 1=已读
+	CreatedAt      int64  // 创建时间（Unix 秒）
+	ReadAt         int64  // 已读时间（Unix 秒，未读为 0）
+	ConversationID int64  // 关联会话ID（IM 客服离线提醒，0=普通通知）
 }
 
 // MessageRepo 消息数据仓库接口

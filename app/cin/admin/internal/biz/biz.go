@@ -22,6 +22,7 @@ var ProviderSet = wire.NewSet(
 	NewUserUseCase,
 	NewMessageUseCase,
 	NewOperationLogUseCase,
+	NewChatUseCase,
 	ProvideApiKey,
 )
 

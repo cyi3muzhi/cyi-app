@@ -31,7 +31,7 @@ type SystemSettings struct {
 	DefaultPayment         string
 	FreeShippingThreshold  float64
 	DefaultShippingCompany string
-	HotKeywords            []string  // 热门搜索词（用户端搜索框联想展示）
+	HotKeywords            []string // 热门搜索词（用户端搜索框联想展示）
 }
 
 // SettingsRepo 系统设置仓库接口

@@ -44,6 +44,16 @@ export default defineConfig({
         target: 'http://localhost:18000',
         changeOrigin: true
       },
+      '/chat/v1': {
+        target: 'http://localhost:18000',
+        changeOrigin: true
+      },
+      // IM 客服 WebSocket（支持 ws 升级转发）
+      '/ws': {
+        target: 'http://localhost:18000',
+        changeOrigin: true,
+        ws: true
+      },
       '/api/v1': {
         target: 'http://localhost:18000',
         changeOrigin: true

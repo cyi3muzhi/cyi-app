@@ -33,4 +33,14 @@ func registerStreamRoutes(s *kratosHttp.Server, cinInterface *service.CinInterfa
 		}()
 		cinInterface.ChatWS(w, r)
 	}))
+
+	// IM 客服 WebSocket（query token 鉴权在 ws.Serve 内部处理，不走 HTTP 中间件）
+	s.HandleFunc("/ws/chat/v2", httproute.WithMiddlewares([]middleware.Middleware{}, func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				nethttp.Error(w, "internal server error", nethttp.StatusInternalServerError)
+			}
+		}()
+		cinInterface.IMChatWS(w, r)
+	}))
 }

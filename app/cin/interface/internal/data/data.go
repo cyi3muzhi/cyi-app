@@ -12,6 +12,7 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
 
+	chatRpc "cyi-app/api/service/chat/v1"
 	marketingV1 "cyi-app/api/service/marketing/v1"
 	orderRpc "cyi-app/api/service/order/v1"
 	productRpc "cyi-app/api/service/product/v1"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
+	"github.com/nats-io/nats.go"
 )
 
 // ProviderSet is data providers.
@@ -47,6 +49,9 @@ var ProviderSet = wire.NewSet(
 	NewRedisClient,
 	NewAsynqClient,
 	NewOssClient,
+	NewChatServiceClient,
+	NewChatRepo,
+	NewNATSConn,
 )
 
 // Data .
@@ -60,17 +65,22 @@ type Data struct {
 	mcc marketingV1.CouponServiceClient
 	asc userRpc.AdminSettingsClient
 	abc userRpc.AdminBannerClient
+	chc chatRpc.ChatClient
 	rc  redis.UniversalClient
 	mq  *asynq.Client
 	oss *rustfs.RustFSClient
+	nc  *nats.Conn
 }
 
 // NewData .
-func NewData(c *conf.Data, uc userRpc.UserClient, mc userRpc.MessageClient, oc orderRpc.OrderClient, pc productRpc.ProductClient, cc productRpc.CategoryClient, sc productRpc.StockClient, mcc marketingV1.CouponServiceClient, asc userRpc.AdminSettingsClient, abc userRpc.AdminBannerClient, rc redis.UniversalClient, logger log.Logger, mq *asynq.Client, oss *rustfs.RustFSClient) (*Data, func(), error) {
+func NewData(c *conf.Data, uc userRpc.UserClient, mc userRpc.MessageClient, oc orderRpc.OrderClient, pc productRpc.ProductClient, cc productRpc.CategoryClient, sc productRpc.StockClient, mcc marketingV1.CouponServiceClient, asc userRpc.AdminSettingsClient, abc userRpc.AdminBannerClient, chc chatRpc.ChatClient, rc redis.UniversalClient, logger log.Logger, mq *asynq.Client, oss *rustfs.RustFSClient, nc *nats.Conn) (*Data, func(), error) {
 	cleanup := func() {
+		if nc != nil {
+			nc.Close()
+		}
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{uc: uc, mc: mc, oc: oc, pc: pc, cc: cc, sc: sc, mcc: mcc, asc: asc, abc: abc, rc: rc, mq: mq, oss: oss}, cleanup, nil
+	return &Data{uc: uc, mc: mc, oc: oc, pc: pc, cc: cc, sc: sc, mcc: mcc, asc: asc, abc: abc, chc: chc, rc: rc, mq: mq, oss: oss, nc: nc}, cleanup, nil
 }
 
 // NewOssClient 创建 OSS 客户端（用户服务 bucket）

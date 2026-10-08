@@ -157,6 +157,7 @@
  */
 import { ref, onMounted } from 'vue'
 import BackButton from '@/components/BackButton.vue'
+import { useChatPanel } from '@/store/chatPanel'
 import {
   listMessages,
   getUnreadCount,
@@ -174,6 +175,7 @@ const tabs = [
   { label: '营销', value: 3 }
 ]
 const activeTab = ref(0)
+const chatPanel = useChatPanel()
 
 // ---- 列表状态 ----
 const messages = ref<MessageItem[]>([])
@@ -246,8 +248,20 @@ function loadMore() {
   fetchMessages(false)
 }
 
-/** 打开消息详情（未读则标记已读） */
+/** 打开消息：IM 客服提醒直接打开悬浮客服小窗对应会话，否则打开详情（未读则标记已读） */
 async function onOpenMessage(msg: MessageItem) {
+  // 离线提醒站内信 → 打开悬浮客服小窗对应会话
+  if (msg.conversationId > 0) {
+    if (msg.isRead === 0) {
+      try {
+        await markMessageRead(msg.id)
+      } catch {
+        // 标记已读失败不影响跳转
+      }
+    }
+    chatPanel.showChat(msg.conversationId)
+    return
+  }
   detailMsg.value = msg
   if (msg.isRead === 0) {
     try {

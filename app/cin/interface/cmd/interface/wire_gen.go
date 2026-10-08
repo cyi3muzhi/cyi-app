@@ -39,13 +39,15 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	couponServiceClient := data.NewMarketingCouponServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	adminSettingsClient := data.NewAdminSettingsServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	adminBannerClient := data.NewAdminBannerServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
+	chatClient := data.NewChatServiceClient(discovery, confServer, auth, traceTracerProvider, meter)
 	universalClient := data.NewRedisClient(confData, logger)
 	client := data.NewAsynqClient(universalClient)
 	rustFSClient, err := data.NewOssClient(confData)
 	if err != nil {
 		return nil, nil, err
 	}
-	dataData, cleanup, err := data.NewData(confData, userClient, messageClient, orderClient, productClient, categoryClient, stockClient, couponServiceClient, adminSettingsClient, adminBannerClient, universalClient, logger, client, rustFSClient)
+	conn := data.NewNATSConn()
+	dataData, cleanup, err := data.NewData(confData, userClient, messageClient, orderClient, productClient, categoryClient, stockClient, couponServiceClient, adminSettingsClient, adminBannerClient, chatClient, universalClient, logger, client, rustFSClient, conn)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -70,8 +72,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, blad
 	bannerUseCase := biz.NewBannerUseCase(bannerRepo)
 	cartRepo := data.NewCartRepo(dataData, logger)
 	cartUseCase := biz.NewCartUseCase(cartRepo, productRepo, logger)
+	chatRepo := data.NewChatRepo(dataData, logger)
+	chatUseCase := biz.NewChatUseCase(chatRepo, conn, universalClient, logger)
 	uploadRepo := data.NewUploadRepo(dataData, logger)
-	cinInterface := service.NewCinInterface(userUseCase, messageUseCase, orderUseCase, productUseCase, categoryUseCase, stockUseCase, bladesUseCase, couponUseCase, settingsUseCase, bannerUseCase, cartUseCase, uploadRepo, logger, auth)
+	cinInterface := service.NewCinInterface(userUseCase, messageUseCase, orderUseCase, productUseCase, categoryUseCase, stockUseCase, bladesUseCase, couponUseCase, settingsUseCase, bannerUseCase, cartUseCase, chatUseCase, uploadRepo, logger, auth)
 	server2 := server.NewGRPCServer(grpcServer, cinInterface)
 	httpServer := server.NewHTTPServerConf(confServer, traceTracerProvider, logger, meter, auth)
 	server3 := server.NewHTTPServer(httpServer, cinInterface, auth)

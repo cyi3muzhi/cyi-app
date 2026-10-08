@@ -7,6 +7,7 @@ import (
 
 	bladesRpc "cyi-app/api/blades/v1"
 	adminv1 "cyi-app/api/cin/admin/v1"
+	chatRpc "cyi-app/api/service/chat/v1"
 	marketingRpc "cyi-app/api/service/marketing/v1"
 	orderRpc "cyi-app/api/service/order/v1"
 	productRpc "cyi-app/api/service/product/v1"
@@ -51,6 +52,7 @@ var ProviderSet = wire.NewSet(
 	NewOperationLogClient,
 	NewCouponServiceClient,
 	NewBladesClient,
+	NewChatServiceClient,
 	NewTokenValidator,
 	NewOssClient,
 	NewRedisClient,
@@ -80,6 +82,7 @@ type Data struct {
 	olc         userRpc.OperationLogClient
 	mc          marketingRpc.CouponServiceClient
 	bc          bladesRpc.BladesClient
+	chc         chatRpc.ChatClient
 	oss         *rustfs.RustFSClient
 	redis       *redis.Client
 	nc          *nats.Conn
@@ -89,7 +92,7 @@ type Data struct {
 // NewData 创建数据层实例
 // admin 仅持有 asynq.Client 用于投递任务，不持有 asynq.Server；
 // cleanup 时关闭 asynq 客户端连接。
-func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, sc productRpc.StockClient, auc userRpc.AdminUserClient, oc orderRpc.OrderClient, uc userRpc.UserClient, msgC userRpc.MessageClient, olc userRpc.OperationLogClient, mc marketingRpc.CouponServiceClient, bc bladesRpc.BladesClient, oss *rustfs.RustFSClient, redis *redis.Client, nc *nats.Conn, asynqClient *asynq.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, sc productRpc.StockClient, auc userRpc.AdminUserClient, oc orderRpc.OrderClient, uc userRpc.UserClient, msgC userRpc.MessageClient, olc userRpc.OperationLogClient, mc marketingRpc.CouponServiceClient, bc bladesRpc.BladesClient, chc chatRpc.ChatClient, oss *rustfs.RustFSClient, redis *redis.Client, nc *nats.Conn, asynqClient *asynq.Client, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		asynqClient.Close()
 		if nc != nil {
@@ -97,7 +100,7 @@ func NewData(pc productRpc.ProductClient, cc productRpc.CategoryClient, sc produ
 		}
 		log.NewHelper(logger).Info("closing the admin data resources")
 	}
-	return &Data{pc: pc, cc: cc, sc: sc, auc: auc, oc: oc, uc: uc, msgC: msgC, olc: olc, mc: mc, bc: bc, oss: oss, redis: redis, nc: nc, asynqClient: asynqClient}, cleanup, nil
+	return &Data{pc: pc, cc: cc, sc: sc, auc: auc, oc: oc, uc: uc, msgC: msgC, olc: olc, mc: mc, bc: bc, chc: chc, oss: oss, redis: redis, nc: nc, asynqClient: asynqClient}, cleanup, nil
 }
 
 // NewOssClient 创建 OSS 客户端

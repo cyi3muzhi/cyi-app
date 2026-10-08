@@ -11,9 +11,9 @@ import (
 
 	ts "cyi-app/pkg/kratos/server/transporter"
 
+	mid "cyi-app/pkg/kratos/server/middleware"
 	"github.com/go-kratos/kratos/v2/log"
 	"go.opentelemetry.io/otel/trace"
-	mid "cyi-app/pkg/kratos/server/middleware"
 )
 
 // ProviderSet is server providers.

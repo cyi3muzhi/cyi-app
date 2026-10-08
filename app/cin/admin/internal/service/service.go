@@ -3,6 +3,7 @@ package service
 import (
 	adminv1 "cyi-app/api/cin/admin/v1"
 	"cyi-app/app/cin/admin/internal/biz"
+	"cyi-app/app/cin/admin/internal/conf"
 	"cyi-app/app/cin/admin/internal/data"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -32,42 +33,47 @@ type AdminService struct {
 	adminv1.UnimplementedBannerServer
 	adminv1.UnimplementedAgentServer
 	adminv1.UnimplementedAdminMessageServer
+	adminv1.UnimplementedChatServer
 	log       *log.Helper
-	dc        *biz.DashboardUseCase
-	pc        *biz.ProductUseCase
-	ac        *biz.AuthUseCase
-	rc        *biz.RoleUseCase
-	sc        *biz.StaffUseCase
-	cc        *biz.CategoryUseCase
-	oc        *biz.OrderUseCase
-	ec        *biz.ExportUseCase
-	couponUC  *biz.CouponUseCase
-	ur        *data.UploadRepo
-	agentUC   *biz.AgentUseCase
-	settUC    *biz.SettingsUseCase
-	br        *data.BannerRepo
-	userUC    *biz.UserUseCase
-	msgUC     *biz.MessageUseCase
+	dc       *biz.DashboardUseCase
+	pc       *biz.ProductUseCase
+	ac       *biz.AuthUseCase
+	rc       *biz.RoleUseCase
+	sc       *biz.StaffUseCase
+	cc       *biz.CategoryUseCase
+	oc       *biz.OrderUseCase
+	ec       *biz.ExportUseCase
+	couponUC *biz.CouponUseCase
+	ur       *data.UploadRepo
+	agentUC  *biz.AgentUseCase
+	settUC   *biz.SettingsUseCase
+	br       *data.BannerRepo
+	userUC   *biz.UserUseCase
+	msgUC    *biz.MessageUseCase
+	chatUC   *biz.ChatUseCase
+	auth     *conf.Auth
 }
 
 // NewAdminService 创建 AdminService
-func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.AuthUseCase, rc *biz.RoleUseCase, sc *biz.StaffUseCase, cc *biz.CategoryUseCase, oc *biz.OrderUseCase, ec *biz.ExportUseCase, couponUC *biz.CouponUseCase, ur *data.UploadRepo, agentUC *biz.AgentUseCase, settingsUC *biz.SettingsUseCase, br *data.BannerRepo, userUC *biz.UserUseCase, msgUC *biz.MessageUseCase, logger log.Logger) *AdminService {
+func NewAdminService(dc *biz.DashboardUseCase, pc *biz.ProductUseCase, ac *biz.AuthUseCase, rc *biz.RoleUseCase, sc *biz.StaffUseCase, cc *biz.CategoryUseCase, oc *biz.OrderUseCase, ec *biz.ExportUseCase, couponUC *biz.CouponUseCase, ur *data.UploadRepo, agentUC *biz.AgentUseCase, settingsUC *biz.SettingsUseCase, br *data.BannerRepo, userUC *biz.UserUseCase, msgUC *biz.MessageUseCase, chatUC *biz.ChatUseCase, auth *conf.Auth, logger log.Logger) *AdminService {
 	return &AdminService{
-		log:       log.NewHelper(logger),
-		dc:        dc,
-		pc:        pc,
-		ac:        ac,
-		rc:        rc,
-		sc:        sc,
-		cc:        cc,
-		oc:        oc,
-		ec:        ec,
-		couponUC:  couponUC,
-		ur:        ur,
-		agentUC:   agentUC,
-		settUC:    settingsUC,
-		br:        br,
-		userUC:    userUC,
-		msgUC:     msgUC,
+		log:      log.NewHelper(logger),
+		dc:       dc,
+		pc:       pc,
+		ac:       ac,
+		rc:       rc,
+		sc:       sc,
+		cc:       cc,
+		oc:       oc,
+		ec:       ec,
+		couponUC: couponUC,
+		ur:       ur,
+		agentUC:  agentUC,
+		settUC:   settingsUC,
+		br:       br,
+		userUC:   userUC,
+		msgUC:    msgUC,
+		chatUC:   chatUC,
+		auth:     auth,
 	}
 }

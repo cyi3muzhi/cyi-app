@@ -166,15 +166,15 @@ func addressModelToBiz(m *mod.Address) *biz.Address {
 		return nil
 	}
 	return &biz.Address{
-		ID:        m.ID,
-		UserID:    m.UserID,
-		Receiver:  m.Receiver,
-		Phone:     m.Phone,
-		Province:  m.Province,
-		City:      m.City,
-		District:  m.District,
-		Detail:    m.Detail,
-		IsDefault: m.IsDefault,
+		ID:         m.ID,
+		UserID:     m.UserID,
+		Receiver:   m.Receiver,
+		Phone:      m.Phone,
+		Province:   m.Province,
+		City:       m.City,
+		District:   m.District,
+		Detail:     m.Detail,
+		IsDefault:  m.IsDefault,
 		CreateTime: m.CreateTime,
 		UpdateTime: m.UpdateTime,
 	}

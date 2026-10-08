@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	chatRpc "cyi-app/api/service/chat/v1"
 	userRpc "cyi-app/api/service/user/v1"
 	"cyi-app/app/cin/interface/internal/conf"
 	grpc "cyi-app/pkg/kratos/client"
@@ -38,6 +39,26 @@ func NewUserServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Au
 		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.USER_SERVICE, err))
 	}
 	return userRpc.NewUserClient(conn)
+}
+
+// NewChatServiceClient 创建 IM 客服服务 gRPC 客户端（用户端会话/消息操作）
+func NewChatServiceClient(r registry.Discovery, conf *conf.Server, auth *conf.Auth, tp trace.TracerProvider, metric *mid.Meter) chatRpc.ChatClient {
+	conn, err := grpc.NewClientConn(ts.NewGrpcClientOpt(
+		&ts.TransporterOpt{
+			Timeout:     conf.Grpc.Timeout,
+			ServiceName: grpc.CHAT_SERVICE,
+			Discovery:   r,
+		},
+		&ts.MiddlewareOpt{
+			TracerProvider: tp,
+			ServiceKey:     auth.ServiceKey[grpc.CHAT_SERVICE],
+			Meter:          metric,
+		},
+	))
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to %v.%v: %v", os.Getenv("SERVICE_ENV"), grpc.CHAT_SERVICE, err))
+	}
+	return chatRpc.NewChatClient(conn)
 }
 
 // NewMessageServiceClient 创建用户服务消息中心 gRPC 客户端

@@ -25,17 +25,18 @@ func NewMessageRepo(data *Data, logger log.Logger) biz.MessageRepo {
 
 // messageScan 消息列表查询结果（含用户已读状态）
 type messageScan struct {
-	ID            int64
-	Title         string
-	Content       string
-	MsgType       int32
-	CreatedBy     int64
-	TargetType    int32
-	TargetUserIDs json.RawMessage
-	Status        int32
-	IsRead        int32
-	ReadAt        int64
-	CreatedAt     int64
+	ID             int64
+	Title          string
+	Content        string
+	MsgType        int32
+	CreatedBy      int64
+	TargetType     int32
+	TargetUserIDs  json.RawMessage
+	Status         int32
+	IsRead         int32
+	ReadAt         int64
+	CreatedAt      int64
+	ConversationID int64
 }
 
 // visibleCond 用户可见消息条件（启用 + 全体或指定给该用户）
@@ -55,13 +56,14 @@ func (r *messageRepo) CreateMessage(ctx context.Context, m *biz.Message) (int64,
 		return 0, err
 	}
 	row := &mod.Message{
-		Title:         m.Title,
-		Content:       m.Content,
-		MsgType:       m.MsgType,
-		TargetType:    m.TargetType,
-		TargetUserIDs: raw,
-		Status:        1,
-		CreatedBy:     m.CreatedBy,
+		Title:          m.Title,
+		Content:        m.Content,
+		MsgType:        m.MsgType,
+		TargetType:     m.TargetType,
+		TargetUserIDs:  raw,
+		Status:         1,
+		CreatedBy:      m.CreatedBy,
+		ConversationID: m.ConversationID,
 	}
 	if err := r.data.db.WithContext(ctx).Create(row).Error; err != nil {
 		r.log.Errorf("create message failed: %v", err)
@@ -135,9 +137,9 @@ func (r *messageRepo) ListMyMessage(ctx context.Context, userID int64, page, pag
 
 	// 列表：左连接 user_message 判断已读状态
 	query := `SELECT m.id, m.title, m.content, m.msg_type, m.created_by, m.target_type,
-	                 m.target_user_ids, m.status,
-	                 IFNULL(um.is_read, 0) AS is_read, IFNULL(um.read_at, 0) AS read_at,
-	                 m.create_time AS created_at
+		                 m.target_user_ids, m.status, m.conversation_id,
+		                 IFNULL(um.is_read, 0) AS is_read, IFNULL(um.read_at, 0) AS read_at,
+		                 m.create_time AS created_at
 	          FROM message m
 	          LEFT JOIN user_message um ON um.message_id = m.id AND um.user_id = ?
 	          WHERE ` + cond + ` ORDER BY m.id DESC LIMIT ? OFFSET ?`
@@ -223,31 +225,33 @@ func (r *messageRepo) adminRowToBiz(m *mod.Message) *biz.Message {
 		_ = json.Unmarshal(m.TargetUserIDs, &targetIDs)
 	}
 	return &biz.Message{
-		ID:            m.ID,
-		Title:         m.Title,
-		Content:       m.Content,
-		MsgType:       m.MsgType,
-		CreatedBy:     m.CreatedBy,
-		TargetType:    m.TargetType,
-		TargetUserIDs: targetIDs,
-		Status:        m.Status,
-		CreatedAt:     m.CreateTime,
+		ID:             m.ID,
+		Title:          m.Title,
+		Content:        m.Content,
+		MsgType:        m.MsgType,
+		CreatedBy:      m.CreatedBy,
+		TargetType:     m.TargetType,
+		TargetUserIDs:  targetIDs,
+		Status:         m.Status,
+		CreatedAt:      m.CreateTime,
+		ConversationID: m.ConversationID,
 	}
 }
 
 // scanToBiz 用户端消息查询结果 -> biz.Message 转换
 func (r *messageRepo) scanToBiz(s *messageScan) *biz.Message {
 	return &biz.Message{
-		ID:         s.ID,
-		Title:      s.Title,
-		Content:    s.Content,
-		MsgType:    s.MsgType,
-		IsRead:     s.IsRead,
-		CreatedBy:  s.CreatedBy,
-		TargetType: s.TargetType,
-		Status:     s.Status,
-		ReadAt:     s.ReadAt,
-		CreatedAt:  s.CreatedAt,
+		ID:             s.ID,
+		Title:          s.Title,
+		Content:        s.Content,
+		MsgType:        s.MsgType,
+		IsRead:         s.IsRead,
+		CreatedBy:      s.CreatedBy,
+		TargetType:     s.TargetType,
+		Status:         s.Status,
+		ReadAt:         s.ReadAt,
+		CreatedAt:      s.CreatedAt,
+		ConversationID: s.ConversationID,
 	}
 }
 

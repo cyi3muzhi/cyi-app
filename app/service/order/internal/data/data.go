@@ -128,6 +128,13 @@ func NewDB(c *conf.Data) *gorm.DB {
 	// 仅在非生产环境自动迁移表结构（生产环境禁止使用 AutoMigrate）
 	env := os.Getenv("SERVICE_ENV")
 	if env != "production" {
+		// 历史数据兼容：旧订单行 idempotency_key 为空（下单幂等键为本次新增字段），
+		// 直接建 (user_id, idempotency_key) 唯一索引会因同一用户多行空值冲突报 1062；
+		// 先用唯一订单号回填占位值 auto-{orderNo}（与新下单逻辑一致），保证索引可建。
+		// 幂等：回填后不再存在空值行，重复执行无副作用；表不存在（全新部署）时忽略。
+		if err := db.Exec("UPDATE `order` SET idempotency_key = CONCAT('auto-', order_no) WHERE idempotency_key = ''").Error; err != nil {
+			log.NewHelper(log.DefaultLogger).Debugf("backfill order idempotency_key skipped: %v", err)
+		}
 		if err := db.AutoMigrate(&mod.Order{}, &mod.OrderItem{}, &mod.OrderLogistics{}, &mod.PaymentLog{}, &mod.OrderRefund{}); err != nil {
 			panic(err)
 		}

@@ -205,10 +205,10 @@ func TestAdminUserRepo_ToggleStatus_Again(t *testing.T) {
 
 func TestParseJWTClaims_Success(t *testing.T) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":   float64(123),
-		"jti":  "test-jti-123",
-		"exp":  time.Now().Add(time.Hour).Unix(),
-		"iss":  "cin",
+		"id":  float64(123),
+		"jti": "test-jti-123",
+		"exp": time.Now().Add(time.Hour).Unix(),
+		"iss": "cin",
 	})
 	signedToken, err := token.SignedString([]byte("secret"))
 	assert.NoError(t, err)

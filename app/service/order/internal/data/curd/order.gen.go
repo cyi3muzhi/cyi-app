@@ -36,6 +36,7 @@ func newOrder(db *gorm.DB) order {
 	_order.Status = field.NewInt32(tableName, "status")
 	_order.OrderNo = field.NewString(tableName, "order_no")
 	_order.CouponRecordID = field.NewInt64(tableName, "coupon_record_id")
+	_order.IdempotencyKey = field.NewString(tableName, "idempotency_key")
 
 	_order.fillFieldMap()
 
@@ -58,6 +59,7 @@ type order struct {
 	Status         field.Int32
 	OrderNo        field.String
 	CouponRecordID field.Int64
+	IdempotencyKey field.String
 
 	fieldMap map[string]field.Expr
 }
@@ -86,6 +88,7 @@ func (o *order) updateTableName(table string) *order {
 	o.Status = field.NewInt32(table, "status")
 	o.OrderNo = field.NewString(table, "order_no")
 	o.CouponRecordID = field.NewInt64(table, "coupon_record_id")
+	o.IdempotencyKey = field.NewString(table, "idempotency_key")
 
 	o.fillFieldMap()
 
@@ -102,7 +105,7 @@ func (o *order) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (o *order) fillFieldMap() {
-	o.fieldMap = make(map[string]field.Expr, 12)
+	o.fieldMap = make(map[string]field.Expr, 13)
 	o.fieldMap["id"] = o.ID
 	o.fieldMap["create_time"] = o.CreateTime
 	o.fieldMap["update_time"] = o.UpdateTime
@@ -115,6 +118,7 @@ func (o *order) fillFieldMap() {
 	o.fieldMap["status"] = o.Status
 	o.fieldMap["order_no"] = o.OrderNo
 	o.fieldMap["coupon_record_id"] = o.CouponRecordID
+	o.fieldMap["idempotency_key"] = o.IdempotencyKey
 }
 
 func (o order) clone(db *gorm.DB) order {

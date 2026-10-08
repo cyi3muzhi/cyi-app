@@ -1,0 +1,179 @@
+syntax = "proto3";
+
+package api.cin.interface.v1;
+
+option go_package = "cyi-app/api/cin/interface/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.cin.interface.v1";
+
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+
+// Chat IM 客服服务（用户端 REST，供用户端咨询入口使用）
+service Chat {
+  // 创建会话（用户发起咨询）
+  rpc CreateConversation (CreateConversationRequest) returns (CreateConversationReply) {
+    option (google.api.http) = {
+      post: "/chat/v1/conversation"
+      body: "*"
+    };
+  }
+  // 我的会话列表
+  rpc ListMyConversation (ListMyConversationRequest) returns (ListMyConversationReply) {
+    option (google.api.http) = {
+      get: "/chat/v1/conversations"
+    };
+  }
+  // 会话历史消息
+  rpc ListMessage (ListMessageRequest) returns (ListMessageReply) {
+    option (google.api.http) = {
+      get: "/chat/v1/conversations/{conversation_id}/messages"
+    };
+  }
+  // 发送消息
+  rpc SendMessage (SendMessageRequest) returns (SendMessageReply) {
+    option (google.api.http) = {
+      post: "/chat/v1/conversations/{conversation_id}/messages"
+      body: "*"
+    };
+  }
+  // 标记会话已读
+  rpc MarkConversationRead (MarkConversationReadRequest) returns (MarkConversationReadReply) {
+    option (google.api.http) = {
+      post: "/chat/v1/conversations/{conversation_id}/read"
+      body: "*"
+    };
+  }
+  // 结束会话
+  rpc CloseConversation (CloseConversationRequest) returns (CloseConversationReply) {
+    option (google.api.http) = {
+      post: "/chat/v1/conversations/{conversation_id}/close"
+      body: "*"
+    };
+  }
+}
+
+// 会话信息（用户端视角）
+message ConversationItem {
+  // 会话ID
+  int64 id = 1;
+  // 客服ID（0=未分配）
+  int64 agent_id = 2;
+  // 会话状态 1=待接入 2=进行中 3=已结束
+  int32 status = 3;
+  // 接待类型 1=人工 2=AI接待中
+  int32 service_type = 4;
+  // 最后消息摘要
+  string last_message = 5;
+  // 最后消息类型
+  int32 last_msg_type = 6;
+  // 最后消息时间（Unix 秒）
+  int64 last_message_at = 7;
+  // 未读数（用户视角：客服发的未读消息数）
+  int32 unread_count = 8;
+  // 客服姓名（联查）
+  string agent_name = 9;
+  // 创建时间（Unix 秒）
+  int64 created_at = 10;
+}
+
+// 消息信息
+message ChatMessageItem {
+  // 消息ID
+  int64 id = 1;
+  // 会话ID
+  int64 conversation_id = 2;
+  // 发送者类型 1=用户 2=客服 3=系统 4=AI
+  int32 sender_type = 3;
+  // 发送者ID
+  int64 sender_id = 4;
+  // 消息类型 1=文本 2=图片 3=商品卡片 4=订单卡片 5=系统
+  int32 msg_type = 5;
+  // 内容
+  string content = 6;
+  // 扩展（JSON 字符串）
+  string extra = 7;
+  // 是否已读 0=未读 1=已读
+  int32 is_read = 8;
+  // 发送时间（Unix 秒）
+  int64 created_at = 9;
+}
+
+// CreateConversation 创建会话
+message CreateConversationRequest {}
+message CreateConversationReply {
+  // 会话信息
+  ConversationItem conversation = 1;
+}
+
+// ListMyConversation 我的会话列表
+message ListMyConversationRequest {
+  // 页码
+  int32 page = 1 [(validate.rules).int32 = {gte: 1}];
+  // 每页数量
+  int32 page_size = 2 [(validate.rules).int32 = {gte: 1, lte: 100}];
+  // 状态筛选（0=全部）
+  int32 status = 3;
+}
+message ListMyConversationReply {
+  // 会话列表
+  repeated ConversationItem items = 1;
+  // 总数
+  int32 total = 2;
+}
+
+// ListMessage 会话历史消息
+message ListMessageRequest {
+  // 会话ID
+  int64 conversation_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 游标消息ID（0=最新一页）
+  int64 cursor_id = 2;
+  // 每页数量
+  int32 limit = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
+  // 方向 0=向下 1=向上
+  int32 direction = 4;
+}
+message ListMessageReply {
+  // 消息列表
+  repeated ChatMessageItem items = 1;
+  // 是否还有更多
+  bool has_more = 2;
+}
+
+// SendMessage 用户发送消息
+message SendMessageRequest {
+  // 会话ID
+  int64 conversation_id = 1 [(validate.rules).int64 = {gt: 0}];
+  // 消息类型 1=文本 2=图片 3=商品卡片 4=订单卡片
+  int32 msg_type = 2 [(validate.rules).int32 = {in: [1, 2, 3, 4]}];
+  // 内容
+  string content = 3 [(validate.rules).string = {min_len: 1, max_len: 5000}];
+  // 扩展JSON（图片URL/卡片）
+  string extra = 4;
+}
+message SendMessageReply {
+  // 新消息ID
+  int64 message_id = 1;
+  // 发送时间（Unix 秒）
+  int64 created_at = 2;
+}
+
+// MarkConversationRead 用户标记会话已读
+message MarkConversationReadRequest {
+  // 会话ID
+  int64 conversation_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+message MarkConversationReadReply {
+  // 是否成功
+  bool success = 1;
+}
+
+// CloseConversation 用户结束会话
+message CloseConversationRequest {
+  // 会话ID
+  int64 conversation_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+message CloseConversationReply {
+  // 是否成功
+  bool success = 1;
+}

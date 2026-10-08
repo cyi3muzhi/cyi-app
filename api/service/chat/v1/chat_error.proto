@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package api.service.chat.v1;
+
+option go_package = "cyi-app/api/service/chat/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.service.chat.v1";
+
+import "errors/errors.proto";
+
+// ChatErrorReason 聊天服务错误码
+enum ChatErrorReason {
+  option (errors.default_code) = 400;
+
+  // 会话不存在
+  CONVERSATION_NOT_FOUND = 0 [(errors.code) = 404];
+  // 会话已结束
+  CONVERSATION_CLOSED = 1 [(errors.code) = 422];
+  // 会话已被其他客服接入
+  CONVERSATION_ACCEPTED = 2 [(errors.code) = 409];
+  // 非会话成员
+  NOT_CONVERSATION_MEMBER = 3 [(errors.code) = 403];
+  // 消息内容为空
+  MESSAGE_EMPTY = 4 [(errors.code) = 422];
+  // 消息超长
+  MESSAGE_TOO_LONG = 5 [(errors.code) = 422];
+  // 消息类型无效
+  MESSAGE_TYPE_INVALID = 6 [(errors.code) = 422];
+}

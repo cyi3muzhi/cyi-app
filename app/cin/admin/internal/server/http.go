@@ -5,6 +5,7 @@ import (
 	"cyi-app/app/cin/admin/internal/conf"
 	"cyi-app/app/cin/admin/internal/service"
 	httproute "cyi-app/pkg/kratos/server/httproute"
+	nethttp "net/http"
 
 	ts "cyi-app/pkg/kratos/server/transporter"
 
@@ -27,6 +28,7 @@ func NewHTTPServer(s *ts.HttpServer, adminService *service.AdminService, logsSer
 	adminv1.RegisterAdminCouponHTTPServer(s.HttpServer, adminService)
 	adminv1.RegisterBannerHTTPServer(s.HttpServer, adminService)
 	adminv1.RegisterAdminMessageHTTPServer(s.HttpServer, adminService)
+	adminv1.RegisterChatHTTPServer(s.HttpServer, adminService)
 	// 注册 Agent proto 接口（替代 registerAgentRoutes 中除 SSE 外的所有路由）
 	adminv1.RegisterAgentHTTPServer(s.HttpServer, adminService)
 	// 注册操作日志查询接口（独立服务）
@@ -37,5 +39,15 @@ func NewHTTPServer(s *ts.HttpServer, adminService *service.AdminService, logsSer
 	httproute.RegisterChatStream(s.HttpServer, "/admin/v1/agent/chat/stream", authMw, adminService)
 	// 注册知识库文件上传路由（proto 不支持 multipart，手动注册）
 	httproute.RegisterKnowledgeUpload(s.HttpServer, "/admin/v1/agent/knowledge/upload", authMw, adminService)
+
+	// 注册客服 IM WebSocket（query token 鉴权在 ws.Serve 内部处理，不走 HTTP 中间件）
+	s.HttpServer.HandleFunc("/admin/v1/chat/ws", httproute.WithMiddlewares([]middleware.Middleware{}, func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				nethttp.Error(w, "internal server error", nethttp.StatusInternalServerError)
+			}
+		}()
+		adminService.IMAgentChatWS(w, r)
+	}))
 	return s.HttpServer
 }

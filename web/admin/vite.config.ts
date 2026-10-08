@@ -17,7 +17,8 @@ export default defineConfig({
     proxy: {
       '/admin/v1': {
         target: 'http://localhost:28000',
-        changeOrigin: true
+        changeOrigin: true,
+        ws: true
       }
     }
   }

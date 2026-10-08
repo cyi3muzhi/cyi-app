@@ -28,12 +28,13 @@ func NewMessageService(uc *biz.MessageUseCase, logger log.Logger) *MessageServic
 // CreateMessage 创建消息（管理后台发送通知）
 func (s *MessageService) CreateMessage(ctx context.Context, req *pb.CreateMessageRequest) (*pb.CreateMessageReply, error) {
 	id, err := s.uc.CreateMessage(ctx, &biz.Message{
-		Title:         req.Title,
-		Content:       req.Content,
-		MsgType:       req.MsgType,
-		TargetType:    req.TargetType,
-		TargetUserIDs: req.TargetUserIds,
-		CreatedBy:     req.CreatedBy,
+		Title:          req.Title,
+		Content:        req.Content,
+		MsgType:        req.MsgType,
+		TargetType:     req.TargetType,
+		TargetUserIDs:  req.TargetUserIds,
+		CreatedBy:      req.CreatedBy,
+		ConversationID: req.ConversationId,
 	})
 	if err != nil {
 		return nil, convertBizError(err)
@@ -118,16 +119,17 @@ func messageBizToProto(m *biz.Message) *pb.MessageInfo {
 		}
 	}
 	return &pb.MessageInfo{
-		Id:            m.ID,
-		Title:         m.Title,
-		Content:       m.Content,
-		MsgType:       m.MsgType,
-		IsRead:        m.IsRead,
-		CreatedAt:     m.CreatedAt,
-		CreatedBy:     m.CreatedBy,
-		TargetType:    m.TargetType,
-		TargetUserIds: targetIDs,
-		Status:        m.Status,
-		ReadAt:        m.ReadAt,
+		Id:             m.ID,
+		Title:          m.Title,
+		Content:        m.Content,
+		MsgType:        m.MsgType,
+		IsRead:         m.IsRead,
+		CreatedAt:      m.CreatedAt,
+		CreatedBy:      m.CreatedBy,
+		TargetType:     m.TargetType,
+		TargetUserIds:  targetIDs,
+		Status:         m.Status,
+		ReadAt:         m.ReadAt,
+		ConversationId: m.ConversationID,
 	}
 }

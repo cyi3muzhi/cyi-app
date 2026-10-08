@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package cyi.app.service.chat.conf;
+
+import "google/protobuf/duration.proto";
+
+option go_package = "cyi-app/app/service/chat/internal/conf";
+
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+  Auth auth = 3;
+  Trace trace = 4;
+  Log log = 5;
+  Nats nats = 6;
+  Blades blades = 7;
+  Agent agent = 8;
+}
+
+message Server {
+  message HTTP {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  HTTP http = 1;
+  GRPC grpc = 2;
+}
+
+message Data {
+  message Database {
+    string driver = 1;
+    string source = 2;
+  }
+  message Redis {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration read_timeout = 3;
+    google.protobuf.Duration write_timeout = 4;
+    string password = 5;
+  }
+  Database database = 1;
+  Redis redis = 2;
+}
+
+message Registry {
+    message Consul {
+        string address = 1;
+        string scheme = 2;
+        string token = 3;
+        string username = 4;
+        string password = 5;
+        bool enable_health_check = 8;
+        int32 check_interval = 9;
+    }
+    Consul consul = 1;
+}
+
+message Auth {
+    string api_key = 1;
+    map<string, string> service_key = 2;
+}
+
+message Trace {
+    string endpoint = 1;
+}
+
+message Log {
+    string level = 1;
+    bool enable_console = 2;
+    bool enable_file = 3;
+    string log_dir = 4;
+    string time_format = 5;
+    bool enable_color = 6;
+}
+
+// Nats 消息总线配置（M2 起用于聊天消息推送，M1 预留）
+message Nats {
+    string addr = 1;
+}
+
+// Blades AI 服务配置（M4 AI 兜底用，M1 预留）
+message Blades {
+    string endpoint = 1;
+}
+
+// Agent 客服接待策略配置
+message Agent {
+    // 客服最大同时接待会话数
+    int32 max_sessions = 1;
+    // 无客服在线时是否启用 AI 兜底
+    bool ai_fallback = 2;
+    // 在线状态 TTL（秒）
+    int32 online_ttl = 3;
+}

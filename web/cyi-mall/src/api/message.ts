@@ -12,6 +12,7 @@ export interface MessageItem {
   isRead: number // 是否已读 0=未读 1=已读
   createdAt: number // 创建时间（Unix 秒）
   readAt: number // 已读时间（Unix 秒）
+  conversationId: number // 关联会话ID（IM 客服离线提醒，0=普通通知）
 }
 
 /** 消息列表响应 */
@@ -39,7 +40,8 @@ function normalizeMessage(item: any): MessageItem {
     msgType: Number(item.msgType ?? item.msg_type ?? 0),
     isRead: Number(item.isRead ?? item.is_read ?? 0),
     createdAt: Number(item.createdAt ?? item.created_at ?? 0),
-    readAt: Number(item.readAt ?? item.read_at ?? 0)
+    readAt: Number(item.readAt ?? item.read_at ?? 0),
+    conversationId: Number(item.conversationId ?? item.conversation_id ?? 0)
   }
 }
 
