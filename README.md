@@ -4,59 +4,73 @@
 
 ## 架构图
 
+![CYI-APP 微服务架构](docs/architecture.png)
+
+> 💡 **高清交互版**：本地打开 [docs/architecture.html](docs/architecture.html) 查看完整 SVG 架构图（可缩放、可交互）
+
+<details>
+<summary>📊 GitHub 内嵌 Mermaid 图（点击展开）</summary>
+
+```mermaid
+flowchart TB
+    subgraph 接入层
+        FE1[用户端前端<br/>H5 / 小程序]
+        FE2[管理后台前端<br/>web / admin]
+    end
+
+    subgraph 网关层
+        GW1{CIN Interface<br/>接口网关}
+        GW2{CIN Admin<br/>管理后台 BFF}
+    end
+
+    subgraph 业务服务层
+        SVC1[User Service<br/>用户认证]
+        SVC2[Blades Service<br/>AI 智能助手]
+        SVC3[Chat Service<br/>IM 客服]
+        SVC4[Product Service<br/>商品库存]
+        SVC5[Marketing Service<br/>优惠券营销]
+        SVC6[Order Service<br/>订单管理]
+    end
+
+    subgraph 消息任务层
+        MSG1[NATS Consumer]
+        TASK[Task Service<br/>异步 / 定时任务]
+    end
+
+    subgraph 基础设施层
+        INFRA[(MySQL · Redis · NATS<br/>Consul · Jaeger · Prometheus<br/>Grafana · ELK · RustFS)]
+    end
+
+    FE1 -->|HTTP/WS/SSE| GW1
+    FE2 -->|HTTP| GW2
+
+    GW1 -->|gRPC| SVC1
+    GW1 -->|AI Call| SVC2
+    GW1 -->|gRPC| SVC3
+    GW1 -->|gRPC| SVC4
+    GW1 -->|gRPC| SVC6
+
+    GW2 -->|gRPC| SVC1
+    GW2 -->|gRPC| SVC4
+    GW2 -->|gRPC| SVC5
+    GW2 -->|gRPC| SVC6
+    GW2 -->|Asynq 投递| TASK
+
+    SVC1 & SVC2 & SVC3 & SVC4 & SVC5 & SVC6 -.->|数据存取| INFRA
+    MSG1 -->|操作日志| SVC1
+    TASK -.->|gRPC| SVC1 & SVC6
+
+    classDef default fill:#ffffff,stroke:#2d3142,stroke-width:1px
+    classDef gateway fill:rgba(191,69,32,0.08),stroke:#bf4520,stroke-width:1.5px
+    classDef ai fill:rgba(191,69,32,0.04),stroke:rgba(191,69,32,0.60),stroke-width:1px
+    classDef infra fill:rgba(45,49,66,0.05),stroke:#4f5d75,stroke-width:1px
+
+    class GW1,GW2 gateway
+    class SVC2 ai
+    class INFRA infra
 ```
-┌──────────────────┐              ┌──────────────────┐
-│   用户端前端      │              │   管理后台前端    │
-│  (H5 / 小程序等)  │              │   (web/admin)    │
-└────────┬─────────┘              └────────┬─────────┘
-         │  HTTP/WS/SSE                    │  HTTP
-         ▼                                  ▼
-┌──────────────────┐              ┌──────────────────┐
-│  CIN Interface   │              │   CIN Admin      │
-│   接口网关        │              │  管理后台 BFF     │
-│ HTTP/gRPC/WS/SSE │              │  HTTP / gRPC     │
-└──┬───┬───┬───┬───┘              └──┬───┬───┬───┬──┘
-   │   │   │   │                     │   │   │   │
-   │   │   │   └─────┐               │   │   │   │
-   │   │   │         │               │   │   │   │
-   │   │   ▼         ▼               ▼   │   │   │
-   │   │ ┌─────────────────────────┐    │   │   │
-   │   │ │     User Service        │◄───┘   │   │
-   │   │ │      用户服务            │        │   │
-   │   │ └───────────┬─────────────┘        │   │
-   │   │             │                      │   │
-   │   ▼             │                      │   │
-   │ ┌───────────┐   │   ┌──────────────┐   │   │
-   │ │   Blades  │   │   │ Product      │   │   │
-   │ │  Service  │   │   │ Service      │◄──┘   │
-   │ │ AI 智能助手│   │   │  商品服务     │       │
-   │ └───────────┘   │   └──────┬───────┘       │
-   │                 │          │               │
-   ▼                 ▼          ▼               │
-┌───────────┐  ┌──────────┐
-│   Order   │  │   NATS   │
-│  Service  │  │ Consumer │
-│  订单服务   │  └────┬─────┘
-└─────┬─────┘       │
-      │             │
-      └─────────────┘
-            │
-            ▼
-┌──────────────────────┐
-│    Task  Service     │
-│   异步任务 + 定时任务   │
-│  (default/export/    │
-│   critical)          │
-└─────────┬────────────┘
-          │
-          ▼
-┌──────────────────────────────────────────────────────┐
-│                     基础设施层                          │
-│  Consul │ Jaeger │ Prometheus │ Grafana │ ELK │ RustFS│
-│  MySQL  │ Redis  │ NATS                               │
-│         │(Asynq) │                                    │
-└──────────────────────────────────────────────────────┘
-```
+
+</details>
 
 > **说明**：
 > - **CIN Interface**：用户端统一入口，聚合调用各业务服务
