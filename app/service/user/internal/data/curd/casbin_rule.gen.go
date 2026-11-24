@@ -28,7 +28,6 @@ func newCasbinRule(db *gorm.DB) casbinRule {
 	_casbinRule.ID = field.NewUint(tableName, "id")
 	_casbinRule.CreatedAt = field.NewTime(tableName, "created_at")
 	_casbinRule.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_casbinRule.DeletedAt = field.NewField(tableName, "deleted_at")
 	_casbinRule.Ptype = field.NewString(tableName, "ptype")
 	_casbinRule.V0 = field.NewString(tableName, "v0")
 	_casbinRule.V1 = field.NewString(tableName, "v1")
@@ -49,7 +48,6 @@ type casbinRule struct {
 	ID        field.Uint
 	CreatedAt field.Time
 	UpdatedAt field.Time
-	DeletedAt field.Field
 	Ptype     field.String
 	V0        field.String
 	V1        field.String
@@ -76,7 +74,6 @@ func (c *casbinRule) updateTableName(table string) *casbinRule {
 	c.ID = field.NewUint(table, "id")
 	c.CreatedAt = field.NewTime(table, "created_at")
 	c.UpdatedAt = field.NewTime(table, "updated_at")
-	c.DeletedAt = field.NewField(table, "deleted_at")
 	c.Ptype = field.NewString(table, "ptype")
 	c.V0 = field.NewString(table, "v0")
 	c.V1 = field.NewString(table, "v1")
@@ -100,11 +97,10 @@ func (c *casbinRule) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (c *casbinRule) fillFieldMap() {
-	c.fieldMap = make(map[string]field.Expr, 11)
+	c.fieldMap = make(map[string]field.Expr, 10)
 	c.fieldMap["id"] = c.ID
 	c.fieldMap["created_at"] = c.CreatedAt
 	c.fieldMap["updated_at"] = c.UpdatedAt
-	c.fieldMap["deleted_at"] = c.DeletedAt
 	c.fieldMap["ptype"] = c.Ptype
 	c.fieldMap["v0"] = c.V0
 	c.fieldMap["v1"] = c.V1

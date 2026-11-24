@@ -40,7 +40,8 @@ bin/
 dist/
 
 # Develop tools
-.vscode/
+.vscode/*
+!/.vscode/launch.json
 .idea/
 *.swp
 study/

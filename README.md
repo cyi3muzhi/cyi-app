@@ -199,6 +199,9 @@ cyi-app/
 │       ├── prometheus/                 # Prometheus 配置
 │       ├── logstash/                   # Logstash 配置
 │       └── .env                        # 环境变量
+├── scripts/                # 本地开发辅助脚本
+│   ├── dev-setup.ps1       # 一键准备环境（Windows PowerShell）
+│   └── dev-setup.sh        # 一键准备环境（macOS / Linux）
 └── .trae/
     └── rules/              # Trae AI 规则
         ├── git-commit-message.md  # Git 提交规范
@@ -209,37 +212,101 @@ cyi-app/
 
 ### 环境要求
 
-- Go 1.25+
-- Docker & Docker Compose
-- Make（可选）
+| 依赖 | 说明 |
+|------|------|
+| Docker Desktop / Docker Engine | 必须，用于运行 MySQL、Redis、Consul、NATS 等基础设施 |
+| Go 1.25+ | 本地运行服务时需要 |
+| Make（可选） | 有则可用 `make setup`，没有也能直接用脚本 |
+| protoc（可选） | 仅在修改 proto 后需要重新生成代码 |
 
-### 1. 启动基础设施
+> Consul 由 Docker Compose 提供，**不需要在本机单独安装**。控制台地址：http://localhost:8500/ui
 
-```bash
-cd deploy/docker-compose
-docker compose up -d
+### 方式一：一键准备（推荐）
+
+Windows PowerShell：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\dev-setup.ps1
 ```
 
-### 2. 生成代码
+macOS / Linux：
 
 ```bash
-# 在项目根目录执行
-make api    # 生成 Protobuf 代码
+bash ./scripts/dev-setup.sh
 ```
 
-### 3. 启动单个服务（本地开发）
+装了 Make 也可以直接：
 
 ```bash
-cd app/cin/interface
-go run cmd/interface/main.go -conf configs/
+make setup
 ```
 
-### 4. Docker 部署全部服务
+脚本会依次完成：
+
+1. 检查 Docker，自动从 `.env.example` 生成 `.env`
+2. 启动基础设施并等待 Consul 就绪
+3. 把各服务 `configs/*.yaml` 转成本机可访问的地址和端口，写入 Consul KV
+4. 输出下一步提示
+
+重复执行是安全的，配置会覆盖更新。只想同步配置、不重启基础设施：
 
 ```bash
-cd deploy/docker-compose
-docker compose up -d
+# Windows
+powershell -ExecutionPolicy Bypass -File .\scripts\dev-setup.ps1 -SkipInfra
+
+# macOS / Linux
+bash ./scripts/dev-setup.sh --skip-infra
+
+# 或使用 Make
+make consul-sync
 ```
+
+### 方式二：VS Code 启动服务
+
+1. 先执行上面的准备脚本
+2. 打开「运行和调试」面板
+3. 顶部下拉框选择 `user_service`、`interface`、`admin` 等配置，按 F5
+4. 需要全部启动时选择 `⚙️ 全部后端服务` 或 `🚀 全部服务（前端 + 后端）`
+
+各服务通过 `CONSUL_ADDR` / `CONSUL_PATHS` 环境变量读取 Consul 配置，本地端口与 `deploy/docker-compose/.env` 保持一致：
+
+| 启动配置 | Consul 配置路径 | 本地端口 |
+|----------|-----------------|----------|
+| interface | `/local/cyi-app/cin/interface` | HTTP 8010 / gRPC 9010 |
+| admin | `/local/cyi-app/cin/admin` | HTTP 8080 / gRPC 9091 |
+| user_service | `/local/cyi-app/service/user` | gRPC 9100 |
+| order_service | `/local/cyi-app/service/order` | gRPC 9101 / HTTP 9104 |
+| product_service | `/local/cyi-app/service/product` | gRPC 9102 |
+| marketing_service | `/local/cyi-app/service/marketing` | gRPC 9103 |
+| chat_service | `/local/cyi-app/service/chat` | gRPC 9105 |
+| blades | `/local/cyi-app/blades` | HTTP 30800 / gRPC 30900 |
+| task | `/local/cyi-app/task` | HTTP 10100 |
+| nats | `/local/cyi-app/nats` | HTTP 38000 / gRPC 39000 |
+
+### 方式三：命令行启动
+
+```powershell
+# 在项目根目录执行，环境变量按需调整
+$env:CONSUL_ADDR="127.0.0.1:8500"
+$env:CONSUL_PATHS="/local/common,/local/cyi-app/service/user"
+$env:SERVICE_ENV="develop"
+go run ./app/service/user/cmd/user
+```
+
+### 修改 Proto 后生成代码
+
+```bash
+make init    # 首次安装代码生成工具
+make api     # 生成 API 代码
+make errors  # 生成错误码（在服务目录下执行）
+```
+
+### 常见问题
+
+- **服务启动报 Consul 连接失败**：先确认 `docker compose -f deploy/docker-compose/docker-compose.infra.yml ps` 中 `consul` 为 running，再执行准备脚本。
+- **服务报配置为空或字段缺失**：重新执行 `make consul-sync`，或打开 http://localhost:8500/ui 检查 `local/cyi-app/<服务>/config.yaml` 是否存在。
+- **端口被占用**：修改 `deploy/docker-compose/.env` 中对应端口后重新执行准备脚本。
+- **生产部署**：不要使用该脚本，容器内通过服务名访问基础设施，配置由 CI 写入 `develop/cyi-app/*`。
 
 ## 开发规范
 

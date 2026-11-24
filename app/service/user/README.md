@@ -71,6 +71,8 @@ app/service/user/
 │   │   ├── operation_log_nats.go # 操作日志 NATS 消费者（订阅落库）
 │   │   ├── role.go      # 角色数据访问
 │   │   ├── role_test.go # 角色数据访问测试
+│   │   ├── seed/
+│   │   │   └── seed.go  # 种子数据初始化（默认管理员、预置角色与权限）
 │   │   ├── settings.go  # 店铺设置数据访问
 │   │   └── user.go      # 用户数据访问
 │   ├── pkg/
@@ -166,6 +168,37 @@ admin BFF 请求 → 调用 Login gRPC 验证账号密码 → 返回管理员信
 - **策略**：通过 `casbin_rule` 表存储 Casbin 策略规则
 - **权限模型**：支持 `sub, obj, act` 三元组，使用 `keyMatch` 匹配器
 - **内置角色**：`super_admin`（超级管理员）拥有所有权限，不可删除/修改
+
+### 种子数据
+
+服务启动时由 `data/seed` 包自动初始化，幂等执行（已存在的数据不会重复创建或覆盖），保证全新数据库部署后可直接登录：
+
+| 类型 | 内容 |
+|------|------|
+| 默认账号 | `admin` / `admin123`（超级管理员，部署后请立即修改密码） |
+| 预置角色 | `super_admin`、`operator`（运营）、`product_admin`（商品管理员）、`order_admin`（订单管理员）、`customer_service`（客服） |
+| 权限策略 | 超级管理员为通配权限，其余角色按 `permModules` 定义的模块/动作逐项授权 |
+
+数据表尚未创建时（如生产环境未执行迁移）会自动跳过，不影响服务启动。
+
+**重复部署与并发**
+
+- 所有种子写入均为「先查后插」，串行重启、重复部署不会产生重复数据。
+- Casbin 策略表新增唯一索引 `uk_casbin_rule(ptype, v0, v1, v2)`，多实例并发首次启动也不会重复写入。
+- `casbin_rule` 改为硬删除，授予/撤销权限可以反复操作，不会被软删除记录占用唯一键。
+- 预置角色被后台删除后重启不会自动复活（默认管理员除外，会被恢复）。
+
+生产环境不执行 AutoMigrate，首次升级需手动执行：
+
+```sql
+-- 1. 清理历史软删除策略与重复策略
+DELETE FROM casbin_rule WHERE deleted_at IS NOT NULL;
+DELETE c1 FROM casbin_rule c1 INNER JOIN casbin_rule c2
+  ON c1.ptype = c2.ptype AND c1.v0 = c2.v0 AND c1.v1 = c2.v1 AND c1.v2 = c2.v2
+ AND c1.id > c2.id;
+-- 2. 创建唯一索引
+ALTER TABLE casbin_rule ADD UNIQUE INDEX uk_casbin_rule (ptype, v0, v1, v2);
+```
 
 ### 加密工具
 

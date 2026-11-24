@@ -3,9 +3,8 @@ package data
 import (
 	"context"
 	"cyi-app/app/service/user/internal/conf"
-	"cyi-app/app/service/user/internal/pkg/encryption"
+	"cyi-app/app/service/user/internal/data/seed"
 	"cyi-app/pkg/util/rustfs"
-	"fmt"
 	"os"
 	"time"
 
@@ -105,18 +104,19 @@ func NewDB(c *conf.Data) *gorm.DB {
 	// 仅在非生产环境自动迁移表结构（生产环境禁止使用 AutoMigrate）
 	env := os.Getenv("SERVICE_ENV")
 	if env != "production" {
+		// 迁移前清理历史软删除与重复策略，保证 Casbin 唯一索引能够成功创建
+		if err := seed.Prepare(db); err != nil {
+			log.NewHelper(log.DefaultLogger).Warnf("清理历史策略数据失败: %v", err)
+		}
 		if err := db.AutoMigrate(&mod.User{}, &mod.Address{}, &mod.AdminUser{}, &mod.CasbinRule{}, &mod.RoleMeta{}, &mod.SettingsRow{}, &mod.BannersRow{}, &mod.AdminOperationLog{}, &mod.Message{}, &mod.UserMessage{}); err != nil {
 			panic(err)
 		}
+	}
 
-		// 初始化默认管理员（仅表为空时插入）
-		initDefaultAdmin(db)
-
-		// 初始化 Casbin 默认策略（仅表为空时插入）
-		initCasbinPolicies(db)
-
-		// 同步所有管理员的角色到 Casbin 分组策略
-		syncAdminUserRoles(db)
+	// 初始化种子数据（角色、默认管理员），幂等执行，生产环境同样生效，
+	// 保证一套全新的数据库部署后可以直接使用默认账号登录。
+	if err := seed.Run(db, log.DefaultLogger); err != nil {
+		log.NewHelper(log.DefaultLogger).Warnf("初始化种子数据失败: %v", err)
 	}
 
 	// 仅在开发环境执行代码生成
@@ -166,90 +166,4 @@ func NewOssClient(cfg *conf.Data) (*rustfs.RustFSClient, error) {
 		AccessKey: cfg.Oss.AccessKey,
 		SecretKey: cfg.Oss.SecretKey,
 	})
-}
-
-// initDefaultAdmin 初始化默认管理员账号（仅首次启动时插入）
-func initDefaultAdmin(db *gorm.DB) {
-	var count int64
-	db.Model(&mod.AdminUser{}).Count(&count)
-	if count > 0 {
-		return
-	}
-	hashedPwd, err := encryption.EncryptPassword("admin123")
-	if err != nil {
-		log.NewHelper(log.DefaultLogger).Warnf("默认管理员密码加密失败: %v", err)
-		return
-	}
-	now := time.Now().Unix()
-	admin := &mod.AdminUser{
-		Username:  "admin",
-		Password:  hashedPwd,
-		Name:      "管理员",
-		Role:      "super_admin",
-		Email:     "admin@yuexuan.com",
-		Status:    1,
-		LastLogin: 0,
-	}
-	admin.CreateTime = now
-	admin.UpdateTime = now
-	if err := db.Create(admin).Error; err != nil {
-		log.NewHelper(log.DefaultLogger).Warnf("初始化默认管理员失败: %v", err)
-	} else {
-		log.NewHelper(log.DefaultLogger).Infof("已创建默认管理员账号: admin/admin123")
-	}
-}
-
-// initCasbinPolicies 初始化 Casbin 默认策略（仅首次启动时 casbin_rule 表为空时插入）
-func initCasbinPolicies(db *gorm.DB) {
-	var count int64
-	db.Model(&mod.CasbinRule{}).Count(&count)
-	if count > 0 {
-		return
-	}
-
-	rules := []mod.CasbinRule{
-		// 超级管理员拥有所有权限（通配符）
-		{Ptype: "p", V0: "super_admin", V1: "*", V2: "*"},
-		// 将默认管理员用户（ID=1）分配给超级管理员角色
-		{Ptype: "g", V0: "1", V1: "super_admin"},
-	}
-	if err := db.Create(&rules).Error; err != nil {
-		log.NewHelper(log.DefaultLogger).Warnf("初始化 Casbin 策略失败: %v", err)
-	} else {
-		log.NewHelper(log.DefaultLogger).Infof("已初始化 Casbin 默认策略")
-	}
-
-	// 同时写入超级管理员的角色元数据
-	var metaCount int64
-	db.Model(&mod.RoleMeta{}).Count(&metaCount)
-	if metaCount == 0 {
-		db.Create(&mod.RoleMeta{Slug: "super_admin", Name: "超级管理员", Desc: "拥有所有系统权限"})
-	}
-}
-
-// syncAdminUserRoles 同步所有管理员的角色到 Casbin 分组策略
-// 确保已有管理员的角色也能在 Casbin 中被正确统计
-func syncAdminUserRoles(db *gorm.DB) {
-	var admins []mod.AdminUser
-	if err := db.Find(&admins).Error; err != nil {
-		log.NewHelper(log.DefaultLogger).Warnf("查询管理员列表失败: %v", err)
-		return
-	}
-	for _, admin := range admins {
-		if admin.Role == "" {
-			continue
-		}
-		// 检查是否已有分组策略
-		var count int64
-		db.Model(&mod.CasbinRule{}).
-			Where("ptype = ? AND v0 = ? AND v1 = ?", "g", fmt.Sprintf("%d", admin.ID), admin.Role).
-			Count(&count)
-		if count == 0 {
-			if err := db.Create(&mod.CasbinRule{Ptype: "g", V0: fmt.Sprintf("%d", admin.ID), V1: admin.Role}).Error; err != nil {
-				log.NewHelper(log.DefaultLogger).Warnf("为用户 %d 添加 Casbin 分组策略失败: %v", admin.ID, err)
-			} else {
-				log.NewHelper(log.DefaultLogger).Infof("已为用户 %d 添加 Casbin 角色: %s", admin.ID, admin.Role)
-			}
-		}
-	}
 }

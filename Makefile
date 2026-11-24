@@ -129,6 +129,24 @@ service:
 wire:
 	$(foreach service,$(SERVICE_NAMES),wire-$(service))
 
+.PHONY: setup
+# 一键准备本地开发环境（启动基础设施 + 导入 Consul 配置）
+setup:
+ifeq ($(OS),Windows_NT)
+	powershell -ExecutionPolicy Bypass -File ./scripts/dev-setup.ps1
+else
+	bash ./scripts/dev-setup.sh
+endif
+
+.PHONY: consul-sync
+# 仅同步各服务配置到 Consul（不启动基础设施）
+consul-sync:
+ifeq ($(OS),Windows_NT)
+	powershell -ExecutionPolicy Bypass -File ./scripts/dev-setup.ps1 -SkipInfra
+else
+	bash ./scripts/dev-setup.sh --skip-infra
+endif
+
 .PHONY: docker-up
 # 运行所有 docker 容器（先启动基础设施，再启动应用）
 docker-up: docker-up-infra docker-up-app
@@ -201,19 +219,21 @@ env:
 # 显示帮助信息
 help:
 	@echo ''
-	@echo 'Usage:'
-	@echo ' make [target]'
+	@echo 'Usage: make [target]'
 	@echo ''
-	@echo 'Targets:'
-	@awk '/^[a-zA-Z\-\_0-9]+:/ { \
-	helpMessage = match(lastLine, /^# (.*)/); \
-		if (helpMessage) { \
-			helpCommand = substr($$1, 0, index($$1, ":")); \
-			helpMessage = substr(lastLine, RSTART + 2, RLENGTH); \
-			printf "\033[36m%-22s\033[0m %s\n", helpCommand,helpMessage; \
-		} \
-	} \
-	{ lastLine = $$0 }' $(MAKEFILE_LIST)
+	@echo '常用命令：'
+	@echo '  setup            一键准备本地开发环境（基础设施 + Consul 配置）'
+	@echo '  consul-sync      仅同步各服务配置到 Consul'
+	@echo '  docker-up        启动全部 Docker 容器'
+	@echo '  docker-down      停止全部 Docker 容器'
+	@echo '  api              生成 Protobuf 代码'
+	@echo '  errors           生成错误码代码'
+	@echo '  wire             生成 Wire 依赖注入代码'
+	@echo '  init             安装代码生成工具'
+	@echo '  build            构建全部服务'
+	@echo '  env              查看 Makefile 变量'
+	@echo ''
+	@echo '完整目标列表请查看 Makefile 文件。'
 
 .PHONY: debug
 # 调试信息
